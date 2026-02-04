@@ -3,7 +3,7 @@ interface FAQItem {
   answer: string
 }
 
-export function generateFAQJsonLd(faq: FAQItem[], baseUrl: string) {
+export function generateFAQJsonLd(faq: FAQItem[]) {
   return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',

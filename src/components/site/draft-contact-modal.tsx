@@ -138,7 +138,7 @@ export function DraftContactModal({
   )
 }
 
-function OwnerContent({ storeSlug }: { storeSlug: string }) {
+function OwnerContent({ storeSlug: _storeSlug }: { storeSlug: string }) {
   return (
     <div className="space-y-4">
       <div>

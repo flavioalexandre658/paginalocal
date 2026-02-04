@@ -1,7 +1,7 @@
 import { db } from '@/db'
 import { subscription, plan, store } from '@/db/schema'
 import { eq, and, or, count } from 'drizzle-orm'
-import type { PlanFeatures, SubscriptionStatus } from '@/db/schema'
+import type { PlanFeatures } from '@/db/schema'
 
 export const FREE_TIER_LIMITS = {
   maxStores: 1,

@@ -225,7 +225,7 @@ export default async function StorePage({ params }: PageProps) {
     url: baseUrl,
   })
 
-  const faqJsonLd = faq.length > 0 ? generateFAQJsonLd(faq, baseUrl) : null
+  const faqJsonLd = faq.length > 0 ? generateFAQJsonLd(faq) : null
 
   return (
     <>

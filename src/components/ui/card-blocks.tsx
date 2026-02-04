@@ -178,7 +178,6 @@ interface MetricCardProps {
   }
   footer?: string
   subfooter?: string
-  icon?: React.ElementType
   onClick?: () => void
   className?: string
 }
@@ -190,7 +189,6 @@ export function MetricCard({
   trend,
   footer,
   subfooter,
-  icon: Icon,
   onClick,
   className,
 }: MetricCardProps) {

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { getUserPlanLimits } from '@/actions/subscriptions/get-user-plan-limits.action'
-import type { IUserPlanLimits, FREE_TIER_LIMITS } from '@/interfaces/subscription.interface'
+import type { IUserPlanLimits } from '@/interfaces/subscription.interface'
 
 export const getUserPlanLimitsQueryKey = () => ['user-plan-limits']
 

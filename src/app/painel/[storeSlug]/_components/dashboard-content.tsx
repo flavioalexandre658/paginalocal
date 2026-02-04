@@ -11,7 +11,6 @@ import {
   IconLoader2,
   IconMessageCircle,
   IconPhone,
-  IconSettings,
 } from '@tabler/icons-react'
 
 import { getStoreDashboardAction } from '@/actions/stores/get-store-dashboard.action'
@@ -91,13 +90,6 @@ export function DashboardContent({ storeSlug }: DashboardContentProps) {
           {data.store.googlePlaceId && (
             <SyncGoogleButton storeId={data.store.id} />
           )}
-          <Link
-            href={`/painel/${storeSlug}/configuracoes`}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200/60 bg-white/70 px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/70 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            <IconSettings className="h-4 w-4" />
-            <span className="hidden sm:inline">Configurações</span>
-          </Link>
           <Link
             href={`/painel/${storeSlug}/editar`}
             className="inline-flex items-center gap-2 rounded-xl border border-slate-200/60 bg-white/70 px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/70 dark:text-slate-200 dark:hover:bg-slate-800"

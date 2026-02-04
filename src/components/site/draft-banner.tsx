@@ -11,7 +11,7 @@ interface DraftBannerProps {
   isOwner: boolean
 }
 
-export function DraftBanner({ storeSlug, isOwner }: DraftBannerProps) {
+export function DraftBanner({ storeSlug: _storeSlug, isOwner }: DraftBannerProps) {
   const [isVisible, setIsVisible] = useState(true)
 
   if (!isVisible) return null

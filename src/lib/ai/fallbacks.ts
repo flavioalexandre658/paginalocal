@@ -3,7 +3,7 @@ import type { MarketingCopy, MarketingCopyInput, FAQItem, ServiceItem } from './
 export function extractBrandName(fullName: string, category: string): string {
   const categoryWords = category.toLowerCase().split(/\s+/)
 
-  let cleaned = fullName
+  const cleaned = fullName
     .replace(/[—–-]{2,}/g, ' ')
     .replace(/[|\/\\]/g, ' ')
     .replace(/\s+/g, ' ')
