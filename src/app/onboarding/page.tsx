@@ -31,6 +31,7 @@ import Link from 'next/link'
 import { searchPlacesAction } from '@/actions/google/search-places.action'
 import { getPlacePreviewAction, type PlacePreview } from '@/actions/google/get-place-preview.action'
 import { createStoreFromGoogleAction } from '@/actions/stores/create-store-from-google.action'
+import { getUserStoresAction } from '@/actions/stores/get-user-stores.action'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn, getStoreUrl } from '@/lib/utils'
@@ -68,11 +69,23 @@ export default function OnboardingPage() {
   const [placePreview, setPlacePreview] = useState<PlacePreview | null>(null)
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
   const [selectedCoverIndex, setSelectedCoverIndex] = useState(0)
+  const [hasStores, setHasStores] = useState(false)
 
   const { executeAsync: searchPlaces } = useAction(searchPlacesAction)
   const { executeAsync: getPlacePreview } = useAction(getPlacePreviewAction)
   const { executeAsync: createStore } = useAction(createStoreFromGoogleAction)
+  const { executeAsync: getUserStores } = useAction(getUserStoresAction)
   const { handleActionError } = usePlanLimitRedirect()
+
+  useEffect(() => {
+    async function checkUserStores() {
+      const result = await getUserStores()
+      if (result?.data && result.data.length > 0) {
+        setHasStores(true)
+      }
+    }
+    checkUserStores()
+  }, [getUserStores])
 
   useEffect(() => {
     if (step === 'creating') {
@@ -161,6 +174,7 @@ export default function OnboardingPage() {
               results={results}
               isSearching={isSearching}
               hasSearched={hasSearched}
+              hasStores={hasStores}
               onSearch={handleSearch}
               onSelectPlace={handleSelectPlace}
             />
@@ -207,6 +221,7 @@ function SearchStep({
   results,
   isSearching,
   hasSearched,
+  hasStores,
   onSearch,
   onSelectPlace,
 }: {
@@ -215,6 +230,7 @@ function SearchStep({
   results: PlaceResult[]
   isSearching: boolean
   hasSearched: boolean
+  hasStores: boolean
   onSearch: () => void
   onSelectPlace: (place: PlaceResult) => void
 }) {
@@ -226,13 +242,15 @@ function SearchStep({
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="w-full max-w-xl"
     >
-      <Link
-        href="/painel"
-        className="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-      >
-        <IconArrowLeft className="h-4 w-4" />
-        Voltar para minhas lojas
-      </Link>
+      {hasStores && (
+        <Link
+          href="/painel"
+          className="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+        >
+          <IconArrowLeft className="h-4 w-4" />
+          Voltar para minhas lojas
+        </Link>
+      )}
 
       <div className="mb-10 text-center">
         <motion.div
@@ -488,7 +506,7 @@ function ConfirmStep({
                         <img
                           src={photo}
                           alt={`Foto ${i + 1}`}
-                          className="h-20 w-20 object-cover"
+                          className="h-28 w-28 object-cover sm:h-32 sm:w-32"
                         />
                         {isSelected && (
                           <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent" />
@@ -513,7 +531,7 @@ function ConfirmStep({
                     {preview.category}
                   </span>
                 )}
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                <h2 className="line-clamp-2 text-lg font-semibold text-slate-900 dark:text-white" title={preview.name}>
                   {preview.name}
                 </h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400">

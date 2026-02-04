@@ -213,9 +213,13 @@ function VisitorContent({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Seu nome</FormLabel>
+                <FormLabel className="text-slate-700 dark:text-slate-300">Seu nome</FormLabel>
                 <FormControl>
-                  <Input placeholder="Como podemos te chamar?" {...field} />
+                  <Input
+                    placeholder="Como podemos te chamar?"
+                    className="bg-white text-slate-900 dark:bg-slate-800 dark:text-white"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -227,7 +231,7 @@ function VisitorContent({
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Seu telefone</FormLabel>
+                <FormLabel className="text-slate-700 dark:text-slate-300">Seu telefone</FormLabel>
                 <FormControl>
                   <PatternFormat
                     format="(##) #####-####"
@@ -236,6 +240,7 @@ function VisitorContent({
                     onValueChange={(values) => field.onChange(values.formattedValue)}
                     customInput={Input}
                     placeholder="(11) 99999-9999"
+                    className="bg-white text-slate-900 dark:bg-slate-800 dark:text-white"
                   />
                 </FormControl>
                 <FormMessage />
