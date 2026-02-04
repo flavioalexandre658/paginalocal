@@ -15,6 +15,14 @@ export const auth = betterAuth({
   }),
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL,
+  trustedOrigins: [
+    'http://localhost:3000',
+    'https://paginalocal.com.br',
+    'https://www.paginalocal.com.br',
+    'https://paginalocal.com',
+    'https://www.paginalocal.com',
+    process.env.NEXT_PUBLIC_APP_URL || '',
+  ].filter(Boolean),
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
