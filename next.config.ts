@@ -33,15 +33,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  redirects: async () => {
-    return [
-      {
-        source: '/painel/:storeSlug/configuracoes',
-        destination: '/painel/:storeSlug/configuracoes/loja',
-        permanent: true,
-      },
-    ]
-  },
 }
 
 export default nextConfig
