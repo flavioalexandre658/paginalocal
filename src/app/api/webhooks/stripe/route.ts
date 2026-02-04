@@ -6,6 +6,7 @@ import { subscription, plan, store } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import type Stripe from 'stripe'
 import type { SubscriptionStatus } from '@/db/schema'
+import { notifyStoreActivated } from '@/lib/google-indexing'
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -140,13 +141,18 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   await db.insert(subscription).values(subscriptionData)
 
   if (storeSlug) {
-    await db
+    const [activatedStore] = await db
       .update(store)
       .set({
         isActive: true,
         updatedAt: new Date(),
       })
       .where(eq(store.slug, storeSlug))
+      .returning({ customDomain: store.customDomain })
+
+    notifyStoreActivated(storeSlug, activatedStore?.customDomain).catch((error) => {
+      console.error('Failed to notify Google Indexing API:', error)
+    })
   }
 
   console.log(`Subscription created for user ${userId} with plan ${selectedPlan.name}`)

@@ -28,7 +28,7 @@ interface DynamicTip {
   priority: 'high' | 'medium' | 'low'
   actionUrl: string
   actionLabel: string
-  icon: 'photo' | 'description' | 'publish' | 'faq' | 'services' | 'domain' | 'seo'
+  icon: 'photo' | 'description' | 'publish' | 'faq' | 'services' | 'domain' | 'seo' | 'gmb'
 }
 
 export const getStoreDashboardAction = authActionClient
@@ -284,6 +284,18 @@ export const getStoreDashboardAction = authActionClient
         actionUrl: `/painel/${storeSlug}/editar?tab=seo`,
         actionLabel: 'Editar SEO',
         icon: 'seo',
+      })
+    }
+
+    if (isPublished && storeData.googlePlaceId) {
+      dynamicTips.push({
+        id: 'gmb',
+        title: 'Acelere sua indexação no Google',
+        description: 'Adicione o link do seu site no campo "Website" do seu perfil no Google Meu Negócio para indexação mais rápida.',
+        priority: 'medium',
+        actionUrl: `https://business.google.com/locations`,
+        actionLabel: 'Abrir Google Meu Negócio',
+        icon: 'gmb',
       })
     }
 

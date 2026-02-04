@@ -19,7 +19,7 @@ import {
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 
-type TipIcon = 'photo' | 'description' | 'publish' | 'faq' | 'services' | 'domain' | 'seo'
+type TipIcon = 'photo' | 'description' | 'publish' | 'faq' | 'services' | 'domain' | 'seo' | 'gmb'
 
 interface DynamicTip {
   id: string
@@ -45,6 +45,7 @@ const iconMap: Record<TipIcon, React.ReactNode> = {
   services: <IconListDetails className="h-4 w-4" />,
   domain: <IconWorld className="h-4 w-4" />,
   seo: <IconSearch className="h-4 w-4" />,
+  gmb: <IconBrandGoogle className="h-4 w-4" />,
 }
 
 const priorityColors: Record<string, string> = {
