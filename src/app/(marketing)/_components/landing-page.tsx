@@ -31,8 +31,9 @@ import {
   IconDental,
   IconTrophy,
 } from '@tabler/icons-react'
-import { Logo } from '@/components/shared/logo'
 import { cn } from '@/lib/utils'
+import { MarketingHeader } from './marketing-header'
+import { MarketingFooter } from './marketing-footer'
 
 const revealVariants = {
   hidden: { opacity: 0, y: 60 },
@@ -82,7 +83,7 @@ export function LandingPage() {
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
-      <Header />
+      <MarketingHeader />
       <HeroSection />
       <SocialProofBar />
       <StepsSection />
@@ -91,38 +92,8 @@ export function LandingPage() {
       <ComparisonSection />
       <NichesSection />
       <CTASection />
-      <Footer />
+      <MarketingFooter />
     </main>
-  )
-}
-
-function Header() {
-  return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/40 bg-white/70 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Logo size="sm" href="/" />
-        <nav className="flex items-center gap-2 sm:gap-3">
-          <Link
-            href="/planos"
-            className="hidden rounded-lg px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white sm:block"
-          >
-            Planos
-          </Link>
-          <Link
-            href="/entrar"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white sm:px-4"
-          >
-            Entrar
-          </Link>
-          <Link
-            href="/cadastro"
-            className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-md shadow-primary/20 transition-all hover:shadow-lg hover:shadow-primary/30 sm:px-4"
-          >
-            Começar
-          </Link>
-        </nav>
-      </div>
-    </header>
   )
 }
 
@@ -855,30 +826,3 @@ function CTASection() {
   )
 }
 
-function Footer() {
-  return (
-    <footer className="relative border-t border-slate-200/40 bg-slate-50/50 py-12 dark:border-slate-700/40 dark:bg-slate-900/50">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-          <Logo size="sm" href="/" />
-          
-          <nav className="flex flex-wrap items-center justify-center gap-6">
-            <Link href="/planos" className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-              Planos
-            </Link>
-            <Link href="/entrar" className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-              Entrar
-            </Link>
-            <Link href="/cadastro" className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-              Criar conta
-            </Link>
-          </nav>
-
-          <p className="text-sm text-slate-400">
-            &copy; {new Date().getFullYear()} Página Local
-          </p>
-        </div>
-      </div>
-    </footer>
-  )
-}

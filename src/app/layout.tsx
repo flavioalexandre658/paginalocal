@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { QueryProvider } from '@/components/providers/query-provider'
+import { CookieConsent } from '@/components/shared/cookie-consent'
 
 export const metadata: Metadata = {
   title: {
@@ -96,6 +97,7 @@ export default function RootLayout({
             }}
           />
           {children}
+          <CookieConsent />
         </QueryProvider>
       </body>
     </html>
