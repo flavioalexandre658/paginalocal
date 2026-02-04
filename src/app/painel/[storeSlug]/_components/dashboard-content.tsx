@@ -15,7 +15,6 @@ import {
 
 import { getStoreDashboardAction } from '@/actions/stores/get-store-dashboard.action'
 import { SyncGoogleButton } from './sync-google-button'
-import { HealthScoreCard } from './health-score-card'
 import { ClicksChartCard } from './clicks-chart-card'
 import { ReviewsWidget } from './reviews-widget'
 import { DynamicTipsCard } from './dynamic-tips-card'
@@ -67,7 +66,7 @@ export function DashboardContent({ storeSlug }: DashboardContentProps) {
               </div>
             </div>
             <Link
-              href={`/painel/${storeSlug}/ativar`}
+              href={`/planos`}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-amber-500/30 transition-all hover:shadow-xl hover:shadow-amber-500/40"
             >
               <IconRocket className="h-4 w-4" />
@@ -109,24 +108,7 @@ export function DashboardContent({ storeSlug }: DashboardContentProps) {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <HealthScoreCard
-            score={data.healthScore}
-            items={data.healthScoreItems}
-            storeSlug={storeSlug}
-          />
-        </div>
-        <div>
-          <ClicksChartCard
-            totalThisMonth={data.stats.totalLeadsThisMonth}
-            totalLastWeek={data.stats.totalLeadsLastWeek}
-            leadsPerDay={data.stats.leadsPerDay}
-          />
-        </div>
-      </div>
-
-      <div className="mt-6 grid gap-6 md:grid-cols-3">
+      <div className="my-6 grid gap-6 md:grid-cols-3">
         <StatsCard
           icon={<IconMessageCircle className="h-5 w-5" />}
           iconBg="bg-gradient-to-br from-green-500/20 to-green-500/5"
@@ -150,6 +132,23 @@ export function DashboardContent({ storeSlug }: DashboardContentProps) {
         />
       </div>
 
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <RecentLeadsCard
+            leads={data.recentLeads}
+            isDraft={isDraft}
+          />
+        </div>
+        <ClicksChartCard
+          totalThisMonth={data.stats.totalLeadsThisMonth}
+          totalLastWeek={data.stats.totalLeadsLastWeek}
+          leadsPerDay={data.stats.leadsPerDay}
+        />
+      </div>
+
+
+
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <DynamicTipsCard
           tips={data.dynamicTips}
@@ -164,12 +163,6 @@ export function DashboardContent({ storeSlug }: DashboardContentProps) {
         />
       </div>
 
-      <div className="mt-6">
-        <RecentLeadsCard
-          leads={data.recentLeads}
-          isDraft={isDraft}
-        />
-      </div>
     </main>
   )
 }

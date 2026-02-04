@@ -30,6 +30,7 @@ export const store = pgTable('store', {
   googleReviewsCount: integer('google_reviews_count').default(0),
 
   logoUrl: text('logo_url'),
+  faviconUrl: text('favicon_url'),
   coverUrl: text('cover_url'),
   primaryColor: varchar('primary_color', { length: 7 }).default('#3b82f6'),
   openingHours: jsonb('opening_hours'),

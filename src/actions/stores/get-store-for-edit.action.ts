@@ -55,6 +55,7 @@ export const getStoreForEditAction = authActionClient
         latitude: storeData.latitude,
         longitude: storeData.longitude,
         logoUrl: storeData.logoUrl,
+        faviconUrl: storeData.faviconUrl,
         coverUrl: storeData.coverUrl,
         primaryColor: storeData.primaryColor,
         openingHours: storeData.openingHours as Record<string, string> | null,

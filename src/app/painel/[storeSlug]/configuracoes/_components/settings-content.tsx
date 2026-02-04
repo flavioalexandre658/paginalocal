@@ -9,7 +9,6 @@ import {
   IconCreditCard,
   IconWorld,
   IconPlugConnected,
-  IconBell,
 } from '@tabler/icons-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -17,7 +16,6 @@ import { ProfileTab } from './profile-tab'
 import { BillingTab } from './billing-tab'
 import { DomainTab } from './domain-tab'
 import { IntegrationsTab } from './integrations-tab'
-import { NotificationsTab } from './notifications-tab'
 
 interface SettingsContentProps {
   storeSlug: string
@@ -29,7 +27,6 @@ const TABS = [
   { id: 'assinatura', label: 'Assinatura', icon: IconCreditCard },
   { id: 'dominio', label: 'Domínio', icon: IconWorld },
   { id: 'integracoes', label: 'Integrações', icon: IconPlugConnected },
-  { id: 'notificacoes', label: 'Notificações', icon: IconBell },
 ]
 
 export function SettingsContent({ storeSlug, initialTab }: SettingsContentProps) {
@@ -61,12 +58,12 @@ export function SettingsContent({ storeSlug, initialTab }: SettingsContentProps)
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 gap-2 bg-transparent p-0">
+        <TabsList className="flex w-full flex-wrap gap-2 bg-transparent p-0 sm:grid sm:grid-cols-4">
           {TABS.map((tab) => (
             <TabsTrigger
               key={tab.id}
               value={tab.id}
-              className="flex items-center gap-2 rounded-xl border border-slate-200/60 bg-white/70 px-4 py-3 text-sm font-medium text-slate-600 shadow-sm backdrop-blur-sm transition-all data-[state=active]:border-primary/30 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 dark:border-slate-700/60 dark:bg-slate-800/70 dark:text-slate-300"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200/60 bg-white/70 px-3 py-2.5 text-sm font-medium text-slate-600 shadow-sm backdrop-blur-sm transition-all data-[state=active]:border-primary/30 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 dark:border-slate-700/60 dark:bg-slate-800/70 dark:text-slate-300 sm:px-4 sm:py-3"
             >
               <tab.icon className="h-4 w-4" />
               <span className="hidden sm:inline">{tab.label}</span>
@@ -74,7 +71,7 @@ export function SettingsContent({ storeSlug, initialTab }: SettingsContentProps)
           ))}
         </TabsList>
 
-        <div className="rounded-2xl border border-slate-200/40 bg-white/70 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50">
+        <div className="rounded-2xl border border-slate-200/40 bg-white/70 p-4 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50 sm:p-6">
           <TabsContent value="perfil" className="mt-0">
             <ProfileTab />
           </TabsContent>
@@ -89,10 +86,6 @@ export function SettingsContent({ storeSlug, initialTab }: SettingsContentProps)
 
           <TabsContent value="integracoes" className="mt-0">
             <IntegrationsTab storeSlug={storeSlug} />
-          </TabsContent>
-
-          <TabsContent value="notificacoes" className="mt-0">
-            <NotificationsTab />
           </TabsContent>
         </div>
       </Tabs>

@@ -1,7 +1,20 @@
 'use client'
 
-import { IconPhoto, IconUpload, IconTrash, IconStar } from '@tabler/icons-react'
+import { useState, useRef } from 'react'
+import { useAction } from 'next-safe-action/hooks'
+import { motion, AnimatePresence } from 'framer-motion'
+import toast from 'react-hot-toast'
+import {
+  IconPhoto,
+  IconUpload,
+  IconTrash,
+  IconStar,
+  IconLoader2,
+  IconCheck,
+} from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
+import { uploadStoreImageAction } from '@/actions/uploads/upload-store-image.action'
+import { deleteStoreImageAction } from '@/actions/uploads/delete-store-image.action'
 
 interface Image {
   id: string
@@ -20,9 +33,86 @@ interface GalleryTabProps {
   storeSlug: string
 }
 
-export function GalleryTab({ store, images, storeSlug }: GalleryTabProps) {
+export function GalleryTab({ store, images: initialImages, storeSlug }: GalleryTabProps) {
+  const [images, setImages] = useState<Image[]>(initialImages)
+  const heroInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
+
+  const { executeAsync: uploadImage, isExecuting: isUploading } = useAction(uploadStoreImageAction)
+  const { executeAsync: deleteImage, isExecuting: isDeleting } = useAction(deleteStoreImageAction)
+
+  const [uploadingRole, setUploadingRole] = useState<'hero' | 'gallery' | null>(null)
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null)
+
   const heroImage = images.find((img) => img.role === 'hero')
   const galleryImages = images.filter((img) => img.role !== 'hero')
+
+  async function handleFileUpload(
+    event: React.ChangeEvent<HTMLInputElement>,
+    role: 'hero' | 'gallery'
+  ) {
+    const files = event.target.files
+    if (!files || files.length === 0) return
+
+    setUploadingRole(role)
+
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith('image/')) {
+        toast.error(`${file.name} não é uma imagem válida`)
+        continue
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`${file.name} deve ter no máximo 10MB`)
+        continue
+      }
+
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const result = await uploadImage({
+        storeId: store.id,
+        file: formData,
+        role,
+      })
+
+      if (result?.data?.image) {
+        setImages((prev) => {
+          if (role === 'hero') {
+            return [
+              result.data!.image as Image,
+              ...prev.filter((img) => img.role !== 'hero'),
+            ]
+          }
+          return [...prev, result.data!.image as Image]
+        })
+        toast.success('Imagem enviada com sucesso!')
+      } else if (result?.serverError) {
+        toast.error(result.serverError)
+      }
+    }
+
+    setUploadingRole(null)
+    event.target.value = ''
+  }
+
+  async function handleDeleteImage(imageId: string) {
+    setDeletingImageId(imageId)
+
+    const result = await deleteImage({
+      imageId,
+      storeId: store.id,
+    })
+
+    if (result?.data?.success) {
+      setImages((prev) => prev.filter((img) => img.id !== imageId))
+      toast.success('Imagem removida!')
+    } else if (result?.serverError) {
+      toast.error(result.serverError)
+    }
+
+    setDeletingImageId(null)
+  }
 
   return (
     <div className="space-y-6">
@@ -44,6 +134,14 @@ export function GalleryTab({ store, images, storeSlug }: GalleryTabProps) {
             </h3>
           </div>
 
+          <input
+            ref={heroInputRef}
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleFileUpload(e, 'hero')}
+            className="hidden"
+          />
+
           {heroImage || store.coverUrl ? (
             <div className="relative aspect-video max-w-xl overflow-hidden rounded-xl border border-slate-200/60 dark:border-slate-700/60">
               <img
@@ -51,23 +149,61 @@ export function GalleryTab({ store, images, storeSlug }: GalleryTabProps) {
                 alt="Imagem de destaque"
                 className="h-full w-full object-cover"
               />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity hover:opacity-100">
-                <button className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-lg transition-transform hover:scale-105">
-                  <IconUpload className="h-4 w-4" />
+              <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/50 opacity-0 transition-opacity hover:opacity-100">
+                <button
+                  onClick={() => heroInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow-lg transition-transform hover:scale-105 disabled:opacity-50"
+                >
+                  {uploadingRole === 'hero' ? (
+                    <IconLoader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <IconUpload className="h-4 w-4" />
+                  )}
                   Trocar imagem
                 </button>
+                {heroImage && (
+                  <button
+                    onClick={() => handleDeleteImage(heroImage.id)}
+                    disabled={isDeleting}
+                    className="flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-lg transition-transform hover:scale-105 disabled:opacity-50"
+                  >
+                    {deletingImageId === heroImage.id ? (
+                      <IconLoader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <IconTrash className="h-4 w-4" />
+                    )}
+                    Remover
+                  </button>
+                )}
               </div>
             </div>
           ) : (
-            <div className="flex aspect-video max-w-xl flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50">
-              <IconPhoto className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-              <p className="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400">
-                Nenhuma imagem de destaque
-              </p>
-              <button className="mt-3 flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30">
-                <IconUpload className="h-4 w-4" />
-                Fazer upload
-              </button>
+            <div
+              onClick={() => !isUploading && heroInputRef.current?.click()}
+              className={cn(
+                "flex aspect-video max-w-xl cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 transition-colors hover:border-primary/50 hover:bg-primary/5 dark:border-slate-700 dark:bg-slate-800/50",
+                isUploading && "pointer-events-none opacity-50"
+              )}
+            >
+              {uploadingRole === 'hero' ? (
+                <>
+                  <IconLoader2 className="h-12 w-12 animate-spin text-primary" />
+                  <p className="mt-2 text-sm font-medium text-primary">
+                    Enviando imagem...
+                  </p>
+                </>
+              ) : (
+                <>
+                  <IconPhoto className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+                  <p className="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400">
+                    Clique para adicionar imagem de destaque
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Recomendado: 1200x675 pixels
+                  </p>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -80,44 +216,87 @@ export function GalleryTab({ store, images, storeSlug }: GalleryTabProps) {
                 Galeria ({galleryImages.length} fotos)
               </h3>
             </div>
-            <button className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20">
-              <IconUpload className="h-4 w-4" />
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => handleFileUpload(e, 'gallery')}
+              className="hidden"
+            />
+            <button
+              onClick={() => galleryInputRef.current?.click()}
+              disabled={isUploading}
+              className="flex items-center gap-2 rounded-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
+            >
+              {uploadingRole === 'gallery' ? (
+                <IconLoader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <IconUpload className="h-4 w-4" />
+              )}
               Adicionar fotos
             </button>
           </div>
 
           {galleryImages.length > 0 ? (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {galleryImages.map((image) => (
-                <div
-                  key={image.id}
-                  className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200/60 dark:border-slate-700/60"
-                >
-                  <img
-                    src={image.url}
-                    alt={image.alt || 'Foto da galeria'}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
-                    <button className="rounded-lg bg-white p-2 text-slate-900 shadow-lg transition-transform hover:scale-110">
-                      <IconStar className="h-4 w-4" />
-                    </button>
-                    <button className="rounded-lg bg-red-500 p-2 text-white shadow-lg transition-transform hover:scale-110">
-                      <IconTrash className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+              <AnimatePresence>
+                {galleryImages.map((image) => (
+                  <motion.div
+                    key={image.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200/60 dark:border-slate-700/60"
+                  >
+                    <img
+                      src={image.url}
+                      alt={image.alt || 'Foto da galeria'}
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                      <button
+                        onClick={() => handleDeleteImage(image.id)}
+                        disabled={isDeleting}
+                        className="rounded-lg bg-red-500 p-2 text-white shadow-lg transition-transform hover:scale-110 disabled:opacity-50"
+                      >
+                        {deletingImageId === image.id ? (
+                          <IconLoader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <IconTrash className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 py-12 dark:border-slate-700 dark:bg-slate-800/50">
-              <IconPhoto className="h-12 w-12 text-slate-300 dark:text-slate-600" />
-              <p className="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400">
-                Nenhuma foto na galeria
-              </p>
-              <p className="mt-1 text-xs text-slate-400">
-                Adicione fotos para mostrar seu trabalho
-              </p>
+            <div
+              onClick={() => !isUploading && galleryInputRef.current?.click()}
+              className={cn(
+                "flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 py-12 transition-colors hover:border-primary/50 hover:bg-primary/5 dark:border-slate-700 dark:bg-slate-800/50",
+                isUploading && "pointer-events-none opacity-50"
+              )}
+            >
+              {uploadingRole === 'gallery' ? (
+                <>
+                  <IconLoader2 className="h-12 w-12 animate-spin text-primary" />
+                  <p className="mt-2 text-sm font-medium text-primary">
+                    Enviando imagens...
+                  </p>
+                </>
+              ) : (
+                <>
+                  <IconPhoto className="h-12 w-12 text-slate-300 dark:text-slate-600" />
+                  <p className="mt-2 text-sm font-medium text-slate-500 dark:text-slate-400">
+                    Clique para adicionar fotos
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400">
+                    Você pode selecionar múltiplas fotos
+                  </p>
+                </>
+              )}
             </div>
           )}
         </div>

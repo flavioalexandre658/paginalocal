@@ -169,7 +169,7 @@ export const getStoreDashboardAction = authActionClient
       description: isPublished ? 'Visível no Google' : 'Em rascunho',
       score: isPublished ? 20 : 0,
       maxScore: 20,
-      actionUrl: `/painel/${storeSlug}/ativar`,
+      actionUrl: `/planos`,
       actionLabel: 'Publicar site',
       completed: isPublished,
     })
@@ -180,7 +180,7 @@ export const getStoreDashboardAction = authActionClient
         title: 'Publique seu site',
         description: 'Seu site está invisível para clientes. Publique agora para começar a aparecer no Google.',
         priority: 'high',
-        actionUrl: `/painel/${storeSlug}/ativar`,
+        actionUrl: `/planos`,
         actionLabel: 'Publicar agora',
         icon: 'publish',
       })

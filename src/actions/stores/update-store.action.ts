@@ -17,6 +17,7 @@ const updateStoreSchema = z.object({
   state: z.string().length(2).optional(),
   zipCode: z.string().optional(),
   logoUrl: z.string().url().optional().nullable(),
+  faviconUrl: z.string().url().optional().nullable(),
   coverUrl: z.string().url().optional().nullable(),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   openingHours: z.record(z.string(), z.string()).optional().nullable(),
