@@ -11,7 +11,7 @@ export function AreasSection({ neighborhoods, city, state, category }: AreasSect
   if (!neighborhoods || neighborhoods.length === 0) return null
 
   return (
-    <section className="relative overflow-hidden py-16 md:py-20">
+    <section className="relative overflow-hidden py-8 md:py-10">
       <div className="absolute inset-0 bg-gradient-to-b from-slate-100 via-slate-50 to-white dark:from-slate-800/30 dark:via-slate-900/50 dark:to-slate-950" />
 
       <div className="container relative z-10 mx-auto px-4">

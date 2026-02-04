@@ -41,7 +41,7 @@ export function TestimonialsSection({ testimonials, storeName }: TestimonialsSec
   }
 
   return (
-    <section className="relative overflow-hidden py-16 md:py-20">
+    <section className="relative overflow-hidden py-8 md:py-10">
       <div className="absolute inset-0 bg-gradient-to-b from-slate-100 via-slate-50 to-white dark:from-slate-800/30 dark:via-slate-900/50 dark:to-slate-950" />
 
       <div className="container relative z-10 mx-auto px-4">
@@ -120,8 +120,8 @@ export function TestimonialsSection({ testimonials, storeName }: TestimonialsSec
                   key={i}
                   onClick={() => goToPage(i)}
                   className={`flex h-10 min-w-10 items-center justify-center rounded-full px-3 text-sm font-medium transition-all ${currentPage === i
-                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                      : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-700'
+                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-700'
                     }`}
                   aria-label={`Ir para página ${i + 1}`}
                   aria-current={currentPage === i ? 'page' : undefined}

@@ -53,7 +53,7 @@ export function ContactSection({ store, isOwner = false }: ContactSectionProps) 
   const openingHours = store.openingHours as Record<string, string> | null
 
   return (
-    <section className="relative py-16 md:py-20">
+    <section className="relative py-8 md:py-10">
       <div className="container mx-auto px-4">
         <div className="mb-16 text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-5 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
