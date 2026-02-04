@@ -49,7 +49,7 @@ export const uploadStoreImageAction = authActionClient
 
     const optimizedBuffer = await sharp(buffer)
       .resize(dimensions.width, dimensions.height, { fit: 'cover' })
-      .webp({ quality: 85 })
+      .webp({ quality: 65 })
       .toBuffer()
 
     const metadata = await sharp(optimizedBuffer).metadata()

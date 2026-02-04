@@ -40,6 +40,7 @@ export function HeroSection({ store, heroImageAlt, isOwner = false }: HeroSectio
             alt={heroImageAlt || `Fachada da ${store.name} em ${store.city}`}
             fill
             priority
+            fetchPriority="high"
             sizes="100vw"
             className="object-cover"
           />
