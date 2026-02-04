@@ -1,4 +1,6 @@
+import { cn } from '@/lib/utils'
 import { IconMapPin } from '@tabler/icons-react'
+import Image from 'next/image'
 
 interface SiteFooterProps {
   storeName: string
@@ -30,9 +32,13 @@ export function SiteFooter({ storeName, city, state }: SiteFooterProps) {
             href="https://paginalocal.com.br"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            className="text-sm inline-flex items-center gap-2 text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
           >
-            Criado com Página Local
+            Criado com <Image src="/assets/images/icon/favicon.ico" alt="Página Local" width={16} height={16} />     <span
+              className={cn(
+                'font-semibold tracking-tight text-slate-900 dark:text-white ml-[-4px]',
+              )}
+            >Página Local</span>
           </a>
         </div>
       </div>
