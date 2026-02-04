@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { IconPhone } from '@tabler/icons-react'
 import { getWhatsAppUrl, getPhoneUrl, cn } from '@/lib/utils'
 import { DraftContactModal } from './draft-contact-modal'
+import { useTrackClick } from '@/hooks/use-track-click'
 
 interface ContactButtonProps {
   store: {
@@ -30,16 +31,27 @@ export function ContactButton({
   children,
 }: ContactButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const { trackClick } = useTrackClick()
 
   const phoneNumber = store.phone || store.whatsapp
   const whatsappLink = getWhatsAppUrl(store.whatsapp, 'Olá! Vi seu site e gostaria de mais informações.')
   const phoneLink = getPhoneUrl(phoneNumber)
 
-  function handleClick(e: React.MouseEvent) {
+  async function handleClick(e: React.MouseEvent) {
     if (!store.isActive) {
       e.preventDefault()
       setIsModalOpen(true)
+      return
     }
+
+    const touchpoint = type === 'whatsapp' ? 'hero_whatsapp' : 'hero_call'
+    const source = type === 'whatsapp' ? 'whatsapp' : 'call'
+
+    trackClick({
+      storeId: store.id,
+      source,
+      touchpoint,
+    })
   }
 
   const variantStyles = {

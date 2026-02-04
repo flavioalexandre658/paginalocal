@@ -313,16 +313,16 @@ export function SeoTab({ store }: SeoTabProps) {
                         {...field}
                       />
                     </FormControl>
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <FormDescription>
                         Ideal: 120-155 caracteres. Descrição abaixo do título no Google.
                       </FormDescription>
                       <button
                         type="button"
-                        className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+                        className="flex shrink-0 items-center gap-1.5 self-start rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20 sm:self-auto"
                       >
-                        <IconSparkles className="h-3.5 w-3.5" />
-                        Gerar com IA
+                        <IconSparkles className="h-3.5 w-3.5 shrink-0" />
+                        <span className="whitespace-nowrap">Gerar com IA</span>
                       </button>
                     </div>
                     <FormMessage />

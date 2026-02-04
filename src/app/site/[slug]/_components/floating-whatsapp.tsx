@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { trackClickAction } from '@/actions/leads/track-click.action'
 import { getWhatsAppUrl } from '@/lib/utils'
 import { DraftContactModal } from '@/components/site/draft-contact-modal'
+import { useTrackClick } from '@/hooks/use-track-click'
 
 interface FloatingWhatsAppProps {
   store: {
@@ -19,6 +19,7 @@ interface FloatingWhatsAppProps {
 export function FloatingWhatsApp({ store, isOwner = false }: FloatingWhatsAppProps) {
   const [showMobileBar, setShowMobileBar] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const { trackClick } = useTrackClick()
   const whatsappLink = getWhatsAppUrl(store.whatsapp, `Olá! Vi o site de ${store.name} e gostaria de mais informações.`)
 
   useEffect(() => {
@@ -39,13 +40,10 @@ export function FloatingWhatsApp({ store, isOwner = false }: FloatingWhatsAppPro
       return
     }
 
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-
-    await trackClickAction({
+    trackClick({
       storeId: store.id,
       source: 'whatsapp',
-      device: isMobile ? 'mobile' : 'desktop',
-      referrer: document.referrer || undefined,
+      touchpoint: 'floating_whatsapp',
     })
   }
 

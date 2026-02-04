@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { getPhoneUrl } from '@/lib/utils'
 import { DraftContactModal } from '@/components/site/draft-contact-modal'
+import { useTrackClick } from '@/hooks/use-track-click'
 
 interface PhoneContactLinkProps {
   store: {
@@ -18,12 +19,20 @@ interface PhoneContactLinkProps {
 
 export function PhoneContactLink({ store, isOwner = false, formattedPhone }: PhoneContactLinkProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const { trackClick } = useTrackClick()
 
-  function handleClick(e: React.MouseEvent) {
+  async function handleClick(e: React.MouseEvent) {
     if (!store.isActive) {
       e.preventDefault()
       setIsModalOpen(true)
+      return
     }
+
+    trackClick({
+      storeId: store.id,
+      source: 'call',
+      touchpoint: 'contact_call',
+    })
   }
 
   return (

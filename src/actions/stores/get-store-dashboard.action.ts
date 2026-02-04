@@ -89,6 +89,10 @@ export const getStoreDashboardAction = authActionClient
           name: lead.name,
           phone: lead.phone,
           source: lead.source,
+          device: lead.device,
+          referrer: lead.referrer,
+          location: lead.location,
+          touchpoint: lead.touchpoint,
           createdAt: lead.createdAt,
           isFromBlockedSite: lead.isFromBlockedSite,
         })

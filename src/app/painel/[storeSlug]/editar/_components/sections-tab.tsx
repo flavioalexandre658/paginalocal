@@ -15,6 +15,7 @@ import {
   IconHelpCircle,
   IconMapPin,
   IconChevronDown,
+  IconChevronUp,
   IconSparkles,
 } from '@tabler/icons-react'
 
@@ -147,9 +148,32 @@ function SectionCard({
   )
 }
 
-export function SectionsTab({ store, services }: SectionsTabProps) {
+export function SectionsTab({ store, services: initialServices }: SectionsTabProps) {
   const { executeAsync, isExecuting } = useAction(updateStoreAction)
   const [openSections, setOpenSections] = useState<string[]>(['services'])
+  const [services, setServices] = useState<Service[]>(initialServices)
+
+  function moveServiceUp(index: number) {
+    if (index === 0) return
+    setServices((prev) => {
+      const newServices = [...prev]
+      const temp = newServices[index - 1]
+      newServices[index - 1] = newServices[index]
+      newServices[index] = temp
+      return newServices
+    })
+  }
+
+  function moveServiceDown(index: number) {
+    if (index === services.length - 1) return
+    setServices((prev) => {
+      const newServices = [...prev]
+      const temp = newServices[index + 1]
+      newServices[index + 1] = newServices[index]
+      newServices[index] = temp
+      return newServices
+    })
+  }
 
   const form = useForm<SectionsFormData>({
     resolver: zodResolver(sectionsFormSchema),
@@ -231,7 +255,27 @@ export function SectionsTab({ store, services }: SectionsTabProps) {
                     transition={{ delay: index * 0.05 }}
                     className="group flex items-start gap-3 rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 transition-all hover:border-primary/30 hover:bg-white dark:border-slate-700/60 dark:bg-slate-800/30 dark:hover:bg-slate-800/50"
                   >
-                    <IconGripVertical className="mt-0.5 h-5 w-5 cursor-grab text-slate-300 transition-colors group-hover:text-slate-400" />
+                    <div className="flex items-center gap-1">
+                      <IconGripVertical className="mt-0.5 hidden h-5 w-5 cursor-grab text-slate-300 transition-colors group-hover:text-slate-400 sm:block" />
+                      <div className="flex flex-col sm:hidden">
+                        <button
+                          type="button"
+                          onClick={() => moveServiceUp(index)}
+                          disabled={index === 0}
+                          className="rounded p-0.5 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600 disabled:opacity-30"
+                        >
+                          <IconChevronUp className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveServiceDown(index)}
+                          disabled={index === services.length - 1}
+                          className="rounded p-0.5 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600 disabled:opacity-30"
+                        >
+                          <IconChevronDown className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
                     <div className="flex-1">
                       <p className="font-medium text-slate-900 dark:text-white">
                         {service.name}
@@ -244,7 +288,7 @@ export function SectionsTab({ store, services }: SectionsTabProps) {
                     </div>
                     <button
                       type="button"
-                      className="rounded-lg p-2 text-slate-400 opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100 dark:hover:bg-red-950"
+                      className="rounded-lg p-2 text-slate-400 opacity-100 transition-all hover:bg-red-50 hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100 dark:hover:bg-red-950"
                     >
                       <IconTrash className="h-4 w-4" />
                     </button>
@@ -406,7 +450,7 @@ export function SectionsTab({ store, services }: SectionsTabProps) {
                                 <FormControl>
                                   <input
                                     {...field}
-                                    className="w-24 bg-transparent text-sm font-medium text-slate-700 focus:outline-none dark:text-slate-200"
+                                    className="w-24 bg-transparent text-[16px] font-medium text-slate-700 focus:outline-none dark:text-slate-200 md:text-sm"
                                     placeholder="Bairro"
                                   />
                                 </FormControl>

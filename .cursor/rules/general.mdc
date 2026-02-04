@@ -1,7 +1,7 @@
 ---
 description: Regras de arquitetura, padrões de código e stack técnica para o projeto Página Local (PGL)
 globs: **/*.{ts,tsx}
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Página Local (PGL) - Project Rules

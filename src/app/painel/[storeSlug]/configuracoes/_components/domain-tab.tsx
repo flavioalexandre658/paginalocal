@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useAction } from 'next-safe-action/hooks'
 import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import {
   IconWorld,
-  IconCheck,
   IconAlertTriangle,
   IconCopy,
   IconExternalLink,
@@ -37,6 +37,8 @@ import {
   removeDomainFromVercel,
   verifyDomainOnVercel,
 } from '@/actions/vercel/add-domain'
+import { getStoreBySlugAuthAction } from '@/actions/stores/get-store-by-slug-auth.action'
+import { updateStoreAction } from '@/actions/stores/update-store.action'
 
 const domainFormSchema = z.object({
   domain: z
@@ -73,7 +75,12 @@ export function DomainTab({ storeSlug }: DomainTabProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
   const [isRemoving, setIsRemoving] = useState(false)
+  const [isLoadingStore, setIsLoadingStore] = useState(true)
   const [domainConfig, setDomainConfig] = useState<DomainConfig | null>(null)
+  const [storeId, setStoreId] = useState<string | null>(null)
+
+  const { executeAsync: fetchStore } = useAction(getStoreBySlugAuthAction)
+  const { executeAsync: updateStore } = useAction(updateStoreAction)
 
   const form = useForm<DomainFormData>({
     resolver: zodResolver(domainFormSchema),
@@ -82,12 +89,67 @@ export function DomainTab({ storeSlug }: DomainTabProps) {
     },
   })
 
+  useEffect(() => {
+    async function loadStore() {
+      setIsLoadingStore(true)
+
+      const result = await fetchStore({ slug: storeSlug })
+
+      if (result?.data) {
+        setStoreId(result.data.id)
+
+        if (result.data.customDomain) {
+          const configResult = await getDomainConfigFromVercel(result.data.customDomain)
+
+          if (configResult.success && configResult.data) {
+            setDomainConfig({
+              name: configResult.data.name,
+              verified: configResult.data.verified,
+              misconfigured: configResult.data.misconfigured,
+              configuredBy: configResult.data.configuredBy,
+              intendedRecords: configResult.data.intendedRecords || [
+                { type: 'A', host: '@', value: '76.76.21.21' },
+              ],
+            })
+          } else {
+            setDomainConfig({
+              name: result.data.customDomain,
+              verified: false,
+              misconfigured: true,
+              intendedRecords: [{ type: 'A', host: '@', value: '76.76.21.21' }],
+            })
+          }
+        }
+      }
+
+      setIsLoadingStore(false)
+    }
+
+    loadStore()
+  }, [storeSlug, fetchStore])
+
   async function onSubmit(data: DomainFormData) {
+    if (!storeId) {
+      toast.error('Loja não encontrada')
+      return
+    }
+
     setIsLoading(true)
 
     const result = await addDomainToVercel(data.domain)
 
     if (result.success) {
+      const storeResult = await updateStore({
+        storeId,
+        customDomain: data.domain,
+      })
+
+      if (!storeResult?.data) {
+        toast.error('Erro ao salvar domínio')
+        setIsLoading(false)
+        return
+      }
+
       toast.success('Domínio adicionado! Configure o DNS abaixo.')
 
       const configResult = await getDomainConfigFromVercel(data.domain)
@@ -150,7 +212,7 @@ export function DomainTab({ storeSlug }: DomainTabProps) {
   }
 
   async function handleRemoveDomain() {
-    if (!domainConfig) return
+    if (!domainConfig || !storeId) return
 
     const confirmed = window.confirm(
       `Tem certeza que deseja remover o domínio ${domainConfig.name}?`
@@ -163,6 +225,11 @@ export function DomainTab({ storeSlug }: DomainTabProps) {
     const result = await removeDomainFromVercel(domainConfig.name)
 
     if (result.success) {
+      await updateStore({
+        storeId,
+        customDomain: null,
+      })
+
       toast.success('Domínio removido')
       setDomainConfig(null)
     } else {
@@ -175,6 +242,19 @@ export function DomainTab({ storeSlug }: DomainTabProps) {
   function copyToClipboard(text: string) {
     navigator.clipboard.writeText(text)
     toast.success('Copiado!')
+  }
+
+  if (isLoadingStore) {
+    return (
+      <div className="flex min-h-[300px] items-center justify-center">
+        <div className="text-center">
+          <IconLoader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+          <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">
+            Carregando...
+          </p>
+        </div>
+      </div>
+    )
   }
 
   if (!isProPlan) {

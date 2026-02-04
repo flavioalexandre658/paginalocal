@@ -33,8 +33,9 @@ interface GalleryTabProps {
   storeSlug: string
 }
 
-export function GalleryTab({ store, images: initialImages, storeSlug }: GalleryTabProps) {
+export function GalleryTab({ store, images: initialImages }: GalleryTabProps) {
   const [images, setImages] = useState<Image[]>(initialImages)
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null)
   const heroInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
@@ -248,25 +249,43 @@ export function GalleryTab({ store, images: initialImages, storeSlug }: GalleryT
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200/60 dark:border-slate-700/60"
+                    onClick={() => setSelectedImageId(selectedImageId === image.id ? null : image.id)}
                   >
                     <img
                       src={image.url}
                       alt={image.alt || 'Foto da galeria'}
-                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      className={cn(
+                        "h-full w-full object-cover transition-transform group-hover:scale-105",
+                        selectedImageId === image.id && "scale-105"
+                      )}
                     />
-                    <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div
+                      className={cn(
+                        "absolute inset-0 flex items-center justify-center gap-2 bg-black/50 transition-opacity",
+                        "opacity-0 group-hover:opacity-100",
+                        selectedImageId === image.id && "opacity-100"
+                      )}
+                    >
                       <button
-                        onClick={() => handleDeleteImage(image.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteImage(image.id)
+                        }}
                         disabled={isDeleting}
-                        className="rounded-lg bg-red-500 p-2 text-white shadow-lg transition-transform hover:scale-110 disabled:opacity-50"
+                        className="rounded-lg bg-red-500 p-3 text-white shadow-lg transition-transform hover:scale-110 disabled:opacity-50"
                       >
                         {deletingImageId === image.id ? (
-                          <IconLoader2 className="h-4 w-4 animate-spin" />
+                          <IconLoader2 className="h-5 w-5 animate-spin" />
                         ) : (
-                          <IconTrash className="h-4 w-4" />
+                          <IconTrash className="h-5 w-5" />
                         )}
                       </button>
                     </div>
+                    {selectedImageId === image.id && (
+                      <div className="absolute right-2 top-2 rounded-full bg-primary p-1">
+                        <IconCheck className="h-3 w-3 text-white" />
+                      </div>
+                    )}
                   </motion.div>
                 ))}
               </AnimatePresence>

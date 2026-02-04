@@ -25,6 +25,7 @@ const updateStoreSchema = z.object({
   heroSubtitle: z.string().max(200).optional(),
   seoTitle: z.string().max(70).optional(),
   seoDescription: z.string().max(160).optional(),
+  customDomain: z.string().max(255).optional().nullable(),
   faq: z.array(z.object({
     question: z.string(),
     answer: z.string(),

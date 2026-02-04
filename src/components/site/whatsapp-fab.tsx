@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { IconBrandWhatsapp } from '@tabler/icons-react'
 import { getWhatsAppUrl } from '@/lib/utils'
 import { DraftContactModal } from './draft-contact-modal'
+import { useTrackClick } from '@/hooks/use-track-click'
 
 interface WhatsAppFabProps {
   store: {
@@ -18,10 +19,17 @@ interface WhatsAppFabProps {
 
 export function WhatsAppFab({ store, isOwner = false }: WhatsAppFabProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const { trackClick } = useTrackClick()
   const message = `Olá! Vi o site da ${store.name} e gostaria de mais informações.`
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (store.isActive) {
+      trackClick({
+        storeId: store.id,
+        source: 'whatsapp',
+        touchpoint: 'floating_whatsapp',
+      })
+
       window.open(getWhatsAppUrl(store.whatsapp, message), '_blank')
     } else {
       setIsModalOpen(true)
