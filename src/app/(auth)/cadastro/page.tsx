@@ -1,5 +1,10 @@
+import { Metadata } from 'next'
 import { AuthCard } from '@/components/auth/auth-card'
 import { SignUpForm } from './_components/sign-up-form'
+
+export const metadata: Metadata = {
+  title: 'Criar Conta',
+}
 
 export default function SignUpPage() {
   return (

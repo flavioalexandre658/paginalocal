@@ -7,7 +7,7 @@ interface PageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'Editar Site | Página Local',
+  title: 'Editar Site',
 }
 
 export default async function EditStorePage({ params, searchParams }: PageProps) {

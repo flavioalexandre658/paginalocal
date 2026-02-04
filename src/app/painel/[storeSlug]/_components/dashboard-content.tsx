@@ -14,7 +14,6 @@ import {
 } from '@tabler/icons-react'
 
 import { getStoreDashboardAction } from '@/actions/stores/get-store-dashboard.action'
-import { SyncGoogleButton } from './sync-google-button'
 import { ClicksChartCard } from './clicks-chart-card'
 import { ReviewsWidget } from './reviews-widget'
 import { DynamicTipsCard } from './dynamic-tips-card'
@@ -87,9 +86,7 @@ export function DashboardContent({ storeSlug }: DashboardContentProps) {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {data.store.googlePlaceId && (
-            <SyncGoogleButton storeId={data.store.id} />
-          )}
+
           <Link
             href={`/painel/${storeSlug}/editar`}
             className="inline-flex items-center gap-2 rounded-xl border border-slate-200/60 bg-white/70 px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/70 dark:text-slate-200 dark:hover:bg-slate-800"

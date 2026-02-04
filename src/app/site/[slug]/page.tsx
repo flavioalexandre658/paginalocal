@@ -99,9 +99,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const ogImage = storeData.coverUrl || storeData.logoUrl
 
+  const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
+
   return {
-    title,
+    title: {
+      absolute: title,
+    },
     description,
+    icons: {
+      icon: faviconUrl,
+      apple: faviconUrl,
+    },
     keywords: [
       storeData.category,
       `${storeData.category} em ${storeData.city}`,

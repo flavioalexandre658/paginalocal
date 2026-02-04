@@ -6,7 +6,7 @@ interface PageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'Painel | Página Local',
+  title: 'Painel',
 }
 
 export default async function DashboardPage({ params }: PageProps) {

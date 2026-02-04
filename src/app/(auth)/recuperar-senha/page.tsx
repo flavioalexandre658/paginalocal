@@ -1,5 +1,10 @@
+import { Metadata } from 'next'
 import { AuthCard } from "@/components/auth/auth-card";
 import { RecoverForm } from "./_components/recover-form";
+
+export const metadata: Metadata = {
+  title: 'Recuperar Senha',
+}
 
 export default function RecoverPage() {
   return (

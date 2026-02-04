@@ -1,6 +1,11 @@
 import { Suspense } from "react";
+import { Metadata } from 'next'
 import { AuthCard } from "@/components/auth/auth-card";
 import { ResetForm } from "./_components/reset-form";
+
+export const metadata: Metadata = {
+  title: 'Redefinir Senha',
+}
 
 export default function ResetPage() {
   return (

@@ -7,7 +7,7 @@ interface PageProps {
 }
 
 export const metadata: Metadata = {
-  title: 'Configurações | Página Local',
+  title: 'Configurações',
 }
 
 export default async function SettingsPage({ params, searchParams }: PageProps) {

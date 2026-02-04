@@ -7,7 +7,7 @@ import { QueryProvider } from '@/components/providers/query-provider'
 
 export const metadata: Metadata = {
   title: {
-    default: 'Página Local | Presença Digital para Negócios Locais',
+    default: 'Presença Digital para Negócios Locais | Página Local',
     template: '%s | Página Local',
   },
   description: 'Crie a landing page do seu negócio local em minutos. SEO otimizado para aparecer no Google e converter visitantes em clientes via WhatsApp.',
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     canonical: 'https://www.paginalocal.com.br',
   },
   openGraph: {
-    title: 'Página Local | Presença Digital para Negócios Locais',
+    title: 'Presença Digital para Negócios Locais | Página Local',
     description: 'Landing pages de alta conversão para negócios locais. Apareça no Google e receba contatos via WhatsApp.',
     url: 'https://www.paginalocal.com.br',
     siteName: 'Página Local',
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Página Local | Presença Digital para Negócios Locais',
+    title: 'Presença Digital para Negócios Locais | Página Local',
     description: 'Landing pages de alta conversão para negócios locais.',
   },
   robots: {

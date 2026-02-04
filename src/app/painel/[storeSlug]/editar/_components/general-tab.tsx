@@ -32,6 +32,7 @@ const PRESET_COLORS = [
 
 import { updateStoreAction } from '@/actions/stores/update-store.action'
 import { uploadStoreImageAction } from '@/actions/uploads/upload-store-image.action'
+import { uploadFaviconAction } from '@/actions/uploads/upload-favicon.action'
 import {
   Form,
   FormControl,
@@ -69,6 +70,7 @@ interface GeneralTabProps {
 export function GeneralTab({ store, storeSlug }: GeneralTabProps) {
   const { executeAsync, isExecuting } = useAction(updateStoreAction)
   const { executeAsync: uploadImage } = useAction(uploadStoreImageAction)
+  const { executeAsync: uploadFavicon } = useAction(uploadFaviconAction)
 
   const [logoUrl, setLogoUrl] = useState<string | null>(store.logoUrl)
   const [faviconUrl, setFaviconUrl] = useState<string | null>(store.faviconUrl)
@@ -161,20 +163,13 @@ export function GeneralTab({ store, storeSlug }: GeneralTabProps) {
     const formData = new FormData()
     formData.append('file', file)
 
-    const result = await uploadImage({
+    const result = await uploadFavicon({
       storeId: store.id,
       file: formData,
-      role: 'gallery',
     })
 
     if (result?.data?.url) {
       setFaviconUrl(result.data.url)
-
-      await executeAsync({
-        storeId: store.id,
-        faviconUrl: result.data.url,
-      })
-
       toast.success('Favicon atualizado!')
     } else if (result?.serverError) {
       toast.error(result.serverError)
@@ -386,8 +381,8 @@ export function GeneralTab({ store, storeSlug }: GeneralTabProps) {
                           type="button"
                           onClick={() => field.onChange(color.value)}
                           className={`group relative h-10 w-10 rounded-xl transition-all hover:scale-110 ${field.value === color.value
-                              ? 'ring-2 ring-slate-900 ring-offset-2 dark:ring-white'
-                              : ''
+                            ? 'ring-2 ring-slate-900 ring-offset-2 dark:ring-white'
+                            : ''
                             }`}
                           style={{ backgroundColor: color.value }}
                           title={color.name}

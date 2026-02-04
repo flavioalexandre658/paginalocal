@@ -7,8 +7,24 @@ import { auth } from '@/lib/auth'
 import { PricingPageClient } from './_components/pricing-page-client'
 
 export const metadata: Metadata = {
-  title: 'Planos e Preços | Página Local',
-  description: 'Escolha o plano ideal para o seu negócio local. Preços acessíveis e funcionalidades poderosas para atrair mais clientes.',
+  title: 'Planos e Preços',
+  description: 'Escolha o plano ideal para criar o site do seu negócio local. A partir de R$29/mês com domínio próprio, SEO otimizado e suporte. Cancele quando quiser.',
+  keywords: [
+    'planos página local',
+    'preços site negócio local',
+    'quanto custa site para empresa',
+    'site para negócio local preço',
+    'landing page preço',
+  ],
+  openGraph: {
+    title: 'Planos e Preços | Página Local',
+    description: 'Crie o site do seu negócio local a partir de R$29/mês. SEO otimizado para aparecer no Google.',
+    type: 'website',
+    url: 'https://www.paginalocal.com.br/planos',
+  },
+  alternates: {
+    canonical: 'https://www.paginalocal.com.br/planos',
+  },
 }
 
 async function getPlans() {
