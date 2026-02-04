@@ -20,6 +20,7 @@ import { ClicksChartCard } from './clicks-chart-card'
 import { ReviewsWidget } from './reviews-widget'
 import { DynamicTipsCard } from './dynamic-tips-card'
 import { RecentLeadsCard } from './recent-leads-card'
+import { getStoreUrl } from '@/lib/utils'
 
 interface DashboardContentProps {
   storeSlug: string
@@ -44,7 +45,7 @@ export function DashboardContent({ storeSlug }: DashboardContentProps) {
   }
 
   const data = result.data
-  const siteUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/site/${storeSlug}`
+  const siteUrl = getStoreUrl(storeSlug)
   const isDraft = !data.store.isActive
 
   return (

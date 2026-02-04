@@ -20,6 +20,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
+import { getStoreUrl } from '@/lib/utils'
 
 const seoFormSchema = z.object({
   slug: z.string().min(3, 'Slug deve ter pelo menos 3 caracteres').regex(/^[a-z0-9-]+$/, 'Apenas letras minúsculas, números e hífens'),
@@ -76,7 +77,7 @@ export function SeoTab({ store, storeSlug }: SeoTabProps) {
     }
   }
 
-  const siteUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://paginalocal.com.br'}/site/${store.slug}`
+  const siteUrl = getStoreUrl(store.slug)
   const watchSlug = form.watch('slug')
   const watchTitle = form.watch('seoTitle')
   const watchDescription = form.watch('seoDescription')
@@ -125,11 +126,8 @@ export function SeoTab({ store, storeSlug }: SeoTabProps) {
                 <FormLabel>URL do Site (Slug)</FormLabel>
                 <FormControl>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-slate-500">
-                      paginalocal.com.br/site/
-                    </span>
                     <Input
-                      {...field}
+                      value={`${store.slug}.paginalocal.com.br`}
                       className="flex-1 font-mono"
                       disabled
                     />

@@ -17,6 +17,7 @@ import {
 import { generateMarketingCopy, type MarketingCopy, type FAQItem, type ServiceItem } from '@/lib/gemini'
 import { downloadImage, optimizeHeroImage, optimizeGalleryImage } from '@/lib/image-optimizer'
 import { uploadToS3, generateS3Key } from '@/lib/s3'
+import { addDomainToVercel } from '@/actions/vercel/add-domain'
 
 const createStoreFromGoogleSchema = z.object({
   googlePlaceId: z.string().min(1),
@@ -751,6 +752,18 @@ export const createStoreFromGoogleAction = authActionClient
       }
     }
 
+    let subdomainCreated = false
+    const subdomain = `${newStore.slug}.paginalocal.com.br`
+    try {
+      const domainResult = await addDomainToVercel(subdomain)
+      subdomainCreated = domainResult.success
+      if (!domainResult.success) {
+        console.error('[Google Import] Erro ao criar subdomínio na Vercel:', domainResult.error)
+      }
+    } catch (error) {
+      console.error('[Google Import] Erro ao criar subdomínio na Vercel:', error)
+    }
+
     return {
       store: newStore,
       slug: newStore.slug,
@@ -763,5 +776,6 @@ export const createStoreFromGoogleAction = authActionClient
       neighborhoodsGenerated: finalNeighborhoods.length,
       imagesProcessed,
       heroImageUrl,
+      subdomainCreated,
     }
   })

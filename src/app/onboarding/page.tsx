@@ -33,7 +33,7 @@ import { getPlacePreviewAction, type PlacePreview } from '@/actions/google/get-p
 import { createStoreFromGoogleAction } from '@/actions/stores/create-store-from-google.action'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
+import { cn, getStoreUrl } from '@/lib/utils'
 import { usePlanLimitRedirect } from '@/hooks/use-plan-limit-redirect'
 
 interface PlaceResult {
@@ -808,7 +808,7 @@ function CompleteStep({ place, storeSlug }: { place: PlaceResult; storeSlug: str
         transition={{ delay: 0.4 }}
         className="mt-10 flex flex-col gap-3"
       >
-        <Link href={`/site/${storeSlug}`} target="_blank">
+        <Link href={getStoreUrl(storeSlug)} target="_blank">
           <Button
             size="lg"
             className="w-full h-14 gap-3 cursor-pointer text-base shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"

@@ -14,6 +14,7 @@ import {
   type FAQItem,
 } from '@/lib/gemini'
 import { checkCanCreateStore } from '@/lib/plan-middleware'
+import { addDomainToVercel } from '@/actions/vercel/add-domain'
 
 const BRAZILIAN_STATES = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
@@ -206,6 +207,18 @@ export const createStoreManualAction = authActionClient
         })
     }
 
+    let subdomainCreated = false
+    const subdomain = `${newStore.slug}.paginalocal.com.br`
+    try {
+      const domainResult = await addDomainToVercel(subdomain)
+      subdomainCreated = domainResult.success
+      if (!domainResult.success) {
+        console.error('[Manual Creation] Erro ao criar subdomínio na Vercel:', domainResult.error)
+      }
+    } catch (error) {
+      console.error('[Manual Creation] Erro ao criar subdomínio na Vercel:', error)
+    }
+
     return {
       store: newStore,
       slug: newStore.slug,
@@ -214,5 +227,6 @@ export const createStoreManualAction = authActionClient
       servicesGenerated: finalServices.length,
       faqGenerated: finalFAQ.length,
       neighborhoodsGenerated: finalNeighborhoods.length,
+      subdomainCreated,
     }
   })

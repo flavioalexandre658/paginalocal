@@ -22,7 +22,7 @@ import { getUserStoresAction } from '@/actions/stores/get-user-stores.action'
 import { LogoutButton } from '@/components/auth/logout-button'
 import { syncStoreWithGoogleAction } from '@/actions/stores/sync-store-with-google.action'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
-import { cn } from '@/lib/utils'
+import { cn, getStoreUrl } from '@/lib/utils'
 import { DeleteStoreModal } from './_components/delete-store-modal'
 import { usePlanLimitRedirect } from '@/hooks/use-plan-limit-redirect'
 
@@ -280,7 +280,7 @@ function StoreCard({
             className="shrink-0"
           >
             <Link
-              href={`/site/${store.slug}`}
+              href={getStoreUrl(store.slug)}
               target="_blank"
               title="Ver site"
             >

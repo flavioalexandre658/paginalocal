@@ -55,7 +55,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
+import { cn, getStoreUrl } from '@/lib/utils'
 import { PatternFormat } from 'react-number-format'
 
 const BRAZILIAN_STATES = [
@@ -715,7 +715,7 @@ function CompleteStep({
         transition={{ delay: 0.4 }}
         className="mt-10 flex flex-col gap-3"
       >
-        <Link href={`/site/${storeSlug}`} target="_blank">
+        <Link href={getStoreUrl(storeSlug)} target="_blank">
           <Button
             size="lg"
             className="w-full h-14 gap-3 cursor-pointer text-base shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"

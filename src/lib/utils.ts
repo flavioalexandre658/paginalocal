@@ -44,3 +44,10 @@ export function getPhoneUrl(phone: string): string {
   const phoneWithCountry = cleaned.startsWith('55') ? cleaned : `55${cleaned}`
   return `tel:+${phoneWithCountry}`
 }
+
+export function getStoreUrl(slug: string): string {
+  if (process.env.NODE_ENV === 'development') {
+    return `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/site/${slug}`
+  }
+  return `https://${slug}.paginalocal.com.br`
+}

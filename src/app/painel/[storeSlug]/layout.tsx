@@ -8,6 +8,7 @@ import { headers } from 'next/headers'
 import { db } from '@/db'
 import { store } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
+import { getStoreUrl } from '@/lib/utils'
 
 interface LayoutProps {
   children: ReactNode
@@ -33,7 +34,7 @@ export default async function DashboardLayout({ children, params }: LayoutProps)
     notFound()
   }
 
-  const siteUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/site/${storeSlug}`
+  const siteUrl = getStoreUrl(storeSlug)
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
