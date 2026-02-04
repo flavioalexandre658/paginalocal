@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
-import { IconMapPin, IconSettings, IconExternalLink, IconArrowLeft } from '@tabler/icons-react'
+import { IconSettings, IconExternalLink, IconArrowLeft } from '@tabler/icons-react'
 import { LogoutButton } from '@/components/auth/logout-button'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
@@ -9,6 +9,7 @@ import { db } from '@/db'
 import { store } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { getStoreUrl } from '@/lib/utils'
+import Image from 'next/image'
 
 interface LayoutProps {
   children: ReactNode
@@ -52,9 +53,8 @@ export default async function DashboardLayout({ children, params }: LayoutProps)
             </Link>
             <div className="hidden h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700 sm:block" />
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-md shadow-primary/20">
-                <IconMapPin className="h-4 w-4 text-primary-foreground" />
-              </div>
+              <Image src="/assets/images/icon/favicon.ico" alt="Página Local" width={28} height={28} />
+
               <span className="min-w-0 truncate text-sm font-semibold text-slate-900 dark:text-white">
                 {storeData[0].name}
               </span>

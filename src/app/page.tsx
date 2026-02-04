@@ -10,6 +10,7 @@ import {
   IconCheck,
   IconArrowRight,
 } from '@tabler/icons-react'
+import { Logo } from '@/components/shared/logo'
 
 export default function HomePage() {
   return (
@@ -18,14 +19,7 @@ export default function HomePage() {
 
       <header className="sticky top-0 z-50 border-b border-slate-200/40 bg-white/70 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-md shadow-primary/20">
-              <IconMapPin className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
-              Página Local
-            </span>
-          </Link>
+          <Logo size="sm" href="/" />
           <nav className="flex items-center gap-3">
             <Link
               href="/entrar"
@@ -37,7 +31,7 @@ export default function HomePage() {
               href="/cadastro"
               className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-md shadow-primary/20 transition-all hover:shadow-lg hover:shadow-primary/30"
             >
-              Começar grátis
+              Começar
             </Link>
           </nav>
         </div>

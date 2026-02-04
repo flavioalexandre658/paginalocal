@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 
 interface TestimonialAvatarProps {
   imageUrl?: string | null
@@ -36,9 +37,12 @@ export function TestimonialAvatar({ imageUrl, authorName }: TestimonialAvatarPro
 
   return (
     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full shadow-sm ring-2 ring-white dark:ring-slate-800">
-      <img
+      <Image
         src={imageUrl}
         alt={authorName}
+        width={48}
+        height={48}
+        loading="lazy"
         className="h-full w-full object-cover"
         onError={() => setHasError(true)}
         referrerPolicy="no-referrer"

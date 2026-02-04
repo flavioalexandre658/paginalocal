@@ -25,6 +25,7 @@ import { EnhancedButton } from '@/components/ui/enhanced-button'
 import { cn, getStoreUrl } from '@/lib/utils'
 import { DeleteStoreModal } from './_components/delete-store-modal'
 import { usePlanLimitRedirect } from '@/hooks/use-plan-limit-redirect'
+import { Logo } from '@/components/shared/logo'
 
 export default function PainelPage() {
   const router = useRouter()
@@ -67,15 +68,7 @@ export default function PainelPage() {
 
       <header className="sticky top-0 z-50 border-b border-slate-200/40 bg-white/70 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <Link href="/painel" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-md shadow-primary/20">
-              <IconMapPin className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
-              Página Local
-            </span>
-          </Link>
-
+          <Logo size="sm" href="/painel" />
           <LogoutButton />
         </div>
       </header>
@@ -330,9 +323,7 @@ function EmptyState() {
           </Link>
         </EnhancedButton>
 
-        <p className="mt-6 text-sm text-slate-400">
-          Mais de <span className="font-semibold text-primary">2.000 negócios</span> já estão online
-        </p>
+
       </div>
     </motion.div>
   )

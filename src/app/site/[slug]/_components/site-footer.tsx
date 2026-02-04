@@ -30,7 +30,7 @@ export function SiteFooter({ storeName, city, state }: SiteFooterProps) {
             href="https://paginalocal.com.br"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-slate-400 transition-colors hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
+            className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
           >
             Criado com Página Local
           </a>

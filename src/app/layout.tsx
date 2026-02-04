@@ -51,8 +51,8 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
+    icon: '/assets/images/icon/favicon.ico',
+    shortcut: '/assets/images/icon/favicon.ico',
   },
 }
 

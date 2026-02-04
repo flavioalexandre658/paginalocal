@@ -78,6 +78,8 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                   src={image.url}
                   alt={image.alt}
                   fill
+                  priority={index === 0}
+                  loading={index === 0 ? undefined : 'lazy'}
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
@@ -136,7 +138,6 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                 width={images[selectedIndex].width || 1200}
                 height={images[selectedIndex].height || 800}
                 className="rounded-lg object-contain"
-                priority
               />
               <div className="absolute bottom-0 left-0 right-0 rounded-b-lg bg-gradient-to-t from-black/80 to-transparent p-4">
                 <p className="text-center text-white">

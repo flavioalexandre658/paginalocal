@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { IconStar, IconMapPin } from '@tabler/icons-react'
 import { HeroContactButtons } from './hero-contact-buttons'
 
@@ -34,10 +35,13 @@ export function HeroSection({ store, heroImageAlt, isOwner = false }: HeroSectio
     <section className="relative overflow-hidden">
       {store.coverUrl ? (
         <div className="absolute inset-0 z-0">
-          <img
+          <Image
             src={store.coverUrl}
-            alt={heroImageAlt || `Fachada da ${store.name} em ${store.city} ${store.state}`}
-            className="h-full w-full object-cover"
+            alt={heroImageAlt || `Fachada da ${store.name} em ${store.city}`}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-slate-900/95" />
         </div>
