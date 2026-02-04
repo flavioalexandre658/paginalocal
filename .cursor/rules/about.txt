@@ -1,0 +1,317 @@
+Documentação Técnica: Projeto Página Local (PGL)
+1. Visão Geral
+O Página Local é um SaaS Multi-tenant de "Presença Digital Instantânea". Diferente de um construtor de sites genérico, ele é um Gerador de Landing Pages de Alta Performance focado em SEO Local e conversão via WhatsApp.
+
+2. Diferenciais Técnicos (O que deve ser implementado/mantido)
+Zero-Config Tenant: O site do cliente deve ser gerado a partir de um JSON vindo do banco de dados, sem necessidade de processamento no lado do cliente (Client-side rendering pesado).
+
+Performance Lighthouse 90+: Uso obrigatório de Next.js ISR (Incremental Static Regeneration) ou SSG para que o site do "Seu João" carregue instantaneamente.
+
+Local SEO Schema: Injeção automática de JSON-LD (LocalBusiness) em cada página, capturando latitude/longitude e horários de funcionamento.
+
+Google Maps Sync: Integração com a API do Google Places para que, ao cadastrar, o sistema puxe fotos e avaliações automaticamente.
+
+Conversão Flutuante: Widget de WhatsApp e botão "Ligar Agora" fixos na versão mobile (99% do tráfego).
+
+3. Guia de Refactoring (De PatioX para Página Local)
+Para a IA realizar a limpeza do projeto patiox.com.br, siga estas diretrizes:
+
+A. Estrutura de Database (Prisma/Drizzle)
+Manter:
+
+Tenant / Site: Tabela principal com subdomínio, domínio customizado e status.
+
+Users: Apenas para controle administrativo.
+
+Substituir/Criar:
+
+Eliminar módulos complexos de e-commerce ou dashboards pesados.
+
+Criar tabela SiteContent com os campos:
+
+businessName, description, category (ex: Borracharia).
+
+whatsappNumber, googlePlaceId.
+
+openingHours (JSON), address (String/Geo).
+
+reviews (Array de JSON vindo do Google).
+
+B. Middleware & Routing (Multi-tenancy)
+Reaproveitar:
+
+A lógica de detecção de subdomínio/domínio via middleware.ts.
+
+A estrutura de pastas /app/[domain]/... (App Router).
+
+C. Frontend & UI
+Limpeza de Código:
+
+Remover construtores de "Drag and Drop". O layout será fixo (5 templates pré-definidos).
+
+Server Components First: Todo o conteúdo do site do cliente deve ser renderizado no servidor para SEO.
+
+Componentes de UI: Utilizar apenas o essencial do Tailwind CSS.
+
+D. Automação de Edição
+O "Pulo do Gato":
+
+Remover a necessidade de login/senha para pequenas edições.
+
+Implementar a lógica de "Magic Link": O dono do negócio recebe um link com um token JWT via WhatsApp que o desloga em 24h, permitindo editar apenas o essencial (fotos/horário).
+
+4. Instrução para a IA (Copie e cole isto)
+"IA, estou migrando um projeto Next.js Multi-tenant chamado PatioX para um novo SaaS chamado Página Local.
+
+O objetivo é simplificar:
+
+Remova todas as funcionalidades de [inserir o que o patiox fazia, ex: gestão de pátios/vendas].
+
+Mantenha a arquitetura multi-tenant (middleware de subdomínio e rotas dinâmicas por domínio).
+
+Foque a estrutura de dados em um 'LocalBusiness': preciso de campos para Nome, WhatsApp, Endereço, Horários e Script de SEO Local (JSON-LD).
+
+O frontend deve ser ultra-leve (Server Components) e otimizado para mobile.
+
+Crie um componente de 'Botão de Conversão' que fica fixo no rodapé com WhatsApp e Telefone.
+
+Prepare o sistema para aceitar o subdomínio *.paginalocal.com.br.
+
+middleware atual é uma base excelente, mas está "pesado" com regras específicas de veículos e uma arquitetura que dependia de um backend externo (porta 3333).
+
+Para o Página Local, vamos simplificar as rotas e ajustar a lógica de resolução para rodar dentro do próprio Next.js. Como você vai usar Next Only, a função resolveStoreSlug agora deve apontar para uma API Route interna do seu próprio projeto que consulta o NeonDB via Drizzle.
+
+Aqui está o middleware refatorado e "limpo" para o Página Local:
+
+TypeScript
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+const MAIN_DOMAINS = [
+  'localhost',
+  '127.0.0.1',
+  'paginalocal.com.br',
+  'paginalocal.com',
+  process.env.NEXT_PUBLIC_MAIN_DOMAIN,
+].filter(Boolean) as string[]
+
+const RESERVED_SUBDOMAINS = ['www', 'app', 'admin', 'api', 'dashboard']
+
+// Cache em memória para evitar hits excessivos no banco (Vercel Edge simplificado)
+const domainCache = new Map<string, { slug: string | null; timestamp: number }>()
+const CACHE_TTL = 1000 * 60 * 5 // 5 minutos
+
+async function resolveStoreSlug(domain: string, reqUrl: string): Promise<string | null> {
+  const cached = domainCache.get(domain)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.slug
+  }
+
+  // Como é "Next Only", chamamos nossa própria API interna
+  // Importante: use a URL base do request para garantir o protocolo correto
+  const url = new URL(reqUrl)
+  const apiUrl = `${url.protocol}//${url.host}/api/domain/resolve?domain=${encodeURIComponent(domain)}`
+
+  try {
+    const response = await fetch(apiUrl, { next: { revalidate: 300 } })
+    const data = await response.json()
+    const slug = data?.slug || null
+    domainCache.set(domain, { slug, timestamp: Date.now() })
+    return slug
+  } catch (e) {
+    console.error('Middleware: Erro ao resolver domínio', e)
+    return null
+  }
+}
+
+export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+  const host = request.headers.get('host') || ''
+  const cleanHost = host.toLowerCase().replace(/^www\./, '').split(':')[0]
+
+  // 1. SKIP de arquivos estáticos e API interna
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.includes('.') ||
+    pathname.startsWith('/favicon')
+  ) {
+    return NextResponse.next()
+  }
+
+  // 2. Lógica de Subdomínio (*.paginalocal.com.br)
+  const isMainDomain = MAIN_DOMAINS.some(d => cleanHost === d)
+  const isSubdomain = cleanHost.endsWith('.paginalocal.com.br') || cleanHost.endsWith('.paginalocal.com')
+
+  let storeSlug: string | null = null
+
+  if (isSubdomain) {
+    const parts = cleanHost.split('.')
+    const sub = parts[0]
+    
+    if (!RESERVED_SUBDOMAINS.includes(sub)) {
+      storeSlug = sub
+    }
+  } 
+  
+  // 3. Lógica de Domínio Customizado (ex: borracharia.com)
+  if (!isMainDomain && !storeSlug) {
+    storeSlug = await resolveStoreSlug(cleanHost, request.url)
+  }
+
+  // 4. REWRITES (Onde a mágica acontece)
+  
+  // Se detectamos uma loja (via subdomínio ou domínio customizado)
+  if (storeSlug) {
+    // Se o usuário tentar acessar /admin no domínio da loja, mandamos para o dashboard
+    if (pathname === '/admin' || pathname.startsWith('/admin/')) {
+      const adminPath = pathname.replace('/admin', '')
+      return NextResponse.rewrite(new URL(`/dashboard/${storeSlug}${adminPath}`, request.url))
+    }
+
+    // Rewrite padrão: mapeia o root para a página da loja
+    // O Next vai procurar em /app/site/[slug]/page.tsx
+    const response = NextResponse.rewrite(new URL(`/site/${storeSlug}${pathname}`, request.url))
+    response.headers.set('x-store-slug', storeSlug)
+    return response
+  }
+
+  // Se for o domínio principal sem subdomínio, segue fluxo normal (Landing Page do SaaS)
+  return NextResponse.next()
+}
+
+export const config = {
+  matcher: ['/((?!api|_next|favicon.ico|.*\\..*).*)'],
+}
+O que mudou e por que Next.js "Only" dá conta?
+Remoção de Legados: Limpamos todos os redirecionamentos de /veiculos e /financiamento. O código ficou mais rápido e focado.
+
+API Interna: No seu projeto PatioX, você tinha um backend em :3333. Agora, você criará um arquivo em app/api/domain/resolve/route.ts. O Middleware chama essa rota, que usa o Drizzle para buscar no NeonDB. Isso centraliza tudo em um único deploy (Vercel/Netlify/Docker).
+
+Arquitetura de Pastas sugerida:
+
+/app/site/[slug]/page.tsx → Aqui fica o site da Borracharia (o que o cliente vê).
+
+/app/dashboard/[slug]/page.tsx → Aqui fica o painel de edição do dono da Borracharia.
+
+/app/(marketing)/page.tsx → Sua própria landing page vendendo o SaaS.
+
+Por que o Next.js dá conta sozinho?
+Em 2026, com o App Router e Server Components, o Next.js não é mais apenas um "frontend". Ele é o seu servidor completo.
+
+Vercel Edge Functions: O middleware roda na borda, o que garante que o "Seu João" tenha o site carregado em milissegundos.
+
+NeonDB Serverless: O Drizzle se conecta via HTTP ao Neon, o que significa que você não tem problemas de pool de conexões exaurido, algo comum em arquiteturas antigas.
+
+Dica de Performance: Como você quer velocidade extrema, no resolveStoreSlug, o ideal é que a sua API de resolução use um cache agressivo (como o unstable_cache do Next ou o Next-Cache-Control).
+
+
+SCHEMAS ATUAIS (Implementados):
+
+// --- 1. CATEGORIAS (Seed via npm run db:seed) ---
+export const category = pgTable('category', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: varchar('name', { length: 100 }).notNull(),
+  slug: varchar('slug', { length: 100 }).notNull().unique(),
+  icon: varchar('icon', { length: 50 }),
+  description: text('description'),
+  suggestedServices: jsonb('suggested_services').$type<string[]>(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+// --- 2. STORES (Tenants) ---
+export const store = pgTable('store', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
+
+  name: varchar('name', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).notNull().unique(),
+  creationSource: varchar('creation_source', { length: 20 }).notNull().default('GOOGLE_IMPORT'), // 'GOOGLE_IMPORT' | 'MANUAL_CREATION'
+  customDomain: varchar('custom_domain', { length: 255 }).unique(),
+
+  description: text('description'),
+  category: varchar('category', { length: 100 }).notNull(),
+  categoryId: uuid('category_id').references(() => category.id),
+  phone: varchar('phone', { length: 20 }).notNull(),
+  whatsapp: varchar('whatsapp', { length: 20 }).notNull(),
+  address: text('address').notNull(),
+  city: varchar('city', { length: 100 }).notNull(),
+  state: varchar('state', { length: 2 }).notNull(),
+  zipCode: varchar('zip_code', { length: 10 }),
+  latitude: decimal('latitude', { precision: 10, scale: 8 }),
+  longitude: decimal('longitude', { precision: 11, scale: 8 }),
+
+  googlePlaceId: varchar('google_place_id', { length: 255 }),
+  googleRating: decimal('google_rating', { precision: 2, scale: 1 }),
+  googleReviewsCount: integer('google_reviews_count').default(0),
+
+  logoUrl: text('logo_url'),
+  coverUrl: text('cover_url'),
+  primaryColor: varchar('primary_color', { length: 7 }).default('#3b82f6'),
+  openingHours: jsonb('opening_hours'),
+
+  heroTitle: varchar('hero_title', { length: 100 }),
+  heroSubtitle: varchar('hero_subtitle', { length: 200 }),
+
+  seoTitle: varchar('seo_title', { length: 70 }),
+  seoDescription: varchar('seo_description', { length: 160 }),
+
+  faq: jsonb('faq'),
+  neighborhoods: jsonb('neighborhoods'),
+
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+// --- 3. SERVIÇOS ---
+export const service = pgTable('service', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  storeId: uuid('store_id').references(() => store.id, { onDelete: 'cascade' }).notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  priceInCents: integer('price_in_cents'),
+  imageUrl: text('image_url'),
+  position: integer('position').default(0),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+// --- 4. LEADS ---
+export const lead = pgTable('lead', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  storeId: uuid('store_id').references(() => store.id, { onDelete: 'cascade' }).notNull(),
+  name: varchar('name', { length: 255 }),
+  phone: varchar('phone', { length: 20 }),
+  source: varchar('source', { length: 50 }).default('whatsapp'),
+  device: varchar('device', { length: 50 }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+// --- 5. TESTIMONIALS ---
+export const testimonial = pgTable('testimonial', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  storeId: uuid('store_id').references(() => store.id, { onDelete: 'cascade' }).notNull(),
+  authorName: varchar('author_name', { length: 255 }).notNull(),
+  content: text('content').notNull(),
+  rating: integer('rating').default(5),
+  imageUrl: text('image_url'),
+  isGoogleReview: boolean('is_google_review').default(false).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
+// --- 6. STORE IMAGES ---
+export const storeImage = pgTable('store_image', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  storeId: uuid('store_id').references(() => store.id, { onDelete: 'cascade' }).notNull(),
+  url: text('url').notNull(),
+  alt: varchar('alt', { length: 255 }),
+  role: varchar('role', { length: 20 }).notNull().default('gallery'),
+  order: integer('order').default(0),
+  width: integer('width'),
+  height: integer('height'),
+  originalGoogleRef: varchar('original_google_ref', { length: 500 }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+

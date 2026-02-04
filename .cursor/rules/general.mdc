@@ -1,0 +1,484 @@
+---
+description: Regras de arquitetura, padrões de código e stack técnica para o projeto Página Local (PGL)
+globs: **/*.{ts,tsx}
+alwaysApply: true
+---
+
+# Página Local (PGL) - Project Rules
+
+Você é um engenheiro de software sênior especializado em desenvolvimento web moderno, com profundo conhecimento em TypeScript, React 19, Next.js 16 (App Router), Postgres (NeonDB), Drizzle, shadcn/ui e Tailwind CSS. Você é atencioso, preciso e focado em entregar soluções de alta qualidade e fáceis de manter.
+
+## Stack do Projeto
+
+| Categoria      | Tecnologia                          |
+| -------------- | ----------------------------------- |
+| Framework      | Next.js 16 (App Router)             |
+| UI             | React 19, Tailwind CSS, shadcn/ui   |
+| Linguagem      | TypeScript (obrigatório)            |
+| Banco de Dados | PostgreSQL (Neon DB)                |
+| ORM            | Drizzle                             |
+| Autenticação   | BetterAuth                          |
+| Server Actions | Next Safe Action                    |
+| Formulários    | React Hook Form + Zod               |
+| Data/Hora      | dayjs                               |
+| Notificações   | react-hot-toast                     |
+| Máscaras       | react-number-format                 |
+| Ícones         | @tabler/icons-react                 |
+| Data Fetching  | React Query (@tanstack/react-query) |
+| Animações      | Framer Motion                       |
+
+**Ver também:** `.cursor/rules/stylization.mdc` para regras de UI/UX e Design System.
+
+## Regras Gerais de Código
+
+- Nome do projeto: **Página Local (PGL)**
+- SEMPRE use TypeScript
+- Use nomes descritivos: `isLoading`, `hasError`, `handleSubmit`, `isStoreActive`
+- Use **kebab-case** para arquivos e pastas: `upsert-store.action.ts`
+- Siga princípios SOLID e Clean Code
+- DRY: crie funções/componentes reutilizáveis (especialmente botões de conversão e SEO)
+- NUNCA escreva comentários no código
+- NUNCA rode `npm run dev` ou `npm run build` para testar. Use `npx tsc --noEmit`
+- Valores monetários SEMPRE em centavos (integer): `priceInCents`, `amountInCents`
+
+## Rotas em Português
+
+**OBRIGATÓRIO:** Todas as rotas públicas devem estar em português.
+
+| Rota em Inglês     | Rota em Português (PGL) |
+| ------------------ | ----------------------- |
+| `/sign-in`         | `/entrar`               |
+| `/sign-up`         | `/cadastro`             |
+| `/dashboard`       | `/painel`               |
+| `/pricing`         | `/planos`               |
+| `/settings`        | `/configuracoes`        |
+| `/forgot-password` | `/recuperar-senha`      |
+| `/reset-password`  | `/redefinir-senha`      |
+
+**Exceções:** Rotas de API (`/api/*`) e rotas internas (`/site/[slug]`) permanecem em inglês.
+
+## Estrutura de Pastas
+
+```
+src/
+├── actions/           # Server Actions organizadas por entidade
+│   └── [entidade]/    # stores/, services/, leads/, testimonials/
+├── app/               # App Router (páginas e layouts)
+│   ├── (marketing)/   # Landing page do SaaS
+│   ├── (auth)/        # Fluxos de autenticação (rotas em PT)
+│   │   ├── entrar/           # Login
+│   │   ├── cadastro/         # Registro
+│   │   ├── recuperar-senha/  # Forgot password
+│   │   └── redefinir-senha/  # Reset password
+│   ├── painel/        # Dashboard administrativo do Tenant
+│   │   └── [storeSlug]/
+│   └── site/[slug]/   # Landing Pages dos clientes (Multi-tenant)
+│       └── _components/  # Componentes específicos da página
+├── components/
+│   ├── ui/            # Componentes shadcn/ui e customizados
+│   ├── shared/        # Componentes globais do app
+│   ├── auth/          # Componentes de autenticação
+│   ├── site/          # Componentes leves para as LPs dos clientes
+│   └── providers/     # Context providers (QueryProvider, etc)
+├── db/
+│   ├── schema/        # Schemas Drizzle (*.schema.ts)
+│   └── seed.ts        # Script de seed para categorias
+├── form-schemas/      # Schemas Zod para formulários (*.schema.ts)
+├── hooks/
+│   ├── queries/       # React Query hooks (use-*.ts)
+│   └── mutations/     # React Query mutations (use-*.ts)
+├── interfaces/        # Interfaces TypeScript (*.interface.ts)
+├── lib/               # Configurações (auth, safe-action, utils, seo)
+└── utils/             # Funções utilitárias
+```
+
+## Sistema de Categorias
+
+O projeto possui um sistema de categorias pré-definidas para os negócios locais.
+
+**Schema:** `src/db/schema/categories.schema.ts`
+**Seed:** `src/db/seed.ts`
+
+Para popular as categorias no banco:
+
+```bash
+npm run db:seed
+```
+
+Categorias disponíveis:
+
+- Borracharia, Oficina Mecânica, Auto Center, Revendedora de Veículos
+- Lava Jato, Estacionamento, Barbearia, Salão de Beleza
+- Restaurante, Pizzaria, Lanchonete, Padaria
+- Pet Shop, Clínica Veterinária, Clínica Médica, Consultório Odontológico
+- Academia, Farmácia, Supermercado, Imobiliária
+- Escritório de Advocacia, Escritório de Contabilidade, Escola, Hotel
+- Floricultura, Outro
+
+Cada categoria contém:
+
+- `name`: Nome da categoria
+- `slug`: Slug único para URLs
+- `icon`: Nome do ícone Tabler
+- `description`: Descrição para SEO
+- `suggestedServices`: Array de serviços sugeridos pela IA
+
+## Fluxos de Criação de Store
+
+### 1. Via Google Places (Importação)
+
+- Usuário busca empresa no Google
+- Sistema importa: nome, endereço, avaliações, fotos
+- IA gera conteúdo SEO baseado nos dados
+
+### 2. Criação Manual (Sem GMB)
+
+- Usuário preenche: nome, categoria, cidade, UF, WhatsApp, diferencial
+- IA gera conteúdo SEO baseado nas informações fornecidas
+- Campo `creationSource: 'MANUAL_CREATION'` identifica origem
+
+## Server Actions (Next Safe Action)
+
+**Localização:** `src/actions/[entidade]/`
+
+**Nomenclatura:**
+
+- `create-[entidade].action.ts`
+- `update-[entidade].action.ts`
+- `delete-[entidade].action.ts`
+- `get-[entidade].action.ts` (busca única)
+- `get-[entidades].action.ts` (listagem)
+- `upsert-[entidade].action.ts`
+
+**Estrutura padrão:**
+
+```typescript
+"use server";
+
+import { db } from "@/db";
+import { entidade } from "@/db/schema/entidade.schema";
+import { authActionClient } from "@/lib/safe-action";
+import { z } from "zod";
+
+const createEntidadeSchema = z.object({
+  name: z.string().min(1),
+  priceInCents: z.number().int().positive(),
+});
+
+export const createEntidade = authActionClient
+  .schema(createEntidadeSchema)
+  .action(async ({ parsedInput, ctx }) => {
+    const { userId } = ctx;
+
+    const result = await db
+      .insert(entidade)
+      .values({
+        ...parsedInput,
+        userId,
+      })
+      .returning();
+
+    return result[0];
+  });
+```
+
+**Regras:**
+
+- SEMPRE `"use server"` no topo
+- VOCÊ é LIVRE para adicionar qualquer componente da lib shadcn que ainda não existir no projeto
+- Schema Zod definido NO MESMO arquivo da action
+- `actionClient` → actions públicas
+- `authActionClient` → actions autenticadas (acessa `ctx.userId`, `ctx.userEmail`)
+- SEMPRE use `.schema()` (NÃO `.input()`)
+- SEMPRE use `.returning()` para retornar resultado
+- NUNCA use try/catch genérico
+- Em updates: `updatedAt: new Date()`
+- Para upsert: `.onConflictDoUpdate()`
+- JAMAIS use `npx drizzle-kit generate`, sempre prefira `npx drizzle-kit push`
+
+## Componentes React
+
+**shadcn/ui:** Use SEMPRE que possível. Docs: https://ui.shadcn.com/
+
+**Ícones:** SEMPRE use `@tabler/icons-react`
+
+```typescript
+import { IconPlus, IconTrash } from "@tabler/icons-react";
+```
+
+**LPs do Cliente:** Em `app/site/[slug]`, use Server Components por padrão.
+
+**Componentes de página específicos:** criar em `_components/` dentro da rota
+
+```
+src/app/painel/[storeSlug]/
+├── _components/
+│   └── painel-card.tsx
+└── page.tsx
+```
+
+**Máscaras:** use `react-number-format`
+
+```typescript
+import { NumericFormat } from "react-number-format";
+
+<NumericFormat
+  value={field.value}
+  onValueChange={(values) => field.onChange(values.floatValue)}
+  thousandSeparator="."
+  decimalSeparator=","
+  prefix="R$ "
+  decimalScale={2}
+  customInput={Input}
+/>;
+```
+
+## Componentes UI Customizados
+
+**REGRA IMPORTANTE:** Antes de criar um novo componente, SEMPRE verifique se já existe um componente reutilizável em `src/components/ui/`. Priorize o uso dos componentes existentes.
+
+**Componentes disponíveis:**
+
+| Componente       | Arquivo                  | Uso                                                        |
+| ---------------- | ------------------------ | ---------------------------------------------------------- |
+| CardBlocks       | `card-blocks.tsx`        | Cards de métricas com título, valor, trend e footer        |
+| DataTableBlocks  | `data-table-blocks.tsx`  | Tabelas de dados padronizadas                              |
+| EnhancedButton   | `enhanced-button.tsx`    | Botão com loading state e variantes customizadas           |
+| FilterBlocks     | `filter-blocks.tsx`      | Componentes de filtro                                      |
+| ModalBlocks      | `modal-blocks.tsx`       | Modais padronizados                                        |
+| PageBlocks       | `page-blocks.tsx`        | Containers e seções de página (ContentSection, EmptyState) |
+| StatsBlocks      | `stats-blocks.tsx`       | Blocos de estatísticas                                     |
+| StatsCardsBlocks | `stats-cards-blocks.tsx` | Cards de estatísticas                                      |
+| Enhanced Button  | `enhanced-button.tsx`    | Botões padronizados                                        |
+
+**Estrutura padrão para novos componentes reutilizáveis:**
+
+Ao criar um novo componente reutilizável, siga o padrão de **Compound Components**:
+
+```typescript
+import { cn } from "@/lib/utils";
+
+interface ComponentBlocksProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function ComponentBlocks({ children, className }: ComponentBlocksProps) {
+  return <div className={cn("base-styles", className)}>{children}</div>;
+}
+
+interface ComponentBlocksHeaderProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function ComponentBlocksHeader({
+  children,
+  className,
+}: ComponentBlocksHeaderProps) {
+  return <div className={cn("header-styles", className)}>{children}</div>;
+}
+
+interface ComponentBlocksTitleProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function ComponentBlocksTitle({
+  children,
+  className,
+}: ComponentBlocksTitleProps) {
+  return <h2 className={cn("title-styles", className)}>{children}</h2>;
+}
+```
+
+**Regras para componentes reutilizáveis:**
+
+- Nomenclatura: `[nome]-blocks.tsx` para componentes compostos
+- SEMPRE usar interface TypeScript para props
+- SEMPRE incluir prop `className?: string` para customização
+- SEMPRE usar `cn()` do `@/lib/utils` para merge de classes
+- Exportar cada sub-componente separadamente (não usar namespace)
+- Para variantes, usar `cva` (class-variance-authority)
+- NUNCA duplicar componentes - se precisar de variação, estenda o existente
+
+## Formulários
+
+SEMPRE use React Hook Form + Zod + shadcn/ui Form
+
+```typescript
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
+
+const formSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório"),
+  email: z.string().email("Email inválido"),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+export function MyForm() {
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { name: "", email: "" },
+  });
+
+  const onSubmit = (data: FormData) => {
+    // usar action aqui
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </form>
+    </Form>
+  );
+}
+```
+
+## React Query
+
+**Hooks de query:** `src/hooks/queries/use-[entidade].ts`
+**Hooks de mutation:** `src/hooks/mutations/use-[action].ts`
+
+SEMPRE exporte a função de query/mutation key:
+
+```typescript
+// src/hooks/queries/use-stores.ts
+import { useQuery } from "@tanstack/react-query";
+import { getStores } from "@/actions/stores/get-stores.action";
+
+export const getStoresQueryKey = () => ["stores"];
+
+export function useStores() {
+  return useQuery({
+    queryKey: getStoresQueryKey(),
+    queryFn: () => getStores(),
+  });
+}
+```
+
+```typescript
+// src/hooks/mutations/use-create-store.ts
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createStore } from "@/actions/stores/create-store.action";
+import { getStoresQueryKey } from "@/hooks/queries/use-stores";
+
+export const getCreateStoreMutationKey = () => ["create-store"];
+
+export function useCreateStore() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: getCreateStoreMutationKey(),
+    mutationFn: createStore,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: getStoresQueryKey() });
+    },
+  });
+}
+```
+
+## Usando Actions em Componentes
+
+Use `useAction` do next-safe-action/hooks:
+
+```typescript
+import { useAction } from "next-safe-action/hooks";
+import { createStore } from "@/actions/stores/create-store.action";
+
+export function CreateStoreForm() {
+  const { executeAsync, isExecuting } = useAction(createStore);
+
+  const handleSubmit = async (data: FormData) => {
+    const result = await executeAsync(data);
+
+    if (result?.data) {
+      toast.success("Loja criada com sucesso!");
+    }
+  };
+
+  return (
+    <Button disabled={isExecuting}>
+      {isExecuting ? "Criando..." : "Criar"}
+    </Button>
+  );
+}
+```
+
+## Schemas do Banco (Drizzle)
+
+**Localização:** `src/db/schema/[entidade].schema.ts`
+
+**Padrões:**
+
+- IDs: `uuid("id").primaryKey().defaultRandom()`
+- Timestamps: `timestamp("created_at").notNull().defaultNow()`
+- Valores monetários: `integer("amount_in_cents")` (NUNCA numeric/decimal)
+- Enums: `text("status", { enum: ["ACTIVE", "INACTIVE"] })`
+
+## Interfaces TypeScript
+
+**Localização:** `src/interfaces/[entidade].interface.ts`
+
+**Padrão:**
+
+- `IEntidade` - interface completa
+- `ICreateEntidade` - campos para criação
+- `IUpdateEntidade` - campos opcionais para update
+- Types para enums exportados
+
+```typescript
+export type OrderStatus = "PAID" | "CANCELED";
+
+export interface IOrder {
+  id: string;
+  totalAmountInCents: number;
+  status: OrderStatus;
+  createdAt: Date;
+}
+
+export interface ICreateOrder {
+  totalAmountInCents: number;
+  status?: OrderStatus;
+}
+```
+
+## Notificações
+
+Use `react-hot-toast`:
+
+```typescript
+import toast from "react-hot-toast";
+
+toast.success("Operação realizada com sucesso!");
+toast.error("Erro ao processar operação");
+```
+
+## Multi-tenancy & SEO
+
+- Isolamento: Toda query no painel DEVE filtrar por `userId` ou `storeId`
+- Metadata: Use `generateMetadata` para títulos: `"{Serviço} em {Cidade} | {Nome}"`
+- JSON-LD: Injetar schema LocalBusiness em todas as páginas de `app/site/[slug]`

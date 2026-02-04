@@ -1,0 +1,49 @@
+import { pgTable, uuid, varchar, text, timestamp, boolean, integer, decimal, jsonb } from 'drizzle-orm/pg-core'
+import { user } from './users.schema'
+import { category } from './categories.schema'
+
+export type CreationSource = 'GOOGLE_IMPORT' | 'MANUAL_CREATION'
+
+export const store = pgTable('store', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
+
+  name: varchar('name', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).notNull().unique(),
+  creationSource: varchar('creation_source', { length: 20 }).notNull().default('GOOGLE_IMPORT').$type<CreationSource>(),
+  customDomain: varchar('custom_domain', { length: 255 }).unique(),
+
+  description: text('description'),
+  category: varchar('category', { length: 100 }).notNull(),
+  categoryId: uuid('category_id').references(() => category.id),
+  phone: varchar('phone', { length: 20 }).notNull(),
+  whatsapp: varchar('whatsapp', { length: 20 }).notNull(),
+  address: text('address').notNull(),
+  city: varchar('city', { length: 100 }).notNull(),
+  state: varchar('state', { length: 2 }).notNull(),
+  zipCode: varchar('zip_code', { length: 10 }),
+  latitude: decimal('latitude', { precision: 10, scale: 8 }),
+  longitude: decimal('longitude', { precision: 11, scale: 8 }),
+
+  googlePlaceId: varchar('google_place_id', { length: 255 }).unique(),
+  googleRating: decimal('google_rating', { precision: 2, scale: 1 }),
+  googleReviewsCount: integer('google_reviews_count').default(0),
+
+  logoUrl: text('logo_url'),
+  coverUrl: text('cover_url'),
+  primaryColor: varchar('primary_color', { length: 7 }).default('#3b82f6'),
+  openingHours: jsonb('opening_hours'),
+
+  heroTitle: varchar('hero_title', { length: 100 }),
+  heroSubtitle: varchar('hero_subtitle', { length: 200 }),
+
+  seoTitle: varchar('seo_title', { length: 70 }),
+  seoDescription: varchar('seo_description', { length: 160 }),
+
+  faq: jsonb('faq'),
+  neighborhoods: jsonb('neighborhoods'),
+
+  isActive: boolean('is_active').default(false).notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
