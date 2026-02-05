@@ -490,6 +490,14 @@ export const createStoreFromGoogleAction = authActionClient
     const planContext = await getUserPlanContext(ctx.userId)
     const shouldActivateStore = planContext.hasActiveSubscription
 
+    console.log('[Google Import] Plan context:', {
+      userId: ctx.userId,
+      hasActiveSubscription: planContext.hasActiveSubscription,
+      planType: planContext.planType,
+      planName: planContext.planName,
+      shouldActivateStore,
+    })
+
     const { googlePlaceId, searchTerm, selectedCoverIndex = 0 } = parsedInput
 
     const existingStore = await db.query.store.findFirst({

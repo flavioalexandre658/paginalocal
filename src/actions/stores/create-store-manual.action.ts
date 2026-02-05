@@ -94,6 +94,14 @@ export const createStoreManualAction = authActionClient
     const planContext = await getUserPlanContext(ctx.userId)
     const shouldActivateStore = planContext.hasActiveSubscription
 
+    console.log('[Manual Creation] Plan context:', {
+      userId: ctx.userId,
+      hasActiveSubscription: planContext.hasActiveSubscription,
+      planType: planContext.planType,
+      planName: planContext.planName,
+      shouldActivateStore,
+    })
+
     const {
       name,
       categoryId,
