@@ -3,23 +3,15 @@
 import { z } from 'zod'
 import { actionClient } from '@/lib/safe-action'
 import { db } from '@/db'
-import { lead, pageview, LeadTouchpoint } from '@/db/schema'
-import { eq, and, count } from 'drizzle-orm'
+import { pageview } from '@/db/schema'
+import { eq, and, gte } from 'drizzle-orm'
 
-const trackClickSchema = z.object({
+const trackPageviewSchema = z.object({
   storeId: z.string().uuid(),
-  source: z.enum(['whatsapp', 'call', 'form', 'map']),
   device: z.enum(['mobile', 'desktop']).optional(),
   referrer: z.string().optional(),
   location: z.string().optional(),
-  touchpoint: z.enum([
-    'hero_whatsapp',
-    'hero_call',
-    'floating_whatsapp',
-    'contact_call',
-    'floating_bar_whatsapp',
-    'floating_bar_call',
-  ]).optional(),
+  userAgent: z.string().optional(),
   sessionId: z.string().optional(),
   utmSource: z.string().optional(),
   utmMedium: z.string().optional(),
@@ -28,43 +20,45 @@ const trackClickSchema = z.object({
   utmContent: z.string().optional(),
 })
 
-export const trackClickAction = actionClient
-  .schema(trackClickSchema)
+export const trackPageviewAction = actionClient
+  .schema(trackPageviewSchema)
   .action(async ({ parsedInput }) => {
-    let pageviewsBeforeConversion: number | null = null
-
     if (parsedInput.sessionId) {
-      const pageviewCount = await db
-        .select({ count: count() })
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000)
+      
+      const existingPageview = await db
+        .select({ id: pageview.id })
         .from(pageview)
         .where(
           and(
             eq(pageview.storeId, parsedInput.storeId),
-            eq(pageview.sessionId, parsedInput.sessionId)
+            eq(pageview.sessionId, parsedInput.sessionId),
+            gte(pageview.createdAt, thirtyMinutesAgo)
           )
         )
+        .limit(1)
 
-      pageviewsBeforeConversion = pageviewCount[0]?.count || 0
+      if (existingPageview.length > 0) {
+        return { deduplicated: true }
+      }
     }
 
     const [result] = await db
-      .insert(lead)
+      .insert(pageview)
       .values({
         storeId: parsedInput.storeId,
-        source: parsedInput.source,
         device: parsedInput.device,
         referrer: parsedInput.referrer,
         location: parsedInput.location,
-        touchpoint: parsedInput.touchpoint as LeadTouchpoint,
+        userAgent: parsedInput.userAgent,
         sessionId: parsedInput.sessionId,
         utmSource: parsedInput.utmSource,
         utmMedium: parsedInput.utmMedium,
         utmCampaign: parsedInput.utmCampaign,
         utmTerm: parsedInput.utmTerm,
         utmContent: parsedInput.utmContent,
-        pageviewsBeforeConversion,
       })
       .returning()
 
-    return result
+    return { id: result.id, deduplicated: false }
   })

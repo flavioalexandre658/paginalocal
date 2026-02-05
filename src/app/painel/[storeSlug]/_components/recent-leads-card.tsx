@@ -1,6 +1,27 @@
 'use client'
 
-import { IconMessageCircle, IconPhone, IconTrendingUp, IconEyeOff, IconDeviceMobile, IconDeviceDesktop, IconBrandGoogle, IconBrandInstagram, IconBrandFacebook, IconLink, IconMapPin } from '@tabler/icons-react'
+import Link from 'next/link'
+import {
+  IconMessageCircle,
+  IconPhone,
+  IconTrendingUp,
+  IconEyeOff,
+  IconDeviceMobile,
+  IconDeviceDesktop,
+  IconBrandGoogle,
+  IconBrandInstagram,
+  IconBrandFacebook,
+  IconBrandTiktok,
+  IconBrandYoutube,
+  IconBrandTwitter,
+  IconBrandLinkedin,
+  IconBrandWhatsapp,
+  IconLink,
+  IconMapPin,
+  IconEye,
+  IconTag,
+  IconArrowRight,
+} from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -24,11 +45,17 @@ interface Lead {
   touchpoint: string | null
   createdAt: Date
   isFromBlockedSite: boolean
+  sessionId?: string | null
+  utmSource?: string | null
+  utmMedium?: string | null
+  utmCampaign?: string | null
+  pageviewsBeforeConversion?: number | null
 }
 
 interface RecentLeadsCardProps {
   leads: Lead[]
   isDraft: boolean
+  storeSlug: string
 }
 
 const touchpointLabels: Record<string, string> = {
@@ -40,33 +67,47 @@ const touchpointLabels: Record<string, string> = {
   floating_bar_call: 'barra fixa',
 }
 
-const referrerLabels: Record<string, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
-  google: { label: 'Google', icon: IconBrandGoogle },
-  instagram: { label: 'Instagram', icon: IconBrandInstagram },
-  facebook: { label: 'Facebook', icon: IconBrandFacebook },
-  direct: { label: 'acesso direto', icon: IconLink },
-  other: { label: 'outro site', icon: IconLink },
+const referrerLabels: Record<string, { label: string; icon: React.ComponentType<{ className?: string }>; color: string }> = {
+  google: { label: 'Google', icon: IconBrandGoogle, color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  instagram: { label: 'Instagram', icon: IconBrandInstagram, color: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400' },
+  facebook: { label: 'Facebook', icon: IconBrandFacebook, color: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' },
+  tiktok: { label: 'TikTok', icon: IconBrandTiktok, color: 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300' },
+  youtube: { label: 'YouTube', icon: IconBrandYoutube, color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+  twitter: { label: 'Twitter/X', icon: IconBrandTwitter, color: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' },
+  linkedin: { label: 'LinkedIn', icon: IconBrandLinkedin, color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+  whatsapp: { label: 'WhatsApp', icon: IconBrandWhatsapp, color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
+  direct: { label: 'Direto', icon: IconLink, color: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300' },
+  other: { label: 'Outro', icon: IconLink, color: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300' },
 }
 
-export function RecentLeadsCard({ leads, isDraft }: RecentLeadsCardProps) {
+export function RecentLeadsCard({ leads, isDraft, storeSlug }: RecentLeadsCardProps) {
   return (
     <div className="rounded-2xl border border-slate-200/40 bg-white/70 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50">
-      <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary shadow-lg shadow-primary/10">
-          <IconTrendingUp className="h-5 w-5" />
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary shadow-lg shadow-primary/10">
+            <IconTrendingUp className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-slate-900 dark:text-white">
+              Últimos contatos
+            </h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Atividade recente no seu site
+            </p>
+          </div>
         </div>
-        <div>
-          <h2 className="font-semibold text-slate-900 dark:text-white">
-            Últimos contatos
-          </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Atividade recente no seu site
-          </p>
-        </div>
+        <Link
+          href={`/painel/${storeSlug}/contatos`}
+          className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+        >
+          Ver todos
+          <IconArrowRight className="h-4 w-4" />
+        </Link>
       </div>
 
       {leads.length > 0 ? (
-        <div className="space-y-3">
+        <div className="custom-scrollbar max-h-[420px] space-y-3 overflow-y-auto pr-1">
           {leads.map((lead) => (
             <LeadItem key={lead.id} lead={lead} isDraft={isDraft} />
           ))}
@@ -111,6 +152,11 @@ function LeadItem({ lead, isDraft }: { lead: Lead; isDraft: boolean }) {
   } else {
     formattedDay = date.format('DD/MM')
   }
+
+  const hasUtm = lead.utmSource || lead.utmMedium || lead.utmCampaign
+  const utmLabel = hasUtm
+    ? [lead.utmSource, lead.utmMedium, lead.utmCampaign].filter(Boolean).join(' / ')
+    : null
 
   const buildDescription = () => {
     const parts: string[] = []
@@ -175,9 +221,18 @@ function LeadItem({ lead, isDraft }: { lead: Lead; isDraft: boolean }) {
                 buildDescription()
               )}
             </p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              {lead.referrer && lead.referrer !== 'direct' && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              {lead.pageviewsBeforeConversion !== null && lead.pageviewsBeforeConversion !== undefined && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                  <IconEye className="h-3 w-3" />
+                  {lead.pageviewsBeforeConversion} {lead.pageviewsBeforeConversion === 1 ? 'visita' : 'visitas'} antes
+                </span>
+              )}
+              {lead.referrer && (
+                <span className={cn(
+                  'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium',
+                  referrerInfo.color
+                )}>
                   <ReferrerIcon className="h-3 w-3" />
                   {referrerInfo.label}
                 </span>
@@ -192,6 +247,12 @@ function LeadItem({ lead, isDraft }: { lead: Lead; isDraft: boolean }) {
                 <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
                   <IconMapPin className="h-3 w-3" />
                   {lead.location}
+                </span>
+              )}
+              {utmLabel && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                  <IconTag className="h-3 w-3" />
+                  {utmLabel}
                 </span>
               )}
             </div>

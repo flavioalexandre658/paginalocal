@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
-import { store, lead, service, testimonial, storeImage } from '@/db/schema'
+import { store, lead, service, testimonial, storeImage, pageview } from '@/db/schema'
 import { eq, and, desc, gte, count, sql } from 'drizzle-orm'
 
 const getStoreDashboardSchema = z.object({
@@ -95,6 +95,11 @@ export const getStoreDashboardAction = authActionClient
           touchpoint: lead.touchpoint,
           createdAt: lead.createdAt,
           isFromBlockedSite: lead.isFromBlockedSite,
+          sessionId: lead.sessionId,
+          utmSource: lead.utmSource,
+          utmMedium: lead.utmMedium,
+          utmCampaign: lead.utmCampaign,
+          pageviewsBeforeConversion: lead.pageviewsBeforeConversion,
         })
         .from(lead)
         .where(eq(lead.storeId, storeData.id))
@@ -111,6 +116,118 @@ export const getStoreDashboardAction = authActionClient
       .where(and(eq(lead.storeId, storeData.id), gte(lead.createdAt, thirtyDaysAgo)))
       .groupBy(sql`DATE(${lead.createdAt})`)
       .orderBy(sql`DATE(${lead.createdAt})`)
+
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000)
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
+
+    const [
+      pageviewsThisMonth,
+      pageviewsLastMonth,
+      pageviewsThisWeek,
+      pageviewsLastWeek,
+      whatsappLeadsThisMonth,
+      phoneLeadsThisMonth,
+    ] = await Promise.all([
+      db
+        .select({ count: count() })
+        .from(pageview)
+        .where(and(eq(pageview.storeId, storeData.id), gte(pageview.createdAt, thirtyDaysAgo))),
+      db
+        .select({ count: count() })
+        .from(pageview)
+        .where(
+          and(
+            eq(pageview.storeId, storeData.id),
+            gte(pageview.createdAt, sixtyDaysAgo),
+            sql`${pageview.createdAt} < ${thirtyDaysAgo}`
+          )
+        ),
+      db
+        .select({ count: count() })
+        .from(pageview)
+        .where(and(eq(pageview.storeId, storeData.id), gte(pageview.createdAt, sevenDaysAgo))),
+      db
+        .select({ count: count() })
+        .from(pageview)
+        .where(
+          and(
+            eq(pageview.storeId, storeData.id),
+            gte(pageview.createdAt, fourteenDaysAgo),
+            sql`${pageview.createdAt} < ${sevenDaysAgo}`
+          )
+        ),
+      db
+        .select({ count: count() })
+        .from(lead)
+        .where(
+          and(
+            eq(lead.storeId, storeData.id),
+            gte(lead.createdAt, thirtyDaysAgo),
+            sql`${lead.source} LIKE '%whatsapp%'`
+          )
+        ),
+      db
+        .select({ count: count() })
+        .from(lead)
+        .where(
+          and(
+            eq(lead.storeId, storeData.id),
+            gte(lead.createdAt, thirtyDaysAgo),
+            sql`${lead.source} LIKE '%phone%' OR ${lead.source} LIKE '%call%'`
+          )
+        ),
+    ])
+
+    const pageviewsPerDay = await db
+      .select({
+        date: sql<string>`DATE(${pageview.createdAt})`.as('date'),
+        count: count(),
+      })
+      .from(pageview)
+      .where(and(eq(pageview.storeId, storeData.id), gte(pageview.createdAt, thirtyDaysAgo)))
+      .groupBy(sql`DATE(${pageview.createdAt})`)
+      .orderBy(sql`DATE(${pageview.createdAt})`)
+
+    const recentPageviews = await db
+      .select({
+        id: pageview.id,
+        device: pageview.device,
+        referrer: pageview.referrer,
+        location: pageview.location,
+        createdAt: pageview.createdAt,
+        utmSource: pageview.utmSource,
+        utmMedium: pageview.utmMedium,
+        utmCampaign: pageview.utmCampaign,
+      })
+      .from(pageview)
+      .where(eq(pageview.storeId, storeData.id))
+      .orderBy(desc(pageview.createdAt))
+      .limit(10)
+
+    const totalPageviewsThisMonth = pageviewsThisMonth[0]?.count || 0
+    const totalPageviewsLastMonth = pageviewsLastMonth[0]?.count || 0
+    const totalPageviewsThisWeek = pageviewsThisWeek[0]?.count || 0
+    const totalPageviewsLastWeek = pageviewsLastWeek[0]?.count || 0
+    const totalLeadsThisMonthCount = leadsThisMonth[0]?.count || 0
+    const totalWhatsappLeadsThisMonth = whatsappLeadsThisMonth[0]?.count || 0
+    const totalPhoneLeadsThisMonth = phoneLeadsThisMonth[0]?.count || 0
+
+    const conversionRate = totalPageviewsThisMonth > 0
+      ? (totalLeadsThisMonthCount / totalPageviewsThisMonth) * 100
+      : 0
+    const whatsappConversionRate = totalPageviewsThisMonth > 0
+      ? (totalWhatsappLeadsThisMonth / totalPageviewsThisMonth) * 100
+      : 0
+    const phoneConversionRate = totalPageviewsThisMonth > 0
+      ? (totalPhoneLeadsThisMonth / totalPageviewsThisMonth) * 100
+      : 0
+
+    const pageviewsTrend = totalPageviewsLastMonth > 0
+      ? ((totalPageviewsThisMonth - totalPageviewsLastMonth) / totalPageviewsLastMonth) * 100
+      : 0
+    const pageviewsWeekTrend = totalPageviewsLastWeek > 0
+      ? ((totalPageviewsThisWeek - totalPageviewsLastWeek) / totalPageviewsLastWeek) * 100
+      : 0
 
     const faq = (storeData.faq as Array<{ question: string; answer: string }>) || []
     const neighborhoods = (storeData.neighborhoods as string[]) || []
@@ -308,8 +425,8 @@ export const getStoreDashboardAction = authActionClient
       return priorityOrder[a.priority] - priorityOrder[b.priority]
     })
 
-    const whatsappLeads = recentLeads.filter(l => l.source?.includes('whatsapp')).length
-    const phoneLeads = recentLeads.filter(l => l.source?.includes('phone') || l.source?.includes('call')).length
+    const whatsappLeadsRecent = recentLeads.filter(l => l.source?.includes('whatsapp')).length
+    const phoneLeadsRecent = recentLeads.filter(l => l.source?.includes('phone') || l.source?.includes('call')).length
 
     return {
       store: {
@@ -327,13 +444,28 @@ export const getStoreDashboardAction = authActionClient
       dynamicTips: dynamicTips.slice(0, 4),
       allTipsCompleted: dynamicTips.length === 0,
       stats: {
-        totalLeadsThisMonth: leadsThisMonth[0]?.count || 0,
+        totalLeadsThisMonth: totalLeadsThisMonthCount,
         totalLeadsLastWeek: leadsLastWeek[0]?.count || 0,
-        whatsappLeads,
-        phoneLeads,
+        whatsappLeads: totalWhatsappLeadsThisMonth,
+        phoneLeads: totalPhoneLeadsThisMonth,
         leadsPerDay,
+        pageviews: {
+          thisMonth: totalPageviewsThisMonth,
+          lastMonth: totalPageviewsLastMonth,
+          thisWeek: totalPageviewsThisWeek,
+          lastWeek: totalPageviewsLastWeek,
+          trend: pageviewsTrend,
+          weekTrend: pageviewsWeekTrend,
+          perDay: pageviewsPerDay,
+        },
+        conversion: {
+          rate: conversionRate,
+          whatsappRate: whatsappConversionRate,
+          phoneRate: phoneConversionRate,
+        },
       },
       recentLeads: recentLeads.slice(0, 5),
+      recentPageviews: recentPageviews.slice(0, 10),
       recentTestimonials: testimonials,
       counts: {
         images: images.length,

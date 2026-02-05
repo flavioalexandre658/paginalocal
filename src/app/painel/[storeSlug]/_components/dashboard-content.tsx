@@ -11,14 +11,22 @@ import {
   IconLoader2,
   IconMessageCircle,
   IconPhone,
+  IconEye,
+  IconPercentage,
+  IconUsers,
+  IconTrendingUp,
+  IconTrendingDown,
 } from '@tabler/icons-react'
 
 import { getStoreDashboardAction } from '@/actions/stores/get-store-dashboard.action'
-import { ClicksChartCard } from './clicks-chart-card'
 import { ReviewsWidget } from './reviews-widget'
 import { DynamicTipsCard } from './dynamic-tips-card'
 import { RecentLeadsCard } from './recent-leads-card'
+import { RecentPageviewsCard } from './recent-pageviews-card'
+import { AnalyticsChartCard } from './analytics-chart-card'
+import { ConversionBreakdownCard } from './conversion-breakdown-card'
 import { getStoreUrl } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 interface DashboardContentProps {
   storeSlug: string
@@ -104,48 +112,78 @@ export function DashboardContent({ storeSlug }: DashboardContentProps) {
         </div>
       </div>
 
-      <div className="my-6 grid gap-6 md:grid-cols-3">
-        <StatsCard
-          icon={<IconMessageCircle className="h-5 w-5" />}
-          iconBg="bg-gradient-to-br from-green-500/20 to-green-500/5"
-          iconColor="text-green-500"
-          title="WhatsApp"
-          value={data.stats.whatsappLeads.toString()}
+      <div className="my-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <StatsCardWithTrend
+          icon={<IconEye className="h-5 w-5" />}
+          iconBg="bg-gradient-to-br from-primary/20 to-primary/5"
+          iconColor="text-primary"
+          title="Visualizações"
+          value={data.stats.pageviews?.thisMonth || 0}
+          trend={data.stats.pageviews?.trend || 0}
         />
-        <StatsCard
+        <StatsCardWithTrend
+          icon={<IconPercentage className="h-5 w-5" />}
+          iconBg="bg-gradient-to-br from-amber-500/20 to-amber-500/5"
+          iconColor="text-amber-500"
+          title="Taxa de Conversão"
+          value={`${(data.stats.conversion?.rate || 0).toFixed(1)}%`}
+          subtitle="vis. → contato"
+        />
+        <StatsCardWithTrend
+          icon={<IconMessageCircle className="h-5 w-5" />}
+          iconBg="bg-gradient-to-br from-emerald-500/20 to-emerald-500/5"
+          iconColor="text-emerald-500"
+          title="WhatsApp"
+          value={data.stats.whatsappLeads}
+          subtitle={`${(data.stats.conversion?.whatsappRate || 0).toFixed(1)}%`}
+        />
+        <StatsCardWithTrend
           icon={<IconPhone className="h-5 w-5" />}
           iconBg="bg-gradient-to-br from-blue-500/20 to-blue-500/5"
           iconColor="text-blue-500"
           title="Ligações"
-          value={data.stats.phoneLeads.toString()}
+          value={data.stats.phoneLeads}
+          subtitle={`${(data.stats.conversion?.phoneRate || 0).toFixed(1)}%`}
         />
-        <StatsCard
-          icon={<IconExternalLink className="h-5 w-5" />}
+        <StatsCardWithTrend
+          icon={<IconUsers className="h-5 w-5" />}
           iconBg="bg-gradient-to-br from-purple-500/20 to-purple-500/5"
           iconColor="text-purple-500"
-          title="Total de contatos"
-          value={data.stats.totalLeadsThisMonth.toString()}
+          title="Total Contatos"
+          value={data.stats.totalLeadsThisMonth}
         />
       </div>
 
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <RecentLeadsCard
-            leads={data.recentLeads}
-            isDraft={isDraft}
-          />
-        </div>
-        <ClicksChartCard
-          totalThisMonth={data.stats.totalLeadsThisMonth}
-          totalLastWeek={data.stats.totalLeadsLastWeek}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <AnalyticsChartCard
+          pageviewsPerDay={data.stats.pageviews?.perDay || []}
           leadsPerDay={data.stats.leadsPerDay}
+          totalPageviews={data.stats.pageviews?.thisMonth || 0}
+          totalLeads={data.stats.totalLeadsThisMonth}
+        />
+        <ConversionBreakdownCard
+          totalPageviews={data.stats.pageviews?.thisMonth || 0}
+          whatsappLeads={data.stats.whatsappLeads}
+          phoneLeads={data.stats.phoneLeads}
+          conversionRate={data.stats.conversion?.rate || 0}
+          whatsappConversionRate={data.stats.conversion?.whatsappRate || 0}
+          phoneConversionRate={data.stats.conversion?.phoneRate || 0}
         />
       </div>
 
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <RecentPageviewsCard
+          pageviews={data.recentPageviews || []}
+          storeSlug={storeSlug}
+        />
+        <RecentLeadsCard
+          leads={data.recentLeads}
+          isDraft={isDraft}
+          storeSlug={storeSlug}
+        />
+      </div>
 
-
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <DynamicTipsCard
           tips={data.dynamicTips}
           allCompleted={data.allTipsCompleted}
@@ -163,30 +201,54 @@ export function DashboardContent({ storeSlug }: DashboardContentProps) {
   )
 }
 
-function StatsCard({
+function StatsCardWithTrend({
   icon,
   iconBg,
   iconColor,
   title,
   value,
+  trend,
+  subtitle,
 }: {
   icon: React.ReactNode
   iconBg: string
   iconColor: string
   title: string
-  value: string
+  value: number | string
+  trend?: number
+  subtitle?: string
 }) {
+  const displayValue = typeof value === 'number' ? value.toLocaleString('pt-BR') : value
+  const hasTrend = trend !== undefined && trend !== 0
+  const trendUp = trend !== undefined && trend >= 0
+
   return (
-    <div className="rounded-2xl border border-slate-200/40 bg-white/70 p-5 shadow-xl shadow-slate-200/50 backdrop-blur-xl transition-all hover:shadow-lg dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50">
-      <div className="flex items-center gap-4">
-        <div className={`flex h-12 w-12 items-center justify-center rounded-xl shadow-lg ${iconBg} ${iconColor}`}>
+    <div className="rounded-2xl border border-slate-200/40 bg-white/70 p-4 shadow-xl shadow-slate-200/50 backdrop-blur-xl transition-all hover:shadow-lg dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50">
+      <div className="flex items-start gap-3">
+        <div className={cn('flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-lg', iconBg, iconColor)}>
           {icon}
         </div>
-        <div>
-          <p className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            {value}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs font-medium text-slate-500 dark:text-slate-400">{title}</p>
+          <p className="mt-0.5 text-xl font-semibold tracking-tight text-slate-900 dark:text-white">
+            {displayValue}
           </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
+          {hasTrend && (
+            <div className={cn(
+              'mt-1 flex items-center gap-1 text-xs font-medium',
+              trendUp ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
+            )}>
+              {trendUp ? (
+                <IconTrendingUp className="h-3 w-3" />
+              ) : (
+                <IconTrendingDown className="h-3 w-3" />
+              )}
+              {trend > 0 ? '+' : ''}{trend.toFixed(0)}%
+            </div>
+          )}
+          {subtitle && !hasTrend && (
+            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">{subtitle}</p>
+          )}
         </div>
       </div>
     </div>

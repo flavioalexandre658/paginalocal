@@ -18,6 +18,7 @@ import { AreasSection } from './_components/areas-section'
 import { SiteFooter } from './_components/site-footer'
 import { GallerySection } from './_components/gallery-section'
 import { DraftBanner } from '@/components/site/draft-banner'
+import { PageviewTracker } from './_components/pageview-tracker'
 
 interface FAQItem {
   question: string
@@ -251,6 +252,8 @@ export default async function StorePage({ params }: PageProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
       )}
+
+      <PageviewTracker storeId={storeData.id} />
 
       {isDraft && <DraftBanner isOwner={isOwner} />}
 
