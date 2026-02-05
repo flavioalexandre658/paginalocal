@@ -72,7 +72,7 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
             className="group flex items-center justify-center"
             aria-label="Ligar agora"
           >
-            <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-xl shadow-blue-500/30 transition-all duration-300 hover:scale-110 hover:shadow-blue-500/40">
+            <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-xl shadow-blue-600/30 transition-all duration-300 hover:scale-110 hover:shadow-blue-600/40">
               <IconPhone className="h-6 w-6" />
             </span>
           </a>
@@ -87,8 +87,8 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
             className="group flex items-center justify-center"
             aria-label="Conversar no WhatsApp"
           >
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-20" />
-            <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-2xl shadow-emerald-500/30 transition-all duration-300 hover:scale-110 hover:shadow-emerald-500/40">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-20" />
+            <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 text-white shadow-2xl shadow-emerald-600/30 transition-all duration-300 hover:scale-110 hover:shadow-emerald-600/40">
               <WhatsAppIcon className="h-8 w-8" />
             </span>
           </a>
@@ -106,7 +106,7 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
             <a
               href={phoneLink}
               onClick={(e) => handleClick(e, 'phone')}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-500 py-3.5 font-semibold text-white transition-all active:scale-98 active:bg-blue-600"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-700 py-3.5 font-semibold text-white transition-all active:scale-98 active:bg-blue-800"
             >
               <IconPhone className="h-5 w-5" />
               <span>Ligar</span>
@@ -119,7 +119,7 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => handleClick(e, 'whatsapp')}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 py-3.5 font-semibold text-white transition-all active:scale-98 active:bg-emerald-600"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 font-semibold text-white transition-all active:scale-98 active:bg-emerald-700"
             >
               <WhatsAppIcon className="h-5 w-5" />
               <span>WhatsApp</span>
