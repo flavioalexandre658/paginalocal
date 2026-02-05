@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
 import { store, testimonial, service, storeImage, category } from '@/db/schema'
-import { checkCanCreateStore } from '@/lib/plan-middleware'
+import { checkCanCreateStore, getUserPlanContext } from '@/lib/plan-middleware'
 import {
   getPlaceDetails,
   parseAddressComponents,
@@ -18,6 +18,7 @@ import { generateMarketingCopy, type MarketingCopy, type FAQItem, type ServiceIt
 import { downloadImage, optimizeHeroImage, optimizeGalleryImage } from '@/lib/image-optimizer'
 import { uploadToS3, generateS3Key } from '@/lib/s3'
 import { addDomainToVercel } from '@/actions/vercel/add-domain'
+import { notifyStoreActivated } from '@/lib/google-indexing'
 
 const createStoreFromGoogleSchema = z.object({
   googlePlaceId: z.string().min(1),
@@ -486,6 +487,9 @@ export const createStoreFromGoogleAction = authActionClient
       throw new Error(storeCheck.reason || 'Limite de lojas atingido. Assine um plano para criar mais lojas.')
     }
 
+    const planContext = await getUserPlanContext(ctx.userId)
+    const shouldActivateStore = planContext.hasActiveSubscription
+
     const { googlePlaceId, searchTerm, selectedCoverIndex = 0 } = parsedInput
 
     const existingStore = await db.query.store.findFirst({
@@ -637,6 +641,7 @@ export const createStoreFromGoogleAction = authActionClient
         seoDescription,
         faq: finalFAQ,
         neighborhoods: finalNeighborhoods,
+        isActive: shouldActivateStore,
       })
       .returning()
 
@@ -762,6 +767,12 @@ export const createStoreFromGoogleAction = authActionClient
       }
     } catch (error) {
       console.error('[Google Import] Erro ao criar subdomínio na Vercel:', error)
+    }
+
+    if (shouldActivateStore) {
+      notifyStoreActivated(newStore.slug).catch((error) => {
+        console.error('[Google Import] Erro ao notificar Google Indexing API:', error)
+      })
     }
 
     return {

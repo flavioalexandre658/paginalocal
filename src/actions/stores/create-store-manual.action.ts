@@ -13,8 +13,9 @@ import {
   type ServiceItem,
   type FAQItem,
 } from '@/lib/gemini'
-import { checkCanCreateStore } from '@/lib/plan-middleware'
+import { checkCanCreateStore, getUserPlanContext } from '@/lib/plan-middleware'
 import { addDomainToVercel } from '@/actions/vercel/add-domain'
+import { notifyStoreActivated } from '@/lib/google-indexing'
 
 const BRAZILIAN_STATES = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
@@ -89,6 +90,9 @@ export const createStoreManualAction = authActionClient
     if (!storeCheck.allowed) {
       throw new Error(storeCheck.reason || 'Limite de lojas atingido. Assine um plano para criar mais lojas.')
     }
+
+    const planContext = await getUserPlanContext(ctx.userId)
+    const shouldActivateStore = planContext.hasActiveSubscription
 
     const {
       name,
@@ -191,6 +195,7 @@ export const createStoreManualAction = authActionClient
         seoDescription,
         faq: finalFAQ,
         neighborhoods: finalNeighborhoods,
+        isActive: shouldActivateStore,
       })
       .returning()
 
@@ -217,6 +222,12 @@ export const createStoreManualAction = authActionClient
       }
     } catch (error) {
       console.error('[Manual Creation] Erro ao criar subdomínio na Vercel:', error)
+    }
+
+    if (shouldActivateStore) {
+      notifyStoreActivated(newStore.slug).catch((error) => {
+        console.error('[Manual Creation] Erro ao notificar Google Indexing API:', error)
+      })
     }
 
     return {

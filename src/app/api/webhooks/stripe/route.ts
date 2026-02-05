@@ -3,10 +3,10 @@ import { NextResponse } from 'next/server'
 import { stripe, STRIPE_WEBHOOK_SECRET } from '@/lib/stripe'
 import { db } from '@/db'
 import { subscription, plan, store } from '@/db/schema'
-import { eq } from 'drizzle-orm'
+import { eq, desc, and, inArray } from 'drizzle-orm'
 import type Stripe from 'stripe'
 import type { SubscriptionStatus } from '@/db/schema'
-import { notifyStoreActivated } from '@/lib/google-indexing'
+import { notifyStoreActivated, notifyStoreDeactivated } from '@/lib/google-indexing'
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -140,22 +140,11 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
   await db.insert(subscription).values(subscriptionData)
 
-  if (storeSlug) {
-    const [activatedStore] = await db
-      .update(store)
-      .set({
-        isActive: true,
-        updatedAt: new Date(),
-      })
-      .where(eq(store.slug, storeSlug))
-      .returning({ customDomain: store.customDomain })
+  // Sincroniza as lojas do usuário com o limite do novo plano
+  const maxStores = selectedPlan.features.maxStores
+  await syncUserStoresWithPlanLimit(userId, maxStores)
 
-    notifyStoreActivated(storeSlug, activatedStore?.customDomain).catch((error) => {
-      console.error('Failed to notify Google Indexing API:', error)
-    })
-  }
-
-  console.log(`Subscription created for user ${userId} with plan ${selectedPlan.name}`)
+  console.log(`Subscription created for user ${userId} with plan ${selectedPlan.name} (max stores: ${maxStores})`)
 }
 
 async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription) {
@@ -196,7 +185,12 @@ async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription
 
 async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription) {
   const [existingSubscription] = await db
-    .select()
+    .select({
+      id: subscription.id,
+      userId: subscription.userId,
+      planId: subscription.planId,
+      status: subscription.status,
+    })
     .from(subscription)
     .where(eq(subscription.stripeSubscriptionId, stripeSubscription.id))
     .limit(1)
@@ -206,25 +200,76 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
   }
 
   const periodDates = getSubscriptionPeriodDates(stripeSubscription)
+  const newStatus = mapStripeStatus(stripeSubscription.status)
+  const newPriceId = stripeSubscription.items.data[0].price.id
+
+  // Verifica se o plano mudou (pelo priceId)
+  const [newPlan] = await db
+    .select()
+    .from(plan)
+    .where(eq(plan.stripePriceId, newPriceId))
+    .limit(1)
+
+  // Se não encontrou pelo stripePriceId exato, tenta por monthly ou yearly
+  let selectedPlan = newPlan
+  if (!selectedPlan) {
+    const [planByMonthly] = await db
+      .select()
+      .from(plan)
+      .where(eq(plan.stripeMonthlyPriceId, newPriceId))
+      .limit(1)
+    
+    if (planByMonthly) {
+      selectedPlan = planByMonthly
+    } else {
+      const [planByYearly] = await db
+        .select()
+        .from(plan)
+        .where(eq(plan.stripeYearlyPriceId, newPriceId))
+        .limit(1)
+      
+      selectedPlan = planByYearly
+    }
+  }
+
+  // Atualiza a subscription
+  const updateData: Record<string, unknown> = {
+    status: newStatus,
+    currentPeriodStart: periodDates.currentPeriodStart,
+    currentPeriodEnd: periodDates.currentPeriodEnd,
+    cancelAtPeriodEnd: stripeSubscription.cancel_at
+      ? new Date(stripeSubscription.cancel_at * 1000)
+      : null,
+    stripePriceId: newPriceId,
+    updatedAt: new Date(),
+  }
+
+  // Se encontrou um novo plano e ele é diferente, atualiza
+  if (selectedPlan && selectedPlan.id !== existingSubscription.planId) {
+    updateData.planId = selectedPlan.id
+    console.log(`[Webhook] Plano alterado para usuário ${existingSubscription.userId}: ${selectedPlan.name}`)
+  }
 
   await db
     .update(subscription)
-    .set({
-      status: mapStripeStatus(stripeSubscription.status),
-      currentPeriodStart: periodDates.currentPeriodStart,
-      currentPeriodEnd: periodDates.currentPeriodEnd,
-      cancelAtPeriodEnd: stripeSubscription.cancel_at
-        ? new Date(stripeSubscription.cancel_at * 1000)
-        : null,
-      stripePriceId: stripeSubscription.items.data[0].price.id,
-      updatedAt: new Date(),
-    })
+    .set(updateData)
     .where(eq(subscription.id, existingSubscription.id))
+
+  // Se a assinatura está ativa e encontramos um plano, sincroniza as lojas
+  if (newStatus === 'ACTIVE' && selectedPlan) {
+    await syncUserStoresWithPlanLimit(existingSubscription.userId, selectedPlan.features.maxStores)
+  } else if (newStatus === 'CANCELED' || newStatus === 'UNPAID' || newStatus === 'PAST_DUE') {
+    // Se a assinatura não está mais ativa, desativa todas as lojas
+    await deactivateAllUserStores(existingSubscription.userId)
+  }
 }
 
 async function handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription) {
   const [existingSubscription] = await db
-    .select()
+    .select({
+      id: subscription.id,
+      userId: subscription.userId,
+    })
     .from(subscription)
     .where(eq(subscription.stripeSubscriptionId, stripeSubscription.id))
     .limit(1)
@@ -240,6 +285,11 @@ async function handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription
       updatedAt: new Date(),
     })
     .where(eq(subscription.id, existingSubscription.id))
+
+  // Desativa todas as lojas do usuário quando a assinatura é cancelada
+  await deactivateAllUserStores(existingSubscription.userId)
+  
+  console.log(`[Webhook] Assinatura cancelada para usuário ${existingSubscription.userId}, lojas desativadas`)
 }
 
 async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
@@ -307,4 +357,124 @@ function getNextMonthReset() {
   nextReset.setDate(1)
   nextReset.setHours(0, 0, 0, 0)
   return nextReset
+}
+
+/**
+ * Sincroniza as lojas ativas do usuário com base no limite do plano.
+ * - Ativa as N lojas mais recentes (até o limite do plano)
+ * - Desativa as lojas excedentes
+ */
+async function syncUserStoresWithPlanLimit(userId: string, maxStores: number) {
+  // Busca todas as lojas do usuário ordenadas por data de criação (mais recentes primeiro)
+  const userStores = await db
+    .select({
+      id: store.id,
+      slug: store.slug,
+      customDomain: store.customDomain,
+      isActive: store.isActive,
+    })
+    .from(store)
+    .where(eq(store.userId, userId))
+    .orderBy(desc(store.createdAt))
+
+  if (userStores.length === 0) {
+    return { activated: 0, deactivated: 0 }
+  }
+
+  // Lojas que devem ficar ativas (as N mais recentes)
+  const storesToActivate = userStores.slice(0, maxStores)
+  // Lojas que devem ser desativadas (excedentes)
+  const storesToDeactivate = userStores.slice(maxStores)
+
+  const activatedIds = storesToActivate.map((s) => s.id)
+  const deactivatedIds = storesToDeactivate.map((s) => s.id)
+
+  let activatedCount = 0
+  let deactivatedCount = 0
+
+  // Ativa as lojas que devem estar ativas
+  if (activatedIds.length > 0) {
+    const storesNeedingActivation = storesToActivate.filter((s) => !s.isActive)
+    
+    if (storesNeedingActivation.length > 0) {
+      await db
+        .update(store)
+        .set({ isActive: true, updatedAt: new Date() })
+        .where(
+          and(
+            eq(store.userId, userId),
+            inArray(store.id, storesNeedingActivation.map((s) => s.id))
+          )
+        )
+
+      // Notifica o Google para cada loja ativada
+      for (const s of storesNeedingActivation) {
+        notifyStoreActivated(s.slug, s.customDomain).catch((error) => {
+          console.error(`[Webhook] Erro ao notificar Google sobre ativação de ${s.slug}:`, error)
+        })
+      }
+      activatedCount = storesNeedingActivation.length
+    }
+  }
+
+  // Desativa as lojas excedentes
+  if (deactivatedIds.length > 0) {
+    const storesNeedingDeactivation = storesToDeactivate.filter((s) => s.isActive)
+    
+    if (storesNeedingDeactivation.length > 0) {
+      await db
+        .update(store)
+        .set({ isActive: false, updatedAt: new Date() })
+        .where(
+          and(
+            eq(store.userId, userId),
+            inArray(store.id, storesNeedingDeactivation.map((s) => s.id))
+          )
+        )
+
+      // Notifica o Google para cada loja desativada
+      for (const s of storesNeedingDeactivation) {
+        notifyStoreDeactivated(s.slug, s.customDomain).catch((error) => {
+          console.error(`[Webhook] Erro ao notificar Google sobre desativação de ${s.slug}:`, error)
+        })
+      }
+      deactivatedCount = storesNeedingDeactivation.length
+    }
+  }
+
+  console.log(`[Webhook] Sincronização de lojas para user ${userId}: ${activatedCount} ativadas, ${deactivatedCount} desativadas (limite: ${maxStores})`)
+  return { activated: activatedCount, deactivated: deactivatedCount }
+}
+
+/**
+ * Desativa todas as lojas do usuário (quando assinatura é cancelada)
+ */
+async function deactivateAllUserStores(userId: string) {
+  const activeStores = await db
+    .select({
+      id: store.id,
+      slug: store.slug,
+      customDomain: store.customDomain,
+    })
+    .from(store)
+    .where(and(eq(store.userId, userId), eq(store.isActive, true)))
+
+  if (activeStores.length === 0) {
+    return 0
+  }
+
+  await db
+    .update(store)
+    .set({ isActive: false, updatedAt: new Date() })
+    .where(eq(store.userId, userId))
+
+  // Notifica o Google sobre a desativação
+  for (const s of activeStores) {
+    notifyStoreDeactivated(s.slug, s.customDomain).catch((error) => {
+      console.error(`[Webhook] Erro ao notificar Google sobre desativação de ${s.slug}:`, error)
+    })
+  }
+
+  console.log(`[Webhook] Desativadas ${activeStores.length} lojas do usuário ${userId}`)
+  return activeStores.length
 }

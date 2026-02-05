@@ -39,6 +39,7 @@ import {
 } from '@/actions/vercel/add-domain'
 import { getStoreBySlugAuthAction } from '@/actions/stores/get-store-by-slug-auth.action'
 import { updateStoreAction } from '@/actions/stores/update-store.action'
+import { checkFeatureAccessAction } from '@/actions/subscriptions/check-feature-access.action'
 
 const domainFormSchema = z.object({
   domain: z
@@ -71,7 +72,8 @@ interface DomainTabProps {
 }
 
 export function DomainTab({ storeSlug }: DomainTabProps) {
-  const [isProPlan] = useState(true)
+  const [canUseCustomDomain, setCanUseCustomDomain] = useState(false)
+  const [planName, setPlanName] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isVerifying, setIsVerifying] = useState(false)
   const [isRemoving, setIsRemoving] = useState(false)
@@ -81,6 +83,7 @@ export function DomainTab({ storeSlug }: DomainTabProps) {
 
   const { executeAsync: fetchStore } = useAction(getStoreBySlugAuthAction)
   const { executeAsync: updateStore } = useAction(updateStoreAction)
+  const { executeAsync: checkFeatureAccess } = useAction(checkFeatureAccessAction)
 
   const form = useForm<DomainFormData>({
     resolver: zodResolver(domainFormSchema),
@@ -93,13 +96,21 @@ export function DomainTab({ storeSlug }: DomainTabProps) {
     async function loadStore() {
       setIsLoadingStore(true)
 
-      const result = await fetchStore({ slug: storeSlug })
+      const [storeResult, featureResult] = await Promise.all([
+        fetchStore({ slug: storeSlug }),
+        checkFeatureAccess({ feature: 'customDomain' }),
+      ])
 
-      if (result?.data) {
-        setStoreId(result.data.id)
+      if (featureResult?.data) {
+        setCanUseCustomDomain(featureResult.data.allowed || false)
+        setPlanName(featureResult.data.planName || null)
+      }
 
-        if (result.data.customDomain) {
-          const configResult = await getDomainConfigFromVercel(result.data.customDomain)
+      if (storeResult?.data) {
+        setStoreId(storeResult.data.id)
+
+        if (storeResult.data.customDomain) {
+          const configResult = await getDomainConfigFromVercel(storeResult.data.customDomain)
 
           if (configResult.success && configResult.data) {
             setDomainConfig({
@@ -113,7 +124,7 @@ export function DomainTab({ storeSlug }: DomainTabProps) {
             })
           } else {
             setDomainConfig({
-              name: result.data.customDomain,
+              name: storeResult.data.customDomain,
               verified: false,
               misconfigured: true,
               intendedRecords: [{ type: 'A', host: '@', value: '76.76.21.21' }],
@@ -126,7 +137,7 @@ export function DomainTab({ storeSlug }: DomainTabProps) {
     }
 
     loadStore()
-  }, [storeSlug, fetchStore])
+  }, [storeSlug, fetchStore, checkFeatureAccess])
 
   async function onSubmit(data: DomainFormData) {
     if (!storeId) {
@@ -257,7 +268,7 @@ export function DomainTab({ storeSlug }: DomainTabProps) {
     )
   }
 
-  if (!isProPlan) {
+  if (!canUseCustomDomain) {
     return (
       <div className="space-y-6">
         <div>
@@ -277,10 +288,13 @@ export function DomainTab({ storeSlug }: DomainTabProps) {
             Recurso do Plano Pro
           </h3>
           <p className="mt-2 max-w-sm text-sm text-slate-500 dark:text-slate-400">
-            Faça upgrade para o plano Profissional para usar seu próprio domínio e aumentar
-            a autoridade do seu negócio.
+            {planName === 'Gratuito' || !planName
+              ? 'Assine o plano Pro ou Agency para usar seu próprio domínio e aumentar a autoridade do seu negócio.'
+              : `Seu plano ${planName} não inclui domínio próprio. Faça upgrade para o plano Pro ou Agency.`}
           </p>
-          <EnhancedButton className="mt-6">Fazer upgrade</EnhancedButton>
+          <a href="/planos">
+            <EnhancedButton className="mt-6">Fazer upgrade</EnhancedButton>
+          </a>
         </div>
       </div>
     )
