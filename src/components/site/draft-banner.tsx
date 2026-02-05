@@ -2,14 +2,17 @@
 
 import { motion } from 'framer-motion'
 import { IconAlertTriangle, IconRocket } from '@tabler/icons-react'
-import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 interface DraftBannerProps {
   isOwner: boolean
 }
 
+const MAIN_DOMAIN = process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'
+
 export function DraftBanner({ isOwner }: DraftBannerProps) {
+  const plansUrl = `https://${MAIN_DOMAIN}/planos`
+
   return (
     <motion.div
       initial={{ y: -100, opacity: 0 }}
@@ -42,14 +45,14 @@ export function DraftBanner({ isOwner }: DraftBannerProps) {
           </div>
         </div>
 
-        <Link
-          href="/planos"
+        <a
+          href={plansUrl}
           className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-amber-600 shadow-sm transition-all hover:bg-amber-50 hover:shadow-md sm:gap-2 sm:px-4 sm:text-sm"
         >
           <IconRocket className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           <span className="hidden sm:inline">Publicar Site</span>
           <span className="sm:hidden">Publicar</span>
-        </Link>
+        </a>
       </div>
     </motion.div>
   )

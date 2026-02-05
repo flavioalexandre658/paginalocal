@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { IconRocket, IconEye, IconAlertTriangle, IconX } from '@tabler/icons-react'
-import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 interface DraftModalProps {
@@ -11,8 +10,11 @@ interface DraftModalProps {
   isOwner: boolean
 }
 
+const MAIN_DOMAIN = process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'
+
 export function DraftModal({ storeName, isOwner }: DraftModalProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const plansUrl = `https://${MAIN_DOMAIN}/planos`
 
   useEffect(() => {
     // Small delay to let the page render first
@@ -104,8 +106,8 @@ export function DraftModal({ storeName, isOwner }: DraftModalProps) {
 
             {/* Actions */}
             <div className="space-y-3">
-              <Link
-                href="/planos"
+              <a
+                href={plansUrl}
                 className={cn(
                   'flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3',
                   'bg-gradient-to-r from-amber-500 to-amber-600 text-white',
@@ -115,7 +117,7 @@ export function DraftModal({ storeName, isOwner }: DraftModalProps) {
               >
                 <IconRocket className="h-5 w-5" />
                 Publicar Site Agora
-              </Link>
+              </a>
 
               <button
                 onClick={() => setIsOpen(false)}
