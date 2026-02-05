@@ -18,6 +18,7 @@ import { AreasSection } from './_components/areas-section'
 import { SiteFooter } from './_components/site-footer'
 import { GallerySection } from './_components/gallery-section'
 import { DraftBanner } from '@/components/site/draft-banner'
+import { DraftModal } from '@/components/site/draft-modal'
 import { PageviewTracker } from './_components/pageview-tracker'
 
 interface FAQItem {
@@ -255,9 +256,14 @@ export default async function StorePage({ params }: PageProps) {
 
       <PageviewTracker storeId={storeData.id} />
 
-      {isDraft && <DraftBanner isOwner={isOwner} />}
+      {isDraft && (
+        <>
+          <DraftBanner isOwner={isOwner} />
+          <DraftModal storeName={storeData.name} isOwner={isOwner} />
+        </>
+      )}
 
-      <main className={isDraft ? 'pt-14' : ''}>
+      <main className={isDraft ? 'pt-12' : ''}>
         <HeroSection
           store={{
             ...storeData,
