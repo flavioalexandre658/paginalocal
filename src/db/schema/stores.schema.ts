@@ -44,6 +44,9 @@ export const store = pgTable('store', {
   faq: jsonb('faq'),
   neighborhoods: jsonb('neighborhoods'),
 
+  showWhatsappButton: boolean('show_whatsapp_button').default(true).notNull(),
+  showCallButton: boolean('show_call_button').default(true).notNull(),
+
   isActive: boolean('is_active').default(false).notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),

@@ -31,6 +31,8 @@ const updateStoreSchema = z.object({
     answer: z.string(),
   })).optional(),
   neighborhoods: z.array(z.string()).optional(),
+  showWhatsappButton: z.boolean().optional(),
+  showCallButton: z.boolean().optional(),
 })
 
 export const updateStoreAction = authActionClient

@@ -19,6 +19,8 @@ interface HeroSectionProps {
     heroTitle?: string | null
     heroSubtitle?: string | null
     isActive: boolean
+    showWhatsappButton: boolean
+    showCallButton: boolean
   }
   heroImageAlt?: string | null
   isOwner?: boolean

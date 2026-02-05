@@ -13,6 +13,7 @@ import {
   IconPhone,
   IconMapPin,
   IconBuilding,
+  IconEye,
 } from '@tabler/icons-react'
 
 import { updateStoreAction } from '@/actions/stores/update-store.action'
@@ -27,6 +28,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
+import { Switch } from '@/components/ui/switch'
 
 const contactFormSchema = z.object({
   whatsapp: z.string().min(10, 'WhatsApp inválido'),
@@ -35,6 +37,8 @@ const contactFormSchema = z.object({
   city: z.string().min(2, 'Cidade é obrigatória'),
   state: z.string().length(2, 'UF deve ter 2 caracteres'),
   zipCode: z.string().optional(),
+  showWhatsappButton: z.boolean(),
+  showCallButton: z.boolean(),
 })
 
 type ContactFormData = z.infer<typeof contactFormSchema>
@@ -50,6 +54,8 @@ interface ContactTabProps {
     zipCode: string | null
     latitude: string | null
     longitude: string | null
+    showWhatsappButton: boolean
+    showCallButton: boolean
   }
   storeSlug: string
 }
@@ -66,15 +72,22 @@ export function ContactTab({ store }: ContactTabProps) {
       city: store.city,
       state: store.state,
       zipCode: store.zipCode || '',
+      showWhatsappButton: store.showWhatsappButton,
+      showCallButton: store.showCallButton,
     },
   })
 
   async function onSubmit(data: ContactFormData) {
     const result = await executeAsync({
       storeId: store.id,
-      ...data,
       whatsapp: data.whatsapp.replace(/\D/g, ''),
       phone: data.phone?.replace(/\D/g, '') || '',
+      address: data.address,
+      city: data.city,
+      state: data.state,
+      zipCode: data.zipCode,
+      showWhatsappButton: data.showWhatsappButton,
+      showCallButton: data.showCallButton,
     })
 
     if (result?.data) {
@@ -172,6 +185,85 @@ export function ContactTab({ store }: ContactTabProps) {
                       Opcional, será exibido se preenchido
                     </FormDescription>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="rounded-2xl border border-slate-200/60 bg-white p-6 dark:border-slate-700/60 dark:bg-slate-900/50"
+          >
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/20 to-violet-500/5 shadow-lg shadow-violet-500/10">
+                <IconEye className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-slate-900 dark:text-white">
+                  Botões de Contato
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Escolha quais botões aparecem no seu site
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="showWhatsappButton"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-slate-700/40 dark:bg-slate-800/30">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
+                        <IconBrandWhatsapp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                      </div>
+                      <div>
+                        <FormLabel className="text-sm font-medium text-slate-900 dark:text-white">
+                          Botão do WhatsApp
+                        </FormLabel>
+                        <FormDescription className="text-xs">
+                          Exibe o botão de WhatsApp no site
+                        </FormDescription>
+                      </div>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="showCallButton"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-slate-700/40 dark:bg-slate-800/30">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30">
+                        <IconPhone className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      <div>
+                        <FormLabel className="text-sm font-medium text-slate-900 dark:text-white">
+                          Botão de Ligar
+                        </FormLabel>
+                        <FormDescription className="text-xs">
+                          Exibe o botão de ligação no site
+                        </FormDescription>
+                      </div>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />

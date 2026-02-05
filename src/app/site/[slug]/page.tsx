@@ -11,7 +11,7 @@ import { AboutSection } from './_components/about-section'
 import { ServicesSection } from './_components/services-section'
 import { TestimonialsSection } from './_components/testimonials-section'
 import { ContactSection } from './_components/contact-section'
-import { FloatingWhatsApp } from './_components/floating-whatsapp'
+import { FloatingContact } from './_components/floating-contact'
 import { FAQSection } from './_components/faq-section'
 import { generateFAQJsonLd } from '@/lib/faq-json-ld'
 import { AreasSection } from './_components/areas-section'
@@ -261,6 +261,8 @@ export default async function StorePage({ params }: PageProps) {
             heroTitle: storeData.heroTitle || undefined,
             heroSubtitle: storeData.heroSubtitle || undefined,
             coverUrl: heroImage?.url || storeData.coverUrl,
+            showWhatsappButton: storeData.showWhatsappButton,
+            showCallButton: storeData.showCallButton,
           }}
           heroImageAlt={heroImage?.alt}
           isOwner={isOwner}
@@ -324,13 +326,16 @@ export default async function StorePage({ params }: PageProps) {
         state={storeData.state}
       />
 
-      <FloatingWhatsApp
+      <FloatingContact
         store={{
           id: storeData.id,
           name: storeData.name,
           slug: storeData.slug,
           whatsapp: storeData.whatsapp,
+          phone: storeData.phone,
           isActive: storeData.isActive,
+          showWhatsappButton: storeData.showWhatsappButton,
+          showCallButton: storeData.showCallButton,
         }}
         isOwner={isOwner}
       />

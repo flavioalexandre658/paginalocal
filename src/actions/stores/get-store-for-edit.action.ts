@@ -68,6 +68,8 @@ export const getStoreForEditAction = authActionClient
         isActive: storeData.isActive,
         googlePlaceId: storeData.googlePlaceId,
         customDomain: storeData.customDomain,
+        showWhatsappButton: storeData.showWhatsappButton,
+        showCallButton: storeData.showCallButton,
       },
       services,
       images,
