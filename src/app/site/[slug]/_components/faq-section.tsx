@@ -20,14 +20,18 @@ export function FAQSection({ faq, storeName }: FAQSectionProps) {
   if (!faq || faq.length === 0) return null
 
   return (
-    <section className="relative py-8 md:py-10">
-      <div className="container mx-auto px-4">
-        <div className="mb-16 text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-5 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+    <section id="faq" className="relative py-16 md:py-20 overflow-hidden">
+      {/* Subtle background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-violet-500/[0.03] to-transparent" />
+      
+      <div className="container relative mx-auto px-4">
+        {/* Section Header */}
+        <div className="mb-12 text-center animate-fade-in-up">
+          <span className="inline-flex items-center gap-2 rounded-full bg-violet-500/10 px-4 py-2 text-sm font-medium text-violet-600 mb-4">
             <IconHelpCircle className="h-4 w-4" />
             Tire suas dúvidas
-          </div>
-          <h2 className="mb-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl">
+          </span>
+          <h2 className="mb-4 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl lg:text-4xl">
             Perguntas Frequentes
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-slate-500 dark:text-slate-400">
@@ -35,15 +39,16 @@ export function FAQSection({ faq, storeName }: FAQSectionProps) {
           </p>
         </div>
 
-        <div className="mx-auto max-w-3xl space-y-4">
+        {/* FAQ Accordion with Glassmorphism */}
+        <div className="mx-auto max-w-3xl space-y-4 stagger-children">
           {faq.map((item, index) => (
             <div
               key={index}
               className={cn(
-                'overflow-hidden rounded-2xl border transition-all duration-300',
+                'overflow-hidden rounded-2xl border backdrop-blur-sm transition-all duration-300 animate-fade-in-up',
                 openIndex === index
-                  ? 'border-slate-300 bg-white shadow-md dark:border-slate-600 dark:bg-slate-800'
-                  : 'border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800/50'
+                  ? 'border-violet-200/50 bg-white/80 shadow-lg shadow-violet-500/5 dark:border-violet-800/50 dark:bg-slate-900/80'
+                  : 'border-slate-200/60 bg-white/70 shadow-sm hover:border-violet-200/40 dark:border-slate-700/40 dark:bg-slate-900/70 dark:hover:border-violet-800/40'
               )}
             >
               <button
@@ -57,7 +62,7 @@ export function FAQSection({ faq, storeName }: FAQSectionProps) {
                   className={cn(
                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-300',
                     openIndex === index
-                      ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                      ? 'bg-violet-500 text-white shadow-md shadow-violet-500/30'
                       : 'bg-slate-100 text-slate-500 dark:bg-slate-700'
                   )}
                 >
@@ -76,7 +81,7 @@ export function FAQSection({ faq, storeName }: FAQSectionProps) {
                 )}
               >
                 <div className="overflow-hidden">
-                  <div className="border-t border-slate-100 px-6 pb-6 pt-4 dark:border-slate-700">
+                  <div className="border-t border-slate-100/50 px-6 pb-6 pt-4 dark:border-slate-700/50">
                     <p className="text-slate-600 leading-relaxed dark:text-slate-300">
                       {item.answer}
                     </p>

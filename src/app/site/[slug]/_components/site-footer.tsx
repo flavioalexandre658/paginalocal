@@ -1,5 +1,4 @@
-import { cn } from '@/lib/utils'
-import { IconMapPin } from '@tabler/icons-react'
+import { IconMapPin, IconExternalLink } from '@tabler/icons-react'
 import Image from 'next/image'
 
 interface SiteFooterProps {
@@ -12,33 +11,46 @@ export function SiteFooter({ storeName, city, state }: SiteFooterProps) {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="border-t border-slate-200 bg-white pb-24 pt-8 md:py-8 dark:border-slate-800 dark:bg-slate-900">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
-              <IconMapPin className="h-4 w-4 text-slate-600 dark:text-slate-400" />
+    <footer className="relative border-t border-slate-200/60 pb-24 pt-8 md:py-10 dark:border-slate-800/60 overflow-hidden">
+      {/* Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-100 via-white to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-900" />
+      
+      <div className="container relative mx-auto px-4">
+        <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
+          {/* Store Name with Icon */}
+          <div className="flex items-center gap-3 group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 ring-1 ring-primary/20 transition-all duration-300 group-hover:ring-primary/30 group-hover:shadow-md group-hover:shadow-primary/10">
+              <IconMapPin className="h-5 w-5 text-primary" />
             </div>
-            <span className="font-semibold text-slate-700 dark:text-slate-200">
+            <span className="font-semibold text-slate-800 dark:text-slate-200">
               {storeName}
             </span>
           </div>
 
+          {/* Location & Year */}
           <p className="text-center text-sm text-slate-500 dark:text-slate-400">
             {city}, {state} · {currentYear}
           </p>
 
+          {/* Powered By Link */}
           <a
             href="https://paginalocal.com.br"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm inline-flex items-center gap-2 text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            className="group inline-flex items-center gap-2 rounded-full border border-slate-200/60 bg-white/70 px-4 py-2 text-sm text-slate-500 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:bg-white hover:shadow-md hover:shadow-primary/5 dark:border-slate-700/40 dark:bg-slate-900/70 dark:hover:border-primary/40"
           >
-            Criado com <Image src="/assets/images/icon/favicon.ico" alt="Página Local" width={16} height={16} />     <span
-              className={cn(
-                'font-semibold tracking-tight text-slate-900 dark:text-white ml-[-4px]',
-              )}
-            >Página Local</span>
+            <span>Criado com</span>
+            <Image 
+              src="/assets/images/icon/favicon.ico" 
+              alt="Página Local" 
+              width={16} 
+              height={16}
+              className="transition-transform duration-300 group-hover:scale-110"
+            />
+            <span className="font-semibold tracking-tight text-slate-900 dark:text-white">
+              Página Local
+            </span>
+            <IconExternalLink className="h-3.5 w-3.5 text-slate-400 transition-all duration-300 group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </a>
         </div>
       </div>

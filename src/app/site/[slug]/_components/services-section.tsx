@@ -17,14 +17,18 @@ interface ServicesSectionProps {
 
 export function ServicesSection({ services, storeName, category, city }: ServicesSectionProps) {
   return (
-    <section className="relative py-8 md:py-10">
-      <div className="container mx-auto px-4">
-        <div className="mb-16 text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-5 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+    <section id="servicos" className="relative py-16 md:py-20 overflow-hidden">
+      {/* Subtle background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/[0.03] to-transparent" />
+      
+      <div className="container relative mx-auto px-4">
+        {/* Section Header */}
+        <div className="mb-12 text-center animate-fade-in-up">
+          <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-600 mb-4">
             <IconSparkles className="h-4 w-4" />
             Nossos Serviços
-          </div>
-          <h2 className="mb-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl">
+          </span>
+          <h2 className="mb-4 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl lg:text-4xl">
             Serviços de {category} em {city}
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-slate-500 dark:text-slate-400">
@@ -32,14 +36,19 @@ export function ServicesSection({ services, storeName, category, city }: Service
           </p>
         </div>
 
-        <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
+        {/* Services Grid with Staggered Animation */}
+        <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2 stagger-children">
           {services.map((service) => (
             <div
               key={service.id}
-              className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800/50 dark:hover:border-slate-600"
+              className="group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/70 p-6 shadow-lg shadow-slate-200/20 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-emerald-200/50 dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/30 dark:hover:border-emerald-800/50 animate-fade-in-up"
             >
+              {/* Hover Gradient Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 via-transparent to-emerald-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:from-emerald-500/5 group-hover:to-emerald-500/5" />
+              
               <div className="relative flex items-start gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-600 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md dark:from-emerald-900/30 dark:to-emerald-800/20 dark:text-emerald-400">
+                {/* Icon with Gradient Background */}
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-600 shadow-sm ring-1 ring-emerald-200/50 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md group-hover:ring-emerald-300/50 dark:from-emerald-900/40 dark:to-emerald-800/30 dark:text-emerald-400 dark:ring-emerald-700/50">
                   <IconCheck className="h-7 w-7" />
                 </div>
                 <div className="flex-1">

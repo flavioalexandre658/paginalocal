@@ -53,14 +53,18 @@ export function ContactSection({ store, isOwner = false }: ContactSectionProps) 
   const openingHours = store.openingHours as Record<string, string> | null
 
   return (
-    <section className="relative py-8 md:py-10">
-      <div className="container mx-auto px-4">
-        <div className="mb-16 text-center">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-5 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+    <section id="contato" className="relative py-16 md:py-20 overflow-hidden">
+      {/* Subtle background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/[0.03] to-transparent" />
+      
+      <div className="container relative mx-auto px-4">
+        {/* Section Header */}
+        <div className="mb-12 text-center animate-fade-in-up">
+          <span className="inline-flex items-center gap-2 rounded-full bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-600 mb-4">
             <IconMapPin className="h-4 w-4" />
             Localização
-          </div>
-          <h2 className="mb-4 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl">
+          </span>
+          <h2 className="mb-4 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl lg:text-4xl">
             Onde fica a {store.name} em {store.city}
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-slate-500 dark:text-slate-400">
@@ -69,10 +73,11 @@ export function ContactSection({ store, isOwner = false }: ContactSectionProps) 
         </div>
 
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2">
-          <div className="space-y-6">
+          {/* Contact Cards */}
+          <div className="space-y-6 stagger-children">
             <ContactCard
               icon={<IconMapPin className="h-6 w-6" />}
-              iconBg="bg-blue-50 dark:bg-blue-900/20"
+              iconBg="bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/40 dark:to-blue-800/30"
               iconColor="text-blue-600 dark:text-blue-400"
               title="Endereço"
             >
@@ -91,7 +96,7 @@ export function ContactSection({ store, isOwner = false }: ContactSectionProps) 
             {store.phone && store.phone.trim() !== '' && (
               <ContactCard
                 icon={<IconPhone className="h-6 w-6" />}
-                iconBg="bg-emerald-50 dark:bg-emerald-900/20"
+                iconBg="bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/40 dark:to-emerald-800/30"
                 iconColor="text-emerald-600 dark:text-emerald-400"
                 title="Telefone"
               >
@@ -106,7 +111,7 @@ export function ContactSection({ store, isOwner = false }: ContactSectionProps) 
             {openingHours && Object.keys(openingHours).length > 0 && (
               <ContactCard
                 icon={<IconClock className="h-6 w-6" />}
-                iconBg="bg-amber-50 dark:bg-amber-900/20"
+                iconBg="bg-gradient-to-br from-amber-100 to-amber-50 dark:from-amber-900/40 dark:to-amber-800/30"
                 iconColor="text-amber-600 dark:text-amber-400"
                 title="Horário de Funcionamento"
               >
@@ -126,8 +131,9 @@ export function ContactSection({ store, isOwner = false }: ContactSectionProps) 
             )}
           </div>
 
+          {/* Map with Glassmorphism Border */}
           {store.latitude && store.longitude && (
-            <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-lg dark:border-slate-700">
+            <div className="animate-fade-in-up animation-delay-300 overflow-hidden rounded-2xl border border-slate-200/60 bg-white/70 shadow-lg shadow-slate-200/20 backdrop-blur-sm dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/30">
               <iframe
                 src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || ''}&q=${store.latitude},${store.longitude}&zoom=15`}
                 width="100%"
@@ -160,9 +166,12 @@ function ContactCard({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-800/50">
-      <div className="flex items-start gap-4">
-        <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${iconBg} ${iconColor}`}>
+    <div className="group relative rounded-2xl border border-slate-200/60 bg-white/70 p-6 shadow-lg shadow-slate-200/20 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-blue-200/50 dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/30 dark:hover:border-blue-800/50 animate-fade-in-up overflow-hidden">
+      {/* Hover Gradient Overlay */}
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/0 via-transparent to-blue-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:from-blue-500/5 group-hover:to-blue-500/5 pointer-events-none" />
+      
+      <div className="relative flex items-start gap-4">
+        <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${iconBg} ${iconColor} ring-1 ring-slate-200/50 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md dark:ring-slate-700/50`}>
           {icon}
         </div>
         <div className="flex-1">
