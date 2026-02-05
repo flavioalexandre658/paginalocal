@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, useInView } from 'framer-motion'
 import {
@@ -30,6 +30,19 @@ import {
   IconCoffee,
   IconDental,
   IconTrophy,
+  IconChartBar,
+  IconEye,
+  IconPercentage,
+  IconWorld,
+  IconTag,
+  IconDeviceMobile,
+  IconUsers,
+  IconBrandGoogle,
+  IconBrandInstagram,
+  IconBrandFacebook,
+  IconPhone,
+  IconMessageCircle,
+  IconTrendingUp,
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { MarketingHeader } from './marketing-header'
@@ -89,6 +102,7 @@ export function LandingPage() {
       <StepsSection />
       <BeforeAfterSection />
       <PageSpeedSection />
+      <AnalyticsSection />
       <ComparisonSection />
       <NichesSection />
       <CTASection />
@@ -544,6 +558,365 @@ function PageSpeedSection() {
         </div>
       </div>
     </section>
+  )
+}
+
+function AnalyticsSection() {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: '-100px' })
+
+  const metrics = [
+    { label: 'Visualizações', shortLabel: 'Visitas', value: 847, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
+    { label: 'Contatos', shortLabel: 'Contatos', value: 127, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { label: 'Conversão', shortLabel: 'Conversão', value: 15, suffix: '%', color: 'text-purple-500', bg: 'bg-purple-500/10' },
+  ]
+
+  const sources = [
+    { name: 'Google', icon: IconBrandGoogle, color: 'bg-blue-500', percentage: 45 },
+    { name: 'Instagram', icon: IconBrandInstagram, color: 'bg-pink-500', percentage: 30 },
+    { name: 'Direto', icon: IconWorld, color: 'bg-slate-500', percentage: 25 },
+  ]
+
+  const features = [
+    {
+      icon: IconEye,
+      title: 'Visualizações em tempo real',
+      description: 'Acompanhe quantas pessoas visitam seu site a cada dia',
+    },
+    {
+      icon: IconMessageCircle,
+      title: 'Cliques no WhatsApp',
+      description: 'Saiba quantos clientes entraram em contato via WhatsApp',
+    },
+    {
+      icon: IconPhone,
+      title: 'Cliques para ligar',
+      description: 'Contabilize quantas ligações seu site gerou',
+    },
+    {
+      icon: IconPercentage,
+      title: 'Taxa de conversão',
+      description: 'Descubra qual porcentagem de visitantes vira cliente',
+    },
+    {
+      icon: IconWorld,
+      title: 'Origem do tráfego',
+      description: 'Saiba se seus clientes vêm do Google, Instagram ou outros',
+    },
+    {
+      icon: IconTag,
+      title: 'Rastreamento UTM',
+      description: 'Acompanhe o desempenho de suas campanhas de marketing',
+    },
+  ]
+
+  return (
+    <section className="relative py-24 overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/5 to-transparent" />
+      
+      <div className="container relative mx-auto px-4">
+        <ScrollReveal className="mb-16 text-center">
+          <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-purple-500/10 px-4 py-1.5 text-sm font-medium text-purple-600 dark:text-purple-400">
+            <IconChartBar className="h-4 w-4" />
+            Analytics Completo
+          </span>
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl lg:text-4xl">
+            Dados que transformam visitantes em clientes
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
+            Chega de ficar no escuro. Saiba exatamente de onde vêm seus clientes 
+            e quais ações geram mais resultados.
+          </p>
+        </ScrollReveal>
+
+        <div ref={ref} className="mx-auto max-w-6xl">
+          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
+            {/* Dashboard Mockup */}
+            <motion.div
+              initial={{ opacity: 0, x: -40 }}
+              animate={isInView ? { opacity: 1, x: 0 } : {}}
+              transition={{ duration: 0.7 }}
+              className="relative"
+            >
+              <div className="rounded-3xl border border-slate-200/60 bg-white/80 p-6 shadow-2xl shadow-purple-500/10 backdrop-blur-xl dark:border-slate-700/60 dark:bg-slate-900/80 md:p-8">
+                {/* Header */}
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 text-purple-500">
+                    <IconChartBar className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-slate-900 dark:text-white">
+                      Analytics em Tempo Real
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Últimos 30 dias
+                    </p>
+                  </div>
+                </div>
+
+                {/* Metrics Grid */}
+                <div className="mb-6 grid grid-cols-3 gap-2 sm:gap-3">
+                  {metrics.map((metric, index) => (
+                    <motion.div
+                      key={metric.label}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={isInView ? { opacity: 1, y: 0 } : {}}
+                      transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
+                      className={cn(
+                        'rounded-2xl p-3 text-center sm:p-4',
+                        metric.bg
+                      )}
+                    >
+                      <AnimatedCounter 
+                        value={metric.value} 
+                        suffix={metric.suffix} 
+                        isInView={isInView}
+                        className={cn('text-xl font-bold sm:text-2xl md:text-3xl', metric.color)}
+                      />
+                      <p className="mt-1 text-[10px] text-slate-600 dark:text-slate-300 sm:text-xs">
+                        <span className="sm:hidden">{metric.shortLabel}</span>
+                        <span className="hidden sm:inline">{metric.label}</span>
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Mini Chart */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={isInView ? { opacity: 1 } : {}}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                  className="mb-6 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50"
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                      Visualizações vs Contatos
+                    </span>
+                    <div className="flex items-center gap-1 text-emerald-500">
+                      <IconTrendingUp className="h-3 w-3" />
+                      <span className="text-xs font-medium">+23%</span>
+                    </div>
+                  </div>
+                  <MiniChart isInView={isInView} />
+                </motion.div>
+
+                {/* Traffic Sources */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.5, delay: 0.8 }}
+                >
+                  <p className="mb-3 text-xs font-medium text-slate-600 dark:text-slate-300">
+                    Origem do Tráfego
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {sources.map((source) => (
+                      <div
+                        key={source.name}
+                        className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 dark:bg-slate-800"
+                      >
+                        <div className={cn('flex h-5 w-5 items-center justify-center rounded-full text-white', source.color)}>
+                          <source.icon className="h-3 w-3" />
+                        </div>
+                        <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
+                          {source.name}
+                        </span>
+                        <span className="text-xs text-slate-500">
+                          {source.percentage}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Floating decoration */}
+              <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 blur-2xl" />
+              <div className="absolute -bottom-4 -left-4 h-32 w-32 rounded-full bg-gradient-to-br from-cyan-500/20 to-blue-500/20 blur-2xl" />
+            </motion.div>
+
+            {/* Features List */}
+            <motion.div
+              initial="hidden"
+              animate={isInView ? 'visible' : 'hidden'}
+              variants={staggerContainer}
+              className="space-y-4"
+            >
+              {features.map((feature) => (
+                <motion.div
+                  key={feature.title}
+                  variants={staggerItem}
+                  className="group flex gap-4 rounded-2xl border border-transparent bg-white/50 p-4 transition-all hover:border-purple-200/60 hover:bg-white/80 hover:shadow-lg hover:shadow-purple-500/5 dark:bg-slate-900/50 dark:hover:border-purple-800/40 dark:hover:bg-slate-900/80"
+                >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 text-purple-500 transition-transform group-hover:scale-110">
+                    <feature.icon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900 dark:text-white">
+                      {feature.title}
+                    </h4>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                      {feature.description}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function AnimatedCounter({ 
+  value, 
+  suffix = '', 
+  isInView,
+  className 
+}: { 
+  value: number
+  suffix?: string
+  isInView: boolean
+  className?: string 
+}) {
+  const nodeRef = useRef<HTMLSpanElement>(null)
+  
+  return (
+    <motion.span
+      ref={nodeRef}
+      className={className}
+      initial={{ opacity: 0 }}
+      animate={isInView ? { opacity: 1 } : {}}
+    >
+      <motion.span
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : {}}
+        transition={{ duration: 0.5 }}
+      >
+        {isInView ? (
+          <CountUp value={value} />
+        ) : (
+          0
+        )}
+        {suffix}
+      </motion.span>
+    </motion.span>
+  )
+}
+
+function CountUp({ value }: { value: number }) {
+  const [count, setCount] = useState(0)
+  
+  useEffect(() => {
+    const duration = 1500
+    const steps = 30
+    const increment = value / steps
+    let current = 0
+    
+    const timer = setInterval(() => {
+      current += increment
+      if (current >= value) {
+        setCount(value)
+        clearInterval(timer)
+      } else {
+        setCount(Math.floor(current))
+      }
+    }, duration / steps)
+    
+    return () => clearInterval(timer)
+  }, [value])
+  
+  return <>{count}</>
+}
+
+function MiniChart({ isInView }: { isInView: boolean }) {
+  const points = [
+    { x: 0, y: 60 },
+    { x: 20, y: 45 },
+    { x: 40, y: 55 },
+    { x: 60, y: 35 },
+    { x: 80, y: 40 },
+    { x: 100, y: 25 },
+    { x: 120, y: 30 },
+    { x: 140, y: 15 },
+  ]
+
+  const points2 = [
+    { x: 0, y: 75 },
+    { x: 20, y: 70 },
+    { x: 40, y: 68 },
+    { x: 60, y: 60 },
+    { x: 80, y: 55 },
+    { x: 100, y: 50 },
+    { x: 120, y: 45 },
+    { x: 140, y: 35 },
+  ]
+
+  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+  const pathD2 = points2.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+
+  return (
+    <svg viewBox="0 0 140 80" className="h-20 w-full">
+      {/* Grid lines */}
+      {[20, 40, 60].map((y) => (
+        <line
+          key={y}
+          x1="0"
+          y1={y}
+          x2="140"
+          y2={y}
+          stroke="currentColor"
+          strokeWidth="0.5"
+          className="text-slate-200 dark:text-slate-700"
+        />
+      ))}
+      
+      {/* Area fill for line 1 */}
+      <motion.path
+        d={`${pathD} L 140 80 L 0 80 Z`}
+        fill="url(#gradient1)"
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 0.3 } : {}}
+        transition={{ duration: 1, delay: 0.5 }}
+      />
+      
+      {/* Line 1 - Visualizações */}
+      <motion.path
+        d={pathD}
+        fill="none"
+        stroke="#8b5cf6"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        initial={{ pathLength: 0 }}
+        animate={isInView ? { pathLength: 1 } : {}}
+        transition={{ duration: 1.5, delay: 0.3 }}
+      />
+      
+      {/* Line 2 - Contatos */}
+      <motion.path
+        d={pathD2}
+        fill="none"
+        stroke="#10b981"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeDasharray="4 2"
+        initial={{ pathLength: 0 }}
+        animate={isInView ? { pathLength: 1 } : {}}
+        transition={{ duration: 1.5, delay: 0.5 }}
+      />
+      
+      {/* Gradient definition */}
+      <defs>
+        <linearGradient id="gradient1" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+    </svg>
   )
 }
 
