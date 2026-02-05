@@ -87,8 +87,8 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
             className="group flex items-center justify-center"
             aria-label="Conversar no WhatsApp"
           >
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-20" />
-            <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-600 to-emerald-700 text-white shadow-2xl shadow-emerald-600/30 transition-all duration-300 hover:scale-110 hover:shadow-emerald-600/40">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-600 opacity-20" />
+            <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-700 to-emerald-800 text-white shadow-2xl shadow-emerald-700/30 transition-all duration-300 hover:scale-110 hover:shadow-emerald-700/40">
               <WhatsAppIcon className="h-8 w-8" />
             </span>
           </a>
@@ -119,7 +119,7 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => handleClick(e, 'whatsapp')}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 py-3.5 font-semibold text-white transition-all active:scale-98 active:bg-emerald-700"
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 py-3.5 font-semibold text-white transition-all active:scale-98 active:bg-emerald-800"
             >
               <WhatsAppIcon className="h-5 w-5" />
               <span>WhatsApp</span>
