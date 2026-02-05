@@ -88,9 +88,9 @@ export function CookieConsent() {
                         Utilizamos cookies
                       </h3>
                       <p className="text-sm text-slate-500 dark:text-slate-400">
-                        Usamos cookies para melhorar sua experiência, analisar o tráfego e personalizar conteúdo. 
+                        Usamos cookies para melhorar sua experiência, analisar o tráfego e personalizar conteúdo.
                         Ao continuar navegando, você concorda com nossa{' '}
-                        <Link href="/politica-de-privacidade" className="text-primary hover:underline">
+                        <Link href="https://paginalocal.com.br/politica-de-privacidade" className="text-primary hover:underline">
                           Política de Privacidade
                         </Link>
                         .
@@ -117,7 +117,8 @@ export function CookieConsent() {
                       <Button
                         size="sm"
                         onClick={acceptAll}
-                        className="shadow-md shadow-primary/20"
+
+                        className="bg-black text-white"
                       >
                         Aceitar todos
                       </Button>
@@ -141,7 +142,7 @@ export function CookieConsent() {
                       description="Necessários para o funcionamento básico do site. Não podem ser desativados."
                       checked={true}
                       disabled={true}
-                      onChange={() => {}}
+                      onChange={() => { }}
                     />
                     <CookieToggle
                       title="Cookies de análise"

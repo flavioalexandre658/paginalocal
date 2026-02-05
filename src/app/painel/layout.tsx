@@ -1,7 +1,8 @@
-import { ReactNode } from 'react'
+import { ReactNode, Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
+import { PurchaseTracker } from '@/components/shared/purchase-tracker'
 
 interface LayoutProps {
   children: ReactNode
@@ -14,5 +15,12 @@ export default async function PainelLayout({ children }: LayoutProps) {
     redirect('/entrar')
   }
 
-  return <>{children}</>
+  return (
+    <>
+      <Suspense fallback={null}>
+        <PurchaseTracker />
+      </Suspense>
+      {children}
+    </>
+  )
 }
