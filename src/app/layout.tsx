@@ -5,6 +5,7 @@ import { Inter } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { QueryProvider } from '@/components/providers/query-provider'
 import { CookieConsent } from '@/components/shared/cookie-consent'
+import { GoogleTagManager, GoogleTagManagerNoScript } from '@/components/shared/google-tag-manager'
 
 export const metadata: Metadata = {
   title: {
@@ -81,8 +82,10 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <GoogleTagManagerNoScript />
       </head>
       <body className={`bg-background antialiased ${inter.variable}`} suppressHydrationWarning>
+        <GoogleTagManager />
         <QueryProvider>
           <Toaster
             position="top-center"
