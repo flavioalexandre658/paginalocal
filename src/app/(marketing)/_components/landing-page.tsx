@@ -50,10 +50,10 @@ import { MarketingFooter } from './marketing-footer'
 
 const revealVariants = {
   hidden: { opacity: 0, y: 60 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const } 
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }
   }
 }
 
@@ -67,10 +67,10 @@ const staggerContainer = {
 
 const staggerItem = {
   hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } 
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }
   }
 }
 
@@ -144,7 +144,7 @@ function HeroSection() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mx-auto mt-6 max-w-2xl text-lg text-slate-500 dark:text-slate-400"
         >
-          Crie uma landing page profissional em minutos. SEO otimizado para sua cidade, 
+          Crie uma landing page profissional em minutos. SEO otimizado para sua cidade,
           integração com Google Meu Negócio e conversão direta via WhatsApp.
         </motion.p>
 
@@ -319,7 +319,7 @@ function BeforeAfterSection() {
   return (
     <section className="relative py-24 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-slate-100/50 to-white dark:from-slate-900/50 dark:to-slate-950" />
-      
+
       <div className="container relative mx-auto px-4">
         <ScrollReveal className="mb-16 text-center">
           <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-rose-500/10 px-4 py-1.5 text-sm font-medium text-rose-600 dark:text-rose-400">
@@ -341,7 +341,7 @@ function BeforeAfterSection() {
                 <div className="absolute left-4 top-4 rounded-full bg-red-500/10 px-3 py-1 text-xs font-bold text-red-500">
                   ANTES
                 </div>
-                
+
                 <div className="mt-8 space-y-4">
                   <div className="rounded-xl bg-white/80 p-4 shadow-lg dark:bg-slate-700/80">
                     <div className="mb-2 flex items-center gap-2">
@@ -614,7 +614,7 @@ function AnalyticsSection() {
     <section className="relative py-24 overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/5 to-transparent" />
-      
+
       <div className="container relative mx-auto px-4">
         <ScrollReveal className="mb-16 text-center">
           <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-purple-500/10 px-4 py-1.5 text-sm font-medium text-purple-600 dark:text-purple-400">
@@ -625,7 +625,7 @@ function AnalyticsSection() {
             Dados que transformam visitantes em clientes
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
-            Chega de ficar no escuro. Saiba exatamente de onde vêm seus clientes 
+            Chega de ficar no escuro. Saiba exatamente de onde vêm seus clientes
             e quais ações geram mais resultados.
           </p>
         </ScrollReveal>
@@ -668,9 +668,9 @@ function AnalyticsSection() {
                         metric.bg
                       )}
                     >
-                      <AnimatedCounter 
-                        value={metric.value} 
-                        suffix={metric.suffix} 
+                      <AnimatedCounter
+                        value={metric.value}
+                        suffix={metric.suffix}
                         isInView={isInView}
                         className={cn('text-xl font-bold sm:text-2xl md:text-3xl', metric.color)}
                       />
@@ -770,19 +770,19 @@ function AnalyticsSection() {
   )
 }
 
-function AnimatedCounter({ 
-  value, 
-  suffix = '', 
+function AnimatedCounter({
+  value,
+  suffix = '',
   isInView,
-  className 
-}: { 
+  className
+}: {
   value: number
   suffix?: string
   isInView: boolean
-  className?: string 
+  className?: string
 }) {
   const nodeRef = useRef<HTMLSpanElement>(null)
-  
+
   return (
     <motion.span
       ref={nodeRef}
@@ -808,13 +808,13 @@ function AnimatedCounter({
 
 function CountUp({ value }: { value: number }) {
   const [count, setCount] = useState(0)
-  
+
   useEffect(() => {
     const duration = 1500
     const steps = 30
     const increment = value / steps
     let current = 0
-    
+
     const timer = setInterval(() => {
       current += increment
       if (current >= value) {
@@ -824,10 +824,10 @@ function CountUp({ value }: { value: number }) {
         setCount(Math.floor(current))
       }
     }, duration / steps)
-    
+
     return () => clearInterval(timer)
   }, [value])
-  
+
   return <>{count}</>
 }
 
@@ -872,7 +872,7 @@ function MiniChart({ isInView }: { isInView: boolean }) {
           className="text-slate-200 dark:text-slate-700"
         />
       ))}
-      
+
       {/* Area fill for line 1 */}
       <motion.path
         d={`${pathD} L 140 80 L 0 80 Z`}
@@ -881,7 +881,7 @@ function MiniChart({ isInView }: { isInView: boolean }) {
         animate={isInView ? { opacity: 0.3 } : {}}
         transition={{ duration: 1, delay: 0.5 }}
       />
-      
+
       {/* Line 1 - Visualizações */}
       <motion.path
         d={pathD}
@@ -894,7 +894,7 @@ function MiniChart({ isInView }: { isInView: boolean }) {
         animate={isInView ? { pathLength: 1 } : {}}
         transition={{ duration: 1.5, delay: 0.3 }}
       />
-      
+
       {/* Line 2 - Contatos */}
       <motion.path
         d={pathD2}
@@ -908,7 +908,7 @@ function MiniChart({ isInView }: { isInView: boolean }) {
         animate={isInView ? { pathLength: 1 } : {}}
         transition={{ duration: 1.5, delay: 0.5 }}
       />
-      
+
       {/* Gradient definition */}
       <defs>
         <linearGradient id="gradient1" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -923,7 +923,7 @@ function MiniChart({ isInView }: { isInView: boolean }) {
 function ComparisonSection() {
   const features = [
     { name: 'Tempo para ficar pronto', local: '5 minutos', agency: '30+ dias', alone: 'Semanas' },
-    { name: 'Custo inicial', local: 'A partir de R$ 49', agency: 'R$ 2.500+', alone: 'R$ 0' },
+    { name: 'Custo inicial', local: 'A partir de R$ 59', agency: 'R$ 2.500+', alone: 'R$ 0' },
     { name: 'Manutenção mensal', local: 'Inclusa', agency: 'R$ 500+', alone: 'Você mesmo' },
     { name: 'SEO otimizado', local: true, agency: 'Talvez', alone: false },
     { name: 'Integração Google', local: true, agency: false, alone: false },
@@ -952,70 +952,70 @@ function ComparisonSection() {
         <ScrollReveal>
           <div className="hidden md:block mx-auto max-w-4xl">
             <div className="rounded-2xl border border-slate-200/60 bg-white shadow-xl dark:border-slate-700/60 dark:bg-slate-900">
-            <div className="grid grid-cols-4 border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
-              <div className="p-4" />
-              <div className="relative border-x-2 border-orange-400/30 bg-gradient-to-b from-orange-500/10 to-orange-500/5 px-4 pb-4 pt-8 text-center">
-                <div className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                  Melhor opção
+              <div className="grid grid-cols-4 border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
+                <div className="p-4" />
+                <div className="relative border-x-2 border-orange-400/30 bg-gradient-to-b from-orange-500/10 to-orange-500/5 px-4 pb-4 pt-8 text-center">
+                  <div className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
+                    Melhor opção
+                  </div>
+                  <span className="text-sm font-bold text-orange-600">Página Local</span>
                 </div>
-                <span className="text-sm font-bold text-orange-600">Página Local</span>
+                <div className="p-4 text-center">
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Agência</span>
+                </div>
+                <div className="p-4 text-center">
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Fazer sozinho</span>
+                </div>
               </div>
-              <div className="p-4 text-center">
-                <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Agência</span>
-              </div>
-              <div className="p-4 text-center">
-                <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Fazer sozinho</span>
-              </div>
-            </div>
 
-            {features.map((feature, index) => (
-              <div
-                key={feature.name}
-                className={cn(
-                  'grid grid-cols-4 border-b border-slate-100 dark:border-slate-800',
-                  index === features.length - 1 && 'border-b-0'
-                )}
-              >
-                <div className="p-4">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {feature.name}
-                  </span>
-                </div>
-                <div className="flex items-center justify-center border-x-2 border-orange-400/30 bg-orange-500/5 p-4">
-                  {typeof feature.local === 'boolean' ? (
-                    feature.local ? (
-                      <IconCheck className="h-5 w-5 text-emerald-500" />
-                    ) : (
-                      <IconX className="h-5 w-5 text-red-400" />
-                    )
-                  ) : (
-                    <span className="text-sm font-semibold text-orange-600">{feature.local}</span>
+              {features.map((feature, index) => (
+                <div
+                  key={feature.name}
+                  className={cn(
+                    'grid grid-cols-4 border-b border-slate-100 dark:border-slate-800',
+                    index === features.length - 1 && 'border-b-0'
                   )}
-                </div>
-                <div className="flex items-center justify-center p-4">
-                  {typeof feature.agency === 'boolean' ? (
-                    feature.agency ? (
-                      <IconCheck className="h-5 w-5 text-emerald-500" />
+                >
+                  <div className="p-4">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                      {feature.name}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-center border-x-2 border-orange-400/30 bg-orange-500/5 p-4">
+                    {typeof feature.local === 'boolean' ? (
+                      feature.local ? (
+                        <IconCheck className="h-5 w-5 text-emerald-500" />
+                      ) : (
+                        <IconX className="h-5 w-5 text-red-400" />
+                      )
                     ) : (
-                      <IconX className="h-5 w-5 text-red-400" />
-                    )
-                  ) : (
-                    <span className="text-sm text-slate-500">{feature.agency}</span>
-                  )}
-                </div>
-                <div className="flex items-center justify-center p-4">
-                  {typeof feature.alone === 'boolean' ? (
-                    feature.alone ? (
-                      <IconCheck className="h-5 w-5 text-emerald-500" />
+                      <span className="text-sm font-semibold text-orange-600">{feature.local}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-center p-4">
+                    {typeof feature.agency === 'boolean' ? (
+                      feature.agency ? (
+                        <IconCheck className="h-5 w-5 text-emerald-500" />
+                      ) : (
+                        <IconX className="h-5 w-5 text-red-400" />
+                      )
                     ) : (
-                      <IconX className="h-5 w-5 text-red-400" />
-                    )
-                  ) : (
-                    <span className="text-sm text-slate-500">{feature.alone}</span>
-                  )}
+                      <span className="text-sm text-slate-500">{feature.agency}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-center p-4">
+                    {typeof feature.alone === 'boolean' ? (
+                      feature.alone ? (
+                        <IconCheck className="h-5 w-5 text-emerald-500" />
+                      ) : (
+                        <IconX className="h-5 w-5 text-red-400" />
+                      )
+                    ) : (
+                      <span className="text-sm text-slate-500">{feature.alone}</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
             </div>
           </div>
 
