@@ -26,6 +26,7 @@ import { cn, getStoreUrl } from '@/lib/utils'
 import { DeleteStoreModal } from './_components/delete-store-modal'
 import { usePlanLimitRedirect } from '@/hooks/use-plan-limit-redirect'
 import { Logo } from '@/components/shared/logo'
+import { ShareModal } from '@/components/shared/share-modal'
 
 export default function PainelPage() {
   const router = useRouter()
@@ -256,6 +257,11 @@ function StoreCard({
               Painel
             </Link>
           </EnhancedButton>
+          <ShareModal
+            url={getStoreUrl(store.slug)}
+            title={`${store.name} - ${store.category || 'Negócio Local'}`}
+            description={`Conheça a ${store.name}${store.city ? ` em ${store.city}` : ''}`}
+          />
           <EnhancedButton
             variant="outline"
             size="icon"

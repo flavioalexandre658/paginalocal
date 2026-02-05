@@ -433,6 +433,7 @@ export const getStoreDashboardAction = authActionClient
         id: storeData.id,
         name: storeData.name,
         slug: storeData.slug,
+        category: storeData.category,
         isActive: storeData.isActive,
         googlePlaceId: storeData.googlePlaceId,
         googleRating: storeData.googleRating,
