@@ -203,33 +203,25 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
   const newStatus = mapStripeStatus(stripeSubscription.status)
   const newPriceId = stripeSubscription.items.data[0].price.id
 
-  // Verifica se o plano mudou (pelo priceId)
-  const [newPlan] = await db
+  // Verifica se o plano mudou (pelo priceId - tenta monthly ou yearly)
+  let selectedPlan = null
+  
+  const [planByMonthly] = await db
     .select()
     .from(plan)
-    .where(eq(plan.stripePriceId, newPriceId))
+    .where(eq(plan.stripeMonthlyPriceId, newPriceId))
     .limit(1)
-
-  // Se não encontrou pelo stripePriceId exato, tenta por monthly ou yearly
-  let selectedPlan = newPlan
-  if (!selectedPlan) {
-    const [planByMonthly] = await db
+  
+  if (planByMonthly) {
+    selectedPlan = planByMonthly
+  } else {
+    const [planByYearly] = await db
       .select()
       .from(plan)
-      .where(eq(plan.stripeMonthlyPriceId, newPriceId))
+      .where(eq(plan.stripeYearlyPriceId, newPriceId))
       .limit(1)
     
-    if (planByMonthly) {
-      selectedPlan = planByMonthly
-    } else {
-      const [planByYearly] = await db
-        .select()
-        .from(plan)
-        .where(eq(plan.stripeYearlyPriceId, newPriceId))
-        .limit(1)
-      
-      selectedPlan = planByYearly
-    }
+    selectedPlan = planByYearly || null
   }
 
   // Atualiza a subscription
