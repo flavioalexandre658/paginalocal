@@ -9,6 +9,7 @@ import {
   IconCreditCard,
   IconWorld,
   IconPlugConnected,
+  IconChartBar,
 } from '@tabler/icons-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -16,6 +17,7 @@ import { ProfileTab } from './profile-tab'
 import { BillingTab } from './billing-tab'
 import { DomainTab } from './domain-tab'
 import { IntegrationsTab } from './integrations-tab'
+import { TrackingTab } from './tracking-tab'
 
 interface SettingsContentProps {
   storeSlug: string
@@ -27,6 +29,7 @@ const TABS = [
   { id: 'assinatura', label: 'Assinatura', icon: IconCreditCard },
   { id: 'dominio', label: 'Domínio', icon: IconWorld },
   { id: 'integracoes', label: 'Integrações', icon: IconPlugConnected },
+  { id: 'rastreamento', label: 'Rastreamento', icon: IconChartBar },
 ]
 
 export function SettingsContent({ storeSlug, initialTab }: SettingsContentProps) {
@@ -58,7 +61,7 @@ export function SettingsContent({ storeSlug, initialTab }: SettingsContentProps)
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="flex w-full flex-wrap gap-2 bg-transparent p-0 sm:grid sm:grid-cols-4">
+        <TabsList className="flex w-full flex-wrap gap-2 bg-transparent p-0 sm:grid sm:grid-cols-5">
           {TABS.map((tab) => (
             <TabsTrigger
               key={tab.id}
@@ -86,6 +89,10 @@ export function SettingsContent({ storeSlug, initialTab }: SettingsContentProps)
 
           <TabsContent value="integracoes" className="mt-0">
             <IntegrationsTab storeSlug={storeSlug} />
+          </TabsContent>
+
+          <TabsContent value="rastreamento" className="mt-0">
+            <TrackingTab storeSlug={storeSlug} />
           </TabsContent>
         </div>
       </Tabs>
