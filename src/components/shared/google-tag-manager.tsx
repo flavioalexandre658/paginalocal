@@ -12,7 +12,7 @@ declare global {
 
 const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID
 
-const EXCLUDED_PATHS = ["/store", "/platform"]
+const EXCLUDED_PATHS = ["/store", "/platform", "/site"]
 
 function shouldExcludeGTM(pathname: string): boolean {
   return EXCLUDED_PATHS.some((path) => pathname.startsWith(path))
@@ -46,8 +46,8 @@ export function GoogleTagManager() {
     if (!GTM_ID || shouldExcludeGTM(pathname)) return
 
     if (typeof document === "undefined") return
-    if ((document as unknown as { contentType?: string }).contentType && 
-        !(document as unknown as { contentType: string }).contentType.includes("html")) {
+    if ((document as unknown as { contentType?: string }).contentType &&
+      !(document as unknown as { contentType: string }).contentType.includes("html")) {
       return
     }
 
