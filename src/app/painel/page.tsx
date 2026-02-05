@@ -283,7 +283,6 @@ function StoreCard({
           <DeleteStoreModal
             storeId={store.id}
             storeName={store.name}
-            storeSlug={store.slug}
             onSuccess={onDelete}
           />
         </div>

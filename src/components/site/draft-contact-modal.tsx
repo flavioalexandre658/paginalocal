@@ -118,7 +118,7 @@ export function DraftContactModal({
               </div>
 
               {isOwner ? (
-                <OwnerContent storeSlug={storeSlug} />
+                <OwnerContent />
               ) : isSubmitted ? (
                 <SuccessContent storeName={storeName} onClose={handleClose} />
               ) : (
@@ -138,7 +138,7 @@ export function DraftContactModal({
   )
 }
 
-function OwnerContent({ storeSlug: _storeSlug }: { storeSlug: string }) {
+function OwnerContent() {
   return (
     <div className="space-y-4">
       <div>

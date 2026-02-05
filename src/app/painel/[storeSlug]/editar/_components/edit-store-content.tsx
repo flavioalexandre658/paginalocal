@@ -97,7 +97,7 @@ export function EditStoreContent({ storeSlug, initialTab }: EditStoreContentProp
 
         <div className="rounded-2xl border border-slate-200/40 bg-white/70 p-4 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50 sm:p-6">
           <TabsContent value="geral" className="mt-0">
-            <GeneralTab store={data.store} storeSlug={storeSlug} />
+            <GeneralTab store={data.store} />
           </TabsContent>
 
           <TabsContent value="contato" className="mt-0">

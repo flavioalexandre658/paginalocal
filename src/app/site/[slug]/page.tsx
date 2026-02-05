@@ -252,7 +252,7 @@ export default async function StorePage({ params }: PageProps) {
         />
       )}
 
-      {isDraft && <DraftBanner storeSlug={storeData.slug} isOwner={isOwner} />}
+      {isDraft && <DraftBanner isOwner={isOwner} />}
 
       <main className={isDraft ? 'pt-14' : ''}>
         <HeroSection

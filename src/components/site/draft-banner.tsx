@@ -7,11 +7,10 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
 interface DraftBannerProps {
-  storeSlug: string
   isOwner: boolean
 }
 
-export function DraftBanner({ storeSlug: _storeSlug, isOwner }: DraftBannerProps) {
+export function DraftBanner({ isOwner }: DraftBannerProps) {
   const [isVisible, setIsVisible] = useState(true)
 
   if (!isVisible) return null

@@ -64,10 +64,9 @@ interface GeneralTabProps {
     logoUrl: string | null
     faviconUrl: string | null
   }
-  storeSlug: string
 }
 
-export function GeneralTab({ store, storeSlug }: GeneralTabProps) {
+export function GeneralTab({ store }: GeneralTabProps) {
   const { executeAsync, isExecuting } = useAction(updateStoreAction)
   const { executeAsync: uploadImage } = useAction(uploadStoreImageAction)
   const { executeAsync: uploadFavicon } = useAction(uploadFaviconAction)
@@ -224,6 +223,7 @@ export function GeneralTab({ store, storeSlug }: GeneralTabProps) {
             >
               {logoUrl ? (
                 <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={logoUrl}
                     alt="Logo"
@@ -274,6 +274,7 @@ export function GeneralTab({ store, storeSlug }: GeneralTabProps) {
             >
               {faviconUrl ? (
                 <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={faviconUrl}
                     alt="Favicon"
