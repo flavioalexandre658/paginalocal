@@ -1,7 +1,8 @@
 import { MetadataRoute } from 'next'
 import { db } from '@/db'
-import { store } from '@/db/schema'
-import { eq } from 'drizzle-orm'
+import { store, category } from '@/db/schema'
+import { eq, ne, and } from 'drizzle-orm'
+import { generateCitySlug } from '@/lib/utils'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://paginalocal.com.br'
 
@@ -51,14 +52,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: page.priority,
   }))
 
-  const activeStores = await db
-    .select({
-      slug: store.slug,
-      customDomain: store.customDomain,
-      updatedAt: store.updatedAt,
-    })
-    .from(store)
-    .where(eq(store.isActive, true))
+  const [activeStores, categories, categoryCityCombinations] = await Promise.all([
+    db
+      .select({
+        slug: store.slug,
+        customDomain: store.customDomain,
+        updatedAt: store.updatedAt,
+      })
+      .from(store)
+      .where(eq(store.isActive, true)),
+    
+    db
+      .select({
+        slug: category.slug,
+      })
+      .from(category)
+      .where(ne(category.slug, 'outro')),
+    
+    db
+      .selectDistinct({
+        categorySlug: category.slug,
+        city: store.city,
+      })
+      .from(store)
+      .innerJoin(category, eq(store.category, category.name))
+      .where(and(eq(store.isActive, true), ne(category.slug, 'outro'))),
+  ])
 
   const storePages: MetadataRoute.Sitemap = activeStores.map((s) => {
     const storeUrl = s.customDomain
@@ -73,5 +92,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   })
 
-  return [...staticPages, ...storePages]
+  const categoryPages: MetadataRoute.Sitemap = categories.map((c) => ({
+    url: `${BASE_URL}/${c.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }))
+
+  const categoryCityPages: MetadataRoute.Sitemap = categoryCityCombinations.map((cc) => ({
+    url: `${BASE_URL}/${cc.categorySlug}/${generateCitySlug(cc.city)}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.7,
+  }))
+
+  return [...staticPages, ...categoryPages, ...categoryCityPages, ...storePages]
 }

@@ -1,0 +1,175 @@
+import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { getCategoryBySlug } from '@/actions/categories/get-category-by-slug.action'
+import { getStoresByCategory, getCategoryStats } from '@/actions/categories/get-stores-by-category.action'
+import { getCategoryCities } from '@/actions/categories/get-category-cities.action'
+import { CategoryPageClient } from './category-page-client'
+
+interface CategoryPageProps {
+  params: Promise<{ categorySlug: string }>
+}
+
+export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+  const { categorySlug } = await params
+  const category = await getCategoryBySlug(categorySlug)
+
+  if (!category || category.slug === 'outro') {
+    return {
+      title: 'Categoria não encontrada',
+    }
+  }
+
+  const title = category.seoTitle || `${category.name} - Encontre os Melhores | Página Local`
+  const description = category.seoDescription || `Encontre os melhores ${category.name.toLowerCase()} da sua região. Veja avaliações, endereços e entre em contato pelo WhatsApp.`
+
+  return {
+    title,
+    description,
+    keywords: category.seoKeywords?.join(', ') || category.name.toLowerCase(),
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      locale: 'pt_BR',
+      siteName: 'Página Local',
+      url: `https://paginalocal.com.br/${categorySlug}`,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
+    alternates: {
+      canonical: `https://paginalocal.com.br/${categorySlug}`,
+    },
+  }
+}
+
+export default async function CategoryPage({ params }: CategoryPageProps) {
+  const { categorySlug } = await params
+  
+  if (categorySlug === 'outro') {
+    notFound()
+  }
+
+  const category = await getCategoryBySlug(categorySlug)
+
+  if (!category) {
+    notFound()
+  }
+
+  const [storesData, stats, cities] = await Promise.all([
+    getStoresByCategory(categorySlug, 12),
+    getCategoryStats(category.name),
+    getCategoryCities(categorySlug, 50),
+  ])
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: category.heroTitle || `${category.name} - Página Local`,
+    description: category.seoDescription || category.description,
+    numberOfItems: stats.totalStores,
+    itemListElement: storesData.stores.map((store, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'LocalBusiness',
+        name: store.name,
+        description: store.description,
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: store.city,
+          addressRegion: store.state,
+          streetAddress: store.address,
+        },
+        ...(store.googleRating && {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: store.googleRating,
+            reviewCount: store.googleReviewsCount || 1,
+          },
+        }),
+        url: `https://${store.slug}.paginalocal.com.br`,
+      },
+    })),
+  }
+
+  const serviceJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: category.name,
+    description: category.longDescription || category.description,
+    provider: {
+      '@type': 'Organization',
+      name: 'Página Local',
+      url: 'https://paginalocal.com.br',
+    },
+    areaServed: {
+      '@type': 'Country',
+      name: 'Brasil',
+    },
+    ...(category.suggestedServices && {
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: `Serviços de ${category.name}`,
+        itemListElement: category.suggestedServices.map((service) => ({
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: service,
+          },
+        })),
+      },
+    }),
+  }
+
+  const faqJsonLd = category.faqs && category.faqs.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: category.faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  } : null
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
+
+      <CategoryPageClient
+        category={{
+          name: category.name,
+          slug: category.slug,
+          description: category.description,
+          heroTitle: category.heroTitle,
+          heroSubtitle: category.heroSubtitle,
+          longDescription: category.longDescription,
+          seoDescription: category.seoDescription,
+          suggestedServices: category.suggestedServices,
+          faqs: category.faqs,
+        }}
+        stores={storesData.stores}
+        stats={stats}
+        cities={cities}
+      />
+    </>
+  )
+}

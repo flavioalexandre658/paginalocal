@@ -2,13 +2,39 @@ import 'dotenv/config'
 import { db } from './index'
 import { category } from './schema'
 
-const CATEGORIES_SEED = [
+interface CategorySeed {
+  name: string
+  slug: string
+  icon: string
+  description: string
+  suggestedServices: string[]
+  seoTitle: string
+  seoDescription: string
+  seoKeywords: string[]
+  heroTitle: string
+  heroSubtitle: string
+  longDescription: string
+  faqs: Array<{ question: string; answer: string }>
+}
+
+const CATEGORIES_SEED: CategorySeed[] = [
   {
     name: 'Borracharia',
     slug: 'borracharia',
     icon: 'IconTire',
     description: 'Serviços de pneus, alinhamento e balanceamento',
     suggestedServices: ['Troca de Pneus', 'Reparo de Pneus', 'Alinhamento', 'Balanceamento', 'Calibragem', 'Socorro 24h'],
+    seoTitle: 'Borracharias - Encontre a Melhor Perto de Você',
+    seoDescription: 'Encontre as melhores borracharias da sua região. Troca de pneus, alinhamento, balanceamento e socorro 24h. Compare avaliações e preços.',
+    seoKeywords: ['borracharia', 'troca de pneu', 'alinhamento', 'balanceamento', 'pneu furado', 'socorro 24h', 'calibragem'],
+    heroTitle: 'Encontre a Melhor Borracharia',
+    heroSubtitle: 'Compare avaliações, veja endereços e entre em contato diretamente pelo WhatsApp com as melhores borracharias da sua cidade.',
+    longDescription: 'Precisa de serviços de borracharia? No Página Local você encontra as melhores borracharias da sua região, com avaliações reais de clientes, endereços completos e contato direto via WhatsApp. Seja para troca de pneus, alinhamento, balanceamento ou socorro 24h, conectamos você aos profissionais mais bem avaliados.',
+    faqs: [
+      { question: 'Quanto custa trocar um pneu?', answer: 'O valor da troca de pneu varia conforme o modelo e aro. Em média, o serviço de montagem e balanceamento custa entre R$ 30 e R$ 80 por pneu.' },
+      { question: 'Com que frequência devo fazer alinhamento?', answer: 'Recomenda-se fazer alinhamento a cada 10.000 km ou sempre que notar o carro puxando para um lado.' },
+      { question: 'Borracharia atende emergência?', answer: 'Muitas borracharias oferecem socorro 24h. Verifique nos perfis quais estabelecimentos oferecem este serviço.' },
+    ],
   },
   {
     name: 'Oficina Mecânica',
@@ -16,6 +42,17 @@ const CATEGORIES_SEED = [
     icon: 'IconTool',
     description: 'Manutenção e reparo de veículos',
     suggestedServices: ['Troca de Óleo', 'Revisão Completa', 'Freios', 'Suspensão', 'Motor', 'Diagnóstico'],
+    seoTitle: 'Oficinas Mecânicas - Manutenção e Reparo',
+    seoDescription: 'Encontre oficinas mecânicas confiáveis na sua cidade. Troca de óleo, revisão, freios, suspensão e mais. Avaliações reais de clientes.',
+    seoKeywords: ['oficina mecânica', 'mecânico', 'troca de óleo', 'revisão', 'freios', 'suspensão', 'motor'],
+    heroTitle: 'Encontre a Melhor Oficina Mecânica',
+    heroSubtitle: 'Mecânicos de confiança para cuidar do seu carro. Veja avaliações, compare preços e agende sua revisão.',
+    longDescription: 'Encontre oficinas mecânicas de confiança na sua região. No Página Local, você compara avaliações reais de clientes, vê os serviços oferecidos e entra em contato diretamente via WhatsApp. Desde troca de óleo até revisões completas, encontre o mecânico ideal para seu veículo.',
+    faqs: [
+      { question: 'Com que frequência devo trocar o óleo?', answer: 'O ideal é trocar o óleo a cada 5.000 a 10.000 km, dependendo do tipo de óleo e do veículo.' },
+      { question: 'Quanto custa uma revisão completa?', answer: 'Uma revisão completa pode variar de R$ 200 a R$ 800, dependendo do veículo e dos itens incluídos.' },
+      { question: 'Como escolher uma boa oficina?', answer: 'Verifique as avaliações de outros clientes, se a oficina é especializada no seu tipo de veículo e se oferece garantia nos serviços.' },
+    ],
   },
   {
     name: 'Auto Center',
@@ -23,6 +60,17 @@ const CATEGORIES_SEED = [
     icon: 'IconCar',
     description: 'Centro automotivo completo',
     suggestedServices: ['Manutenção Preventiva', 'Ar Condicionado', 'Elétrica', 'Injeção Eletrônica', 'Escapamento', 'Embreagem'],
+    seoTitle: 'Auto Centers - Centro Automotivo Completo',
+    seoDescription: 'Encontre auto centers com serviços completos: ar condicionado, elétrica, injeção eletrônica e mais. Compare e escolha o melhor.',
+    seoKeywords: ['auto center', 'centro automotivo', 'ar condicionado automotivo', 'elétrica automotiva', 'injeção eletrônica'],
+    heroTitle: 'Encontre o Melhor Auto Center',
+    heroSubtitle: 'Centros automotivos completos com todos os serviços que seu carro precisa em um só lugar.',
+    longDescription: 'Auto centers oferecem uma gama completa de serviços automotivos. Encontre os melhores da sua região no Página Local, com avaliações de clientes, lista de serviços e contato direto.',
+    faqs: [
+      { question: 'O que é um auto center?', answer: 'Um auto center é um estabelecimento que oferece diversos serviços automotivos em um só lugar, como mecânica, elétrica, ar condicionado e mais.' },
+      { question: 'Auto center é mais caro que oficina?', answer: 'Não necessariamente. Auto centers podem ter preços competitivos e a vantagem de resolver tudo em um só lugar.' },
+      { question: 'Posso fazer revisão em auto center?', answer: 'Sim, a maioria dos auto centers oferece revisão completa com todos os serviços necessários.' },
+    ],
   },
   {
     name: 'Revendedora de Veículos',
@@ -30,6 +78,17 @@ const CATEGORIES_SEED = [
     icon: 'IconCarGarage',
     description: 'Compra e venda de veículos novos e seminovos',
     suggestedServices: ['Compra de Veículos', 'Venda de Seminovos', 'Financiamento', 'Consignação', 'Avaliação', 'Troca'],
+    seoTitle: 'Revendedoras de Veículos - Compra e Venda',
+    seoDescription: 'Encontre revendedoras de veículos confiáveis. Seminovos, financiamento, consignação e avaliação. Compare ofertas na sua cidade.',
+    seoKeywords: ['revendedora', 'seminovos', 'carros usados', 'financiamento', 'consignação', 'compra de carro'],
+    heroTitle: 'Encontre a Melhor Revendedora',
+    heroSubtitle: 'Compre ou venda seu veículo com segurança. Revendedoras avaliadas por clientes reais.',
+    longDescription: 'Procurando um seminovo de qualidade ou quer vender seu carro? Encontre as melhores revendedoras da sua região no Página Local. Compare avaliações, veja o estoque e negocie diretamente.',
+    faqs: [
+      { question: 'É seguro comprar em revendedora?', answer: 'Sim, desde que você escolha revendedoras bem avaliadas e verifique a documentação do veículo.' },
+      { question: 'Revendedora faz financiamento?', answer: 'A maioria das revendedoras trabalha com diversas opções de financiamento facilitado.' },
+      { question: 'Posso trocar meu carro?', answer: 'Sim, muitas revendedoras aceitam seu veículo usado como parte do pagamento.' },
+    ],
   },
   {
     name: 'Lava Jato',
@@ -37,6 +96,17 @@ const CATEGORIES_SEED = [
     icon: 'IconDroplet',
     description: 'Lavagem e estética automotiva',
     suggestedServices: ['Lavagem Simples', 'Lavagem Completa', 'Polimento', 'Higienização', 'Cristalização', 'Enceramento'],
+    seoTitle: 'Lava Jatos - Lavagem e Estética Automotiva',
+    seoDescription: 'Encontre os melhores lava jatos da sua cidade. Lavagem completa, polimento, higienização e cristalização. Preços e avaliações.',
+    seoKeywords: ['lava jato', 'lavagem de carro', 'polimento', 'higienização', 'cristalização', 'enceramento'],
+    heroTitle: 'Encontre o Melhor Lava Jato',
+    heroSubtitle: 'Deixe seu carro brilhando! Compare lava jatos com os melhores serviços e preços.',
+    longDescription: 'Mantenha seu carro sempre limpo e bem cuidado. Encontre lava jatos de qualidade na sua região, com serviços de lavagem simples até estética automotiva completa.',
+    faqs: [
+      { question: 'Quanto custa lavar o carro?', answer: 'Uma lavagem simples custa em média R$ 30 a R$ 50. Lavagem completa varia de R$ 60 a R$ 150.' },
+      { question: 'O que é cristalização?', answer: 'É um tratamento que protege a pintura do carro, criando uma camada protetora contra riscos e raios UV.' },
+      { question: 'Com que frequência devo lavar o carro?', answer: 'Recomenda-se lavar a cada 15 dias ou semanalmente se o carro fica exposto a muita sujeira.' },
+    ],
   },
   {
     name: 'Estacionamento',
@@ -44,6 +114,17 @@ const CATEGORIES_SEED = [
     icon: 'IconParking',
     description: 'Vagas de estacionamento',
     suggestedServices: ['Vaga Rotativa', 'Mensalista', 'Lavagem', 'Manobrista', 'Segurança 24h'],
+    seoTitle: 'Estacionamentos - Vagas Seguras',
+    seoDescription: 'Encontre estacionamentos seguros na sua cidade. Vagas rotativas, mensalistas, com manobrista e segurança 24h.',
+    seoKeywords: ['estacionamento', 'vaga', 'mensalista', 'manobrista', 'estacionamento seguro'],
+    heroTitle: 'Encontre Estacionamentos Seguros',
+    heroSubtitle: 'Vagas rotativas ou mensais com segurança e praticidade.',
+    longDescription: 'Encontre estacionamentos confiáveis e seguros na sua região. Compare preços, veja os serviços oferecidos e escolha o melhor para suas necessidades.',
+    faqs: [
+      { question: 'Quanto custa estacionamento mensal?', answer: 'O valor mensal varia conforme a localização, geralmente entre R$ 200 e R$ 600.' },
+      { question: 'Estacionamento tem seguro?', answer: 'A maioria dos estacionamentos possui seguro contra roubo e danos, mas verifique as condições.' },
+      { question: 'Posso deixar o carro 24h?', answer: 'Muitos estacionamentos oferecem serviço 24h, especialmente os mensalistas.' },
+    ],
   },
   {
     name: 'Barbearia',
@@ -51,6 +132,17 @@ const CATEGORIES_SEED = [
     icon: 'IconScissors',
     description: 'Cortes masculinos e barba',
     suggestedServices: ['Corte de Cabelo', 'Barba', 'Sobrancelha', 'Hidratação', 'Pigmentação', 'Combo Completo'],
+    seoTitle: 'Barbearias - Corte e Barba Masculina',
+    seoDescription: 'Encontre as melhores barbearias da sua cidade. Corte masculino, barba, sobrancelha e tratamentos. Veja avaliações e agende.',
+    seoKeywords: ['barbearia', 'corte masculino', 'barba', 'barbeiro', 'corte de cabelo', 'barbearia perto de mim'],
+    heroTitle: 'Encontre a Melhor Barbearia',
+    heroSubtitle: 'Corte e barba com os melhores barbeiros. Agende pelo WhatsApp!',
+    longDescription: 'Encontre barbearias de qualidade na sua região. No Página Local, você vê fotos dos trabalhos, avaliações de clientes e agenda direto pelo WhatsApp.',
+    faqs: [
+      { question: 'Quanto custa um corte de cabelo?', answer: 'O corte masculino em barbearias varia de R$ 25 a R$ 80, dependendo do estabelecimento.' },
+      { question: 'Precisa agendar horário?', answer: 'Recomendamos agendar, especialmente em barbearias muito procuradas. Entre em contato via WhatsApp.' },
+      { question: 'Barbearia faz barba?', answer: 'Sim, a maioria das barbearias oferece serviço de barba com navalha e acabamento profissional.' },
+    ],
   },
   {
     name: 'Salão de Beleza',
@@ -58,6 +150,17 @@ const CATEGORIES_SEED = [
     icon: 'IconSparkles',
     description: 'Serviços de beleza e estética',
     suggestedServices: ['Corte Feminino', 'Coloração', 'Escova', 'Manicure', 'Pedicure', 'Design de Sobrancelha'],
+    seoTitle: 'Salões de Beleza - Beleza e Estética',
+    seoDescription: 'Encontre os melhores salões de beleza. Corte, coloração, manicure, pedicure e mais. Compare avaliações e agende seu horário.',
+    seoKeywords: ['salão de beleza', 'cabeleireiro', 'manicure', 'pedicure', 'coloração', 'escova'],
+    heroTitle: 'Encontre o Melhor Salão de Beleza',
+    heroSubtitle: 'Cabelo, unhas e estética com profissionais qualificados. Agende agora!',
+    longDescription: 'Encontre salões de beleza de qualidade na sua região. Veja fotos dos trabalhos, avaliações de clientes e agende seus serviços diretamente.',
+    faqs: [
+      { question: 'Quanto custa coloração?', answer: 'O valor da coloração varia de R$ 80 a R$ 300, dependendo do comprimento e técnica utilizada.' },
+      { question: 'Salão faz design de sobrancelha?', answer: 'Sim, a maioria dos salões oferece design de sobrancelha com diversos métodos.' },
+      { question: 'Precisa agendar horário?', answer: 'Sim, é importante agendar para garantir seu horário, especialmente para procedimentos demorados.' },
+    ],
   },
   {
     name: 'Restaurante',
@@ -65,6 +168,17 @@ const CATEGORIES_SEED = [
     icon: 'IconToolsKitchen2',
     description: 'Gastronomia e alimentação',
     suggestedServices: ['Almoço Executivo', 'Self-Service', 'À la Carte', 'Delivery', 'Eventos', 'Marmitex'],
+    seoTitle: 'Restaurantes - Onde Comer Bem',
+    seoDescription: 'Encontre os melhores restaurantes da sua cidade. Self-service, à la carte, delivery e mais. Veja avaliações e cardápios.',
+    seoKeywords: ['restaurante', 'onde comer', 'almoço', 'self-service', 'delivery', 'comida'],
+    heroTitle: 'Encontre os Melhores Restaurantes',
+    heroSubtitle: 'Descubra onde comer bem na sua cidade. Avaliações reais e contato direto.',
+    longDescription: 'Encontre restaurantes de qualidade na sua região. Seja para um almoço executivo, jantar especial ou delivery, compare opções e escolha o melhor.',
+    faqs: [
+      { question: 'Restaurante faz delivery?', answer: 'Muitos restaurantes oferecem delivery. Verifique no perfil de cada estabelecimento.' },
+      { question: 'Quanto custa almoço executivo?', answer: 'O almoço executivo geralmente varia de R$ 20 a R$ 50, dependendo do restaurante.' },
+      { question: 'Posso reservar mesa?', answer: 'A maioria dos restaurantes aceita reservas. Entre em contato via WhatsApp para confirmar.' },
+    ],
   },
   {
     name: 'Pizzaria',
@@ -72,6 +186,17 @@ const CATEGORIES_SEED = [
     icon: 'IconPizza',
     description: 'Pizzas artesanais e delivery',
     suggestedServices: ['Pizzas Tradicionais', 'Pizzas Especiais', 'Rodízio', 'Delivery', 'Calzones', 'Esfihas'],
+    seoTitle: 'Pizzarias - As Melhores Pizzas',
+    seoDescription: 'Encontre as melhores pizzarias da sua cidade. Pizzas artesanais, rodízio e delivery. Veja avaliações e peça agora!',
+    seoKeywords: ['pizzaria', 'pizza', 'delivery pizza', 'rodízio pizza', 'pizza artesanal'],
+    heroTitle: 'Encontre as Melhores Pizzarias',
+    heroSubtitle: 'Pizzas deliciosas com delivery ou para comer no local. Compare e peça!',
+    longDescription: 'Descubra as melhores pizzarias da sua região. Compare avaliações, veja o cardápio e peça sua pizza favorita.',
+    faqs: [
+      { question: 'Pizzaria entrega?', answer: 'A maioria das pizzarias oferece delivery. Verifique a área de entrega e tempo estimado.' },
+      { question: 'Quanto custa uma pizza grande?', answer: 'Pizzas grandes variam de R$ 40 a R$ 100, dependendo dos sabores e da pizzaria.' },
+      { question: 'Pizzaria tem rodízio?', answer: 'Algumas pizzarias oferecem rodízio. Verifique no perfil do estabelecimento.' },
+    ],
   },
   {
     name: 'Lanchonete',
@@ -79,6 +204,17 @@ const CATEGORIES_SEED = [
     icon: 'IconBurger',
     description: 'Lanches rápidos e sanduíches',
     suggestedServices: ['Lanches', 'Sanduíches', 'Porções', 'Sucos', 'Açaí', 'Combos'],
+    seoTitle: 'Lanchonetes - Lanches e Sanduíches',
+    seoDescription: 'Encontre as melhores lanchonetes da sua cidade. Hambúrgueres, sanduíches, porções e mais. Avaliações e delivery.',
+    seoKeywords: ['lanchonete', 'hambúrguer', 'sanduíche', 'lanche', 'fast food', 'açaí'],
+    heroTitle: 'Encontre as Melhores Lanchonetes',
+    heroSubtitle: 'Lanches saborosos e rápidos. Veja avaliações e peça agora!',
+    longDescription: 'Encontre lanchonetes de qualidade na sua região. Hambúrgueres artesanais, sanduíches e muito mais.',
+    faqs: [
+      { question: 'Lanchonete faz delivery?', answer: 'A maioria das lanchonetes oferece delivery. Verifique no perfil do estabelecimento.' },
+      { question: 'Quanto custa um hambúrguer?', answer: 'Hambúrgueres variam de R$ 15 a R$ 45, dependendo do tamanho e ingredientes.' },
+      { question: 'Tem opções vegetarianas?', answer: 'Muitas lanchonetes oferecem opções vegetarianas. Consulte o cardápio.' },
+    ],
   },
   {
     name: 'Padaria',
@@ -86,6 +222,17 @@ const CATEGORIES_SEED = [
     icon: 'IconBread',
     description: 'Pães artesanais e confeitaria',
     suggestedServices: ['Pães Artesanais', 'Bolos', 'Salgados', 'Café da Manhã', 'Encomendas', 'Frios'],
+    seoTitle: 'Padarias - Pães e Confeitaria',
+    seoDescription: 'Encontre as melhores padarias da sua cidade. Pães artesanais, bolos, salgados e café da manhã. Veja avaliações.',
+    seoKeywords: ['padaria', 'pão', 'bolo', 'confeitaria', 'café da manhã', 'salgados'],
+    heroTitle: 'Encontre as Melhores Padarias',
+    heroSubtitle: 'Pães fresquinhos, bolos e muito mais. Descubra as melhores padarias!',
+    longDescription: 'Encontre padarias de qualidade na sua região. Pães artesanais, confeitaria e café da manhã completo.',
+    faqs: [
+      { question: 'Padaria faz encomenda de bolo?', answer: 'Sim, a maioria das padarias aceita encomendas de bolos para festas e eventos.' },
+      { question: 'Tem café da manhã?', answer: 'Muitas padarias servem café da manhã completo. Verifique o horário de funcionamento.' },
+      { question: 'Padaria entrega?', answer: 'Algumas padarias oferecem delivery. Consulte o perfil do estabelecimento.' },
+    ],
   },
   {
     name: 'Pet Shop',
@@ -93,6 +240,17 @@ const CATEGORIES_SEED = [
     icon: 'IconDog',
     description: 'Produtos e serviços para pets',
     suggestedServices: ['Banho', 'Tosa', 'Ração', 'Acessórios', 'Veterinário', 'Hotel Pet'],
+    seoTitle: 'Pet Shops - Cuidados com seu Pet',
+    seoDescription: 'Encontre os melhores pet shops da sua cidade. Banho, tosa, ração, acessórios e mais. Cuide bem do seu pet!',
+    seoKeywords: ['pet shop', 'banho e tosa', 'ração', 'veterinário', 'hotel pet', 'acessórios pet'],
+    heroTitle: 'Encontre o Melhor Pet Shop',
+    heroSubtitle: 'Tudo para o seu pet em um só lugar. Banho, tosa, ração e muito mais!',
+    longDescription: 'Encontre pet shops de confiança na sua região. Serviços de banho e tosa, rações de qualidade e acessórios para seu pet.',
+    faqs: [
+      { question: 'Quanto custa banho e tosa?', answer: 'O valor varia conforme o porte do animal, geralmente de R$ 40 a R$ 150.' },
+      { question: 'Pet shop tem veterinário?', answer: 'Alguns pet shops contam com atendimento veterinário. Verifique no perfil.' },
+      { question: 'Tem hotel para pets?', answer: 'Muitos pet shops oferecem hospedagem. Consulte disponibilidade e valores.' },
+    ],
   },
   {
     name: 'Clínica Veterinária',
@@ -100,6 +258,17 @@ const CATEGORIES_SEED = [
     icon: 'IconStethoscope',
     description: 'Atendimento veterinário',
     suggestedServices: ['Consultas', 'Vacinas', 'Exames', 'Cirurgias', 'Emergência', 'Internação'],
+    seoTitle: 'Clínicas Veterinárias - Saúde do seu Pet',
+    seoDescription: 'Encontre clínicas veterinárias de confiança. Consultas, vacinas, exames e emergência. Cuide da saúde do seu pet!',
+    seoKeywords: ['veterinário', 'clínica veterinária', 'vacina pet', 'emergência pet', 'castração'],
+    heroTitle: 'Encontre Clínicas Veterinárias',
+    heroSubtitle: 'Veterinários de confiança para cuidar da saúde do seu pet.',
+    longDescription: 'Encontre clínicas veterinárias de qualidade na sua região. Atendimento completo para a saúde do seu animal de estimação.',
+    faqs: [
+      { question: 'Quanto custa consulta veterinária?', answer: 'Consultas veterinárias variam de R$ 80 a R$ 200, dependendo da clínica e especialidade.' },
+      { question: 'Clínica atende emergência?', answer: 'Algumas clínicas oferecem atendimento 24h. Verifique no perfil do estabelecimento.' },
+      { question: 'Quanto custa castração?', answer: 'O valor da castração varia de R$ 200 a R$ 800, conforme o porte e sexo do animal.' },
+    ],
   },
   {
     name: 'Clínica Médica',
@@ -107,6 +276,17 @@ const CATEGORIES_SEED = [
     icon: 'IconHeartbeat',
     description: 'Atendimento médico especializado',
     suggestedServices: ['Consultas', 'Exames', 'Check-up', 'Especialidades', 'Procedimentos', 'Telemedicina'],
+    seoTitle: 'Clínicas Médicas - Saúde e Bem-estar',
+    seoDescription: 'Encontre clínicas médicas de qualidade. Consultas, exames, especialidades e mais. Cuide da sua saúde!',
+    seoKeywords: ['clínica médica', 'médico', 'consulta', 'exames', 'especialista', 'check-up'],
+    heroTitle: 'Encontre Clínicas Médicas',
+    heroSubtitle: 'Médicos especialistas para cuidar da sua saúde. Agende sua consulta!',
+    longDescription: 'Encontre clínicas médicas de confiança na sua região. Diversas especialidades e exames para cuidar da sua saúde.',
+    faqs: [
+      { question: 'Clínica aceita convênio?', answer: 'Muitas clínicas aceitam diversos convênios. Verifique no perfil do estabelecimento.' },
+      { question: 'Como agendar consulta?', answer: 'Entre em contato via WhatsApp ou telefone para agendar sua consulta.' },
+      { question: 'Clínica faz exames?', answer: 'A maioria das clínicas oferece exames laboratoriais e de imagem.' },
+    ],
   },
   {
     name: 'Consultório Odontológico',
@@ -114,6 +294,17 @@ const CATEGORIES_SEED = [
     icon: 'IconDental',
     description: 'Serviços odontológicos',
     suggestedServices: ['Limpeza', 'Restauração', 'Canal', 'Clareamento', 'Implantes', 'Ortodontia'],
+    seoTitle: 'Dentistas e Consultórios Odontológicos',
+    seoDescription: 'Encontre dentistas de qualidade. Limpeza, clareamento, implantes, ortodontia e mais. Agende sua consulta!',
+    seoKeywords: ['dentista', 'consultório odontológico', 'clareamento', 'implante', 'ortodontia', 'canal'],
+    heroTitle: 'Encontre Dentistas de Qualidade',
+    heroSubtitle: 'Cuide do seu sorriso com os melhores dentistas da região.',
+    longDescription: 'Encontre consultórios odontológicos de confiança. Tratamentos completos para a saúde e estética do seu sorriso.',
+    faqs: [
+      { question: 'Quanto custa limpeza dental?', answer: 'A limpeza dental varia de R$ 100 a R$ 300, dependendo do consultório.' },
+      { question: 'Quanto custa clareamento?', answer: 'O clareamento dental varia de R$ 400 a R$ 1.500, conforme a técnica utilizada.' },
+      { question: 'Dentista faz implante?', answer: 'Muitos consultórios oferecem implantes. Verifique as especialidades disponíveis.' },
+    ],
   },
   {
     name: 'Academia',
@@ -121,6 +312,17 @@ const CATEGORIES_SEED = [
     icon: 'IconBarbell',
     description: 'Musculação e atividades físicas',
     suggestedServices: ['Musculação', 'Aeróbico', 'Personal Trainer', 'Spinning', 'Funcional', 'Crossfit'],
+    seoTitle: 'Academias - Musculação e Fitness',
+    seoDescription: 'Encontre as melhores academias da sua cidade. Musculação, funcional, crossfit, spinning e mais. Compare e matricule-se!',
+    seoKeywords: ['academia', 'musculação', 'fitness', 'crossfit', 'personal trainer', 'funcional'],
+    heroTitle: 'Encontre a Melhor Academia',
+    heroSubtitle: 'Alcance seus objetivos fitness com as melhores academias da região.',
+    longDescription: 'Encontre academias de qualidade na sua região. Compare estrutura, modalidades e valores para escolher a ideal para você.',
+    faqs: [
+      { question: 'Quanto custa academia por mês?', answer: 'Mensalidades variam de R$ 60 a R$ 300, dependendo da estrutura e serviços oferecidos.' },
+      { question: 'Academia tem personal trainer?', answer: 'Muitas academias oferecem personal trainer como serviço adicional.' },
+      { question: 'Posso fazer aula experimental?', answer: 'A maioria das academias oferece aula experimental gratuita. Entre em contato para agendar.' },
+    ],
   },
   {
     name: 'Farmácia',
@@ -128,6 +330,17 @@ const CATEGORIES_SEED = [
     icon: 'IconPill',
     description: 'Medicamentos e produtos de saúde',
     suggestedServices: ['Medicamentos', 'Perfumaria', 'Dermocosméticos', 'Manipulados', 'Delivery', 'Aferição'],
+    seoTitle: 'Farmácias - Medicamentos e Saúde',
+    seoDescription: 'Encontre farmácias na sua cidade. Medicamentos, perfumaria, manipulados e delivery. Preços e localização.',
+    seoKeywords: ['farmácia', 'medicamento', 'drogaria', 'farmácia 24h', 'delivery farmácia'],
+    heroTitle: 'Encontre Farmácias Perto de Você',
+    heroSubtitle: 'Medicamentos e produtos de saúde com entrega rápida.',
+    longDescription: 'Encontre farmácias na sua região. Compare preços, veja horários de funcionamento e peça delivery.',
+    faqs: [
+      { question: 'Farmácia entrega?', answer: 'Muitas farmácias oferecem delivery. Verifique disponibilidade e área de entrega.' },
+      { question: 'Tem farmácia 24h?', answer: 'Algumas farmácias funcionam 24h. Verifique o horário no perfil do estabelecimento.' },
+      { question: 'Farmácia faz manipulação?', answer: 'Farmácias de manipulação preparam medicamentos personalizados sob prescrição.' },
+    ],
   },
   {
     name: 'Supermercado',
@@ -135,6 +348,17 @@ const CATEGORIES_SEED = [
     icon: 'IconShoppingCart',
     description: 'Produtos alimentícios e de limpeza',
     suggestedServices: ['Hortifruti', 'Açougue', 'Padaria', 'Frios', 'Delivery', 'Atacado'],
+    seoTitle: 'Supermercados - Compras do Dia a Dia',
+    seoDescription: 'Encontre supermercados na sua cidade. Hortifruti, açougue, padaria e delivery. Compare preços e ofertas.',
+    seoKeywords: ['supermercado', 'mercado', 'hortifruti', 'açougue', 'delivery mercado'],
+    heroTitle: 'Encontre Supermercados',
+    heroSubtitle: 'Faça suas compras nos melhores supermercados da região.',
+    longDescription: 'Encontre supermercados de qualidade na sua região. Compare preços, veja ofertas e peça delivery.',
+    faqs: [
+      { question: 'Supermercado entrega?', answer: 'Muitos supermercados oferecem delivery. Verifique disponibilidade e valor mínimo.' },
+      { question: 'Tem atacado?', answer: 'Alguns supermercados trabalham com preços de atacado para compras em quantidade.' },
+      { question: 'Aceita cartão?', answer: 'A maioria dos supermercados aceita cartões de crédito e débito.' },
+    ],
   },
   {
     name: 'Imobiliária',
@@ -142,6 +366,17 @@ const CATEGORIES_SEED = [
     icon: 'IconHome',
     description: 'Compra, venda e aluguel de imóveis',
     suggestedServices: ['Venda de Imóveis', 'Aluguel', 'Administração', 'Avaliação', 'Documentação', 'Financiamento'],
+    seoTitle: 'Imobiliárias - Compra e Aluguel',
+    seoDescription: 'Encontre imobiliárias de confiança. Compra, venda e aluguel de imóveis. Veja opções e entre em contato.',
+    seoKeywords: ['imobiliária', 'aluguel', 'compra de imóvel', 'apartamento', 'casa', 'corretor'],
+    heroTitle: 'Encontre Imobiliárias de Confiança',
+    heroSubtitle: 'Seu próximo imóvel está aqui. Compra, venda ou aluguel.',
+    longDescription: 'Encontre imobiliárias de confiança na sua região. Compare opções de imóveis para compra, venda ou aluguel.',
+    faqs: [
+      { question: 'Como funciona aluguel?', answer: 'O aluguel envolve análise de crédito, contrato e geralmente um depósito caução ou fiador.' },
+      { question: 'Imobiliária cobra taxa?', answer: 'Geralmente a taxa de corretagem é paga pelo vendedor na venda e pelo locador no aluguel.' },
+      { question: 'Posso financiar imóvel?', answer: 'Sim, muitas imobiliárias auxiliam no processo de financiamento bancário.' },
+    ],
   },
   {
     name: 'Escritório de Advocacia',
@@ -149,6 +384,17 @@ const CATEGORIES_SEED = [
     icon: 'IconScale',
     description: 'Serviços jurídicos',
     suggestedServices: ['Consultoria', 'Trabalhista', 'Cível', 'Criminal', 'Empresarial', 'Família'],
+    seoTitle: 'Advogados e Escritórios de Advocacia',
+    seoDescription: 'Encontre advogados de confiança. Direito trabalhista, cível, criminal, família e mais. Consultoria jurídica.',
+    seoKeywords: ['advogado', 'escritório advocacia', 'direito trabalhista', 'direito família', 'consultoria jurídica'],
+    heroTitle: 'Encontre Advogados de Confiança',
+    heroSubtitle: 'Assessoria jurídica para todas as suas necessidades.',
+    longDescription: 'Encontre escritórios de advocacia de confiança. Diversas especialidades para resolver suas questões jurídicas.',
+    faqs: [
+      { question: 'Quanto custa consulta com advogado?', answer: 'Consultas variam de R$ 150 a R$ 500. Alguns escritórios oferecem primeira consulta gratuita.' },
+      { question: 'Advogado atende online?', answer: 'Muitos escritórios oferecem atendimento online para consultas e acompanhamento de processos.' },
+      { question: 'Como escolher um advogado?', answer: 'Verifique a especialidade, experiência e avaliações de outros clientes.' },
+    ],
   },
   {
     name: 'Escritório de Contabilidade',
@@ -156,6 +402,17 @@ const CATEGORIES_SEED = [
     icon: 'IconCalculator',
     description: 'Serviços contábeis e fiscais',
     suggestedServices: ['Abertura de Empresa', 'Contabilidade', 'Folha de Pagamento', 'Impostos', 'Consultoria', 'BPO'],
+    seoTitle: 'Contadores e Escritórios de Contabilidade',
+    seoDescription: 'Encontre contadores de confiança. Abertura de empresa, impostos, folha de pagamento e mais. Assessoria contábil.',
+    seoKeywords: ['contador', 'contabilidade', 'abertura de empresa', 'imposto de renda', 'MEI', 'CNPJ'],
+    heroTitle: 'Encontre Contadores de Confiança',
+    heroSubtitle: 'Assessoria contábil completa para sua empresa ou pessoa física.',
+    longDescription: 'Encontre escritórios de contabilidade de qualidade. Serviços completos para empresas e pessoas físicas.',
+    faqs: [
+      { question: 'Quanto custa abrir uma empresa?', answer: 'O custo varia conforme o tipo de empresa, geralmente de R$ 500 a R$ 2.000 incluindo taxas.' },
+      { question: 'Contador ajuda com imposto de renda?', answer: 'Sim, contadores auxiliam na declaração de imposto de renda pessoa física e jurídica.' },
+      { question: 'Como funciona contabilidade mensal?', answer: 'O contador cuida de todas as obrigações fiscais e contábeis da sua empresa mensalmente.' },
+    ],
   },
   {
     name: 'Escola',
@@ -163,6 +420,17 @@ const CATEGORIES_SEED = [
     icon: 'IconSchool',
     description: 'Instituição de ensino',
     suggestedServices: ['Educação Infantil', 'Ensino Fundamental', 'Ensino Médio', 'Reforço', 'Cursos', 'Atividades'],
+    seoTitle: 'Escolas - Educação de Qualidade',
+    seoDescription: 'Encontre as melhores escolas da sua cidade. Educação infantil, fundamental, médio e cursos. Compare e matricule!',
+    seoKeywords: ['escola', 'colégio', 'educação infantil', 'ensino fundamental', 'matrícula', 'curso'],
+    heroTitle: 'Encontre as Melhores Escolas',
+    heroSubtitle: 'Educação de qualidade para todas as idades.',
+    longDescription: 'Encontre escolas de qualidade na sua região. Compare metodologias, estrutura e valores para escolher a melhor.',
+    faqs: [
+      { question: 'Como fazer matrícula?', answer: 'Entre em contato com a escola para conhecer o processo de matrícula e documentos necessários.' },
+      { question: 'Escola oferece período integral?', answer: 'Muitas escolas oferecem período integral. Verifique no perfil do estabelecimento.' },
+      { question: 'Tem aula de reforço?', answer: 'Algumas escolas oferecem aulas de reforço e apoio pedagógico.' },
+    ],
   },
   {
     name: 'Hotel',
@@ -170,6 +438,17 @@ const CATEGORIES_SEED = [
     icon: 'IconBed',
     description: 'Hospedagem e eventos',
     suggestedServices: ['Hospedagem', 'Eventos', 'Restaurante', 'Day Use', 'Transfer', 'Estacionamento'],
+    seoTitle: 'Hotéis e Pousadas - Hospedagem',
+    seoDescription: 'Encontre hotéis e pousadas na sua cidade. Compare preços, estrutura e avaliações. Reserve sua estadia!',
+    seoKeywords: ['hotel', 'pousada', 'hospedagem', 'reserva hotel', 'diária', 'estadia'],
+    heroTitle: 'Encontre Hotéis e Pousadas',
+    heroSubtitle: 'Hospedagem confortável para sua viagem ou evento.',
+    longDescription: 'Encontre hotéis e pousadas de qualidade na região. Compare estrutura, serviços e valores.',
+    faqs: [
+      { question: 'Como reservar?', answer: 'Entre em contato via WhatsApp ou telefone para verificar disponibilidade e fazer sua reserva.' },
+      { question: 'Hotel tem estacionamento?', answer: 'Muitos hotéis oferecem estacionamento gratuito ou pago. Verifique no perfil.' },
+      { question: 'Aceita pets?', answer: 'Alguns hotéis aceitam animais de estimação. Consulte antes de reservar.' },
+    ],
   },
   {
     name: 'Floricultura',
@@ -177,6 +456,17 @@ const CATEGORIES_SEED = [
     icon: 'IconFlower',
     description: 'Flores e arranjos',
     suggestedServices: ['Buquês', 'Arranjos', 'Coroas', 'Plantas', 'Decoração', 'Delivery'],
+    seoTitle: 'Floriculturas - Flores e Arranjos',
+    seoDescription: 'Encontre floriculturas na sua cidade. Buquês, arranjos, coroas e plantas. Delivery para presentear quem você ama!',
+    seoKeywords: ['floricultura', 'flores', 'buquê', 'arranjo', 'coroa de flores', 'plantas'],
+    heroTitle: 'Encontre as Melhores Floriculturas',
+    heroSubtitle: 'Flores e arranjos para todas as ocasiões. Delivery disponível!',
+    longDescription: 'Encontre floriculturas de qualidade na sua região. Buquês, arranjos, coroas e plantas para presentear.',
+    faqs: [
+      { question: 'Floricultura entrega?', answer: 'A maioria das floriculturas oferece delivery. Verifique área e horários de entrega.' },
+      { question: 'Quanto custa um buquê?', answer: 'Buquês variam de R$ 50 a R$ 300, dependendo das flores e tamanho.' },
+      { question: 'Faz decoração de eventos?', answer: 'Muitas floriculturas oferecem serviço de decoração para casamentos e eventos.' },
+    ],
   },
   {
     name: 'Outro',
@@ -184,6 +474,17 @@ const CATEGORIES_SEED = [
     icon: 'IconBuildingStore',
     description: 'Outros tipos de negócio',
     suggestedServices: ['Atendimento Especializado', 'Orçamento Gratuito', 'Atendimento Rápido', 'Garantia de Satisfação'],
+    seoTitle: 'Negócios Locais - Encontre Tudo',
+    seoDescription: 'Encontre diversos tipos de negócios locais na sua cidade. Serviços especializados com avaliações reais.',
+    seoKeywords: ['negócio local', 'serviços', 'empresa', 'profissional', 'prestador de serviço'],
+    heroTitle: 'Encontre Negócios Locais',
+    heroSubtitle: 'Diversos tipos de negócios e serviços na sua região.',
+    longDescription: 'Encontre diversos tipos de negócios locais. Compare avaliações e escolha o melhor para suas necessidades.',
+    faqs: [
+      { question: 'Como encontrar o serviço ideal?', answer: 'Use os filtros de busca e compare avaliações de outros clientes.' },
+      { question: 'Como entrar em contato?', answer: 'Você pode entrar em contato via WhatsApp ou telefone, disponíveis no perfil.' },
+      { question: 'Os negócios são verificados?', answer: 'Sim, todos os negócios são verificados e as avaliações são de clientes reais.' },
+    ],
   },
 ]
 
@@ -201,6 +502,13 @@ async function seed() {
           icon: cat.icon,
           description: cat.description,
           suggestedServices: cat.suggestedServices,
+          seoTitle: cat.seoTitle,
+          seoDescription: cat.seoDescription,
+          seoKeywords: cat.seoKeywords,
+          heroTitle: cat.heroTitle,
+          heroSubtitle: cat.heroSubtitle,
+          longDescription: cat.longDescription,
+          faqs: cat.faqs,
         },
       })
     console.log(`✅ Categoria "${cat.name}" inserida/atualizada`)

@@ -32,6 +32,17 @@ export function generateSlug(text: string): string {
     .replace(/(^-|-$)+/g, '')
 }
 
+export function generateCitySlug(city: string): string {
+  return generateSlug(city)
+}
+
+export function formatCityFromSlug(slug: string): string {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
 export function getWhatsAppUrl(phone: string, message?: string): string {
   const cleaned = phone.replace(/\D/g, '')
   const phoneWithCountry = cleaned.startsWith('55') ? cleaned : `55${cleaned}`

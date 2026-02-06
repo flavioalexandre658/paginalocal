@@ -15,6 +15,7 @@ import {
 } from '@tabler/icons-react'
 import { MarketingHeader } from '../_components/marketing-header'
 import { MarketingFooter } from '../_components/marketing-footer'
+import { Breadcrumb } from '@/components/shared/breadcrumb'
 
 const revealVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -65,6 +66,7 @@ export default function SobreNosPage() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
       <MarketingHeader />
+      <Breadcrumb items={[{ label: 'Sobre Nós' }]} />
       <HeroSection />
       <MissionSection />
       <ValuesSection />

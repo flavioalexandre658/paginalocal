@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { MarketingHeader } from './marketing-header'
 import { MarketingFooter } from './marketing-footer'
+import { Breadcrumb } from '@/components/shared/breadcrumb'
 
 const revealVariants = {
   hidden: { opacity: 0, y: 40 },
@@ -51,8 +52,9 @@ export function LegalPageLayout({
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
       <MarketingHeader />
+      <Breadcrumb items={[{ label: title }]} />
 
-      <section className="relative py-16 md:py-24">
+      <section className="relative py-12 md:py-16">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
