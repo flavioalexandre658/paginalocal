@@ -257,7 +257,7 @@ export function GeneralTab({ store }: GeneralTabProps) {
               Favicon
             </p>
             <p className="mb-3 text-xs text-slate-500 dark:text-slate-400">
-              Recomendado: 32x32px ou 64x64px, PNG ou ICO
+              Recomendado: 180x180px ou maior, PNG ou JPG
             </p>
 
             <input

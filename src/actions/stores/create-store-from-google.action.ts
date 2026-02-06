@@ -192,6 +192,8 @@ const CATEGORY_PATTERNS = [
   'sorveteria', 'açaí', 'acai', 'hamburgueria', 'churrascaria', 'bar', 'pub',
   'posto', 'auto posto', 'conveniência', 'conveniencia', 'mercadinho', 'minimercado',
   'móvel', 'movel', 'móveis', 'moveis', 'eletro', 'eletrônicos', 'eletronicos',
+  // PET - padrões adicionais
+  'criador', 'agropet', 'agropecuária', 'agropecuaria', 'canil', 'gatil', 'aquário', 'aquario',
 ]
 
 interface ExtractedBusinessInfo {
@@ -577,6 +579,14 @@ const CATEGORY_SLUG_MAPPING: Record<string, string> = {
   'petshop': 'pet-shop',
   'pet': 'pet-shop',
   'animais': 'pet-shop',
+  'criador': 'pet-shop',
+  'agropet': 'pet-shop',
+  'agropecuária': 'pet-shop',
+  'agropecuaria': 'pet-shop',
+  'canil': 'pet-shop',
+  'gatil': 'pet-shop',
+  'aquário': 'pet-shop',
+  'aquario': 'pet-shop',
   'veterinário': 'clinica-veterinaria',
   'veterinaria': 'clinica-veterinaria',
   'vet': 'clinica-veterinaria',

@@ -1,4 +1,9 @@
 import { Metadata } from 'next'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
+import { db } from '@/db'
+import { subscription } from '@/db/schema'
+import { eq, and, or } from 'drizzle-orm'
 import { IconLock } from '@tabler/icons-react'
 import { LegalPageLayout, LegalSection, LegalHighlight } from '../_components/legal-page-layout'
 
@@ -7,13 +12,37 @@ export const metadata: Metadata = {
   description: 'Entenda como o Página Local coleta, usa e protege seus dados pessoais.',
 }
 
-export default function PoliticaDePrivacidadePage() {
+async function getUserHasSubscription(userId: string): Promise<boolean> {
+  const [userSubscription] = await db
+    .select({ id: subscription.id })
+    .from(subscription)
+    .where(
+      and(
+        eq(subscription.userId, userId),
+        or(
+          eq(subscription.status, 'ACTIVE'),
+          eq(subscription.status, 'TRIALING')
+        )
+      )
+    )
+    .limit(1)
+
+  return !!userSubscription
+}
+
+export default async function PoliticaDePrivacidadePage() {
+  const session = await auth.api.getSession({ headers: await headers() })
+  const isLoggedIn = !!session?.user?.id
+  const hasSubscription = isLoggedIn ? await getUserHasSubscription(session.user.id) : false
+
   return (
     <LegalPageLayout
       icon={<IconLock className="h-8 w-8" />}
       title="Política de Privacidade"
       description="Transparência sobre como tratamos suas informações pessoais."
       lastUpdated="04 de fevereiro de 2026"
+      isLoggedIn={isLoggedIn}
+      hasSubscription={hasSubscription}
     >
       <LegalHighlight variant="info">
         <strong>Sua privacidade importa:</strong> Esta política explica de forma clara e transparente como coletamos, usamos, armazenamos e protegemos seus dados pessoais ao usar a plataforma Página Local.

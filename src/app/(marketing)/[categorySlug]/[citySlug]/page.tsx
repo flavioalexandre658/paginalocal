@@ -1,10 +1,33 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
+import { auth } from '@/lib/auth'
+import { db } from '@/db'
+import { subscription } from '@/db/schema'
+import { eq, and, or } from 'drizzle-orm'
 import { getCategoryBySlug } from '@/actions/categories/get-category-by-slug.action'
 import { getStoresByCategoryCity } from '@/actions/categories/get-stores-by-category-city.action'
 import { getCategoryCities } from '@/actions/categories/get-category-cities.action'
 import { formatCityFromSlug } from '@/lib/utils'
 import { CategoryCityPageClient } from './category-city-page-client'
+
+async function getUserHasSubscription(userId: string): Promise<boolean> {
+  const [userSubscription] = await db
+    .select({ id: subscription.id })
+    .from(subscription)
+    .where(
+      and(
+        eq(subscription.userId, userId),
+        or(
+          eq(subscription.status, 'ACTIVE'),
+          eq(subscription.status, 'TRIALING')
+        )
+      )
+    )
+    .limit(1)
+
+  return !!userSubscription
+}
 
 interface CategoryCityPageProps {
   params: Promise<{ categorySlug: string; citySlug: string }>
@@ -59,6 +82,10 @@ export default async function CategoryCityPage({ params }: CategoryCityPageProps
   if (!category) {
     notFound()
   }
+
+  const session = await auth.api.getSession({ headers: await headers() })
+  const isLoggedIn = !!session?.user?.id
+  const hasSubscription = isLoggedIn ? await getUserHasSubscription(session.user.id) : false
 
   const [storesData, cities] = await Promise.all([
     getStoresByCategoryCity(categorySlug, citySlug, 50),
@@ -163,6 +190,8 @@ export default async function CategoryCityPage({ params }: CategoryCityPageProps
         cities={cities}
         cityName={storesData.cityName}
         citySlug={citySlug}
+        isLoggedIn={isLoggedIn}
+        hasSubscription={hasSubscription}
       />
     </>
   )

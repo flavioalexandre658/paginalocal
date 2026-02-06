@@ -26,7 +26,7 @@ export default async function DashboardLayout({ children, params }: LayoutProps)
   }
 
   const storeData = await db
-    .select({ id: store.id, name: store.name })
+    .select({ id: store.id, name: store.name, faviconUrl: store.faviconUrl })
     .from(store)
     .where(and(eq(store.slug, storeSlug), eq(store.userId, session.user.id)))
     .limit(1)
@@ -36,6 +36,7 @@ export default async function DashboardLayout({ children, params }: LayoutProps)
   }
 
   const siteUrl = getStoreUrl(storeSlug)
+  const storeFavicon = storeData[0].faviconUrl
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
@@ -53,7 +54,23 @@ export default async function DashboardLayout({ children, params }: LayoutProps)
             </Link>
             <div className="hidden h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700 sm:block" />
             <div className="flex min-w-0 flex-1 items-center gap-2">
-              <Image src="/assets/images/icon/favicon.ico" alt="Página Local" width={28} height={28} />
+              {storeFavicon ? (
+                <Image 
+                  src={storeFavicon} 
+                  alt={storeData[0].name} 
+                  width={28} 
+                  height={28}
+                  className="rounded-md object-cover"
+                  unoptimized
+                />
+              ) : (
+                <Image 
+                  src="/assets/images/icon/favicon.ico" 
+                  alt="Página Local" 
+                  width={28} 
+                  height={28} 
+                />
+              )}
 
               <span className="min-w-0 truncate text-sm font-semibold text-slate-900 dark:text-white">
                 {storeData[0].name}

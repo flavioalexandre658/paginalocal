@@ -278,6 +278,15 @@ export function parseOpeningHours(weekdayText: string[]): Record<string, string>
 }
 
 export function inferCategory(types: string[]): string {
+  // Tipos genéricos que devem ser ignorados (verificados por último)
+  const genericTypes = new Set([
+    'point_of_interest',
+    'establishment',
+    'store',
+    'food',
+    'health',
+  ])
+
   const categoryMap: Record<string, string> = {
     // ========== AUTOMOTIVO ==========
     'car_dealer': 'Revendedora de Veículos',
@@ -430,6 +439,14 @@ export function inferCategory(types: string[]): string {
     'establishment': 'Outro',
   }
 
+  // Primeira passada: busca tipos específicos (ignora genéricos)
+  for (const type of types) {
+    if (!genericTypes.has(type) && categoryMap[type] && categoryMap[type] !== 'Outro') {
+      return categoryMap[type]
+    }
+  }
+
+  // Segunda passada: verifica tipos genéricos se não encontrou específico
   for (const type of types) {
     if (categoryMap[type]) {
       return categoryMap[type]

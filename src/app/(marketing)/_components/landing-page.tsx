@@ -48,6 +48,11 @@ import { cn } from '@/lib/utils'
 import { MarketingHeader } from './marketing-header'
 import { MarketingFooter } from './marketing-footer'
 
+interface LandingPageProps {
+  isLoggedIn?: boolean
+  hasSubscription?: boolean
+}
+
 const revealVariants = {
   hidden: { opacity: 0, y: 60 },
   visible: {
@@ -91,12 +96,12 @@ function ScrollReveal({ children, className }: { children: React.ReactNode; clas
   )
 }
 
-export function LandingPage() {
+export function LandingPage({ isLoggedIn = false, hasSubscription = false }: LandingPageProps) {
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
-      <MarketingHeader />
+      <MarketingHeader isLoggedIn={isLoggedIn} hasSubscription={hasSubscription} />
       <HeroSection />
       <SocialProofBar />
       <StepsSection />

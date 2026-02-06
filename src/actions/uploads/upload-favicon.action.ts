@@ -35,15 +35,23 @@ export const uploadFaviconAction = authActionClient
       throw new Error('O arquivo deve ser uma imagem')
     }
 
-    if (file.size > 1 * 1024 * 1024) {
-      throw new Error('O favicon deve ter no máximo 1MB')
+    if (file.size > 2 * 1024 * 1024) {
+      throw new Error('O favicon deve ter no máximo 2MB')
     }
 
     const buffer = Buffer.from(await file.arrayBuffer())
 
+    // Salvar em alta qualidade (180x180) para manter nitidez em diferentes contextos
+    // O navegador redimensiona conforme necessário para o favicon real
     const optimizedBuffer = await sharp(buffer)
-      .resize(32, 32, { fit: 'cover' })
-      .png({ quality: 90 })
+      .resize(180, 180, { 
+        fit: 'cover',
+        withoutEnlargement: false, // Permite aumentar se for menor
+      })
+      .png({ 
+        quality: 100,
+        compressionLevel: 6, // Balanceia qualidade vs tamanho
+      })
       .toBuffer()
 
     const timestamp = Date.now()

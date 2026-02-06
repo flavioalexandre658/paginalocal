@@ -101,14 +101,16 @@ interface CategoryCityPageClientProps {
   }>
   cityName: string
   citySlug: string
+  isLoggedIn?: boolean
+  hasSubscription?: boolean
 }
 
-export function CategoryCityPageClient({ category, stores, stats, cities, cityName, citySlug }: CategoryCityPageClientProps) {
+export function CategoryCityPageClient({ category, stores, stats, cities, cityName, citySlug, isLoggedIn = false, hasSubscription = false }: CategoryCityPageClientProps) {
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
-      <MarketingHeader />
+      <MarketingHeader isLoggedIn={isLoggedIn} hasSubscription={hasSubscription} />
       <Breadcrumb 
         items={[
           { label: category.name, href: `/${category.slug}` },

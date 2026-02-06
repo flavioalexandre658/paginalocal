@@ -107,14 +107,16 @@ interface CategoryPageClientProps {
     slug: string
     count: number
   }>
+  isLoggedIn?: boolean
+  hasSubscription?: boolean
 }
 
-export function CategoryPageClient({ category, stores, stats, cities }: CategoryPageClientProps) {
+export function CategoryPageClient({ category, stores, stats, cities, isLoggedIn = false, hasSubscription = false }: CategoryPageClientProps) {
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
-      <MarketingHeader />
+      <MarketingHeader isLoggedIn={isLoggedIn} hasSubscription={hasSubscription} />
       <Breadcrumb items={[{ label: category.name }]} />
       <HeroSection category={category} stats={stats} />
       <SocialProofBar stats={stats} categoryName={category.name} />

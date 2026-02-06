@@ -1,35 +1,15 @@
+'use client'
+
 import Link from 'next/link'
-import { headers } from 'next/headers'
-import { auth } from '@/lib/auth'
-import { db } from '@/db'
-import { subscription } from '@/db/schema'
-import { eq, and, or } from 'drizzle-orm'
 import { Logo } from '@/components/shared/logo'
 import { IconRocket, IconLayoutDashboard } from '@tabler/icons-react'
 
-async function getUserHasSubscription(userId: string): Promise<boolean> {
-  const [userSubscription] = await db
-    .select({ id: subscription.id })
-    .from(subscription)
-    .where(
-      and(
-        eq(subscription.userId, userId),
-        or(
-          eq(subscription.status, 'ACTIVE'),
-          eq(subscription.status, 'TRIALING')
-        )
-      )
-    )
-    .limit(1)
-
-  return !!userSubscription
+interface MarketingHeaderProps {
+  isLoggedIn?: boolean
+  hasSubscription?: boolean
 }
 
-export async function MarketingHeader() {
-  const session = await auth.api.getSession({ headers: await headers() })
-  const isLoggedIn = !!session?.user?.id
-  const hasSubscription = isLoggedIn ? await getUserHasSubscription(session.user.id) : false
-
+export function MarketingHeader({ isLoggedIn = false, hasSubscription = false }: MarketingHeaderProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/40 bg-white/70 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
