@@ -19,6 +19,8 @@ import { downloadImage, optimizeHeroImage, optimizeGalleryImage } from '@/lib/im
 import { uploadToS3, generateS3Key } from '@/lib/s3'
 import { addDomainToVercel } from '@/actions/vercel/add-domain'
 import { notifyStoreActivated } from '@/lib/google-indexing'
+import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
+import { generateCitySlug } from '@/lib/utils'
 
 const createStoreFromGoogleSchema = z.object({
   googlePlaceId: z.string().min(1),
@@ -781,6 +783,20 @@ export const createStoreFromGoogleAction = authActionClient
       notifyStoreActivated(newStore.slug).catch((error) => {
         console.error('[Google Import] Erro ao notificar Google Indexing API:', error)
       })
+
+      // Revalida o sitemap e páginas de categoria
+      await revalidateSitemap()
+      
+      // Busca o slug da categoria e revalida páginas de categoria/cidade
+      const [categoryData] = await db
+        .select({ slug: category.slug })
+        .from(category)
+        .where(eq(category.name, newStore.category))
+        .limit(1)
+
+      if (categoryData) {
+        await revalidateCategoryPages(categoryData.slug, generateCitySlug(newStore.city))
+      }
     }
 
     return {

@@ -2,11 +2,13 @@ import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { stripe, STRIPE_WEBHOOK_SECRET } from '@/lib/stripe'
 import { db } from '@/db'
-import { subscription, plan, store } from '@/db/schema'
+import { subscription, plan, store, category } from '@/db/schema'
 import { eq, desc, and, inArray } from 'drizzle-orm'
 import type Stripe from 'stripe'
 import type { SubscriptionStatus } from '@/db/schema'
 import { notifyStoreActivated, notifyStoreDeactivated } from '@/lib/google-indexing'
+import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
+import { generateCitySlug } from '@/lib/utils'
 
 export async function POST(request: Request) {
   const body = await request.text()
@@ -364,6 +366,8 @@ async function syncUserStoresWithPlanLimit(userId: string, maxStores: number) {
       slug: store.slug,
       customDomain: store.customDomain,
       isActive: store.isActive,
+      category: store.category,
+      city: store.city,
     })
     .from(store)
     .where(eq(store.userId, userId))
@@ -383,6 +387,7 @@ async function syncUserStoresWithPlanLimit(userId: string, maxStores: number) {
 
   let activatedCount = 0
   let deactivatedCount = 0
+  const categoryCityPairsToRevalidate = new Set<string>()
 
   // Ativa as lojas que devem estar ativas
   if (activatedIds.length > 0) {
@@ -404,6 +409,8 @@ async function syncUserStoresWithPlanLimit(userId: string, maxStores: number) {
         notifyStoreActivated(s.slug, s.customDomain).catch((error) => {
           console.error(`[Webhook] Erro ao notificar Google sobre ativação de ${s.slug}:`, error)
         })
+        // Adiciona par categoria/cidade para revalidação
+        categoryCityPairsToRevalidate.add(`${s.category}|${s.city}`)
       }
       activatedCount = storesNeedingActivation.length
     }
@@ -429,8 +436,30 @@ async function syncUserStoresWithPlanLimit(userId: string, maxStores: number) {
         notifyStoreDeactivated(s.slug, s.customDomain).catch((error) => {
           console.error(`[Webhook] Erro ao notificar Google sobre desativação de ${s.slug}:`, error)
         })
+        // Adiciona par categoria/cidade para revalidação
+        categoryCityPairsToRevalidate.add(`${s.category}|${s.city}`)
       }
       deactivatedCount = storesNeedingDeactivation.length
+    }
+  }
+
+  // Revalida o sitemap e páginas de categoria se houve mudanças
+  if (activatedCount > 0 || deactivatedCount > 0) {
+    await revalidateSitemap()
+    
+    // Revalida páginas de categoria/cidade afetadas
+    for (const pair of categoryCityPairsToRevalidate) {
+      const [categoryName, city] = pair.split('|')
+      // Busca o slug da categoria
+      const [categoryData] = await db
+        .select({ slug: category.slug })
+        .from(category)
+        .where(eq(category.name, categoryName))
+        .limit(1)
+      
+      if (categoryData) {
+        await revalidateCategoryPages(categoryData.slug, generateCitySlug(city))
+      }
     }
   }
 
@@ -447,6 +476,8 @@ async function deactivateAllUserStores(userId: string) {
       id: store.id,
       slug: store.slug,
       customDomain: store.customDomain,
+      category: store.category,
+      city: store.city,
     })
     .from(store)
     .where(and(eq(store.userId, userId), eq(store.isActive, true)))
@@ -460,11 +491,32 @@ async function deactivateAllUserStores(userId: string) {
     .set({ isActive: false, updatedAt: new Date() })
     .where(eq(store.userId, userId))
 
+  // Coleta pares categoria/cidade únicos para revalidação
+  const categoryCityPairsToRevalidate = new Set<string>()
+
   // Notifica o Google sobre a desativação
   for (const s of activeStores) {
     notifyStoreDeactivated(s.slug, s.customDomain).catch((error) => {
       console.error(`[Webhook] Erro ao notificar Google sobre desativação de ${s.slug}:`, error)
     })
+    categoryCityPairsToRevalidate.add(`${s.category}|${s.city}`)
+  }
+
+  // Revalida o sitemap e páginas de categoria
+  await revalidateSitemap()
+  
+  // Revalida páginas de categoria/cidade afetadas
+  for (const pair of categoryCityPairsToRevalidate) {
+    const [categoryName, city] = pair.split('|')
+    const [categoryData] = await db
+      .select({ slug: category.slug })
+      .from(category)
+      .where(eq(category.name, categoryName))
+      .limit(1)
+    
+    if (categoryData) {
+      await revalidateCategoryPages(categoryData.slug, generateCitySlug(city))
+    }
   }
 
   console.log(`[Webhook] Desativadas ${activeStores.length} lojas do usuário ${userId}`)

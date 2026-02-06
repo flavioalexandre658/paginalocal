@@ -4,6 +4,10 @@ import { store, category } from '@/db/schema'
 import { eq, ne, and } from 'drizzle-orm'
 import { generateCitySlug } from '@/lib/utils'
 
+// Garante que o sitemap seja sempre gerado dinamicamente
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://paginalocal.com.br'
 
 const STATIC_PAGES = [

@@ -3,7 +3,8 @@
 import { z } from 'zod'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
-import { store, service } from '@/db/schema'
+import { store, service, category } from '@/db/schema'
+import { eq } from 'drizzle-orm'
 import {
   generateMarketingCopy,
   generateFallbackServices,
@@ -16,6 +17,8 @@ import {
 import { checkCanCreateStore, getUserPlanContext } from '@/lib/plan-middleware'
 import { addDomainToVercel } from '@/actions/vercel/add-domain'
 import { notifyStoreActivated } from '@/lib/google-indexing'
+import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
+import { generateCitySlug } from '@/lib/utils'
 
 const BRAZILIAN_STATES = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
@@ -236,6 +239,20 @@ export const createStoreManualAction = authActionClient
       notifyStoreActivated(newStore.slug).catch((error) => {
         console.error('[Manual Creation] Erro ao notificar Google Indexing API:', error)
       })
+
+      // Revalida o sitemap e páginas de categoria
+      await revalidateSitemap()
+      
+      // Busca o slug da categoria e revalida páginas de categoria/cidade
+      const [categoryData] = await db
+        .select({ slug: category.slug })
+        .from(category)
+        .where(eq(category.name, newStore.category))
+        .limit(1)
+
+      if (categoryData) {
+        await revalidateCategoryPages(categoryData.slug, generateCitySlug(newStore.city))
+      }
     }
 
     return {
