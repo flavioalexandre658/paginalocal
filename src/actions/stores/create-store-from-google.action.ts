@@ -26,6 +26,9 @@ const createStoreFromGoogleSchema = z.object({
   googlePlaceId: z.string().min(1),
   searchTerm: z.string().min(1),
   selectedCoverIndex: z.number().int().min(0).optional(),
+  // Override de contatos definidos pelo usuário no onboarding
+  whatsappOverride: z.string().optional(),
+  phoneOverride: z.string().optional(),
 })
 
 const CATEGORY_SERVICES: Record<string, string[]> = {
@@ -869,8 +872,12 @@ export const createStoreFromGoogleAction = authActionClient
       : undefined
     const googleCategory = inferCategory(placeDetails.types || [])
 
-    const phone = placeDetails.formatted_phone_number?.replace(/\D/g, '') || ''
-    const whatsapp = placeDetails.international_phone_number?.replace(/\D/g, '') || phone
+    const googlePhone = placeDetails.formatted_phone_number?.replace(/\D/g, '') || ''
+    const googleWhatsapp = placeDetails.international_phone_number?.replace(/\D/g, '') || googlePhone
+    
+    // Usar valores de override do onboarding se fornecidos, caso contrário usar dados do Google
+    const phone = parsedInput.phoneOverride?.replace(/\D/g, '') || googlePhone
+    const whatsapp = parsedInput.whatsappOverride?.replace(/\D/g, '') || googleWhatsapp
 
     const coverPhotoIndex = placeDetails.photos && selectedCoverIndex < placeDetails.photos.length
       ? selectedCoverIndex

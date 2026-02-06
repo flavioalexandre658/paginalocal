@@ -21,12 +21,12 @@ import {
   IconPlus,
   IconBuildingStore,
   IconPhone,
-  IconWorld,
-  IconClock,
-  IconUser,
+  IconBrandWhatsapp,
+  IconAlertCircle,
 } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import { PatternFormat } from 'react-number-format'
 
 import { searchPlacesAction } from '@/actions/google/search-places.action'
 import { getPlacePreviewAction, type PlacePreview } from '@/actions/google/get-place-preview.action'
@@ -47,12 +47,12 @@ interface PlaceResult {
 type OnboardingStep = 'search' | 'confirm' | 'creating' | 'complete'
 
 const HUMANIZED_LOGS = [
-  { icon: IconMapPin, text: 'Conectando com o Google Maps...' },
-  { icon: IconStar, text: 'Analisando suas avaliações para destacar pontos fortes...' },
-  { icon: IconPhoto, text: 'Importando suas melhores fotos...' },
-  { icon: IconSparkles, text: 'Redigindo títulos persuasivos com IA...' },
-  { icon: IconFileText, text: 'Gerando descrições otimizadas para SEO...' },
-  { icon: IconRocket, text: 'Otimizando carregamento para o Google...' },
+  { icon: IconMapPin, text: 'Conectando com o Google Maps...', shortText: 'Google Maps' },
+  { icon: IconStar, text: 'Analisando suas avaliações para destacar pontos fortes...', shortText: 'Avaliações' },
+  { icon: IconPhoto, text: 'Importando suas melhores fotos...', shortText: 'Fotos' },
+  { icon: IconSparkles, text: 'Redigindo títulos persuasivos com IA...', shortText: 'Títulos IA' },
+  { icon: IconFileText, text: 'Gerando descrições otimizadas para SEO...', shortText: 'SEO' },
+  { icon: IconRocket, text: 'Otimizando carregamento para o Google...', shortText: 'Otimizando' },
 ]
 
 export default function OnboardingPage() {
@@ -70,6 +70,8 @@ export default function OnboardingPage() {
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
   const [selectedCoverIndex, setSelectedCoverIndex] = useState(0)
   const [hasStores, setHasStores] = useState(false)
+  const [editedWhatsapp, setEditedWhatsapp] = useState<string>('')
+  const [editedPhone, setEditedPhone] = useState<string>('')
 
   const { executeAsync: searchPlaces } = useAction(searchPlacesAction)
   const { executeAsync: getPlacePreview } = useAction(getPlacePreviewAction)
@@ -121,12 +123,25 @@ export default function OnboardingPage() {
     const result = await getPlacePreview({ placeId: place.placeId })
     if (result?.data) {
       setPlacePreview(result.data)
+      // Initialize phone fields with Google data
+      if (result.data.phone) {
+        const cleanPhone = result.data.phone.replace(/\D/g, '')
+        setEditedWhatsapp(cleanPhone)
+        setEditedPhone(cleanPhone)
+      }
     }
     setIsLoadingPreview(false)
   }
 
   async function handleConfirmAndCreate() {
     if (!selectedPlace) return
+
+    // Validate WhatsApp
+    const cleanWhatsapp = editedWhatsapp.replace(/\D/g, '')
+    if (cleanWhatsapp.length < 10) {
+      toast.error('Por favor, informe um WhatsApp válido')
+      return
+    }
 
     setStep('creating')
     setCurrentLogIndex(0)
@@ -135,6 +150,8 @@ export default function OnboardingPage() {
       googlePlaceId: selectedPlace.placeId,
       searchTerm: query.trim(),
       selectedCoverIndex,
+      whatsappOverride: cleanWhatsapp,
+      phoneOverride: editedPhone.replace(/\D/g, '') || undefined,
     })
 
     if (result?.serverError) {
@@ -194,7 +211,13 @@ export default function OnboardingPage() {
                 setSelectedPlace(null)
                 setPlacePreview(null)
                 setSelectedCoverIndex(0)
+                setEditedWhatsapp('')
+                setEditedPhone('')
               }}
+              editedWhatsapp={editedWhatsapp}
+              editedPhone={editedPhone}
+              onWhatsappChange={setEditedWhatsapp}
+              onPhoneChange={setEditedPhone}
             />
           )}
 
@@ -417,6 +440,10 @@ function ConfirmStep({
   onSelectCover,
   onConfirm,
   onBack,
+  editedWhatsapp,
+  editedPhone,
+  onWhatsappChange,
+  onPhoneChange,
 }: {
   place: PlaceResult
   preview: PlacePreview | null
@@ -425,6 +452,10 @@ function ConfirmStep({
   onSelectCover: (index: number) => void
   onConfirm: () => void
   onBack: () => void
+  editedWhatsapp: string
+  editedPhone: string
+  onWhatsappChange: (value: string) => void
+  onPhoneChange: (value: string) => void
 }) {
   return (
     <motion.div
@@ -434,28 +465,30 @@ function ConfirmStep({
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="w-full max-w-xl px-4"
     >
-      <div className="mb-8 text-center">
+      {/* Header compacto no mobile */}
+      <div className="mb-4 text-center md:mb-8">
         <motion.div
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
-          className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 shadow-lg shadow-emerald-500/10"
+          className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 shadow-lg shadow-emerald-500/10 md:mb-5 md:h-16 md:w-16 md:rounded-2xl"
         >
-          <IconCheck className="h-8 w-8 text-emerald-500" />
+          <IconCheck className="h-6 w-6 text-emerald-500 md:h-8 md:w-8" />
         </motion.div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
+        <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
           Confirme sua empresa
         </h1>
-        <p className="mt-2 text-slate-500 dark:text-slate-400">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 md:mt-2 md:text-base">
           Veja o que vamos importar do Google
         </p>
       </div>
 
       <GlassCard>
         {isLoadingPreview ? (
-          <div className="space-y-5">
-            <div className="-mx-6 -mt-6 flex gap-2 overflow-hidden rounded-t-2xl bg-slate-100 p-4 dark:bg-slate-800">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="relative h-28 w-28 shrink-0 overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-700">
+          <div className="space-y-4">
+            {/* Skeleton fotos - compacto no mobile */}
+            <div className="-mx-6 -mt-6 flex gap-2 overflow-hidden rounded-t-2xl bg-slate-100 p-3 dark:bg-slate-800">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-200 dark:bg-slate-700 md:h-28 md:w-28 md:rounded-xl">
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
                     animate={{ x: ['-100%', '100%'] }}
@@ -464,28 +497,29 @@ function ConfirmStep({
                 </div>
               ))}
             </div>
-            <div className="space-y-3 pt-2">
-              <div className="h-6 w-2/3 rounded-lg bg-slate-200 dark:bg-slate-700" />
+            <div className="space-y-3 pt-1">
+              <div className="h-5 w-2/3 rounded-lg bg-slate-200 dark:bg-slate-700" />
               <div className="h-4 w-full rounded-lg bg-slate-100 dark:bg-slate-800" />
             </div>
-            <div className="h-20 rounded-xl bg-slate-100 dark:bg-slate-800" />
+            <div className="h-16 rounded-xl bg-slate-100 dark:bg-slate-800" />
           </div>
         ) : preview ? (
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
+            {/* Fotos - menores no mobile */}
             {preview.photos.length > 0 && (
-              <div className="-mx-6 -mt-6 rounded-t-2xl bg-gradient-to-b from-slate-100 to-slate-50 px-4 pb-4 pt-3 dark:from-slate-800 dark:to-slate-800/50">
-                <div className="mb-3 flex items-center justify-between">
+              <div className="-mx-6 -mt-6 rounded-t-2xl bg-gradient-to-b from-slate-100 to-slate-50 px-3 pb-3 pt-2 dark:from-slate-800 dark:to-slate-800/50 md:px-4 md:pb-4 md:pt-3">
+                <div className="mb-2 flex items-center justify-between md:mb-3">
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                    <IconPhoto className="mr-1 inline h-3.5 w-3.5" />
+                    <IconPhoto className="mr-1 inline h-3 w-3 md:h-3.5 md:w-3.5" />
                     {preview.photos.length} {preview.photos.length === 1 ? 'foto' : 'fotos'}
                   </p>
                   {preview.photos.length > 1 && (
-                    <p className="text-xs text-slate-400 dark:text-slate-500">
+                    <p className="hidden text-xs text-slate-400 dark:text-slate-500 sm:block">
                       Toque para escolher destaque
                     </p>
                   )}
                 </div>
-                <div className="flex gap-3 overflow-x-auto pb-1">
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide md:gap-3">
                   {preview.photos.map((photo, i) => {
                     const isSelected = selectedCoverIndex === i
                     return (
@@ -494,10 +528,10 @@ function ConfirmStep({
                         type="button"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.05 }}
+                        transition={{ delay: i * 0.03 }}
                         onClick={() => onSelectCover(i)}
                         className={cn(
-                          "group relative shrink-0 cursor-pointer overflow-hidden rounded-xl border-2 transition-all duration-200",
+                          "group relative shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200 md:rounded-xl",
                           isSelected
                             ? "border-primary shadow-lg shadow-primary/20"
                             : "border-transparent opacity-60 hover:opacity-100"
@@ -506,14 +540,14 @@ function ConfirmStep({
                         <img
                           src={photo}
                           alt={`Foto ${i + 1}`}
-                          className="h-28 w-28 object-cover sm:h-32 sm:w-32"
+                          className="h-20 w-20 object-cover md:h-28 md:w-28"
                         />
                         {isSelected && (
                           <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent" />
                         )}
                         {isSelected && (
-                          <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm">
-                            <IconCheck className="h-3 w-3" />
+                          <div className="absolute bottom-1 left-1 flex items-center gap-0.5 rounded bg-primary px-1 py-0.5 text-[9px] font-semibold text-white shadow-sm md:bottom-1.5 md:left-1.5 md:gap-1 md:rounded-md md:px-1.5 md:text-[10px]">
+                            <IconCheck className="h-2.5 w-2.5 md:h-3 md:w-3" />
                             Capa
                           </div>
                         )}
@@ -524,31 +558,32 @@ function ConfirmStep({
               </div>
             )}
 
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 flex-1 space-y-2">
+            {/* Info do negócio - compacto */}
+            <div className="flex items-start justify-between gap-3 md:gap-4">
+              <div className="min-w-0 flex-1 space-y-1 md:space-y-2">
                 {preview.category && (
-                  <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary md:px-3 md:py-1 md:text-xs">
                     {preview.category}
                   </span>
                 )}
-                <h2 className="line-clamp-2 text-lg font-semibold text-slate-900 dark:text-white" title={preview.name}>
+                <h2 className="line-clamp-2 text-base font-semibold text-slate-900 dark:text-white md:text-lg" title={preview.name}>
                   {preview.name}
                 </h2>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400 md:text-sm">
                   {preview.address}
                 </p>
               </div>
 
               {preview.rating && (
                 <div className="shrink-0 text-center">
-                  <div className="flex items-center gap-1.5 rounded-xl bg-amber-50 px-3 py-2 dark:bg-amber-950/30">
-                    <IconStarFilled className="h-5 w-5 text-amber-500" />
-                    <span className="text-lg font-semibold text-amber-700 dark:text-amber-400">
+                  <div className="flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1.5 dark:bg-amber-950/30 md:gap-1.5 md:rounded-xl md:px-3 md:py-2">
+                    <IconStarFilled className="h-4 w-4 text-amber-500 md:h-5 md:w-5" />
+                    <span className="text-base font-semibold text-amber-700 dark:text-amber-400 md:text-lg">
                       {preview.rating.toFixed(1)}
                     </span>
                   </div>
                   {preview.reviewsCount && (
-                    <p className="mt-1.5 text-xs text-slate-500">
+                    <p className="mt-1 text-[10px] text-slate-500 md:mt-1.5 md:text-xs">
                       {preview.reviewsCount} avaliações
                     </p>
                   )}
@@ -556,62 +591,142 @@ function ConfirmStep({
               )}
             </div>
 
+            {/* Seção de Contatos - NOVA */}
+            <div className="space-y-3 rounded-xl border border-amber-200/60 bg-amber-50/50 p-3 dark:border-amber-900/40 dark:bg-amber-950/20 md:p-4">
+              <div className="flex items-start gap-2 md:gap-3">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-amber-500/20 md:h-8 md:w-8">
+                  <IconAlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 md:h-4 md:w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                    Verifique seus contatos
+                  </p>
+                  <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300 md:text-sm">
+                    Confira se os números estão corretos para receber contatos
+                  </p>
+                </div>
+              </div>
+              
+              <div className="grid gap-3 md:grid-cols-2">
+                {/* WhatsApp */}
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
+                    <IconBrandWhatsapp className="h-3.5 w-3.5 text-emerald-600" />
+                    WhatsApp
+                  </label>
+                  <PatternFormat
+                    format="(##) #####-####"
+                    mask="_"
+                    value={editedWhatsapp}
+                    onValueChange={(values) => onWhatsappChange(values.value)}
+                    className={cn(
+                      "flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-background transition-colors",
+                      "placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20",
+                      "dark:border-slate-700 dark:bg-slate-800 dark:placeholder:text-slate-500 dark:focus:border-emerald-500"
+                    )}
+                    placeholder="(11) 99999-9999"
+                  />
+                </div>
+                
+                {/* Telefone (Ligação) */}
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-1.5 text-xs font-medium text-slate-700 dark:text-slate-300">
+                    <IconPhone className="h-3.5 w-3.5 text-blue-600" />
+                    Telefone (Ligação)
+                  </label>
+                  <PatternFormat
+                    format="(##) #####-####"
+                    mask="_"
+                    value={editedPhone}
+                    onValueChange={(values) => onPhoneChange(values.value)}
+                    className={cn(
+                      "flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-background transition-colors",
+                      "placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20",
+                      "dark:border-slate-700 dark:bg-slate-800 dark:placeholder:text-slate-500 dark:focus:border-blue-500"
+                    )}
+                    placeholder="(11) 99999-9999"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Reviews em Carrossel */}
             {preview.topReviews.length > 0 && (
-              <div className="space-y-3">
-                <p className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                  <IconStar className="h-4 w-4 text-amber-500" />
+              <div className="space-y-2 md:space-y-3">
+                <p className="flex items-center gap-2 text-xs font-medium text-slate-700 dark:text-slate-300 md:text-sm">
+                  <IconStar className="h-3.5 w-3.5 text-amber-500 md:h-4 md:w-4" />
                   Avaliações que vamos destacar
                 </p>
-                <div className="space-y-3">
-                  {preview.topReviews.map((review, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2 + i * 0.1 }}
-                      className="rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-slate-700/60 dark:bg-slate-800/30"
-                    >
-                      <div className="flex items-center gap-3">
-                        <ReviewAvatar
-                          photoUrl={review.photoUrl}
-                          author={review.author}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">
-                            {review.author}
-                          </p>
-                          <div className="mt-0.5 flex">
-                            {[...Array(5)].map((_, j) => (
-                              <IconStarFilled
-                                key={j}
-                                className={cn(
-                                  'h-3.5 w-3.5',
-                                  j < review.rating ? 'text-amber-400' : 'text-slate-200 dark:text-slate-700'
-                                )}
-                              />
-                            ))}
+                
+                {/* Carrossel horizontal */}
+                <div className="relative -mx-6">
+                  <div className="flex gap-2 overflow-x-auto px-6 pb-2 scrollbar-hide snap-x snap-mandatory md:gap-3">
+                    {preview.topReviews.map((review, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.1 + i * 0.05 }}
+                        className={cn(
+                          "min-w-[240px] max-w-[240px] flex-shrink-0 snap-center md:min-w-[280px] md:max-w-[280px]",
+                          "rounded-xl border border-slate-200/60 bg-white/80 p-3",
+                          "dark:border-slate-700/60 dark:bg-slate-800/50"
+                        )}
+                      >
+                        {/* Avatar + Nome + Rating */}
+                        <div className="flex items-center gap-2">
+                          <ReviewAvatar photoUrl={review.photoUrl} author={review.author} size="sm" />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs font-medium text-slate-800 dark:text-slate-200 md:text-sm">
+                              {review.author}
+                            </p>
+                            <div className="flex">
+                              {[...Array(5)].map((_, j) => (
+                                <IconStarFilled
+                                  key={j}
+                                  className={cn(
+                                    'h-3 w-3',
+                                    j < review.rating ? 'text-amber-400' : 'text-slate-200 dark:text-slate-700'
+                                  )}
+                                />
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                        "{review.text}"
-                      </p>
-                    </motion.div>
-                  ))}
+                        {/* Texto da review */}
+                        <p className="mt-2 text-xs leading-relaxed text-slate-600 line-clamp-3 dark:text-slate-400">
+                          &ldquo;{review.text}&rdquo;
+                        </p>
+                      </motion.div>
+                    ))}
+                  </div>
+                  
+                  {/* Indicadores de scroll (dots) */}
+                  {preview.topReviews.length > 1 && (
+                    <div className="mt-2 flex justify-center gap-1.5">
+                      {preview.topReviews.map((_, i) => (
+                        <div
+                          key={i}
+                          className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-600"
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
-            <div className="rounded-xl border border-emerald-200/60 bg-emerald-50/50 p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/20">
-                  <IconCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            {/* Success message - compacto */}
+            <div className="rounded-lg border border-emerald-200/60 bg-emerald-50/50 p-3 dark:border-emerald-900/40 dark:bg-emerald-950/20 md:rounded-xl md:p-4">
+              <div className="flex items-start gap-2 md:gap-3">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-emerald-500/20 md:h-8 md:w-8 md:rounded-lg">
+                  <IconCheck className="h-3 w-3 text-emerald-600 dark:text-emerald-400 md:h-4 md:w-4" />
                 </div>
                 <div>
-                  <p className="font-medium text-emerald-800 dark:text-emerald-200">
+                  <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
                     Tudo pronto para importar!
                   </p>
-                  <p className="mt-1 text-sm text-emerald-700 dark:text-emerald-300">
+                  <p className="mt-0.5 text-xs text-emerald-700 dark:text-emerald-300 md:mt-1 md:text-sm">
                     Nossa IA vai criar textos otimizados para SEO.
                   </p>
                 </div>
@@ -619,24 +734,24 @@ function ConfirmStep({
             </div>
           </div>
         ) : (
-          <div className="space-y-5">
-            <div className="rounded-xl border border-slate-200/60 bg-slate-50/50 p-5 dark:border-slate-700/60 dark:bg-slate-800/50">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <IconMapPin className="h-6 w-6" />
+          <div className="space-y-4 md:space-y-5">
+            <div className="rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-slate-700/60 dark:bg-slate-800/50 md:p-5">
+              <div className="flex items-start gap-3 md:gap-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary md:h-12 md:w-12 md:rounded-xl">
+                  <IconMapPin className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-lg font-semibold text-slate-900 dark:text-white">
+                  <p className="truncate text-base font-semibold text-slate-900 dark:text-white md:text-lg">
                     {place.name}
                   </p>
-                  <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 md:text-sm">
                     {place.address}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
               {[
                 { icon: IconStar, label: 'Avaliações' },
                 { icon: IconPhoto, label: 'Fotos' },
@@ -648,9 +763,9 @@ function ConfirmStep({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="flex items-center gap-2.5 rounded-xl bg-slate-100/80 px-4 py-3 text-sm text-slate-600 dark:bg-slate-800/50 dark:text-slate-300"
+                  className="flex items-center gap-2 rounded-lg bg-slate-100/80 px-3 py-2.5 text-xs text-slate-600 dark:bg-slate-800/50 dark:text-slate-300 md:gap-2.5 md:rounded-xl md:px-4 md:py-3 md:text-sm"
                 >
-                  <item.icon className="h-4 w-4 text-primary" />
+                  <item.icon className="h-3.5 w-3.5 text-primary md:h-4 md:w-4" />
                   {item.label}
                 </motion.div>
               ))}
@@ -658,24 +773,24 @@ function ConfirmStep({
           </div>
         )}
 
-        <div className="mt-6 flex gap-3 border-t border-slate-200/60 pt-6 dark:border-slate-700/60">
+        <div className="mt-4 flex gap-2 border-t border-slate-200/60 pt-4 dark:border-slate-700/60 md:mt-6 md:gap-3 md:pt-6">
           <Button
             variant="outline"
             onClick={onBack}
-            className="h-12 flex-1 cursor-pointer gap-2 border-slate-200/60 dark:border-slate-700/60"
+            className="h-10 flex-1 cursor-pointer gap-1.5 border-slate-200/60 text-sm dark:border-slate-700/60 md:h-12 md:gap-2"
           >
-            <IconEdit className="h-4 w-4" />
+            <IconEdit className="h-3.5 w-3.5 md:h-4 md:w-4" />
             Alterar
           </Button>
           <Button
             onClick={onConfirm}
             disabled={isLoadingPreview}
-            className="h-12 flex-1 cursor-pointer gap-2 shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+            className="h-10 flex-1 cursor-pointer gap-1.5 text-sm shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30 md:h-12 md:gap-2"
           >
             {isLoadingPreview ? (
-              <IconLoader2 className="h-4 w-4 animate-spin" />
+              <IconLoader2 className="h-3.5 w-3.5 animate-spin md:h-4 md:w-4" />
             ) : (
-              <IconRocket className="h-4 w-4" />
+              <IconRocket className="h-3.5 w-3.5 md:h-4 md:w-4" />
             )}
             Criar meu site
           </Button>
@@ -685,14 +800,20 @@ function ConfirmStep({
   )
 }
 
-function ReviewAvatar({ photoUrl, author }: { photoUrl: string | null; author: string }) {
+function ReviewAvatar({ photoUrl, author, size = 'md' }: { photoUrl: string | null; author: string; size?: 'sm' | 'md' }) {
   const [hasError, setHasError] = useState(false)
   const initials = author.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 
+  const sizeClasses = size === 'sm' 
+    ? 'h-8 w-8' 
+    : 'h-10 w-10'
+  
+  const textSizeClass = size === 'sm' ? 'text-xs' : 'text-sm'
+
   if (!photoUrl || hasError) {
     return (
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5">
-        <span className="text-sm font-medium text-primary">{initials}</span>
+      <div className={cn("flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5", sizeClasses)}>
+        <span className={cn("font-medium text-primary", textSizeClass)}>{initials}</span>
       </div>
     )
   }
@@ -701,7 +822,7 @@ function ReviewAvatar({ photoUrl, author }: { photoUrl: string | null; author: s
     <img
       src={photoUrl}
       alt={author}
-      className="h-10 w-10 shrink-0 rounded-full object-cover"
+      className={cn("shrink-0 rounded-full object-cover", sizeClasses)}
       onError={() => setHasError(true)}
     />
   )
@@ -720,77 +841,131 @@ function CreatingStep({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="w-full max-w-xl"
+      className="w-full max-w-xl px-4"
     >
-      <div className="mb-8 text-center">
+      {/* Header compacto no mobile */}
+      <div className="mb-4 text-center md:mb-8">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-          className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
+          className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10 md:mb-6 md:h-20 md:w-20 md:rounded-3xl"
         >
-          <IconSparkles className="h-10 w-10 text-primary" />
+          <IconSparkles className="h-7 w-7 text-primary md:h-10 md:w-10" />
         </motion.div>
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+        <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
           Criando seu site
         </h1>
-        <p className="mt-3 text-slate-500 dark:text-slate-400">
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 md:mt-3 md:text-base">
           Nossa IA está trabalhando na sua página
         </p>
       </div>
 
-      <GlassCard>
-        <div className="mb-6 rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-slate-700/60 dark:bg-slate-800/50">
-          <p className="text-center font-medium text-slate-700 dark:text-slate-200">
+      <GlassCard className="p-4 md:p-6">
+        {/* Nome do negócio - compacto */}
+        <div className="mb-4 rounded-lg border border-slate-200/60 bg-slate-50/50 p-3 dark:border-slate-700/60 dark:bg-slate-800/50 md:mb-6 md:rounded-xl md:p-4">
+          <p className="text-center text-sm font-medium text-slate-700 dark:text-slate-200 md:text-base">
             {place.name}
           </p>
         </div>
 
+        {/* Skeleton compacto no mobile */}
         <SiteSkeletonPreview />
 
-        <div className="mt-6 space-y-3">
-          {HUMANIZED_LOGS.map((log, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{
-                opacity: index <= currentLogIndex ? 1 : 0.3,
-                x: 0,
-              }}
-              transition={{ delay: index * 0.1, duration: 0.3 }}
-              className={cn(
-                'flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors',
-                index < currentLogIndex && 'bg-emerald-50/50 dark:bg-emerald-950/20',
-                index === currentLogIndex && 'bg-primary/5 dark:bg-primary/10'
-              )}
-            >
-              <div
+        {/* Steps em grid no mobile para ocupar menos espaço vertical */}
+        <div className="mt-4 md:mt-6">
+          {/* Desktop: lista vertical */}
+          <div className="hidden space-y-3 md:block">
+            {HUMANIZED_LOGS.map((log, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{
+                  opacity: index <= currentLogIndex ? 1 : 0.3,
+                  x: 0,
+                }}
+                transition={{ delay: index * 0.1, duration: 0.3 }}
                 className={cn(
-                  'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                  index < currentLogIndex && 'bg-emerald-500 text-white',
-                  index === currentLogIndex && 'bg-primary text-white',
-                  index > currentLogIndex && 'bg-slate-100 text-slate-400 dark:bg-slate-800'
+                  'flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors',
+                  index < currentLogIndex && 'bg-emerald-50/50 dark:bg-emerald-950/20',
+                  index === currentLogIndex && 'bg-primary/5 dark:bg-primary/10'
                 )}
               >
-                {index < currentLogIndex ? (
-                  <IconCheck className="h-4 w-4" />
-                ) : index === currentLogIndex ? (
-                  <IconLoader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <log.icon className="h-4 w-4" />
-                )}
-              </div>
-              <span
+                <div
+                  className={cn(
+                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
+                    index < currentLogIndex && 'bg-emerald-500 text-white',
+                    index === currentLogIndex && 'bg-primary text-white',
+                    index > currentLogIndex && 'bg-slate-100 text-slate-400 dark:bg-slate-800'
+                  )}
+                >
+                  {index < currentLogIndex ? (
+                    <IconCheck className="h-4 w-4" />
+                  ) : index === currentLogIndex ? (
+                    <IconLoader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <log.icon className="h-4 w-4" />
+                  )}
+                </div>
+                <span
+                  className={cn(
+                    'flex-1 pt-1 text-sm leading-snug transition-colors',
+                    index <= currentLogIndex
+                      ? 'text-slate-700 dark:text-slate-200'
+                      : 'text-slate-400 dark:text-slate-500'
+                  )}
+                >
+                  {log.text}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Mobile: grid compacto 2x3 */}
+          <div className="grid grid-cols-3 gap-2 md:hidden">
+            {HUMANIZED_LOGS.map((log, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{
+                  opacity: index <= currentLogIndex ? 1 : 0.4,
+                  scale: 1,
+                }}
+                transition={{ delay: index * 0.05, duration: 0.2 }}
                 className={cn(
-                  'flex-1 pt-1 text-sm leading-snug transition-colors',
-                  index <= currentLogIndex
-                    ? 'text-slate-700 dark:text-slate-200'
-                    : 'text-slate-400 dark:text-slate-500'
+                  'flex flex-col items-center gap-1.5 rounded-lg p-2 text-center transition-colors',
+                  index < currentLogIndex && 'bg-emerald-50/50 dark:bg-emerald-950/20',
+                  index === currentLogIndex && 'bg-primary/5 dark:bg-primary/10'
                 )}
               >
-                {log.text}
-              </span>
-            </motion.div>
-          ))}
+                <div
+                  className={cn(
+                    'flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors',
+                    index < currentLogIndex && 'bg-emerald-500 text-white',
+                    index === currentLogIndex && 'bg-primary text-white',
+                    index > currentLogIndex && 'bg-slate-100 text-slate-400 dark:bg-slate-800'
+                  )}
+                >
+                  {index < currentLogIndex ? (
+                    <IconCheck className="h-3.5 w-3.5" />
+                  ) : index === currentLogIndex ? (
+                    <IconLoader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <log.icon className="h-3.5 w-3.5" />
+                  )}
+                </div>
+                <span
+                  className={cn(
+                    'text-[10px] leading-tight transition-colors',
+                    index <= currentLogIndex
+                      ? 'text-slate-700 dark:text-slate-200'
+                      : 'text-slate-400 dark:text-slate-500'
+                  )}
+                >
+                  {log.shortText}
+                </span>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </GlassCard>
     </motion.div>
@@ -852,20 +1027,22 @@ function CompleteStep({ place, storeSlug }: { place: PlaceResult; storeSlug: str
 
 function SiteSkeletonPreview() {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-      <div className="relative h-24 bg-gradient-to-r from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700">
+    <div className="overflow-hidden rounded-lg border border-slate-200/60 bg-white shadow-sm dark:border-slate-700/60 dark:bg-slate-900 md:rounded-xl">
+      {/* Header image skeleton - menor no mobile */}
+      <div className="relative h-16 bg-gradient-to-r from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700 md:h-24">
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
           animate={{ x: ['-100%', '100%'] }}
           transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
         />
       </div>
-      <div className="p-4 space-y-3">
-        <div className="h-4 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
-        <div className="h-3 w-1/2 rounded bg-slate-100 dark:bg-slate-800" />
-        <div className="mt-4 flex gap-2">
-          <div className="h-8 w-24 rounded-lg bg-primary/20" />
-          <div className="h-8 w-20 rounded-lg bg-slate-100 dark:bg-slate-800" />
+      {/* Content skeleton - compacto no mobile */}
+      <div className="space-y-2 p-3 md:space-y-3 md:p-4">
+        <div className="h-3 w-3/4 rounded bg-slate-200 dark:bg-slate-700 md:h-4" />
+        <div className="h-2.5 w-1/2 rounded bg-slate-100 dark:bg-slate-800 md:h-3" />
+        <div className="mt-3 flex gap-2 md:mt-4">
+          <div className="h-6 w-20 rounded-md bg-primary/20 md:h-8 md:w-24 md:rounded-lg" />
+          <div className="h-6 w-16 rounded-md bg-slate-100 dark:bg-slate-800 md:h-8 md:w-20 md:rounded-lg" />
         </div>
       </div>
     </div>
