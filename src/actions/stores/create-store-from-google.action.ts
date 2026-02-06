@@ -178,8 +178,8 @@ function getServicesForCategory(category: string): string {
   return 'serviços especializados'
 }
 
-const CATEGORY_PATTERNS = [
-  'borracharia', 'oficina', 'mecânica', 'mecanica', 'barbearia', 'salão', 'salao',
+const CATEGORY_PATTERNS_RAW = [
+  'borracharia', 'oficina', 'mecânica', 'mecanica', 'barbearia', 'barberia', 'barber', 'salão', 'salao',
   'restaurante', 'pizzaria', 'lanchonete', 'padaria', 'mercado', 'supermercado',
   'pet shop', 'petshop', 'veterinário', 'veterinaria', 'clínica', 'clinica',
   'academia', 'estúdio', 'estudio', 'loja', 'farmácia', 'farmacia',
@@ -192,9 +192,20 @@ const CATEGORY_PATTERNS = [
   'sorveteria', 'açaí', 'acai', 'hamburgueria', 'churrascaria', 'bar', 'pub',
   'posto', 'auto posto', 'conveniência', 'conveniencia', 'mercadinho', 'minimercado',
   'móvel', 'movel', 'móveis', 'moveis', 'eletro', 'eletrônicos', 'eletronicos',
-  // PET - padrões adicionais
   'criador', 'agropet', 'agropecuária', 'agropecuaria', 'canil', 'gatil', 'aquário', 'aquario',
 ]
+
+const CATEGORY_PATTERNS = [...CATEGORY_PATTERNS_RAW].sort((a, b) => b.length - a.length)
+
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function matchesAsWord(text: string, pattern: string): boolean {
+  const escaped = escapeRegex(pattern)
+  const regex = new RegExp(`\\b${escaped}\\b`, 'i')
+  return regex.test(text)
+}
 
 interface ExtractedBusinessInfo {
   displayName: string
@@ -255,7 +266,7 @@ function detectCategoryFromName(name: string, googleCategory: string): string {
 
   for (const pattern of CATEGORY_PATTERNS) {
     const normalizedPattern = normalizeText(pattern)
-    if (normalized.includes(normalizedPattern)) {
+    if (matchesAsWord(normalized, normalizedPattern)) {
       return pattern
     }
   }
@@ -525,6 +536,7 @@ const CATEGORY_SLUG_MAPPING: Record<string, string> = {
 
   // ========== BELEZA E BEM-ESTAR ==========
   'barbearia': 'barbearia',
+  'barberia': 'barbearia',
   'barbeiro': 'barbearia',
   'barber': 'barbearia',
   'salão': 'salao-beleza',
@@ -814,8 +826,11 @@ async function matchCategoryFromDatabase(detectedCategory: string): Promise<{ id
     }
   }
 
-  for (const [pattern, slug] of Object.entries(CATEGORY_SLUG_MAPPING)) {
-    if (lower.includes(pattern)) {
+  const sortedEntries = Object.entries(CATEGORY_SLUG_MAPPING).sort(
+    ([a], [b]) => b.length - a.length
+  )
+  for (const [pattern, slug] of sortedEntries) {
+    if (matchesAsWord(lower, pattern)) {
       const found = await db.query.category.findFirst({
         where: (c, { eq }) => eq(c.slug, slug),
       })
