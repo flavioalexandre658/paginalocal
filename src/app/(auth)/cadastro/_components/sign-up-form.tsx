@@ -10,6 +10,7 @@ import { PatternFormat } from 'react-number-format'
 import toast from 'react-hot-toast'
 
 import { signUp } from '@/lib/auth-client'
+import { updateUserPhoneAction } from '@/actions/users/update-user-phone.action'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
@@ -61,6 +62,10 @@ export function SignUpForm() {
       toast.error(result.error.message || 'Erro ao criar conta')
       setIsLoading(false)
       return
+    }
+
+    if (data.phone) {
+      await updateUserPhoneAction({ phone: data.phone })
     }
 
     toast.success('Conta criada com sucesso!')
