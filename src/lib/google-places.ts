@@ -279,91 +279,155 @@ export function parseOpeningHours(weekdayText: string[]): Record<string, string>
 
 export function inferCategory(types: string[]): string {
   const categoryMap: Record<string, string> = {
+    // ========== AUTOMOTIVO ==========
     'car_dealer': 'Revendedora de Veículos',
     'car_rental': 'Locadora de Veículos',
     'car_repair': 'Oficina Mecânica',
     'car_wash': 'Lava Jato',
     'gas_station': 'Posto de Combustível',
     'parking': 'Estacionamento',
+
+    // ========== ALIMENTAÇÃO ==========
     'restaurant': 'Restaurante',
     'cafe': 'Cafeteria',
     'bakery': 'Padaria',
     'bar': 'Bar',
     'night_club': 'Casa Noturna',
+    'meal_delivery': 'Delivery',
+    'meal_takeaway': 'Delivery',
+    'food': 'Restaurante',
+
+    // ========== BELEZA E BEM-ESTAR ==========
     'beauty_salon': 'Salão de Beleza',
-    'hair_care': 'Cabeleireiro',
+    'hair_care': 'Salão de Beleza',
+    'hair_salon': 'Salão de Beleza',
+    'barber_shop': 'Barbearia',
     'spa': 'Spa',
     'gym': 'Academia',
+    'health': 'Academia',
+
+    // ========== SAÚDE ==========
     'physiotherapist': 'Fisioterapeuta',
-    'dentist': 'Dentista',
+    'dentist': 'Consultório Odontológico',
     'doctor': 'Médico',
     'hospital': 'Hospital',
     'pharmacy': 'Farmácia',
-    'veterinary_care': 'Veterinário',
+    'drugstore': 'Farmácia',
+    'veterinary_care': 'Clínica Veterinária',
     'pet_store': 'Pet Shop',
-    'store': 'Loja',
+    'health_and_beauty': 'Clínica Médica',
+    'medical_center': 'Clínica Médica',
+    'clinic': 'Clínica Médica',
+
+    // ========== VAREJO - MODA ==========
     'clothing_store': 'Loja de Roupas',
-    'electronics_store': 'Loja de Eletrônicos',
-    'furniture_store': 'Loja de Móveis',
-    'hardware_store': 'Loja de Ferragens',
-    'home_goods_store': 'Loja de Decoração',
-    'jewelry_store': 'Joalheria',
     'shoe_store': 'Sapataria',
-    'shopping_mall': 'Shopping Center',
-    'supermarket': 'Supermercado',
-    'grocery_or_supermarket': 'Supermercado',
+    'jewelry_store': 'Joalheria',
+    'bridal_shop': 'Moda e Eventos',
+    'formal_wear_store': 'Moda e Eventos',
+    'wedding_store': 'Moda e Eventos',
+    'dress_store': 'Moda e Eventos',
+
+    // ========== VAREJO - CASA E DECORAÇÃO ==========
+    'furniture_store': 'Loja de Móveis',
+    'home_goods_store': 'Loja de Decoração',
+    'home_improvement_store': 'Loja de Ferragens',
+    'hardware_store': 'Loja de Ferragens',
+
+    // ========== VAREJO - ELETRÔNICOS E TECNOLOGIA ==========
+    'electronics_store': 'Loja de Eletrônicos',
+    'cell_phone_store': 'Loja de Eletrônicos',
+    'computer_store': 'Loja de Eletrônicos',
+    'mobile_phone_store': 'Loja de Eletrônicos',
+
+    // ========== VAREJO - OUTROS ==========
+    'bicycle_store': 'Loja de Bicicletas',
+    'book_store': 'Livraria',
+    'bookstore': 'Livraria',
+    'florist': 'Floricultura',
+    'flower_shop': 'Floricultura',
     'convenience_store': 'Conveniência',
     'liquor_store': 'Distribuidora de Bebidas',
-    'florist': 'Floricultura',
-    'book_store': 'Livraria',
-    'bicycle_store': 'Loja de Bicicletas',
-    'lawyer': 'Advogado',
-    'accounting': 'Contador',
+    'wine_store': 'Distribuidora de Bebidas',
+    'supermarket': 'Supermercado',
+    'grocery_or_supermarket': 'Supermercado',
+    'grocery_store': 'Supermercado',
+    'department_store': 'Loja de Departamentos',
+    'shopping_mall': 'Shopping Center',
+    'store': 'Loja de Roupas',
+
+    // ========== SERVIÇOS PROFISSIONAIS ==========
+    'lawyer': 'Escritório de Advocacia',
+    'law_firm': 'Escritório de Advocacia',
+    'attorney': 'Escritório de Advocacia',
+    'accounting': 'Escritório de Contabilidade',
+    'accountant': 'Escritório de Contabilidade',
     'real_estate_agency': 'Imobiliária',
+    'real_estate_agent': 'Imobiliária',
     'insurance_agency': 'Seguradora',
     'travel_agency': 'Agência de Viagens',
     'bank': 'Banco',
-    'atm': 'Caixa Eletrônico',
-    'lodging': 'Hotel',
-    'campground': 'Camping',
-    'rv_park': 'Estacionamento de Trailers',
-    'meal_delivery': 'Delivery',
-    'meal_takeaway': 'Delivery',
+    'atm': 'Banco',
+    'finance': 'Banco',
+
+    // ========== SERVIÇOS RESIDENCIAIS ==========
     'moving_company': 'Empresa de Mudanças',
-    'storage': 'Guarda-Volumes',
+    'storage': 'Empresa de Mudanças',
     'laundry': 'Lavanderia',
+    'dry_cleaning': 'Lavanderia',
     'locksmith': 'Chaveiro',
     'painter': 'Pintor',
     'plumber': 'Encanador',
     'electrician': 'Eletricista',
-    'roofing_contractor': 'Telhador',
-    'general_contractor': 'Empreiteiro',
+    'roofing_contractor': 'Pintor',
+    'general_contractor': 'Pintor',
+    'hvac_contractor': 'Eletricista',
+
+    // ========== EDUCAÇÃO ==========
     'school': 'Escola',
-    'university': 'Universidade',
-    'primary_school': 'Escola Primária',
-    'secondary_school': 'Escola Secundária',
-    'library': 'Biblioteca',
+    'university': 'Escola',
+    'primary_school': 'Escola',
+    'secondary_school': 'Escola',
+    'library': 'Livraria',
+
+    // ========== HOSPEDAGEM ==========
+    'lodging': 'Hotel',
+    'hotel': 'Hotel',
+    'motel': 'Hotel',
+    'guest_house': 'Hotel',
+    'hostel': 'Hotel',
+    'campground': 'Hotel',
+    'rv_park': 'Hotel',
+
+    // ========== ENTRETENIMENTO E CULTURA ==========
     'museum': 'Museu',
-    'art_gallery': 'Galeria de Arte',
+    'art_gallery': 'Museu',
     'movie_theater': 'Cinema',
-    'amusement_park': 'Parque de Diversões',
-    'zoo': 'Zoológico',
-    'aquarium': 'Aquário',
-    'bowling_alley': 'Boliche',
-    'stadium': 'Estádio',
-    'church': 'Igreja',
-    'mosque': 'Mesquita',
-    'synagogue': 'Sinagoga',
-    'hindu_temple': 'Templo Hindu',
-    'cemetery': 'Cemitério',
-    'funeral_home': 'Funerária',
-    'police': 'Delegacia',
-    'fire_station': 'Corpo de Bombeiros',
-    'post_office': 'Correios',
-    'local_government_office': 'Órgão Público',
-    'city_hall': 'Prefeitura',
-    'courthouse': 'Fórum',
-    'embassy': 'Embaixada',
+    'amusement_park': 'Cinema',
+    'bowling_alley': 'Bar',
+    'casino': 'Casa Noturna',
+    'stadium': 'Academia',
+    'zoo': 'Museu',
+    'aquarium': 'Museu',
+
+    // ========== RELIGIÃO E SERVIÇOS PÚBLICOS ==========
+    'church': 'Outro',
+    'mosque': 'Outro',
+    'synagogue': 'Outro',
+    'hindu_temple': 'Outro',
+    'cemetery': 'Outro',
+    'funeral_home': 'Outro',
+    'police': 'Outro',
+    'fire_station': 'Outro',
+    'post_office': 'Outro',
+    'local_government_office': 'Outro',
+    'city_hall': 'Outro',
+    'courthouse': 'Outro',
+    'embassy': 'Outro',
+
+    // ========== TIPOS GENÉRICOS ==========
+    'point_of_interest': 'Outro',
+    'establishment': 'Outro',
   }
 
   for (const type of types) {
@@ -372,7 +436,7 @@ export function inferCategory(types: string[]): string {
     }
   }
 
-  return 'Comércio Local'
+  return 'Outro'
 }
 
 export function extractBusinessContext(place: GooglePlaceDetails): {
