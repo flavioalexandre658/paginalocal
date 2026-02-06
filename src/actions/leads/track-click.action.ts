@@ -21,6 +21,7 @@ const trackClickSchema = z.object({
     'floating_bar_call',
   ]).optional(),
   sessionId: z.string().optional(),
+  pageviewId: z.string().uuid().optional(),
   utmSource: z.string().optional(),
   utmMedium: z.string().optional(),
   utmCampaign: z.string().optional(),
@@ -51,6 +52,7 @@ export const trackClickAction = actionClient
       .insert(lead)
       .values({
         storeId: parsedInput.storeId,
+        pageviewId: parsedInput.pageviewId,
         source: parsedInput.source,
         device: parsedInput.device,
         referrer: parsedInput.referrer,

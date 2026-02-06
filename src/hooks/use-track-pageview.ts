@@ -107,6 +107,16 @@ export function getSessionId(): string {
   return sessionStorage.getItem('pgl_session_id') || ''
 }
 
+export function getCurrentPageviewId(): string | null {
+  if (typeof window === 'undefined') return null
+  return sessionStorage.getItem('pgl_current_pageview_id')
+}
+
+function setCurrentPageviewId(pageviewId: string): void {
+  if (typeof window === 'undefined') return
+  sessionStorage.setItem('pgl_current_pageview_id', pageviewId)
+}
+
 export function useTrackPageview({ storeId }: UseTrackPageviewParams) {
   const hasTrackedRef = useRef(false)
   const locationRef = useRef<string | null>(null)
@@ -145,7 +155,7 @@ export function useTrackPageview({ storeId }: UseTrackPageviewParams) {
       const location = await fetchLocation()
       const utmParams = getAndStoreUtmParams()
 
-      await trackPageviewAction({
+      const result = await trackPageviewAction({
         storeId,
         device,
         referrer,
@@ -154,6 +164,11 @@ export function useTrackPageview({ storeId }: UseTrackPageviewParams) {
         sessionId,
         ...utmParams,
       })
+
+      // Armazena o ID da pageview atual para vincular aos leads
+      if (result?.data?.id) {
+        setCurrentPageviewId(result.data.id)
+      }
     }
 
     trackPageview()

@@ -39,7 +39,8 @@ export const trackPageviewAction = actionClient
         .limit(1)
 
       if (existingPageview.length > 0) {
-        return { deduplicated: true }
+        // Retorna o ID da pageview existente para rastreamento de conversão
+        return { id: existingPageview[0].id, deduplicated: true }
       }
     }
 

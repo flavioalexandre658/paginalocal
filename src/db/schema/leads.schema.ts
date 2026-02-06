@@ -1,5 +1,6 @@
 import { pgTable, uuid, varchar, timestamp, boolean, integer } from 'drizzle-orm/pg-core'
 import { store } from './stores.schema'
+import { pageview } from './pageviews.schema'
 
 export type LeadSource = 'whatsapp' | 'phone' | 'call' | 'form' | 'map' | 'blocked_whatsapp' | 'blocked_phone'
 
@@ -14,6 +15,7 @@ export type LeadTouchpoint =
 export const lead = pgTable('lead', {
   id: uuid('id').primaryKey().defaultRandom(),
   storeId: uuid('store_id').references(() => store.id, { onDelete: 'cascade' }).notNull(),
+  pageviewId: uuid('pageview_id').references(() => pageview.id, { onDelete: 'set null' }),
   name: varchar('name', { length: 255 }),
   phone: varchar('phone', { length: 20 }),
   source: varchar('source', { length: 50 }).default('whatsapp').notNull().$type<LeadSource>(),

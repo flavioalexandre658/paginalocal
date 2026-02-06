@@ -2,7 +2,7 @@
 
 import { useCallback, useRef } from 'react'
 import { trackClickAction } from '@/actions/leads/track-click.action'
-import { getSessionId, getStoredUtmParams } from './use-track-pageview'
+import { getSessionId, getStoredUtmParams, getCurrentPageviewId } from './use-track-pageview'
 
 type LeadSource = 'whatsapp' | 'call' | 'form' | 'map'
 type LeadTouchpoint =
@@ -74,6 +74,7 @@ export function useTrackClick() {
       )
       const location = await fetchLocation()
       const sessionId = getSessionId()
+      const pageviewId = getCurrentPageviewId()
       const utmParams = getStoredUtmParams()
 
       await trackClickAction({
@@ -84,6 +85,7 @@ export function useTrackClick() {
         location: location || undefined,
         touchpoint,
         sessionId: sessionId || undefined,
+        pageviewId: pageviewId || undefined,
         ...utmParams,
       })
     },
