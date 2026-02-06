@@ -23,9 +23,11 @@ import {
   IconPhone,
   IconBrandWhatsapp,
   IconAlertCircle,
+  IconClock,
 } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import Image from 'next/image'
 import { PatternFormat } from 'react-number-format'
 
 import { searchPlacesAction } from '@/actions/google/search-places.action'
@@ -41,7 +43,11 @@ interface PlaceResult {
   placeId: string
   name: string
   address: string
-  description: string
+  rating: number | null
+  reviewsCount: number | null
+  photoUrl: string | null
+  isOpen: boolean | null
+  category: string | null
 }
 
 type OnboardingStep = 'search' | 'confirm' | 'creating' | 'complete'
@@ -263,127 +269,124 @@ function SearchStep({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="w-full max-w-xl"
+      className="w-full max-w-2xl"
     >
       {hasStores && (
         <Link
           href="/painel"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          className="mb-4 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
         >
           <IconArrowLeft className="h-4 w-4" />
           Voltar para minhas lojas
         </Link>
       )}
 
-      <div className="mb-10 text-center">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
-        >
-          <IconSearch className="h-10 w-10 text-primary" />
-        </motion.div>
-        <h1 className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
-          Cadastrar nova loja
-        </h1>
-        <p className="mt-3 text-lg text-slate-500 dark:text-slate-400">
-          Busque sua empresa no Google para importar automaticamente
-        </p>
+      <div className="mb-5 flex items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-md shadow-primary/10">
+          <IconSearch className="h-5 w-5 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
+            Cadastrar nova loja
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Busque sua empresa no Google para importar automaticamente
+          </p>
+        </div>
       </div>
 
-      <GlassCard>
-        <div className="flex gap-3">
-          <div className="relative flex-1">
-            <Input
-              placeholder="Ex: Borracharia do João, Salão Maria..."
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && onSearch()}
-              className="h-12 border-slate-200/50 bg-white/50 pl-4 pr-4 text-base shadow-sm backdrop-blur-sm transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
-            />
-          </div>
-          <Button
-            onClick={onSearch}
-            disabled={isSearching || query.length < 3}
-            className="h-12 gap-2 px-6 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
-          >
-            {isSearching ? (
-              <IconLoader2 className="h-5 w-5 animate-spin" />
-            ) : (
-              <IconSearch className="h-5 w-5" />
-            )}
-            Buscar
-          </Button>
+      <div className="flex gap-3">
+        <div className="relative flex-1">
+          <IconSearch className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+          <Input
+            placeholder="Ex: Borracharia do João em São Paulo..."
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && onSearch()}
+            className="h-12 border-slate-200/60 bg-white/70 pl-11 pr-4 text-base shadow-sm backdrop-blur-sm transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
+          />
         </div>
-
-        <AnimatePresence>
-          {results.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-6 space-y-3"
-            >
-              <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                Encontramos estas opções. Qual delas é a sua?
-              </p>
-              <div className="space-y-2">
-                {results.map((place, index) => (
-                  <PlaceCard
-                    key={place.placeId}
-                    place={place}
-                    index={index}
-                    onClick={() => onSelectPlace(place)}
-                  />
-                ))}
-              </div>
-            </motion.div>
+        <Button
+          onClick={onSearch}
+          disabled={isSearching || query.length < 3}
+          className="h-12 gap-2 px-6 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+        >
+          {isSearching ? (
+            <IconLoader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <IconSearch className="h-5 w-5" />
           )}
-        </AnimatePresence>
+          <span className="hidden sm:inline">Buscar</span>
+        </Button>
+      </div>
 
-        {hasSearched && results.length === 0 && !isSearching && (
+      <p className="mt-2 text-xs text-slate-400 dark:text-slate-500">
+        Dica: inclua o nome da cidade para resultados mais precisos
+      </p>
+
+      <AnimatePresence>
+        {results.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mt-6"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-6 space-y-3"
           >
-            <div className="rounded-xl border border-amber-200/60 bg-amber-50/50 p-5 dark:border-amber-900/40 dark:bg-amber-950/20">
-              <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
-                  <IconBuildingStore className="h-6 w-6" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold text-slate-900 dark:text-white">
-                    Não encontramos sua empresa no Google
-                  </p>
-                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                    Mas isso não é problema! Você pode criar seu site preenchendo algumas informações.
-                  </p>
-                  <Link href="/onboarding/manual" className="mt-4 inline-block">
-                    <Button
-                      className="gap-2 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
-                    >
-                      <IconPlus className="h-4 w-4" />
-                      Criar meu site manualmente
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-            <p className="mt-4 text-center text-sm text-slate-400">
-              Ou tente buscar com outro termo acima
+            <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+              {results.length} {results.length === 1 ? 'resultado encontrado' : 'resultados encontrados'}. Qual deles é o seu?
             </p>
+            <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
+              {results.map((place, index) => (
+                <PlaceCard
+                  key={place.placeId}
+                  place={place}
+                  index={index}
+                  onClick={() => onSelectPlace(place)}
+                />
+              ))}
+            </div>
           </motion.div>
         )}
-      </GlassCard>
+      </AnimatePresence>
+
+      {hasSearched && results.length === 0 && !isSearching && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mt-6"
+        >
+          <div className="rounded-xl border border-amber-200/60 bg-amber-50/50 p-5 dark:border-amber-900/40 dark:bg-amber-950/20">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                <IconBuildingStore className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-slate-900 dark:text-white">
+                  Nenhum resultado encontrado
+                </p>
+                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+                  Tente buscar com termos diferentes ou crie seu site manualmente.
+                </p>
+                <Link href="/onboarding/manual" className="mt-4 inline-block">
+                  <Button
+                    className="gap-2 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
+                  >
+                    <IconPlus className="h-4 w-4" />
+                    Criar meu site manualmente
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="mt-8 text-center text-sm text-slate-400"
+        className="mt-6 text-center text-sm text-slate-400"
       >
         Mais de <span className="font-semibold text-primary">2.000 negócios</span> já criaram sua presença digital
       </motion.p>
@@ -402,31 +405,77 @@ function PlaceCard({
 }) {
   return (
     <motion.button
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.3 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: Math.min(index * 0.05, 0.5), duration: 0.3 }}
       onClick={onClick}
       className={cn(
-        'group relative w-full cursor-pointer overflow-hidden rounded-xl border border-slate-200/60 bg-white/70 p-4 text-left backdrop-blur-sm transition-all duration-300',
+        'group relative w-full cursor-pointer overflow-hidden rounded-xl border border-slate-200/60 bg-white/70 p-3 text-left backdrop-blur-sm transition-all duration-300',
         'hover:-translate-y-0.5 hover:border-primary/30 hover:bg-white hover:shadow-lg hover:shadow-primary/5',
         'dark:border-slate-700/60 dark:bg-slate-800/70 dark:hover:border-primary/30 dark:hover:bg-slate-800'
       )}
     >
       <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/0 to-primary/0 transition-all duration-300 group-hover:from-primary/5 group-hover:via-primary/3 group-hover:to-primary/0" />
 
-      <div className="relative flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition-colors group-hover:bg-primary/10 group-hover:text-primary dark:bg-slate-700">
-          <IconMapPin className="h-5 w-5" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="truncate font-semibold text-slate-900 dark:text-white">
+      <div className="relative flex gap-3">
+        {place.photoUrl ? (
+          <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg sm:h-24 sm:w-24">
+            <Image
+              src={place.photoUrl}
+              alt={place.name}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
+              unoptimized
+              sizes="96px"
+            />
+          </div>
+        ) : (
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700 sm:h-24 sm:w-24">
+            <IconBuildingStore className="h-8 w-8 text-slate-400 dark:text-slate-500" />
+          </div>
+        )}
+
+        <div className="flex flex-1 flex-col justify-center gap-1 min-w-0">
+          <p className="font-semibold leading-tight text-slate-900 dark:text-white line-clamp-2">
             {place.name}
           </p>
-          <p className="mt-0.5 truncate text-sm text-slate-500 dark:text-slate-400">
+
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            {place.rating && (
+              <span className="flex items-center gap-0.5 text-sm">
+                <IconStarFilled className="h-3.5 w-3.5 text-amber-500" />
+                <span className="font-semibold text-slate-700 dark:text-slate-200">{place.rating.toFixed(1)}</span>
+                {place.reviewsCount && (
+                  <span className="text-slate-400 dark:text-slate-500">({place.reviewsCount})</span>
+                )}
+              </span>
+            )}
+            {place.category && place.category !== 'Outro' && (
+              <span className="text-sm text-slate-500 dark:text-slate-400">
+                · {place.category}
+              </span>
+            )}
+          </div>
+
+          <p className="text-sm leading-snug text-slate-500 dark:text-slate-400 line-clamp-2">
+            <IconMapPin className="mr-0.5 inline-block h-3.5 w-3.5 shrink-0 -translate-y-px" />
             {place.address}
           </p>
+
+          {place.isOpen !== null && (
+            <span className={cn(
+              'inline-flex w-fit items-center gap-1 text-xs font-medium',
+              place.isOpen
+                ? 'text-emerald-600 dark:text-emerald-400'
+                : 'text-red-500 dark:text-red-400'
+            )}>
+              <IconClock className="h-3 w-3" />
+              {place.isOpen ? 'Aberto agora' : 'Fechado'}
+            </span>
+          )}
         </div>
-        <IconArrowRight className="h-5 w-5 shrink-0 text-slate-300 transition-all group-hover:translate-x-1 group-hover:text-primary dark:text-slate-600" />
+
+        <IconArrowRight className="mt-2 h-5 w-5 shrink-0 text-slate-300 transition-all group-hover:translate-x-1 group-hover:text-primary dark:text-slate-600" />
       </div>
     </motion.button>
   )
@@ -646,7 +695,7 @@ function ConfirmStep({
               </div>
             </div>
 
-            {/* Reviews em Carrossel - compacto */}
+            {/* Reviews em Carrossel */}
             {preview.topReviews.length > 0 && (
               <div className="space-y-1.5 md:space-y-2">
                 <p className="flex items-center gap-1.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 md:text-xs">
@@ -654,7 +703,6 @@ function ConfirmStep({
                   Avaliações que vamos destacar ({preview.topReviews.length})
                 </p>
                 
-                {/* Carrossel horizontal */}
                 <div className="relative -mx-4 md:-mx-5">
                   <div className="flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide snap-x snap-mandatory md:px-5">
                     {preview.topReviews.map((review, i) => (
@@ -662,14 +710,16 @@ function ConfirmStep({
                         key={i}
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.05 + i * 0.03 }}
+                        transition={{ delay: 0.05 + Math.min(i * 0.03, 0.3) }}
                         className={cn(
-                          "min-w-[200px] max-w-[200px] flex-shrink-0 snap-center md:min-w-[220px] md:max-w-[220px]",
+                          "flex-shrink-0 snap-center",
+                          review.text
+                            ? "min-w-[200px] max-w-[200px] md:min-w-[220px] md:max-w-[220px]"
+                            : "min-w-[140px] max-w-[140px] md:min-w-[160px] md:max-w-[160px]",
                           "rounded-lg border border-slate-200/60 bg-white/80 p-2.5",
                           "dark:border-slate-700/60 dark:bg-slate-800/50"
                         )}
                       >
-                        {/* Avatar + Nome + Rating */}
                         <div className="flex items-center gap-1.5">
                           <ReviewAvatar photoUrl={review.photoUrl} author={review.author} size="sm" />
                           <div className="min-w-0 flex-1">
@@ -689,10 +739,11 @@ function ConfirmStep({
                             </div>
                           </div>
                         </div>
-                        {/* Texto da review */}
-                        <p className="mt-1.5 text-[10px] leading-relaxed text-slate-600 line-clamp-2 dark:text-slate-400 md:text-xs">
-                          &ldquo;{review.text}&rdquo;
-                        </p>
+                        {review.text && (
+                          <p className="mt-1.5 text-[10px] leading-relaxed text-slate-600 line-clamp-2 dark:text-slate-400 md:text-xs">
+                            &ldquo;{review.text}&rdquo;
+                          </p>
+                        )}
                       </motion.div>
                     ))}
                   </div>

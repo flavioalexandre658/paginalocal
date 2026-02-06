@@ -76,6 +76,49 @@ export async function searchPlaces(query: string): Promise<GooglePlacePrediction
   return data.predictions || []
 }
 
+export interface TextSearchResult {
+  place_id: string
+  name: string
+  formatted_address: string
+  rating?: number
+  user_ratings_total?: number
+  opening_hours?: {
+    open_now?: boolean
+  }
+  photos?: Array<{
+    photo_reference: string
+    height: number
+    width: number
+  }>
+  types?: string[]
+  business_status?: string
+  geometry?: {
+    location: {
+      lat: number
+      lng: number
+    }
+  }
+}
+
+export async function textSearchPlaces(query: string): Promise<TextSearchResult[]> {
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY
+  if (!apiKey) {
+    throw new Error('Google Places API key não configurada')
+  }
+
+  const response = await fetch(
+    `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&language=pt-BR&region=br&key=${apiKey}`
+  )
+
+  const data = await response.json()
+
+  if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+    throw new Error(`Google Places API error: ${data.status}`)
+  }
+
+  return data.results || []
+}
+
 export async function getPlaceDetails(placeId: string): Promise<GooglePlaceDetails | null> {
   const apiKey = process.env.GOOGLE_PLACES_API_KEY
   if (!apiKey) {
