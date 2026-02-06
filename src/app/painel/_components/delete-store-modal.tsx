@@ -139,7 +139,7 @@ export function DeleteStoreModal({ storeId, storeName, onSuccess }: DeleteStoreM
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value.toUpperCase())}
               placeholder="EXCLUIR"
-              className="h-10 border-red-200 text-sm focus:border-red-500 focus:ring-red-500 dark:border-red-900"
+              className="h-10 border-red-200 text-base focus:border-red-500 focus:ring-red-500 dark:border-red-900"
               autoComplete="off"
             />
           </div>

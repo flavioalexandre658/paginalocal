@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { 
   IconShare, 
   IconCopy, 
@@ -12,7 +12,11 @@ import {
   IconBrandTelegram,
   IconMail,
   IconShare2,
+  IconQrcode,
+  IconDownload,
+  IconLoader2,
 } from '@tabler/icons-react'
+import { QRCodeCanvas } from 'qrcode.react'
 import { cn } from '@/lib/utils'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
 import {
@@ -93,6 +97,12 @@ export function ShareModal({
 }: ShareModalProps) {
   const [copied, setCopied] = useState(false)
   const [open, setOpen] = useState(false)
+  const [showQrCode, setShowQrCode] = useState(false)
+  const [isDownloading, setIsDownloading] = useState(false)
+  const qrCodeRef = useRef<HTMLDivElement>(null)
+  
+  // URL do QR Code com tracking UTM
+  const qrCodeUrl = `${url}?utm_source=qrcode&utm_medium=offline`
 
   async function handleCopyLink() {
     try {
@@ -131,9 +141,52 @@ export function ShareModal({
     window.open(shareUrl, '_blank', 'noopener,noreferrer,width=600,height=400')
   }
 
+  const handleDownloadQrCode = useCallback(async () => {
+    setIsDownloading(true)
+    
+    try {
+      // Buscar o canvas do QR Code renderizado
+      const qrContainer = qrCodeRef.current
+      if (!qrContainer) return
+      
+      const canvas = qrContainer.querySelector('canvas')
+      if (!canvas) return
+      
+      // Criar um novo canvas em alta resolução (1024x1024)
+      const highResCanvas = document.createElement('canvas')
+      const size = 1024
+      const padding = 64 // Padding branco ao redor
+      highResCanvas.width = size
+      highResCanvas.height = size
+      
+      const ctx = highResCanvas.getContext('2d')
+      if (!ctx) return
+      
+      // Fundo branco
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, size, size)
+      
+      // Desenhar o QR code escalado no centro
+      const qrSize = size - (padding * 2)
+      ctx.drawImage(canvas, padding, padding, qrSize, qrSize)
+      
+      // Converter para PNG e fazer download
+      const dataUrl = highResCanvas.toDataURL('image/png', 1.0)
+      const link = document.createElement('a')
+      link.download = `qrcode-${title.toLowerCase().replace(/\s+/g, '-')}.png`
+      link.href = dataUrl
+      link.click()
+    } catch (error) {
+      console.error('Erro ao baixar QR Code:', error)
+    } finally {
+      setIsDownloading(false)
+    }
+  }, [title])
+
   const supportsNativeShare = typeof navigator !== 'undefined' && 'share' in navigator
 
   return (
+    <>
     <Modal open={open} onOpenChange={setOpen}>
       <ModalTrigger asChild>
         {trigger || (
@@ -225,9 +278,78 @@ export function ShareModal({
               ))}
             </div>
           </div>
+
+          {/* QR Code Button */}
+          <div className="border-t border-slate-200/60 pt-6 dark:border-slate-700/60">
+            <EnhancedButton
+              variant="outline"
+              onClick={() => setShowQrCode(true)}
+              className="w-full gap-2 py-5"
+            >
+              <IconQrcode className="h-5 w-5" />
+              Gerar QR Code
+            </EnhancedButton>
+          </div>
         </ModalBody>
       </ModalContent>
     </Modal>
+
+    {/* QR Code Modal - Separada */}
+    <Modal open={showQrCode} onOpenChange={setShowQrCode}>
+      <ModalContent size="sm">
+        <ModalHeader icon={<IconQrcode className="h-5 w-5" />}>
+          <ModalTitle>QR Code</ModalTitle>
+          <ModalDescription>
+            Escaneie para acessar o site
+          </ModalDescription>
+        </ModalHeader>
+        <ModalBody className="flex flex-col items-center gap-6">
+          <div 
+            ref={qrCodeRef}
+            className="rounded-2xl bg-white p-4 shadow-lg"
+          >
+            <QRCodeCanvas
+              value={qrCodeUrl}
+              size={200}
+              level="H"
+              includeMargin={false}
+              bgColor="#ffffff"
+              fgColor="#000000"
+            />
+          </div>
+          
+          <div className="text-center">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              Leads vindos deste QR Code serão identificados automaticamente
+            </p>
+            <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+              Ideal para materiais impressos, cartões e displays
+            </p>
+          </div>
+          
+          <EnhancedButton
+            variant="default"
+            size="lg"
+            onClick={handleDownloadQrCode}
+            disabled={isDownloading}
+            className="w-full gap-2"
+          >
+            {isDownloading ? (
+              <>
+                <IconLoader2 className="h-4 w-4 animate-spin" />
+                Gerando...
+              </>
+            ) : (
+              <>
+                <IconDownload className="h-4 w-4" />
+                Baixar em alta qualidade
+              </>
+            )}
+          </EnhancedButton>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+    </>
   )
 }
 

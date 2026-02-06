@@ -15,6 +15,7 @@ import {
 import { cn } from '@/lib/utils'
 import { uploadStoreImageAction } from '@/actions/uploads/upload-store-image.action'
 import { deleteStoreImageAction } from '@/actions/uploads/delete-store-image.action'
+import { setImageAsHeroAction } from '@/actions/uploads/set-image-as-hero.action'
 
 interface Image {
   id: string
@@ -41,9 +42,11 @@ export function GalleryTab({ store, images: initialImages }: GalleryTabProps) {
 
   const { executeAsync: uploadImage, isExecuting: isUploading } = useAction(uploadStoreImageAction)
   const { executeAsync: deleteImage, isExecuting: isDeleting } = useAction(deleteStoreImageAction)
+  const { executeAsync: setAsHero, isExecuting: isSettingHero } = useAction(setImageAsHeroAction)
 
   const [uploadingRole, setUploadingRole] = useState<'hero' | 'gallery' | null>(null)
   const [deletingImageId, setDeletingImageId] = useState<string | null>(null)
+  const [settingAsHeroId, setSettingAsHeroId] = useState<string | null>(null)
 
   const heroImage = images.find((img) => img.role === 'hero')
   const galleryImages = images.filter((img) => img.role !== 'hero')
@@ -113,6 +116,41 @@ export function GalleryTab({ store, images: initialImages }: GalleryTabProps) {
     }
 
     setDeletingImageId(null)
+  }
+
+  async function handleSetAsHero(imageId: string) {
+    setSettingAsHeroId(imageId)
+
+    const result = await setAsHero({
+      imageId,
+      storeId: store.id,
+    })
+
+    if (result?.data?.success) {
+      // Atualizar estado local: imagem selecionada vira hero, hero atual vira gallery
+      setImages((prev) => {
+        const selectedImage = prev.find((img) => img.id === imageId)
+        const currentHero = prev.find((img) => img.role === 'hero')
+        
+        return prev.map((img) => {
+          if (img.id === imageId) {
+            // Imagem selecionada vira hero
+            return { ...img, role: 'hero', order: 0 }
+          }
+          if (currentHero && img.id === currentHero.id) {
+            // Hero atual vira gallery
+            return { ...img, role: 'gallery', order: prev.length }
+          }
+          return img
+        })
+      })
+      setSelectedImageId(null)
+      toast.success('Imagem definida como destaque!')
+    } else if (result?.serverError) {
+      toast.error(result.serverError)
+    }
+
+    setSettingAsHeroId(null)
   }
 
   return (
@@ -266,19 +304,39 @@ export function GalleryTab({ store, images: initialImages }: GalleryTabProps) {
                         selectedImageId === image.id && "opacity-100"
                       )}
                     >
+                      {/* Botão Destacar */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleSetAsHero(image.id)
+                        }}
+                        disabled={isSettingHero || isDeleting}
+                        className="flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-2 text-sm font-medium text-white shadow-lg transition-transform hover:scale-105 disabled:opacity-50"
+                        title="Definir como imagem de destaque"
+                      >
+                        {settingAsHeroId === image.id ? (
+                          <IconLoader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <IconStar className="h-4 w-4" />
+                        )}
+                        <span className="hidden sm:inline">Destacar</span>
+                      </button>
+                      {/* Botão Excluir */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
                           handleDeleteImage(image.id)
                         }}
-                        disabled={isDeleting}
-                        className="rounded-lg bg-red-500 p-3 text-white shadow-lg transition-transform hover:scale-110 disabled:opacity-50"
+                        disabled={isDeleting || isSettingHero}
+                        className="flex items-center gap-1.5 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white shadow-lg transition-transform hover:scale-105 disabled:opacity-50"
+                        title="Excluir imagem"
                       >
                         {deletingImageId === image.id ? (
-                          <IconLoader2 className="h-5 w-5 animate-spin" />
+                          <IconLoader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <IconTrash className="h-5 w-5" />
+                          <IconTrash className="h-4 w-4" />
                         )}
+                        <span className="hidden sm:inline">Excluir</span>
                       </button>
                     </div>
                     {selectedImageId === image.id && (
