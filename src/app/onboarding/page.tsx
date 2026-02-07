@@ -664,7 +664,7 @@ function ConfirmStep({
                       value={editedWhatsapp}
                       onValueChange={(values) => onWhatsappChange(values.value)}
                       className={cn(
-                        "flex h-8 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs ring-offset-background transition-colors md:h-9 md:text-sm",
+                        "flex h-9 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-base ring-offset-background transition-colors md:h-9 md:text-sm",
                         "placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/20",
                         "dark:border-slate-700 dark:bg-slate-800 dark:placeholder:text-slate-500 dark:focus:border-emerald-500"
                       )}
@@ -684,7 +684,7 @@ function ConfirmStep({
                       value={editedPhone}
                       onValueChange={(values) => onPhoneChange(values.value)}
                       className={cn(
-                        "flex h-8 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-xs ring-offset-background transition-colors md:h-9 md:text-sm",
+                        "flex h-9 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-base ring-offset-background transition-colors md:h-9 md:text-sm",
                         "placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20",
                         "dark:border-slate-700 dark:bg-slate-800 dark:placeholder:text-slate-500 dark:focus:border-blue-500"
                       )}

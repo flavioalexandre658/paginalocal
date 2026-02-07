@@ -7,14 +7,15 @@ import Link from 'next/link'
 import toast from 'react-hot-toast'
 import {
   IconUsers,
-  IconLoader2,
   IconBrandWhatsapp,
   IconBuildingStore,
+  IconMail,
+  IconPhone,
+  IconCrown,
 } from '@tabler/icons-react'
 
 import { getAdminUsersAction } from '@/actions/admin/get-admin-users.action'
 import { Badge } from '@/components/ui/badge'
-import { EnhancedButton } from '@/components/ui/enhanced-button'
 import {
   DataTableRoot,
   DataTableToolbar,
@@ -25,16 +26,17 @@ import {
   DataTableRowActions,
   DataTableSkeleton,
   ServerPagination,
+  MobileCardList,
+  MobileCard,
+  MobileCardHeader,
+  MobileCardAvatar,
+  MobileCardTitle,
+  MobileCardContent,
+  MobileCardRow,
+  MobileCardFooter,
+  MobileCardEmptyState,
   type ColumnDef,
 } from '@/components/ui/data-table-blocks'
-import {
-  FilterBar,
-  FilterBarRow,
-  FilterSearch,
-  FilterActions,
-  FilterChipGroup,
-  FilterChip,
-} from '@/components/ui/filter-blocks'
 
 interface AdminUser {
   id: string
@@ -63,6 +65,22 @@ function getStatusBadge(status: string | null) {
   }
 }
 
+function getRoleBadge(role: string | null) {
+  if (role === 'admin') {
+    return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400">Admin</Badge>
+  }
+  return <Badge variant="secondary">Usuário</Badge>
+}
+
+function getUserInitials(name: string) {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+}
+
 const columns: ColumnDef<AdminUser>[] = [
   {
     accessorKey: 'name',
@@ -86,12 +104,7 @@ const columns: ColumnDef<AdminUser>[] = [
   {
     accessorKey: 'role',
     header: 'Role',
-    cell: ({ row }) =>
-      row.original.role === 'admin' ? (
-        <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400">Admin</Badge>
-      ) : (
-        <Badge variant="secondary">Usuário</Badge>
-      ),
+    cell: ({ row }) => getRoleBadge(row.original.role),
   },
   {
     accessorKey: 'storeCount',
@@ -205,20 +218,114 @@ export default function AdminUsersPage() {
             />
           </DataTableToolbar>
 
-          <DataTableContent stickyLastColumn>
-            <DataTableTable
-              columns={columns}
-              data={users}
-              stickyLastColumn
-              emptyState={
-                <DataTableEmptyState
-                  icon={<IconUsers className="h-8 w-8" />}
-                  title="Nenhum usuário encontrado"
-                  description={search ? 'Tente ajustar sua busca' : 'Ainda não há usuários cadastrados'}
-                />
-              }
+          <div className="hidden lg:block">
+            <DataTableContent stickyLastColumn>
+              <DataTableTable
+                columns={columns}
+                data={users}
+                stickyLastColumn
+                emptyState={
+                  <DataTableEmptyState
+                    icon={<IconUsers className="h-8 w-8" />}
+                    title="Nenhum usuário encontrado"
+                    description={search ? 'Tente ajustar sua busca' : 'Ainda não há usuários cadastrados'}
+                  />
+                }
+              />
+            </DataTableContent>
+          </div>
+
+          {users.length === 0 ? (
+            <MobileCardEmptyState
+              icon={<IconUsers className="h-8 w-8" />}
+              title="Nenhum usuário encontrado"
+              description={search ? 'Tente ajustar sua busca' : 'Ainda não há usuários cadastrados'}
             />
-          </DataTableContent>
+          ) : (
+            <MobileCardList>
+              {users.map((user, index) => (
+                <motion.div
+                  key={user.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(index * 0.05, 0.3) }}
+                >
+                  <MobileCard>
+                    <MobileCardHeader
+                      actions={
+                        <div className="flex items-center gap-1">
+                          {user.phone && (
+                            <a
+                              href={`https://wa.me/${user.phone.replace(/\D/g, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              aria-label="WhatsApp"
+                              className="rounded-lg p-2 text-emerald-500 transition-colors hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                            >
+                              <IconBrandWhatsapp className="h-4 w-4" />
+                            </a>
+                          )}
+                          <Link
+                            href={`/admin/lojas?userId=${user.id}`}
+                            aria-label="Ver lojas"
+                            className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+                          >
+                            <IconBuildingStore className="h-4 w-4" />
+                          </Link>
+                        </div>
+                      }
+                    >
+                      <MobileCardAvatar
+                        initials={getUserInitials(user.name)}
+                        statusColor={
+                          user.subscriptionStatus === 'ACTIVE'
+                            ? 'bg-emerald-500'
+                            : user.subscriptionStatus === 'TRIALING'
+                              ? 'bg-blue-500'
+                              : user.subscriptionStatus === 'PAST_DUE'
+                                ? 'bg-red-500'
+                                : 'bg-slate-400'
+                        }
+                      />
+                      <MobileCardTitle
+                        title={user.name}
+                        subtitle={user.email}
+                        badge={getRoleBadge(user.role)}
+                      />
+                    </MobileCardHeader>
+
+                    <MobileCardContent>
+                      <MobileCardRow
+                        icon={<IconPhone className="h-3.5 w-3.5" />}
+                        label="Telefone"
+                        value={user.phone || '-'}
+                      />
+                      <MobileCardRow
+                        icon={<IconBuildingStore className="h-3.5 w-3.5" />}
+                        label="Lojas"
+                        value={String(Number(user.storeCount))}
+                      />
+                      <MobileCardRow
+                        icon={<IconCrown className="h-3.5 w-3.5" />}
+                        label="Plano"
+                        value={user.planName || 'Gratuito'}
+                      />
+                    </MobileCardContent>
+
+                    <MobileCardFooter>
+                      {getStatusBadge(user.subscriptionStatus)}
+                      <Link
+                        href={`/admin/lojas?userId=${user.id}`}
+                        className="text-xs font-medium text-primary transition-colors hover:text-primary/80"
+                      >
+                        Ver lojas →
+                      </Link>
+                    </MobileCardFooter>
+                  </MobileCard>
+                </motion.div>
+              ))}
+            </MobileCardList>
+          )}
 
           {totalPages > 0 && (
             <ServerPagination

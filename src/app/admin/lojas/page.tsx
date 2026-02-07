@@ -15,6 +15,9 @@ import {
   IconToggleLeft,
   IconToggleRight,
   IconChartBar,
+  IconMapPin,
+  IconCategory,
+  IconUser,
 } from '@tabler/icons-react'
 
 import { getAdminStoresAction } from '@/actions/admin/get-admin-stores.action'
@@ -44,6 +47,15 @@ import {
   DataTableRowActions,
   DataTableSkeleton,
   ServerPagination,
+  MobileCardList,
+  MobileCard,
+  MobileCardHeader,
+  MobileCardAvatar,
+  MobileCardTitle,
+  MobileCardContent,
+  MobileCardRow,
+  MobileCardFooter,
+  MobileCardEmptyState,
   type ColumnDef,
 } from '@/components/ui/data-table-blocks'
 import {
@@ -69,6 +81,15 @@ interface AdminStore {
   ownerEmail: string
   ownerPhone: string | null
   ownerPlan: string | null
+}
+
+function getStoreInitials(name: string) {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
 }
 
 export default function AdminStoresPage() {
@@ -322,20 +343,150 @@ export default function AdminStoresPage() {
             </DataTableActions>
           </DataTableToolbar>
 
-          <DataTableContent stickyLastColumn>
-            <DataTableTable
-              columns={columns}
-              data={stores}
-              stickyLastColumn
-              emptyState={
-                <DataTableEmptyState
-                  icon={<IconBuildingStore className="h-8 w-8" />}
-                  title="Nenhuma loja encontrada"
-                  description={search ? 'Tente ajustar sua busca' : 'Ainda não há lojas cadastradas'}
-                />
-              }
+          <div className="hidden lg:block">
+            <DataTableContent stickyLastColumn>
+              <DataTableTable
+                columns={columns}
+                data={stores}
+                stickyLastColumn
+                emptyState={
+                  <DataTableEmptyState
+                    icon={<IconBuildingStore className="h-8 w-8" />}
+                    title="Nenhuma loja encontrada"
+                    description={search ? 'Tente ajustar sua busca' : 'Ainda não há lojas cadastradas'}
+                  />
+                }
+              />
+            </DataTableContent>
+          </div>
+
+          {stores.length === 0 ? (
+            <MobileCardEmptyState
+              icon={<IconBuildingStore className="h-8 w-8" />}
+              title="Nenhuma loja encontrada"
+              description={search ? 'Tente ajustar sua busca' : 'Ainda não há lojas cadastradas'}
             />
-          </DataTableContent>
+          ) : (
+            <MobileCardList>
+              {stores.map((store, index) => (
+                <motion.div
+                  key={store.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(index * 0.05, 0.3) }}
+                >
+                  <MobileCard>
+                    <MobileCardHeader
+                      actions={
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            type="button"
+                            onClick={() => handleToggle(store.id, store.isActive)}
+                            aria-label={store.isActive ? 'Desativar' : 'Ativar'}
+                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                          >
+                            {store.isActive ? (
+                              <IconToggleRight className="h-4 w-4 text-emerald-500" />
+                            ) : (
+                              <IconToggleLeft className="h-4 w-4" />
+                            )}
+                          </button>
+                          <a
+                            href={getStoreUrl(store.slug)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Ver site"
+                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-primary/10 hover:text-primary"
+                          >
+                            <IconExternalLink className="h-4 w-4" />
+                          </a>
+                        </div>
+                      }
+                    >
+                      <MobileCardAvatar
+                        initials={getStoreInitials(store.name)}
+                        color="bg-primary"
+                        statusColor={store.isActive ? 'bg-emerald-500' : 'bg-slate-400'}
+                      />
+                      <MobileCardTitle
+                        title={store.name}
+                        subtitle={store.slug}
+                        badge={
+                          store.isActive ? (
+                            <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 text-[10px] px-1.5 py-0">
+                              Ativa
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">Inativa</Badge>
+                          )
+                        }
+                      />
+                    </MobileCardHeader>
+
+                    <MobileCardContent>
+                      <MobileCardRow
+                        icon={<IconUser className="h-3.5 w-3.5" />}
+                        label="Proprietário"
+                        value={store.ownerName}
+                      />
+                      <MobileCardRow
+                        icon={<IconCategory className="h-3.5 w-3.5" />}
+                        label="Categoria"
+                        value={store.category}
+                      />
+                      <MobileCardRow
+                        icon={<IconMapPin className="h-3.5 w-3.5" />}
+                        label="Cidade"
+                        value={`${store.city}/${store.state}`}
+                      />
+                    </MobileCardContent>
+
+                    <MobileCardFooter>
+                      <div className="flex items-center gap-1">
+                        <Link
+                          href={`/painel/${store.slug}`}
+                          aria-label="Acessar painel"
+                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+                        >
+                          <IconChartBar className="h-4 w-4" />
+                        </Link>
+                        <Link
+                          href={`/painel/${store.slug}/editar`}
+                          aria-label="Editar"
+                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+                        >
+                          <IconEdit className="h-4 w-4" />
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setTransferTarget({
+                              id: store.id,
+                              name: store.name,
+                              ownerName: store.ownerName,
+                              ownerEmail: store.ownerEmail,
+                            })
+                          }
+                          aria-label="Transferir"
+                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-950"
+                        >
+                          <IconArrowsExchange className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeleteTarget({ id: store.id, name: store.name })}
+                          aria-label="Excluir"
+                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950"
+                        >
+                          <IconTrash className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </MobileCardFooter>
+                  </MobileCard>
+                </motion.div>
+              ))}
+            </MobileCardList>
+          )}
 
           {totalPages > 0 && (
             <ServerPagination
