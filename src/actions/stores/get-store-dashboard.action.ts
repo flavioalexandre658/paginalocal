@@ -36,10 +36,16 @@ export const getStoreDashboardAction = authActionClient
   .action(async ({ parsedInput, ctx }) => {
     const { storeSlug } = parsedInput
 
+    const isAdmin = ctx.userRole === 'admin'
+
     const [storeData] = await db
       .select()
       .from(store)
-      .where(and(eq(store.slug, storeSlug), eq(store.userId, ctx.userId)))
+      .where(
+        isAdmin
+          ? eq(store.slug, storeSlug)
+          : and(eq(store.slug, storeSlug), eq(store.userId, ctx.userId))
+      )
       .limit(1)
 
     if (!storeData) {

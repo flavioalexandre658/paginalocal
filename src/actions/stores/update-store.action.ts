@@ -40,10 +40,16 @@ export const updateStoreAction = authActionClient
   .action(async ({ parsedInput, ctx }) => {
     const { storeId, ...updateData } = parsedInput
 
+    const isAdmin = ctx.userRole === 'admin'
+
     const [existingStore] = await db
       .select({ id: store.id })
       .from(store)
-      .where(and(eq(store.id, storeId), eq(store.userId, ctx.userId)))
+      .where(
+        isAdmin
+          ? eq(store.id, storeId)
+          : and(eq(store.id, storeId), eq(store.userId, ctx.userId))
+      )
       .limit(1)
 
     if (!existingStore) {

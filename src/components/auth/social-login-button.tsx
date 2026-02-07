@@ -7,7 +7,11 @@ import toast from 'react-hot-toast'
 import { signIn } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 
-export function SocialLoginButton() {
+interface SocialLoginButtonProps {
+  callbackURL?: string
+}
+
+export function SocialLoginButton({ callbackURL = '/painel' }: SocialLoginButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleGoogleLogin() {
@@ -15,7 +19,7 @@ export function SocialLoginButton() {
 
     const result = await signIn.social({
       provider: 'google',
-      callbackURL: '/painel',
+      callbackURL,
     })
 
     if (result.error) {

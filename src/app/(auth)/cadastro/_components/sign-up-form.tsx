@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -37,6 +37,8 @@ const inputClassName = 'h-11 border-slate-200/60 bg-white/50 transition-all plac
 
 export function SignUpForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isTransferFlow = searchParams.get('q') === 'transferir'
   const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<SignUpFormData>({
@@ -69,12 +71,12 @@ export function SignUpForm() {
     }
 
     toast.success('Conta criada com sucesso!')
-    router.push('/painel')
+    router.push(isTransferFlow ? '/cadastro/aguardando-transferencia' : '/painel')
   }
 
   return (
     <div className="space-y-6">
-      <SocialLoginButton />
+      <SocialLoginButton callbackURL={isTransferFlow ? '/cadastro/aguardando-transferencia' : '/painel'} />
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">

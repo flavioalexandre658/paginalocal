@@ -16,6 +16,8 @@ export const validateStoreOwnershipAction = authActionClient
     const { userId } = ctx
     const { slug } = parsedInput
 
+    const isAdmin = ctx.userRole === 'admin'
+
     const storeData = await db
       .select({
         id: store.id,
@@ -24,7 +26,11 @@ export const validateStoreOwnershipAction = authActionClient
         userId: store.userId,
       })
       .from(store)
-      .where(and(eq(store.slug, slug), eq(store.userId, userId)))
+      .where(
+        isAdmin
+          ? eq(store.slug, slug)
+          : and(eq(store.slug, slug), eq(store.userId, userId))
+      )
       .limit(1)
 
     if (!storeData[0]) {

@@ -6,11 +6,22 @@ export const metadata: Metadata = {
   title: 'Criar Conta',
 }
 
-export default function SignUpPage() {
+interface SignUpPageProps {
+  searchParams: Promise<{ q?: string }>
+}
+
+export default async function SignUpPage({ searchParams }: SignUpPageProps) {
+  const { q } = await searchParams
+  const isTransferFlow = q === 'transferir'
+
   return (
     <AuthCard
-      title="Criar conta"
-      description="Preencha os dados abaixo para criar sua conta"
+      title={isTransferFlow ? 'Crie sua conta' : 'Criar conta'}
+      description={
+        isTransferFlow
+          ? 'Cadastre-se para receber a sua loja'
+          : 'Preencha os dados abaixo para criar sua conta'
+      }
       footer={{
         text: 'Já tem uma conta?',
         linkText: 'Entrar',

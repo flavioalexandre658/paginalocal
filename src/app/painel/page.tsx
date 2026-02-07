@@ -15,6 +15,7 @@ import {
   IconLoader2,
   IconBuildingStore,
   IconRefresh,
+  IconShieldCheck,
 } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
 
@@ -27,6 +28,7 @@ import { DeleteStoreModal } from './_components/delete-store-modal'
 import { usePlanLimitRedirect } from '@/hooks/use-plan-limit-redirect'
 import { Logo } from '@/components/shared/logo'
 import { ShareModal } from '@/components/shared/share-modal'
+import { useSession } from '@/lib/auth-client'
 
 export default function PainelPage() {
   const router = useRouter()
@@ -70,7 +72,10 @@ export default function PainelPage() {
       <header className="sticky top-0 z-50 border-b border-slate-200/40 bg-white/70 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
           <Logo size="sm" href="/painel" />
-          <LogoutButton />
+          <div className="flex items-center gap-2">
+            <AdminPanelButton />
+            <LogoutButton />
+          </div>
         </div>
       </header>
 
@@ -294,6 +299,27 @@ function StoreCard({
         </div>
       </div>
     </motion.div>
+  )
+}
+
+function AdminPanelButton() {
+  const { data: session } = useSession()
+  const role = (session?.user as { role?: string } | undefined)?.role
+
+  if (role !== 'admin') return null
+
+  return (
+    <EnhancedButton
+      asChild
+      variant="outline"
+      size="sm"
+      className="gap-2 border-amber-300 text-amber-700 hover:bg-amber-50 hover:text-amber-800 dark:border-amber-700 dark:text-amber-400 dark:hover:bg-amber-950"
+    >
+      <Link href="/admin">
+        <IconShieldCheck className="h-4 w-4" />
+        <span className="hidden sm:inline">Painel Admin</span>
+      </Link>
+    </EnhancedButton>
   )
 }
 

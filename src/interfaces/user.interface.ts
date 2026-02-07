@@ -1,9 +1,16 @@
+export type UserRole = 'user' | 'admin'
+
 export interface IUser {
   id: string
   name: string
   email: string
+  phone: string | null
   emailVerified: boolean
   image: string | null
+  role: UserRole
+  banned: boolean
+  banReason: string | null
+  banExpires: number | null
   createdAt: Date
   updatedAt: Date
 }
@@ -17,6 +24,7 @@ export interface ISession {
   ipAddress: string | null
   userAgent: string | null
   userId: string
+  impersonatedBy: string | null
 }
 
 export interface IAccount {

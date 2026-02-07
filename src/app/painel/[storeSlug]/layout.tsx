@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
-import { IconSettings, IconExternalLink, IconArrowLeft } from '@tabler/icons-react'
+import { IconSettings, IconExternalLink, IconArrowLeft, IconShieldCheck } from '@tabler/icons-react'
 import { LogoutButton } from '@/components/auth/logout-button'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'
@@ -25,11 +25,23 @@ export default async function DashboardLayout({ children, params }: LayoutProps)
     redirect('/entrar')
   }
 
-  const storeData = await db
-    .select({ id: store.id, name: store.name, faviconUrl: store.faviconUrl })
-    .from(store)
-    .where(and(eq(store.slug, storeSlug), eq(store.userId, session.user.id)))
-    .limit(1)
+  const isAdmin = (session.user as { role?: string }).role === 'admin'
+
+  let storeData: { id: string; name: string; faviconUrl: string | null }[] = []
+
+  if (isAdmin) {
+    storeData = await db
+      .select({ id: store.id, name: store.name, faviconUrl: store.faviconUrl })
+      .from(store)
+      .where(eq(store.slug, storeSlug))
+      .limit(1)
+  } else {
+    storeData = await db
+      .select({ id: store.id, name: store.name, faviconUrl: store.faviconUrl })
+      .from(store)
+      .where(and(eq(store.slug, storeSlug), eq(store.userId, session.user.id)))
+      .limit(1)
+  }
 
   if (!storeData[0]) {
     notFound()
@@ -42,15 +54,25 @@ export default async function DashboardLayout({ children, params }: LayoutProps)
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
+      {isAdmin && (
+        <div className="relative z-50 flex items-center justify-center gap-2 bg-amber-50 px-4 py-1.5 text-xs font-medium text-amber-800 dark:bg-amber-950/50 dark:text-amber-400">
+          <IconShieldCheck className="h-3.5 w-3.5" />
+          Modo Admin — Visualizando painel desta loja como administrador
+          <Link href="/admin/lojas" className="ml-2 underline hover:no-underline">
+            Voltar ao admin
+          </Link>
+        </div>
+      )}
+
       <header className="sticky top-0 z-50 border-b border-slate-200/40 bg-white/70 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
             <Link
-              href="/painel"
+              href={isAdmin ? '/admin/lojas' : '/painel'}
               className="flex shrink-0 items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <IconArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Minhas Lojas</span>
+              <span className="hidden sm:inline">{isAdmin ? 'Admin' : 'Minhas Lojas'}</span>
             </Link>
             <div className="hidden h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700 sm:block" />
             <div className="flex min-w-0 flex-1 items-center gap-2">
