@@ -17,9 +17,12 @@ import {
   IconChevronDown,
   IconChevronUp,
   IconSparkles,
+  IconEdit,
 } from '@tabler/icons-react'
 
 import { updateStoreAction } from '@/actions/stores/update-store.action'
+import { deleteServiceAction } from '@/actions/services/delete-service.action'
+import { reorderServicesAction } from '@/actions/services/reorder-services.action'
 import {
   Form,
   FormControl,
@@ -32,6 +35,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+
+import { ServiceFormModal } from './service-form-modal'
 
 const sectionsFormSchema = z.object({
   faq: z.array(
@@ -53,6 +58,7 @@ interface Service {
   id: string
   name: string
   description: string | null
+  priceInCents: number | null
   position: number
 }
 
@@ -148,31 +154,108 @@ function SectionCard({
   )
 }
 
-export function SectionsTab({ store, services: initialServices }: SectionsTabProps) {
+export function SectionsTab({ store, services: initialServices, storeSlug }: SectionsTabProps) {
   const { executeAsync, isExecuting } = useAction(updateStoreAction)
+  const { executeAsync: deleteAsync } = useAction(deleteServiceAction)
+  const { executeAsync: reorderAsync } = useAction(reorderServicesAction)
+
   const [openSections, setOpenSections] = useState<string[]>(['services'])
   const [services, setServices] = useState<Service[]>(initialServices)
+  const [serviceModalOpen, setServiceModalOpen] = useState(false)
+  const [editingService, setEditingService] = useState<Service | null>(null)
+  const [deletingServiceId, setDeletingServiceId] = useState<string | null>(null)
 
-  function moveServiceUp(index: number) {
-    if (index === 0) return
-    setServices((prev) => {
-      const newServices = [...prev]
-      const temp = newServices[index - 1]
-      newServices[index - 1] = newServices[index]
-      newServices[index] = temp
-      return newServices
-    })
+  function handleAddService() {
+    setEditingService(null)
+    setServiceModalOpen(true)
   }
 
-  function moveServiceDown(index: number) {
-    if (index === services.length - 1) return
-    setServices((prev) => {
-      const newServices = [...prev]
-      const temp = newServices[index + 1]
-      newServices[index + 1] = newServices[index]
-      newServices[index] = temp
-      return newServices
+  function handleEditService(svc: Service) {
+    setEditingService(svc)
+    setServiceModalOpen(true)
+  }
+
+  function handleServiceCreated(newService: { id: string; name: string; description: string | null; priceInCents: number | null; position: number }) {
+    setServices((prev) => [...prev, newService])
+  }
+
+  function handleServiceUpdated(updated: { id: string; name: string; description: string | null; priceInCents: number | null }) {
+    setServices((prev) =>
+      prev.map((s) =>
+        s.id === updated.id
+          ? { ...s, name: updated.name, description: updated.description, priceInCents: updated.priceInCents }
+          : s
+      )
+    )
+  }
+
+  async function handleDeleteService(serviceId: string) {
+    setDeletingServiceId(serviceId)
+
+    const result = await deleteAsync({
+      id: serviceId,
+      storeId: store.id,
     })
+
+    if (result?.data) {
+      setServices((prev) => prev.filter((s) => s.id !== serviceId))
+      toast.success('Serviço excluído!')
+    } else if (result?.serverError) {
+      toast.error(result.serverError)
+    }
+
+    setDeletingServiceId(null)
+  }
+
+  async function moveServiceUp(index: number) {
+    if (index === 0) return
+
+    const previousServices = [...services]
+    const newServices = [...services]
+    const temp = newServices[index - 1]
+    newServices[index - 1] = newServices[index]
+    newServices[index] = temp
+    setServices(newServices)
+
+    const items = newServices.map((s, i) => ({
+      id: s.id,
+      position: i + 1,
+    }))
+
+    const result = await reorderAsync({ storeId: store.id, items })
+    if (result?.serverError) {
+      setServices(previousServices)
+      toast.error('Erro ao reordenar serviços')
+    }
+  }
+
+  async function moveServiceDown(index: number) {
+    if (index === services.length - 1) return
+
+    const previousServices = [...services]
+    const newServices = [...services]
+    const temp = newServices[index + 1]
+    newServices[index + 1] = newServices[index]
+    newServices[index] = temp
+    setServices(newServices)
+
+    const items = newServices.map((s, i) => ({
+      id: s.id,
+      position: i + 1,
+    }))
+
+    const result = await reorderAsync({ storeId: store.id, items })
+    if (result?.serverError) {
+      setServices(previousServices)
+      toast.error('Erro ao reordenar serviços')
+    }
+  }
+
+  function formatPrice(priceInCents: number) {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(priceInCents / 100)
   }
 
   const form = useForm<SectionsFormData>({
@@ -257,7 +340,7 @@ export function SectionsTab({ store, services: initialServices }: SectionsTabPro
                   >
                     <div className="flex items-center gap-1">
                       <IconGripVertical className="mt-0.5 hidden h-5 w-5 cursor-grab text-slate-300 transition-colors group-hover:text-slate-400 sm:block" />
-                      <div className="flex flex-col sm:hidden">
+                      <div className="flex flex-col">
                         <button
                           type="button"
                           onClick={() => moveServiceUp(index)}
@@ -276,19 +359,35 @@ export function SectionsTab({ store, services: initialServices }: SectionsTabPro
                         </button>
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-slate-900 dark:text-white">
-                        {service.name}
-                      </p>
-                      {service.description && (
-                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                          {service.description}
-                        </p>
-                      )}
-                    </div>
                     <button
                       type="button"
-                      className="rounded-lg p-2 text-slate-400 opacity-100 transition-all hover:bg-red-50 hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100 dark:hover:bg-red-950"
+                      onClick={() => handleEditService(service)}
+                      className="flex flex-1 cursor-pointer text-left"
+                    >
+                      <div className="flex-1">
+                        <p className="font-medium text-slate-900 dark:text-white">
+                          {service.name}
+                        </p>
+                        {service.description && (
+                          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                            {service.description}
+                          </p>
+                        )}
+                        {service.priceInCents != null && service.priceInCents > 0 && (
+                          <p className="mt-1 text-sm font-medium text-primary">
+                            {formatPrice(service.priceInCents)}
+                          </p>
+                        )}
+                      </div>
+                      <span className="ml-2 mt-1 text-slate-400 transition-colors group-hover:text-primary">
+                        <IconEdit className="h-4 w-4" />
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteService(service.id)}
+                      disabled={deletingServiceId === service.id}
+                      className="rounded-lg p-2 text-slate-400 opacity-100 transition-all hover:bg-red-50 hover:text-red-500 disabled:opacity-50 sm:opacity-0 sm:group-hover:opacity-100 dark:hover:bg-red-950"
                     >
                       <IconTrash className="h-4 w-4" />
                     </button>
@@ -311,6 +410,7 @@ export function SectionsTab({ store, services: initialServices }: SectionsTabPro
 
             <button
               type="button"
+              onClick={handleAddService}
               className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 py-4 text-sm font-medium text-slate-500 transition-all hover:border-primary hover:bg-primary/5 hover:text-primary dark:border-slate-700"
             >
               <IconPlus className="h-4 w-4" />
@@ -496,6 +596,15 @@ export function SectionsTab({ store, services: initialServices }: SectionsTabPro
           posicionamento no Google para buscas locais.
         </p>
       </div>
+
+      <ServiceFormModal
+        open={serviceModalOpen}
+        onOpenChange={setServiceModalOpen}
+        storeId={store.id}
+        service={editingService}
+        onCreated={handleServiceCreated}
+        onUpdated={handleServiceUpdated}
+      />
     </div>
   )
 }
