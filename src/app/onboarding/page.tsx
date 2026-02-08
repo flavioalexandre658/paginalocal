@@ -287,7 +287,7 @@ function SearchStep({
         </div>
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-            Cadastrar nova loja
+            Escreva o nome e a cidade do seu negócio
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Busque sua empresa no Google para importar automaticamente
@@ -650,7 +650,7 @@ function ConfirmStep({
                     Verifique seus contatos
                   </p>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-2">
                   {/* WhatsApp */}
                   <div className="space-y-1">
@@ -671,7 +671,7 @@ function ConfirmStep({
                       placeholder="(11) 99999-9999"
                     />
                   </div>
-                  
+
                   {/* Telefone (Ligação) */}
                   <div className="space-y-1">
                     <label className="flex items-center gap-1 text-[10px] font-medium text-slate-700 dark:text-slate-300 md:text-xs">
@@ -702,7 +702,7 @@ function ConfirmStep({
                   <IconStar className="h-3 w-3 text-amber-500 md:h-3.5 md:w-3.5" />
                   Avaliações que vamos destacar ({preview.topReviews.length})
                 </p>
-                
+
                 <div className="relative -mx-4 md:-mx-5">
                   <div className="flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide snap-x snap-mandatory md:px-5">
                     {preview.topReviews.map((review, i) => (
@@ -833,10 +833,10 @@ function ReviewAvatar({ photoUrl, author, size = 'md' }: { photoUrl: string | nu
   const [hasError, setHasError] = useState(false)
   const initials = author.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
 
-  const sizeClasses = size === 'sm' 
-    ? 'h-8 w-8' 
+  const sizeClasses = size === 'sm'
+    ? 'h-8 w-8'
     : 'h-10 w-10'
-  
+
   const textSizeClass = size === 'sm' ? 'text-xs' : 'text-sm'
 
   if (!photoUrl || hasError) {
