@@ -28,10 +28,44 @@ export default async function HomePage() {
   const isLoggedIn = !!session?.user?.id
   const hasSubscription = isLoggedIn ? await getUserHasSubscription(session.user.id) : false
 
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Página Local',
+    url: 'https://paginalocal.com.br',
+    description: 'Crie a landing page do seu negócio local em minutos. SEO otimizado para aparecer no Google e converter visitantes em clientes via WhatsApp.',
+    inLanguage: 'pt-BR',
+  }
+
+  const organizationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Página Local',
+    url: 'https://paginalocal.com.br',
+    logo: 'https://paginalocal.com.br/assets/images/icon/favicon.ico',
+    description: 'Plataforma de criação de sites otimizados para SEO local. Ajudamos negócios locais a aparecerem no topo do Google.',
+    sameAs: [],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer service',
+      availableLanguage: 'Portuguese',
+    },
+  }
+
   return (
-    <LandingPage 
-      isLoggedIn={isLoggedIn} 
-      hasSubscription={hasSubscription} 
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
+      <LandingPage 
+        isLoggedIn={isLoggedIn} 
+        hasSubscription={hasSubscription} 
+      />
+    </>
   )
 }

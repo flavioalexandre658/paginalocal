@@ -24,16 +24,19 @@ const CATEGORIES_SEED: CategorySeed[] = [
     icon: 'IconTire',
     description: 'Serviços de pneus, alinhamento e balanceamento',
     suggestedServices: ['Troca de Pneus', 'Reparo de Pneus', 'Alinhamento', 'Balanceamento', 'Calibragem', 'Socorro 24h'],
-    seoTitle: 'Borracharias - Encontre a Melhor Perto de Você',
-    seoDescription: 'Encontre as melhores borracharias da sua região. Troca de pneus, alinhamento, balanceamento e socorro 24h. Compare avaliações e preços.',
-    seoKeywords: ['borracharia', 'troca de pneu', 'alinhamento', 'balanceamento', 'pneu furado', 'socorro 24h', 'calibragem'],
-    heroTitle: 'Encontre a Melhor Borracharia',
-    heroSubtitle: 'Compare avaliações, veja endereços e entre em contato diretamente pelo WhatsApp com as melhores borracharias da sua cidade.',
-    longDescription: 'Precisa de serviços de borracharia? No Página Local você encontra as melhores borracharias da sua região, com avaliações reais de clientes, endereços completos e contato direto via WhatsApp. Seja para troca de pneus, alinhamento, balanceamento ou socorro 24h, conectamos você aos profissionais mais bem avaliados.',
+    seoTitle: 'Borracharias Perto de Mim - Encontre a Melhor',
+    seoDescription: 'Encontre a melhor borracharia perto de você. Troca de pneus, alinhamento, balanceamento e socorro 24h. Avaliações reais e contato por WhatsApp.',
+    seoKeywords: ['borracharia perto de mim', 'borracharia', 'troca de pneu', 'alinhamento', 'balanceamento', 'pneu furado', 'socorro 24h', 'calibragem', 'melhor borracharia'],
+    heroTitle: 'Encontre a Melhor Borracharia Perto de Você',
+    heroSubtitle: 'Compare avaliações reais, veja endereços e entre em contato pelo WhatsApp com borracharias da sua cidade.',
+    longDescription: 'Procurando uma borracharia perto de você? No Página Local você encontra borracharias com avaliações reais de clientes, endereço completo e contato direto por WhatsApp. Troca de pneus, alinhamento computadorizado, balanceamento e socorro 24h — tudo com profissionais que outros clientes já aprovaram. Compare preços, veja quem atende na sua região e resolva seu problema com o pneu agora mesmo. Não perca tempo rodando pela cidade: encontre a borracharia mais bem avaliada e mais próxima de você.',
     faqs: [
-      { question: 'Quanto custa trocar um pneu?', answer: 'O valor da troca de pneu varia conforme o modelo e aro. Em média, o serviço de montagem e balanceamento custa entre R$ 30 e R$ 80 por pneu.' },
-      { question: 'Com que frequência devo fazer alinhamento?', answer: 'Recomenda-se fazer alinhamento a cada 10.000 km ou sempre que notar o carro puxando para um lado.' },
-      { question: 'Borracharia atende emergência?', answer: 'Muitas borracharias oferecem socorro 24h. Verifique nos perfis quais estabelecimentos oferecem este serviço.' },
+      { question: 'Qual a melhor borracharia perto de mim?', answer: 'No Página Local você encontra borracharias avaliadas por clientes reais na sua região. Compare notas, serviços e localização para escolher a melhor opção perto de você.' },
+      { question: 'Quanto custa trocar um pneu?', answer: 'O serviço de troca de pneu custa entre R$ 30 e R$ 80 por pneu, incluindo montagem e balanceamento. O valor varia pelo aro e modelo do pneu.' },
+      { question: 'Com que frequência devo fazer alinhamento?', answer: 'Faça alinhamento a cada 10.000 km ou quando notar o carro puxando para um lado. Buracos e lombadas frequentes pedem alinhamento mais cedo.' },
+      { question: 'Borracharia atende emergência 24h?', answer: 'Muitas borracharias oferecem socorro 24h para pneu furado. No Página Local, filtre por estabelecimentos que atendem emergência na sua cidade.' },
+      { question: 'Como saber se preciso trocar o pneu?', answer: 'Verifique o indicador TWI no pneu: se a banda de rodagem está nivelada com ele, é hora de trocar. Pneus com mais de 5 anos também devem ser avaliados.' },
+      { question: 'Quanto custa alinhamento e balanceamento?', answer: 'O alinhamento custa entre R$ 60 e R$ 120 e o balanceamento entre R$ 30 e R$ 60. Muitas borracharias fazem pacote com desconto.' },
     ],
   },
   {
@@ -42,16 +45,19 @@ const CATEGORIES_SEED: CategorySeed[] = [
     icon: 'IconTool',
     description: 'Manutenção e reparo de veículos',
     suggestedServices: ['Troca de Óleo', 'Revisão Completa', 'Freios', 'Suspensão', 'Motor', 'Diagnóstico'],
-    seoTitle: 'Oficinas Mecânicas - Manutenção e Reparo',
-    seoDescription: 'Encontre oficinas mecânicas confiáveis na sua cidade. Troca de óleo, revisão, freios, suspensão e mais. Avaliações reais de clientes.',
-    seoKeywords: ['oficina mecânica', 'mecânico', 'troca de óleo', 'revisão', 'freios', 'suspensão', 'motor'],
-    heroTitle: 'Encontre a Melhor Oficina Mecânica',
-    heroSubtitle: 'Mecânicos de confiança para cuidar do seu carro. Veja avaliações, compare preços e agende sua revisão.',
-    longDescription: 'Encontre oficinas mecânicas de confiança na sua região. No Página Local, você compara avaliações reais de clientes, vê os serviços oferecidos e entra em contato diretamente via WhatsApp. Desde troca de óleo até revisões completas, encontre o mecânico ideal para seu veículo.',
+    seoTitle: 'Oficina Mecânica Perto de Mim - Melhor Mecânico',
+    seoDescription: 'Encontre a melhor oficina mecânica perto de você. Troca de óleo, revisão, freios e suspensão. Avaliações reais e WhatsApp direto.',
+    seoKeywords: ['oficina mecânica perto de mim', 'oficina mecânica', 'mecânico', 'troca de óleo', 'revisão', 'freios', 'suspensão', 'motor', 'melhor mecânico'],
+    heroTitle: 'Encontre a Melhor Oficina Mecânica Perto de Você',
+    heroSubtitle: 'Mecânicos avaliados por clientes reais. Compare preços, veja serviços e agende pelo WhatsApp.',
+    longDescription: 'Precisa de um mecânico de confiança perto de você? No Página Local, você encontra oficinas mecânicas com avaliações reais de quem já usou o serviço. Compare preços de troca de óleo, revisão completa, freios e suspensão. Veja qual oficina atende na sua região, confira os serviços oferecidos e entre em contato direto pelo WhatsApp. Sem intermediário, sem surpresa no orçamento. Encontre o mecânico certo para seu carro e agende agora.',
     faqs: [
-      { question: 'Com que frequência devo trocar o óleo?', answer: 'O ideal é trocar o óleo a cada 5.000 a 10.000 km, dependendo do tipo de óleo e do veículo.' },
-      { question: 'Quanto custa uma revisão completa?', answer: 'Uma revisão completa pode variar de R$ 200 a R$ 800, dependendo do veículo e dos itens incluídos.' },
-      { question: 'Como escolher uma boa oficina?', answer: 'Verifique as avaliações de outros clientes, se a oficina é especializada no seu tipo de veículo e se oferece garantia nos serviços.' },
+      { question: 'Qual a melhor oficina mecânica perto de mim?', answer: 'No Página Local você compara oficinas mecânicas avaliadas por clientes reais na sua cidade. Veja notas, serviços e localização para escolher a mais confiável perto de você.' },
+      { question: 'Com que frequência devo trocar o óleo?', answer: 'Troque o óleo a cada 5.000 km (óleo mineral) ou 10.000 km (sintético). Consulte o manual do seu carro. Atrasar a troca pode danificar o motor.' },
+      { question: 'Quanto custa uma revisão completa?', answer: 'Uma revisão completa custa entre R$ 200 e R$ 800, variando pelo modelo do carro e itens incluídos. Peça orçamento detalhado pelo WhatsApp.' },
+      { question: 'Como saber se preciso trocar os freios?', answer: 'Sinais de desgaste: chiado ao frear, pedal mais baixo ou carro puxando para um lado. Pastilhas duram entre 20.000 e 40.000 km em média.' },
+      { question: 'Oficina mecânica dá garantia no serviço?', answer: 'Oficinas sérias oferecem garantia de 90 dias a 1 ano, dependendo do serviço. No Página Local, veja avaliações para escolher oficinas confiáveis.' },
+      { question: 'Quanto custa trocar amortecedor?', answer: 'A troca de amortecedores custa entre R$ 400 e R$ 1.200 por par, incluindo peça e mão de obra. O valor varia pelo modelo do veículo.' },
     ],
   },
   {
@@ -132,16 +138,19 @@ const CATEGORIES_SEED: CategorySeed[] = [
     icon: 'IconScissors',
     description: 'Cortes masculinos e barba',
     suggestedServices: ['Corte de Cabelo', 'Barba', 'Sobrancelha', 'Hidratação', 'Pigmentação', 'Combo Completo'],
-    seoTitle: 'Barbearias - Corte e Barba Masculina',
-    seoDescription: 'Encontre as melhores barbearias da sua cidade. Corte masculino, barba, sobrancelha e tratamentos. Veja avaliações e agende.',
-    seoKeywords: ['barbearia', 'corte masculino', 'barba', 'barbeiro', 'corte de cabelo', 'barbearia perto de mim'],
-    heroTitle: 'Encontre a Melhor Barbearia',
-    heroSubtitle: 'Corte e barba com os melhores barbeiros. Agende pelo WhatsApp!',
-    longDescription: 'Encontre barbearias de qualidade na sua região. No Página Local, você vê fotos dos trabalhos, avaliações de clientes e agenda direto pelo WhatsApp.',
+    seoTitle: 'Barbearia Perto de Mim - Melhor Barbeiro',
+    seoDescription: 'Encontre a melhor barbearia perto de você. Corte masculino, barba, degradê e tratamentos. Agende pelo WhatsApp agora!',
+    seoKeywords: ['barbearia perto de mim', 'barbearia', 'corte masculino', 'barba', 'barbeiro', 'corte de cabelo', 'degradê', 'melhor barbearia'],
+    heroTitle: 'Encontre a Melhor Barbearia Perto de Você',
+    heroSubtitle: 'Corte, barba e degradê com os barbeiros mais bem avaliados. Agende pelo WhatsApp!',
+    longDescription: 'Procurando barbearia perto de você? No Página Local você encontra barbearias avaliadas por clientes reais, com fotos dos cortes e contato direto pelo WhatsApp. Compare preços de corte, barba e combo. Veja qual barbeiro tem as melhores avaliações na sua região e agende sem complicação. Corte degradê, barba na navalha, hidratação — encontre tudo no perfil de cada barbearia.',
     faqs: [
-      { question: 'Quanto custa um corte de cabelo?', answer: 'O corte masculino em barbearias varia de R$ 25 a R$ 80, dependendo do estabelecimento.' },
-      { question: 'Precisa agendar horário?', answer: 'Recomendamos agendar, especialmente em barbearias muito procuradas. Entre em contato via WhatsApp.' },
-      { question: 'Barbearia faz barba?', answer: 'Sim, a maioria das barbearias oferece serviço de barba com navalha e acabamento profissional.' },
+      { question: 'Qual a melhor barbearia perto de mim?', answer: 'No Página Local você compara barbearias com avaliações de clientes reais na sua cidade. Veja fotos dos cortes, preços e localização para escolher a melhor.' },
+      { question: 'Quanto custa um corte de cabelo masculino?', answer: 'O corte masculino custa entre R$ 25 e R$ 80, dependendo da barbearia e do tipo de corte. Degradê e cortes mais elaborados ficam no topo da faixa.' },
+      { question: 'Precisa agendar horário na barbearia?', answer: 'Recomenda-se agendar pelo WhatsApp, principalmente em horários de pico (sábado e fim de tarde). Muitas barbearias lotam sem agendamento.' },
+      { question: 'Barbearia faz barba com navalha?', answer: 'Sim, a maioria das barbearias oferece barba com navalha, toalha quente e pós-barba. O serviço custa entre R$ 20 e R$ 50.' },
+      { question: 'Quanto custa combo corte e barba?', answer: 'O combo corte + barba sai entre R$ 40 e R$ 100. É mais vantajoso que pagar separado. Algumas barbearias incluem sobrancelha no combo.' },
+      { question: 'Barbearia atende criança?', answer: 'Muitas barbearias atendem crianças com preço especial. Verifique no perfil da barbearia se há atendimento infantil disponível.' },
     ],
   },
   {
@@ -150,16 +159,19 @@ const CATEGORIES_SEED: CategorySeed[] = [
     icon: 'IconSparkles',
     description: 'Serviços de beleza e estética',
     suggestedServices: ['Corte Feminino', 'Coloração', 'Escova', 'Manicure', 'Pedicure', 'Design de Sobrancelha'],
-    seoTitle: 'Salões de Beleza - Beleza e Estética',
-    seoDescription: 'Encontre os melhores salões de beleza. Corte, coloração, manicure, pedicure e mais. Compare avaliações e agende seu horário.',
-    seoKeywords: ['salão de beleza', 'cabeleireiro', 'manicure', 'pedicure', 'coloração', 'escova'],
-    heroTitle: 'Encontre o Melhor Salão de Beleza',
-    heroSubtitle: 'Cabelo, unhas e estética com profissionais qualificados. Agende agora!',
-    longDescription: 'Encontre salões de beleza de qualidade na sua região. Veja fotos dos trabalhos, avaliações de clientes e agende seus serviços diretamente.',
+    seoTitle: 'Salão de Beleza Perto de Mim - Cabelo e Unhas',
+    seoDescription: 'Encontre o melhor salão de beleza perto de você. Corte, coloração, manicure e pedicure. Agende pelo WhatsApp!',
+    seoKeywords: ['salão de beleza perto de mim', 'salão de beleza', 'cabeleireiro', 'manicure', 'pedicure', 'coloração', 'escova', 'melhor salão'],
+    heroTitle: 'Encontre o Melhor Salão de Beleza Perto de Você',
+    heroSubtitle: 'Cabelo, unhas e estética com profissionais avaliados por clientes reais. Agende agora!',
+    longDescription: 'Procurando salão de beleza perto de você? No Página Local você encontra salões com avaliações reais, fotos dos trabalhos e agendamento direto pelo WhatsApp. Compare preços de corte, coloração, manicure e pedicure. Veja qual salão tem as melhores avaliações na sua região e agende sem complicação.',
     faqs: [
-      { question: 'Quanto custa coloração?', answer: 'O valor da coloração varia de R$ 80 a R$ 300, dependendo do comprimento e técnica utilizada.' },
-      { question: 'Salão faz design de sobrancelha?', answer: 'Sim, a maioria dos salões oferece design de sobrancelha com diversos métodos.' },
-      { question: 'Precisa agendar horário?', answer: 'Sim, é importante agendar para garantir seu horário, especialmente para procedimentos demorados.' },
+      { question: 'Qual o melhor salão de beleza perto de mim?', answer: 'No Página Local você compara salões com avaliações de clientes reais na sua cidade. Veja fotos dos trabalhos, preços e agende direto pelo WhatsApp.' },
+      { question: 'Quanto custa coloração de cabelo?', answer: 'Coloração varia de R$ 80 a R$ 300, dependendo do comprimento, técnica e marca do produto. Mechas e balayage custam mais.' },
+      { question: 'Quanto custa manicure e pedicure?', answer: 'Manicure custa entre R$ 20 e R$ 50. Pedicure entre R$ 25 e R$ 60. Muitos salões fazem combo com desconto.' },
+      { question: 'Precisa agendar horário no salão?', answer: 'Sim, agende pelo WhatsApp para garantir seu horário. Procedimentos como coloração e progressiva precisam de reserva com antecedência.' },
+      { question: 'Salão faz progressiva?', answer: 'A maioria dos salões oferece escova progressiva. Preços variam de R$ 150 a R$ 500 dependendo do comprimento e produto usado.' },
+      { question: 'Salão de beleza atende aos domingos?', answer: 'Alguns salões abrem aos domingos sob agendamento. Verifique horários no perfil do salão ou pergunte pelo WhatsApp.' },
     ],
   },
   {
@@ -168,16 +180,19 @@ const CATEGORIES_SEED: CategorySeed[] = [
     icon: 'IconToolsKitchen2',
     description: 'Gastronomia e alimentação',
     suggestedServices: ['Almoço Executivo', 'Self-Service', 'À la Carte', 'Delivery', 'Eventos', 'Marmitex'],
-    seoTitle: 'Restaurantes - Onde Comer Bem',
-    seoDescription: 'Encontre os melhores restaurantes da sua cidade. Self-service, à la carte, delivery e mais. Veja avaliações e cardápios.',
-    seoKeywords: ['restaurante', 'onde comer', 'almoço', 'self-service', 'delivery', 'comida'],
-    heroTitle: 'Encontre os Melhores Restaurantes',
-    heroSubtitle: 'Descubra onde comer bem na sua cidade. Avaliações reais e contato direto.',
-    longDescription: 'Encontre restaurantes de qualidade na sua região. Seja para um almoço executivo, jantar especial ou delivery, compare opções e escolha o melhor.',
+    seoTitle: 'Restaurante Perto de Mim - Onde Comer Bem',
+    seoDescription: 'Encontre o melhor restaurante perto de você. Self-service, almoço executivo e delivery. Avaliações reais de clientes!',
+    seoKeywords: ['restaurante perto de mim', 'restaurante', 'onde comer', 'almoço', 'self-service', 'delivery', 'comida', 'melhor restaurante'],
+    heroTitle: 'Encontre o Melhor Restaurante Perto de Você',
+    heroSubtitle: 'Almoço executivo, self-service e delivery. Descubra restaurantes avaliados por clientes reais.',
+    longDescription: 'Procurando restaurante perto de você? No Página Local você encontra restaurantes com avaliações reais, cardápio e contato direto pelo WhatsApp. Compare preços de almoço executivo, self-service e à la carte. Veja qual restaurante entrega na sua região e qual tem a melhor nota dos clientes. Reserve mesa, peça delivery ou descubra um novo lugar para comer bem na sua cidade.',
     faqs: [
-      { question: 'Restaurante faz delivery?', answer: 'Muitos restaurantes oferecem delivery. Verifique no perfil de cada estabelecimento.' },
-      { question: 'Quanto custa almoço executivo?', answer: 'O almoço executivo geralmente varia de R$ 20 a R$ 50, dependendo do restaurante.' },
-      { question: 'Posso reservar mesa?', answer: 'A maioria dos restaurantes aceita reservas. Entre em contato via WhatsApp para confirmar.' },
+      { question: 'Qual o melhor restaurante perto de mim?', answer: 'No Página Local você compara restaurantes com avaliações de clientes reais na sua cidade. Veja cardápio, preços e localização para escolher onde comer.' },
+      { question: 'Quanto custa almoço executivo?', answer: 'O almoço executivo custa entre R$ 20 e R$ 50. Inclui prato principal, arroz, feijão, salada e sobremesa na maioria dos restaurantes.' },
+      { question: 'Restaurante faz delivery?', answer: 'Muitos restaurantes fazem delivery por WhatsApp ou apps. No Página Local, veja quais restaurantes entregam na sua região.' },
+      { question: 'Posso reservar mesa pelo WhatsApp?', answer: 'Sim, a maioria dos restaurantes aceita reservas por WhatsApp. Entre em contato direto pelo perfil do restaurante no Página Local.' },
+      { question: 'Restaurante abre aos domingos?', answer: 'Varia por restaurante. Muitos abrem em horário reduzido aos domingos. Confira o horário de funcionamento no perfil.' },
+      { question: 'Quanto custa self-service por quilo?', answer: 'O preço do kg varia de R$ 50 a R$ 90 na maioria dos restaurantes self-service. Alguns oferecem preço fixo para prato feito.' },
     ],
   },
   {
@@ -240,16 +255,19 @@ const CATEGORIES_SEED: CategorySeed[] = [
     icon: 'IconDog',
     description: 'Produtos e serviços para pets',
     suggestedServices: ['Banho', 'Tosa', 'Ração', 'Acessórios', 'Veterinário', 'Hotel Pet'],
-    seoTitle: 'Pet Shops - Cuidados com seu Pet',
-    seoDescription: 'Encontre os melhores pet shops da sua cidade. Banho, tosa, ração, acessórios e mais. Cuide bem do seu pet!',
-    seoKeywords: ['pet shop', 'banho e tosa', 'ração', 'veterinário', 'hotel pet', 'acessórios pet'],
-    heroTitle: 'Encontre o Melhor Pet Shop',
-    heroSubtitle: 'Tudo para o seu pet em um só lugar. Banho, tosa, ração e muito mais!',
-    longDescription: 'Encontre pet shops de confiança na sua região. Serviços de banho e tosa, rações de qualidade e acessórios para seu pet.',
+    seoTitle: 'Pet Shop Perto de Mim - Banho, Tosa e Ração',
+    seoDescription: 'Encontre o melhor pet shop perto de você. Banho e tosa, ração, veterinário e hotel pet. Avaliações reais de donos de pets!',
+    seoKeywords: ['pet shop perto de mim', 'pet shop', 'banho e tosa', 'ração', 'veterinário', 'hotel pet', 'acessórios pet', 'melhor pet shop'],
+    heroTitle: 'Encontre o Melhor Pet Shop Perto de Você',
+    heroSubtitle: 'Banho e tosa, ração e veterinário. Pet shops avaliados por donos de pets da sua cidade.',
+    longDescription: 'Procurando pet shop perto de você? No Página Local você encontra pet shops avaliados por donos de pets reais, com serviços de banho e tosa, rações premium e atendimento veterinário. Compare preços, veja fotos do espaço e entre em contato direto pelo WhatsApp. Cuide do seu pet com profissionais que outros tutores já aprovaram na sua região.',
     faqs: [
-      { question: 'Quanto custa banho e tosa?', answer: 'O valor varia conforme o porte do animal, geralmente de R$ 40 a R$ 150.' },
-      { question: 'Pet shop tem veterinário?', answer: 'Alguns pet shops contam com atendimento veterinário. Verifique no perfil.' },
-      { question: 'Tem hotel para pets?', answer: 'Muitos pet shops oferecem hospedagem. Consulte disponibilidade e valores.' },
+      { question: 'Qual o melhor pet shop perto de mim?', answer: 'No Página Local você compara pet shops com avaliações de donos de pets reais na sua cidade. Veja serviços, preços e localização para escolher o melhor.' },
+      { question: 'Quanto custa banho e tosa?', answer: 'Banho e tosa custam entre R$ 40 e R$ 150, dependendo do porte e raça do animal. Cães de pelo longo e grande porte ficam no topo da faixa.' },
+      { question: 'Pet shop tem veterinário?', answer: 'Alguns pet shops contam com veterinário no local para consultas, vacinas e emergências. Verifique no perfil do estabelecimento.' },
+      { question: 'Tem hotel para pets?', answer: 'Muitos pet shops oferecem hospedagem para cães e gatos. Preços variam de R$ 50 a R$ 150 por diária, com alimentação e cuidados inclusos.' },
+      { question: 'Qual a melhor ração para cachorro?', answer: 'Rações premium e super premium são as mais indicadas por veterinários. O pet shop pode orientar sobre a melhor opção para raça e idade do seu pet.' },
+      { question: 'Pet shop faz delivery de ração?', answer: 'Muitos pet shops fazem delivery de ração e produtos pet por WhatsApp. Consulte disponibilidade e valor mínimo para entrega na sua região.' },
     ],
   },
   {
@@ -312,16 +330,19 @@ const CATEGORIES_SEED: CategorySeed[] = [
     icon: 'IconBarbell',
     description: 'Musculação e atividades físicas',
     suggestedServices: ['Musculação', 'Aeróbico', 'Personal Trainer', 'Spinning', 'Funcional', 'Crossfit'],
-    seoTitle: 'Academias - Musculação e Fitness',
-    seoDescription: 'Encontre as melhores academias da sua cidade. Musculação, funcional, crossfit, spinning e mais. Compare e matricule-se!',
-    seoKeywords: ['academia', 'musculação', 'fitness', 'crossfit', 'personal trainer', 'funcional'],
-    heroTitle: 'Encontre a Melhor Academia',
-    heroSubtitle: 'Alcance seus objetivos fitness com as melhores academias da região.',
-    longDescription: 'Encontre academias de qualidade na sua região. Compare estrutura, modalidades e valores para escolher a ideal para você.',
+    seoTitle: 'Academia Perto de Mim - Musculação e Fitness',
+    seoDescription: 'Encontre a melhor academia perto de você. Musculação, funcional, spinning e personal trainer. Compare preços e matricule-se!',
+    seoKeywords: ['academia perto de mim', 'academia', 'musculação', 'fitness', 'crossfit', 'personal trainer', 'funcional', 'melhor academia'],
+    heroTitle: 'Encontre a Melhor Academia Perto de Você',
+    heroSubtitle: 'Musculação, funcional e personal trainer. Compare academias avaliadas por alunos reais.',
+    longDescription: 'Procurando academia perto de você? No Página Local você encontra academias com avaliações de alunos reais, fotos da estrutura e contato direto. Compare mensalidades de musculação, funcional, spinning e crossfit. Veja qual academia oferece personal trainer, horários flexíveis e a melhor estrutura na sua região. Faça uma aula experimental e escolha a academia ideal para seus objetivos.',
     faqs: [
-      { question: 'Quanto custa academia por mês?', answer: 'Mensalidades variam de R$ 60 a R$ 300, dependendo da estrutura e serviços oferecidos.' },
-      { question: 'Academia tem personal trainer?', answer: 'Muitas academias oferecem personal trainer como serviço adicional.' },
-      { question: 'Posso fazer aula experimental?', answer: 'A maioria das academias oferece aula experimental gratuita. Entre em contato para agendar.' },
+      { question: 'Qual a melhor academia perto de mim?', answer: 'No Página Local você compara academias com avaliações de alunos reais na sua cidade. Veja estrutura, modalidades e mensalidades para escolher a ideal.' },
+      { question: 'Quanto custa academia por mês?', answer: 'Mensalidades variam de R$ 60 a R$ 300. Planos trimestrais e anuais costumam ter desconto. Musculação + aulas coletivas costumam custar mais.' },
+      { question: 'Academia tem personal trainer?', answer: 'Muitas academias oferecem personal trainer como serviço adicional. O valor varia de R$ 80 a R$ 200 por sessão, ou pacotes mensais com desconto.' },
+      { question: 'Posso fazer aula experimental gratuita?', answer: 'A maioria das academias oferece 1 a 3 aulas experimentais gratuitas. Entre em contato pelo WhatsApp para agendar a sua.' },
+      { question: 'Academia abre aos domingos?', answer: 'Varia por academia. Muitas abrem em horário reduzido aos domingos (8h às 12h). Verifique no perfil os horários de funcionamento.' },
+      { question: 'Qual a diferença entre musculação e funcional?', answer: 'Musculação usa máquinas e pesos para ganho de massa. Funcional usa o peso do corpo e acessórios para condicionamento geral. Muitas academias oferecem as duas modalidades.' },
     ],
   },
   {
@@ -1123,33 +1144,80 @@ const CATEGORIES_SEED: CategorySeed[] = [
   },
 ]
 
+function enrichCategory(cat: CategorySeed): CategorySeed {
+  const nameLower = cat.name.toLowerCase()
+  const pertoKeyword = `${nameLower} perto de mim`
+  const melhorKeyword = `melhor ${nameLower}`
+
+  if (!cat.seoKeywords.includes(pertoKeyword)) {
+    cat.seoKeywords = [pertoKeyword, ...cat.seoKeywords]
+  }
+  if (!cat.seoKeywords.includes(melhorKeyword)) {
+    cat.seoKeywords.push(melhorKeyword)
+  }
+
+  if (cat.faqs.length < 6) {
+    const existingQuestions = new Set(cat.faqs.map(f => f.question))
+
+    const localFaqs = [
+      {
+        question: `Qual ${nameLower === 'outro' ? 'o melhor negócio' : `a melhor ${nameLower}`} perto de mim?`,
+        answer: `No Página Local você encontra ${nameLower === 'outro' ? 'negócios locais' : cat.name.toLowerCase() + 's'} com avaliações de clientes reais na sua cidade. Compare notas, serviços e localização para encontrar a melhor opção perto de você.`,
+      },
+      {
+        question: `Como escolher ${nameLower === 'outro' ? 'um bom serviço' : `uma boa ${nameLower}`}?`,
+        answer: `Verifique as avaliações de outros clientes no Página Local, compare os serviços oferecidos e entre em contato pelo WhatsApp para tirar dúvidas antes de ir.`,
+      },
+      {
+        question: `${cat.name} aceita cartão de crédito?`,
+        answer: `A maioria aceita cartões de crédito e débito, além de PIX. Consulte as formas de pagamento no perfil de cada estabelecimento.`,
+      },
+    ]
+
+    for (const faq of localFaqs) {
+      if (cat.faqs.length >= 6) break
+      if (!existingQuestions.has(faq.question)) {
+        cat.faqs.push(faq)
+        existingQuestions.add(faq.question)
+      }
+    }
+  }
+
+  if (!cat.seoTitle.includes('Perto') && !cat.seoTitle.includes('perto')) {
+    cat.seoTitle = cat.seoTitle.replace(' - ', ' Perto de Mim - ')
+  }
+
+  return cat
+}
+
 async function seed() {
-  console.log('🌱 Iniciando seed de categorias...')
+  console.log('Iniciando seed de categorias...')
 
   for (const cat of CATEGORIES_SEED) {
+    const enriched = enrichCategory(cat)
     await db
       .insert(category)
-      .values(cat)
+      .values(enriched)
       .onConflictDoUpdate({
         target: category.slug,
         set: {
-          name: cat.name,
-          icon: cat.icon,
-          description: cat.description,
-          suggestedServices: cat.suggestedServices,
-          seoTitle: cat.seoTitle,
-          seoDescription: cat.seoDescription,
-          seoKeywords: cat.seoKeywords,
-          heroTitle: cat.heroTitle,
-          heroSubtitle: cat.heroSubtitle,
-          longDescription: cat.longDescription,
-          faqs: cat.faqs,
+          name: enriched.name,
+          icon: enriched.icon,
+          description: enriched.description,
+          suggestedServices: enriched.suggestedServices,
+          seoTitle: enriched.seoTitle,
+          seoDescription: enriched.seoDescription,
+          seoKeywords: enriched.seoKeywords,
+          heroTitle: enriched.heroTitle,
+          heroSubtitle: enriched.heroSubtitle,
+          longDescription: enriched.longDescription,
+          faqs: enriched.faqs,
         },
       })
-    console.log(`✅ Categoria "${cat.name}" inserida/atualizada`)
+    console.log(`Categoria "${enriched.name}" inserida/atualizada`)
   }
 
-  console.log('🎉 Seed de categorias concluído!')
+  console.log('Seed de categorias concluido!')
   process.exit(0)
 }
 

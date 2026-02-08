@@ -50,7 +50,6 @@ export async function generateMetadata({ params }: CategoryCityPageProps): Promi
   return {
     title,
     description,
-    keywords: `${category.name.toLowerCase()}, ${category.name.toLowerCase()} ${cityName.toLowerCase()}, ${cityName.toLowerCase()}, ${category.seoKeywords?.slice(0, 5).join(', ') || ''}`,
     openGraph: {
       title,
       description,
@@ -96,11 +95,12 @@ export default async function CategoryCityPage({ params }: CategoryCityPageProps
     notFound()
   }
 
+  const ratedStores = storesData.stores.filter(s => Number(s.googleRating) > 0)
   const stats = {
     totalStores: storesData.total,
     totalCities: 1,
-    avgRating: storesData.stores.length > 0
-      ? (storesData.stores.reduce((acc, s) => acc + (Number(s.googleRating) || 0), 0) / storesData.stores.length).toFixed(1)
+    avgRating: ratedStores.length > 0
+      ? (ratedStores.reduce((acc, s) => acc + (Number(s.googleRating) || 0), 0) / ratedStores.length).toFixed(1)
       : '0',
     totalReviews: storesData.stores.reduce((acc, s) => acc + (s.googleReviewsCount || 0), 0),
   }
@@ -168,6 +168,11 @@ export default async function CategoryCityPage({ params }: CategoryCityPageProps
     ],
   }
 
+  const uniqueContentIntro = `Procurando ${category.name.toLowerCase()} em ${storesData.cityName}? Reunimos os melhores profissionais e estabelecimentos da região para facilitar sua busca.`
+  const uniqueContentBody = stats.totalStores > 0
+    ? `${storesData.cityName} conta com ${stats.totalStores} ${category.name.toLowerCase()} cadastrados na Página Local${Number(stats.avgRating) > 0 ? `, com avaliação média de ${stats.avgRating} estrelas` : ''}${stats.totalReviews > 0 ? ` e mais de ${stats.totalReviews} avaliações de clientes reais` : ''}. Todos os profissionais listados foram verificados e estão disponíveis para contato direto pelo WhatsApp.`
+    : `Estamos expandindo a cobertura de ${category.name.toLowerCase()} em ${storesData.cityName}. Cadastre seu negócio para aparecer para clientes da região.`
+
   return (
     <>
       <script
@@ -178,6 +183,12 @@ export default async function CategoryCityPage({ params }: CategoryCityPageProps
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
+
+      <section className="sr-only" aria-hidden="false">
+        <h1>{category.name} em {storesData.cityName}</h1>
+        <p>{uniqueContentIntro}</p>
+        <p>{uniqueContentBody}</p>
+      </section>
 
       <CategoryCityPageClient
         category={{

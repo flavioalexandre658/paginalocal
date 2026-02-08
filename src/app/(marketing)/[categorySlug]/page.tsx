@@ -48,7 +48,6 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   return {
     title,
     description,
-    keywords: category.seoKeywords?.join(', ') || category.name.toLowerCase(),
     openGraph: {
       title,
       description,
@@ -164,6 +163,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     })),
   } : null
 
+  const categoryIntro = category.seoDescription
+    || `Encontre os melhores profissionais de ${category.name.toLowerCase()} da sua região. Compare avaliações, preços e entre em contato direto pelo WhatsApp.`
+
   return (
     <>
       <script
@@ -180,6 +182,18 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
         />
       )}
+
+      <section className="sr-only" aria-hidden="false">
+        <h1>{category.heroTitle || `${category.name} - Página Local`}</h1>
+        <p>{categoryIntro}</p>
+        {category.longDescription && <p>{category.longDescription}</p>}
+        {stats.totalStores > 0 && (
+          <p>
+            {stats.totalStores} {category.name.toLowerCase()} cadastrados em {stats.totalCities} cidades,
+            com avaliação média de {stats.avgRating} estrelas.
+          </p>
+        )}
+      </section>
 
       <CategoryPageClient
         category={{

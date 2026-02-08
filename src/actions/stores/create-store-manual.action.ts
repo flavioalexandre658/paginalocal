@@ -4,7 +4,8 @@ import { z } from 'zod'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
 import { store, service, category } from '@/db/schema'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
+import { generateSlug } from '@/lib/utils'
 import {
   generateMarketingCopy,
   generateFallbackServices,
@@ -19,6 +20,24 @@ import { addDomainToVercel } from '@/actions/vercel/add-domain'
 import { notifyStoreActivated } from '@/lib/google-indexing'
 import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
 import { generateCitySlug } from '@/lib/utils'
+
+async function generateUniqueServiceSlugForStore(storeId: string, name: string): Promise<string> {
+  const baseSlug = generateSlug(name)
+  let slug = baseSlug
+  let counter = 1
+
+  while (true) {
+    const [existing] = await db
+      .select({ id: service.id })
+      .from(service)
+      .where(and(eq(service.storeId, storeId), eq(service.slug, slug)))
+      .limit(1)
+
+    if (!existing) return slug
+    slug = `${baseSlug}-${counter}`
+    counter++
+  }
+}
 
 const BRAZILIAN_STATES = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
@@ -212,12 +231,17 @@ export const createStoreManualAction = authActionClient
 
     for (let i = 0; i < finalServices.length; i++) {
       const svc = finalServices[i]
+      const svcSlug = await generateUniqueServiceSlugForStore(newStore.id, svc.name)
       await db
         .insert(service)
         .values({
           storeId: newStore.id,
           name: svc.name,
+          slug: svcSlug,
           description: svc.description,
+          seoTitle: svc.seoTitle || null,
+          seoDescription: svc.seoDescription || null,
+          longDescription: svc.longDescription || null,
           position: i + 1,
           isActive: true,
         })

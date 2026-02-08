@@ -62,3 +62,17 @@ export function getStoreUrl(slug: string): string {
   }
   return `https://${slug}.paginalocal.com.br`
 }
+
+export function getServicePageUrl(storeSlug: string, serviceSlug: string): string {
+  if (process.env.NODE_ENV === 'development') {
+    return `/site/${storeSlug}/servicos/${serviceSlug}`
+  }
+  return `/servicos/${serviceSlug}`
+}
+
+export function getStoreHomeUrl(storeSlug: string): string {
+  if (process.env.NODE_ENV === 'development') {
+    return `/site/${storeSlug}`
+  }
+  return '/'
+}

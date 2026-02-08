@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
+import { unstable_cache } from 'next/cache'
 import { db } from '@/db'
 import { store, service, testimonial, storeImage } from '@/db/schema'
 import { eq, asc, desc, and } from 'drizzle-orm'
@@ -30,7 +31,7 @@ interface PageProps {
   params: Promise<{ slug: string }>
 }
 
-async function getStoreData(slug: string) {
+async function fetchStoreData(slug: string) {
   const storeData = await db
     .select()
     .from(store)
@@ -39,39 +40,38 @@ async function getStoreData(slug: string) {
 
   if (!storeData[0]) return null
 
-  const services = await db
-    .select()
-    .from(service)
-    .where(eq(service.storeId, storeData[0].id))
-    .orderBy(asc(service.position))
-
-  const testimonials = await db
-    .select()
-    .from(testimonial)
-    .where(eq(testimonial.storeId, storeData[0].id))
-    .orderBy(desc(testimonial.rating))
-    .limit(30)
-
-  const galleryImages = await db
-    .select({
-      id: storeImage.id,
-      url: storeImage.url,
-      alt: storeImage.alt,
-      width: storeImage.width,
-      height: storeImage.height,
-    })
-    .from(storeImage)
-    .where(and(eq(storeImage.storeId, storeData[0].id), eq(storeImage.role, 'gallery')))
-    .orderBy(asc(storeImage.order))
-
-  const heroImage = await db
-    .select({
-      url: storeImage.url,
-      alt: storeImage.alt,
-    })
-    .from(storeImage)
-    .where(and(eq(storeImage.storeId, storeData[0].id), eq(storeImage.role, 'hero')))
-    .limit(1)
+  const [services, testimonials, galleryImages, heroImage] = await Promise.all([
+    db
+      .select()
+      .from(service)
+      .where(eq(service.storeId, storeData[0].id))
+      .orderBy(asc(service.position)),
+    db
+      .select()
+      .from(testimonial)
+      .where(eq(testimonial.storeId, storeData[0].id))
+      .orderBy(desc(testimonial.rating))
+      .limit(30),
+    db
+      .select({
+        id: storeImage.id,
+        url: storeImage.url,
+        alt: storeImage.alt,
+        width: storeImage.width,
+        height: storeImage.height,
+      })
+      .from(storeImage)
+      .where(and(eq(storeImage.storeId, storeData[0].id), eq(storeImage.role, 'gallery')))
+      .orderBy(asc(storeImage.order)),
+    db
+      .select({
+        url: storeImage.url,
+        alt: storeImage.alt,
+      })
+      .from(storeImage)
+      .where(and(eq(storeImage.storeId, storeData[0].id), eq(storeImage.role, 'hero')))
+      .limit(1),
+  ])
 
   return {
     store: storeData[0],
@@ -81,6 +81,12 @@ async function getStoreData(slug: string) {
     heroImage: heroImage[0] || null,
   }
 }
+
+const getStoreData = unstable_cache(
+  fetchStoreData,
+  ['store-page-data'],
+  { revalidate: 3600, tags: ['store-data'] }
+)
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
@@ -112,15 +118,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       icon: faviconUrl,
       apple: faviconUrl,
     },
-    keywords: [
-      storeData.category,
-      `${storeData.category} em ${storeData.city}`,
-      storeData.name,
-      storeData.city,
-      storeData.state,
-      `${storeData.category} ${storeData.city}`,
-      `melhor ${storeData.category.toLowerCase()} ${storeData.city}`,
-    ],
     authors: [{ name: storeData.name }],
     creator: storeData.name,
     publisher: storeData.name,
@@ -226,6 +223,7 @@ export default async function StorePage({ params }: PageProps) {
     rating: storeData.googleRating || undefined,
     reviewCount: storeData.googleReviewsCount || undefined,
     reviews: reviewsForSchema,
+    neighborhoods: neighborhoods.length > 0 ? neighborhoods : undefined,
   })
 
   const breadcrumbJsonLd = generateBreadcrumbJsonLd({
@@ -236,6 +234,54 @@ export default async function StorePage({ params }: PageProps) {
   })
 
   const faqJsonLd = faq.length > 0 ? generateFAQJsonLd(faq) : null
+
+  const servicesJsonLd = services.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'OfferCatalog',
+    name: `Serviços de ${storeData.category} - ${storeData.name}`,
+    itemListElement: services.map((svc) => ({
+      '@type': 'Offer',
+      itemOffered: {
+        '@type': 'Service',
+        name: svc.name,
+        description: svc.description || `${svc.name} na ${storeData.name}`,
+        provider: {
+          '@type': 'LocalBusiness',
+          '@id': `${baseUrl}/#business`,
+          name: storeData.name,
+        },
+        areaServed: {
+          '@type': 'City',
+          name: storeData.city,
+        },
+        ...(svc.slug && { url: `${baseUrl}/servicos/${svc.slug}` }),
+      },
+      ...(svc.priceInCents && {
+        price: (svc.priceInCents / 100).toFixed(2),
+        priceCurrency: 'BRL',
+      }),
+    })),
+  } : null
+
+  const serviceAreaJsonLd = neighborhoods.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': `${baseUrl}/#business`,
+    areaServed: [
+      {
+        '@type': 'City',
+        name: storeData.city,
+        containedInPlace: {
+          '@type': 'State',
+          name: storeData.state,
+        },
+      },
+      ...neighborhoods.map((n) => ({
+        '@type': 'Place',
+        name: `${n}, ${storeData.city}`,
+      })),
+    ],
+  } : null
 
   return (
     <>
@@ -251,6 +297,18 @@ export default async function StorePage({ params }: PageProps) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
+      {servicesJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(servicesJsonLd) }}
+        />
+      )}
+      {serviceAreaJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceAreaJsonLd) }}
         />
       )}
 
@@ -281,13 +339,20 @@ export default async function StorePage({ params }: PageProps) {
           name={storeData.name}
           category={storeData.category}
           city={storeData.city}
+          state={storeData.state}
           description={storeData.description}
+          neighborhoods={neighborhoods}
+          googleRating={storeData.googleRating}
+          googleReviewsCount={storeData.googleReviewsCount}
+          openingHours={storeData.openingHours as Record<string, string> | null}
+          servicesCount={services.length}
         />
 
         {services.length > 0 && (
           <ServicesSection
             services={services}
             storeName={storeData.name}
+            storeSlug={storeData.slug}
             category={storeData.category}
             city={storeData.city}
           />
@@ -333,6 +398,10 @@ export default async function StorePage({ params }: PageProps) {
         storeName={storeData.name}
         city={storeData.city}
         state={storeData.state}
+        category={storeData.category}
+        categorySlug={storeData.category.toLowerCase().replace(/\s+/g, '-')}
+        hasServices={services.length > 0}
+        hasFaq={faq.length > 0}
       />
 
       <FloatingContact

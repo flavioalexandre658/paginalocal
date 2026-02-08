@@ -6,6 +6,9 @@ export interface FAQItem {
 export interface ServiceItem {
   name: string
   description: string
+  seoTitle?: string
+  seoDescription?: string
+  longDescription?: string
 }
 
 export interface MarketingCopy {

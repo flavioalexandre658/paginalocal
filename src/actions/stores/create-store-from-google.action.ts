@@ -1,11 +1,12 @@
 'use server'
 
 import { z } from 'zod'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
 import { store, testimonial, service, storeImage, category } from '@/db/schema'
 import { checkCanCreateStore, getUserPlanContext } from '@/lib/plan-middleware'
+import { generateSlug } from '@/lib/utils'
 import {
   getPlaceDetails,
   parseAddressComponents,
@@ -297,6 +298,24 @@ function extractEssentialWordsForSlug(name: string): string[] {
   }
 
   return essential
+}
+
+async function generateUniqueServiceSlugForStore(storeId: string, name: string): Promise<string> {
+  const baseSlug = generateSlug(name)
+  let slug = baseSlug
+  let counter = 1
+
+  while (true) {
+    const [existing] = await db
+      .select({ id: service.id })
+      .from(service)
+      .where(and(eq(service.storeId, storeId), eq(service.slug, slug)))
+      .limit(1)
+
+    if (!existing) return slug
+    slug = `${baseSlug}-${counter}`
+    counter++
+  }
 }
 
 function generateSlugFromName(name: string, city: string): string {
@@ -1070,12 +1089,17 @@ export const createStoreFromGoogleAction = authActionClient
 
     for (let i = 0; i < finalServices.length; i++) {
       const svc = finalServices[i]
+      const svcSlug = await generateUniqueServiceSlugForStore(newStore.id, svc.name)
       await db
         .insert(service)
         .values({
           storeId: newStore.id,
           name: svc.name,
+          slug: svcSlug,
           description: svc.description,
+          seoTitle: svc.seoTitle || null,
+          seoDescription: svc.seoDescription || null,
+          longDescription: svc.longDescription || null,
           position: i + 1,
           isActive: true,
         })

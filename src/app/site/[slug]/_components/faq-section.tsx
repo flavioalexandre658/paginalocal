@@ -55,9 +55,9 @@ export function FAQSection({ faq, storeName }: FAQSectionProps) {
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
                 className="flex w-full items-center justify-between p-6 text-left"
               >
-                <span className="pr-4 font-semibold text-slate-900 dark:text-white">
+                <h3 className="pr-4 font-semibold text-slate-900 dark:text-white text-base m-0">
                   {item.question}
-                </span>
+                </h3>
                 <div
                   className={cn(
                     'flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-300',

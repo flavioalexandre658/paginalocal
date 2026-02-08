@@ -29,6 +29,7 @@ interface LocalBusinessData {
   reviewCount?: number
   reviews?: Review[]
   priceRange?: string
+  neighborhoods?: string[]
 }
 
 const DAY_OF_WEEK_URLS: Record<string, string> = {
@@ -83,10 +84,12 @@ export function generateLocalBusinessJsonLd(data: LocalBusinessData) {
       postalCode: data.zipCode,
       addressCountry: 'BR',
     },
-    areaServed: {
-      '@type': 'City',
-      name: data.city,
-    },
+    areaServed: data.neighborhoods && data.neighborhoods.length > 0
+      ? [
+          { '@type': 'City', name: data.city },
+          ...data.neighborhoods.map(n => ({ '@type': 'Place', name: `${n}, ${data.city}` })),
+        ]
+      : { '@type': 'City', name: data.city },
   }
 
   if (data.description) {
@@ -158,7 +161,7 @@ export function generateLocalBusinessJsonLd(data: LocalBusinessData) {
         worstRating: 1,
       },
       reviewBody: review.content,
-      ...(review.createdAt && { datePublished: review.createdAt.toISOString().split('T')[0] }),
+      ...(review.createdAt && { datePublished: new Date(review.createdAt).toISOString().split('T')[0] }),
     }))
   }
 

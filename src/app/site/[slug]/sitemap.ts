@@ -25,7 +25,7 @@ export default async function sitemap({ params }: SitemapParams): Promise<Metada
     : `https://${slug}.paginalocal.com.br`
 
   const storeServices = await db
-    .select({ id: service.id, updatedAt: service.updatedAt })
+    .select({ id: service.id, slug: service.slug, updatedAt: service.updatedAt })
     .from(service)
     .innerJoin(store, eq(service.storeId, store.id))
     .where(eq(store.slug, slug))
@@ -52,8 +52,9 @@ export default async function sitemap({ params }: SitemapParams): Promise<Metada
   ]
 
   storeServices.forEach(svc => {
+    const serviceUrl = svc.slug ? `/servicos/${svc.slug}` : `/servicos/${svc.id}`
     sitemap.push({
-      url: `${baseUrl}/servicos/${svc.id}`,
+      url: `${baseUrl}${serviceUrl}`,
       lastModified: svc.updatedAt,
       changeFrequency: 'weekly',
       priority: 0.6,
