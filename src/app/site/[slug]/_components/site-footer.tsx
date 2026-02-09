@@ -64,7 +64,7 @@ export function SiteFooter({ storeName, city, state, category, categorySlug, has
             &copy; {currentYear} {storeName}. {city}, {state}.
           </p>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col items-center gap-3 md:flex-row md:gap-4">
             {categorySlug && (
               <Link
                 href={`https://paginalocal.com.br/${categorySlug}`}

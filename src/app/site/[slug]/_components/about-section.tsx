@@ -48,7 +48,7 @@ export function AboutSection({
           <div className="animate-fade-in-up animation-delay-200 space-y-6">
             <div className="rounded-2xl border border-slate-200/60 bg-white/70 p-6 md:p-8 shadow-lg shadow-slate-200/20 backdrop-blur-sm dark:bg-slate-900/70 dark:border-slate-700/40 dark:shadow-slate-900/30">
               <p className="text-lg leading-relaxed text-slate-600 dark:text-slate-300">
-                {description || `A ${name} é referência em ${category.toLowerCase()} na região de ${city}, ${state}. Com foco em qualidade e atendimento personalizado, oferecemos${servicesCount ? ` ${servicesCount} serviços especializados` : ' serviços de qualidade'} para atender as necessidades dos nossos clientes.`}
+                {description || `A ${name} é ${category.toLowerCase()} em ${city}, ${state}. Oferecemos${servicesCount ? ` ${servicesCount} serviços` : ' atendimento'} para clientes de ${city} e região. Entre em contato pelo WhatsApp para saber mais.`}
               </p>
 
               <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -82,10 +82,13 @@ export function AboutSection({
 
             <div className="rounded-2xl border border-slate-200/60 bg-white/70 p-6 md:p-8 shadow-lg shadow-slate-200/20 backdrop-blur-sm dark:bg-slate-900/70 dark:border-slate-700/40 dark:shadow-slate-900/30">
               <h3 className="mb-3 text-lg font-semibold text-slate-900 dark:text-white">
-                Por que escolher a {name}?
+                {category} em {city}
               </h3>
               <p className="text-slate-600 leading-relaxed dark:text-slate-300">
-                Localizada em {city}, a {name} se destaca como {category.toLowerCase()} pela qualidade dos serviços prestados e pelo compromisso com a satisfação de cada cliente. Nossa equipe está preparada para oferecer o melhor atendimento{neighborhoods && neighborhoods.length > 0 ? `, atendendo toda a região de ${city} incluindo bairros como ${neighborhoods.slice(0, 3).join(', ')}` : ` em toda a região de ${city}`}.
+                A {name} fica em {city}, {state}{neighborhoods && neighborhoods.length > 0 ? ` e atende os bairros ${neighborhoods.slice(0, 3).join(', ')} e região` : ''}.
+                {hasRating && ` Com nota ${rating.toFixed(1)} no Google e ${googleReviewsCount} avaliações de clientes.`}
+                {servicesCount && servicesCount > 0 ? ` São ${servicesCount} serviços disponíveis.` : ''}
+                {' '}Mande uma mensagem pelo WhatsApp para tirar dúvidas ou agendar um horário.
               </p>
             </div>
           </div>
