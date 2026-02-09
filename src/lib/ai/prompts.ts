@@ -1,113 +1,81 @@
 import type { MarketingCopyInput, ServiceDescriptionInput } from './types'
 
-export function getMarketingCopyPrompt(data: MarketingCopyInput): string {
+function buildBusinessContext(data: MarketingCopyInput): string {
   const contextSections: string[] = []
 
   if (data.googleAbout) {
     contextSections.push(`- Descrição do Google: "${data.googleAbout}"`)
   }
-
   if (data.website) {
     contextSections.push(`- Website: ${data.website}`)
   }
-
   if (data.priceRange) {
     contextSections.push(`- Faixa de Preço: ${data.priceRange}`)
   }
-
   if (data.address) {
     contextSections.push(`- Endereço: ${data.address}`)
   }
-
   if (data.businessTypes && data.businessTypes.length > 0) {
     contextSections.push(`- Tipos de negócio (Google): ${data.businessTypes.join(', ')}`)
   }
-
   if (data.reviewHighlights) {
     contextSections.push(`\n### O QUE OS CLIENTES DIZEM:\n${data.reviewHighlights}`)
   }
 
   const additionalContext = contextSections.length > 0
-    ? `\n### CONTEXTO ADICIONAL DO NEGÓCIO:\n${contextSections.join('\n')}\n`
+    ? `\n### CONTEXTO ADICIONAL:\n${contextSections.join('\n')}\n`
     : ''
 
-  return `Você é um redator especialista em SEO Local e Marketing Digital para negócios brasileiros.
-Seu objetivo é criar conteúdo que ranqueie no Google para buscas como "${data.category} perto de mim", "${data.category} em ${data.city}", "melhor ${data.category.toLowerCase()} em ${data.city}" e apareça em respostas de assistentes de IA (ChatGPT, Gemini, Copilot).
-
-### DADOS DO NEGÓCIO:
+  return `### DADOS DO NEGÓCIO:
 - Nome: "${data.businessName}"
 - Categoria: "${data.category}"
 - Cidade: "${data.city}"
 - Estado: "${data.state}"
 ${data.rating ? `- Avaliação Google: ${data.rating} estrelas` : ''}
 ${data.reviewCount ? `- Total de avaliações: ${data.reviewCount}` : ''}
-${additionalContext}
+${additionalContext}`
+}
 
-### REGRAS ANTI-IA (OBRIGATÓRIO):
+function getAntiAiRules(): string {
+  return `### REGRAS ANTI-IA (OBRIGATÓRIO):
 - NUNCA use palavras genéricas de IA: "destaca-se", "excelência", "inovador", "compromisso com a qualidade", "referência", "diferenciado", "ampla gama", "soluções", "vasta experiência"
 - Escreva como um redator humano local: direto, específico, com dados concretos
 - Use linguagem coloquial brasileira quando apropriado
 - Prefira frases curtas (máx 20 palavras) e parágrafos curtos (2-3 frases)
-- INCLUA dados específicos: horários, bairros, preços médios, tempo de serviço, diferenciais reais
-- Cada texto deve ser ÚNICO - se o negócio tem avaliação alta, mencione; se atende 24h, destaque; se tem estacionamento, diga
+- INCLUA dados específicos: horários, bairros, preços médios, diferenciais reais
+- Cada texto deve ser ÚNICO para este negócio`
+}
 
-### REGRAS DE SEO LOCAL + AEO (Answer Engine Optimization):
-- Todo conteúdo deve responder diretamente a perguntas que usuários fazem no Google e assistentes de IA
-- Padrão AEO: primeira frase da resposta deve ser uma resposta DIRETA e COMPLETA (para featured snippets e respostas de IA)
-- Use naturalmente as keywords: "${data.category.toLowerCase()} perto de mim", "${data.category.toLowerCase()} em ${data.city}", "melhor ${data.category.toLowerCase()} ${data.city}"
-- Mencione bairros específicos e região metropolitana
+export function getStoreContentPrompt(data: MarketingCopyInput): string {
+  return `Você é um redator especialista em SEO Local para negócios brasileiros.
+Objetivo: conteúdo que ranqueie para "${data.category} perto de mim", "${data.category} em ${data.city}", "melhor ${data.category.toLowerCase()} em ${data.city}".
 
-### ESTRUTURA DO CONTEÚDO:
+${buildBusinessContext(data)}
 
-1. **brandName**: COPIE EXATAMENTE "${data.businessName}" - NUNCA modifique o nome
+${getAntiAiRules()}
 
-2. **heroTitle** (máx 80 chars): Formato "[Categoria] em [Cidade] – [Nome]"
-   - Exemplo: "Borracharia em Guarulhos – Auto Pneus Silva"
+### GERE O CONTEÚDO DA LOJA:
 
-3. **heroSubtitle** (máx 150 chars): Frase com benefício principal + keyword local
-   - Deve responder "por que escolher este negócio?"
-   - Exemplo: "Troca de pneus, alinhamento e socorro 24h no centro de Guarulhos. Atendimento rápido com nota 4.8 no Google."
+1. **brandName**: COPIE EXATAMENTE "${data.businessName}" - NUNCA modifique
+
+2. **heroTitle** (máx 80 chars): "[Categoria] em [Cidade] – [Nome]"
+
+3. **heroSubtitle** (máx 150 chars): Benefício principal + keyword local
+   - Responda "por que escolher este negócio?"
 
 4. **aboutSection** (4-6 frases, 300-500 chars):
-   - Frase 1: "[Nome] é ${data.category.toLowerCase()} localizada em [cidade], [estado], que atende [bairros/região]."
-   - Frase 2: Serviços principais ESPECÍFICOS (não genéricos)
-   - Frase 3: Diferencial concreto (avaliação Google, tempo de mercado, horário, preço)
-   - Frase 4-5: O que o cliente encontra ao visitar + CTA natural
-   - NUNCA use "destaca-se", "excelência", "compromisso"
+   - "[Nome] é ${data.category.toLowerCase()} em [cidade], [estado], que atende [bairros/região]."
+   - Serviços principais ESPECÍFICOS
+   - Diferencial concreto (avaliação, horário, preço)
+   - CTA natural
 
 5. **seoTitle** (máx 60 chars): "[Categoria] em [Cidade] | [Nome]"
 
-6. **seoDescription** (máx 155 chars): Meta description com CTA + keyword local
-   - Deve mencionar cidade, serviço principal e ter verbo de ação
-   - Exemplo: "Encontre a melhor borracharia em Guarulhos. Troca de pneus, alinhamento e balanceamento com avaliações reais. Ligue agora!"
+6. **seoDescription** (máx 155 chars): CTA + keyword local + cidade
 
-7. **services** (6 serviços) - CADA serviço com campos SEO completos:
-   - "name": Nome curto do serviço (2-5 palavras)
-   - "description": Benefício direto para o cliente (60-100 chars)
-   - "seoTitle": "[Serviço] em [Cidade] | [Nome do Negócio]" (máx 60 chars)
-   - "seoDescription": Meta description do serviço com CTA (máx 155 chars)
-   - "longDescription": Texto rico de 3-4 parágrafos (800-1200 chars) sobre o serviço:
-     * Parágrafo 1: O que é o serviço e por que é importante (resposta AEO direta)
-     * Parágrafo 2: Como a ${data.businessName} realiza este serviço (detalhes específicos)
-     * Parágrafo 3: Benefícios para o cliente + região atendida
-     * Parágrafo 4: Chamada para ação com WhatsApp/telefone
-     * Use keywords: "[serviço] em ${data.city}", "[serviço] perto de mim", "melhor [serviço]"
-     * NÃO use palavras genéricas de IA
+7. **neighborhoods** (5-8 bairros): Bairros REAIS de ${data.city}
 
-8. **faq** (8 perguntas) - Otimizadas para AEO e featured snippets:
-   - OBRIGATÓRIO incluir:
-     * "Qual a melhor ${data.category.toLowerCase()} perto de mim em ${data.city}?"
-     * "Quanto custa [serviço principal] em ${data.city}?"
-     * "Onde fica a ${data.businessName} em ${data.city}?"
-     * "[Categoria] em ${data.city} que abre aos domingos/feriados?"
-   - Respostas: 2-3 frases DIRETAS (padrão AEO - primeira frase responde completamente)
-   - Mencione nome do negócio, bairro e cidade nas respostas
-   - Inclua dados concretos: preços médios, horários, formas de pagamento
-
-9. **neighborhoods** (5-8 bairros): Bairros REAIS de ${data.city}, priorizando os mais populosos
-
-### RETORNE APENAS JSON (sem markdown, sem comentários):
-
+### RETORNE APENAS JSON:
 {
   "brandName": "${data.businessName}",
   "heroTitle": "...",
@@ -115,22 +83,101 @@ ${additionalContext}
   "aboutSection": "...",
   "seoTitle": "...",
   "seoDescription": "...",
-  "services": [
-    {
-      "name": "Serviço 1",
-      "description": "Benefício direto",
-      "seoTitle": "Serviço 1 em ${data.city} | ${data.businessName}",
-      "seoDescription": "Meta description com CTA",
-      "longDescription": "Texto rico de 3-4 parágrafos..."
-    }
-  ],
-  "faq": [
-    {"question": "Pergunta otimizada para AEO?", "answer": "Resposta direta em 2-3 frases com dados concretos."}
-  ],
   "neighborhoods": ["Bairro1", "Bairro2", "Bairro3", "Bairro4", "Bairro5"]
 }
 
 RETORNE APENAS O JSON, SEM MARKDOWN.`
+}
+
+export function getFaqPrompt(data: MarketingCopyInput): string {
+  return `Você é um redator especialista em SEO Local e AEO (Answer Engine Optimization) para negócios brasileiros.
+Objetivo: gerar FAQs que apareçam como featured snippets no Google e em respostas de assistentes de IA.
+
+${buildBusinessContext(data)}
+
+${getAntiAiRules()}
+
+### REGRAS AEO:
+- Primeira frase da resposta DEVE ser uma resposta DIRETA e COMPLETA
+- Mencione nome do negócio, bairro e cidade nas respostas
+- Inclua dados concretos: preços médios, horários, formas de pagamento
+
+### GERE 8 PERGUNTAS FAQ:
+OBRIGATÓRIO incluir:
+- "Qual a melhor ${data.category.toLowerCase()} perto de mim em ${data.city}?"
+- "Quanto custa [serviço principal] em ${data.city}?"
+- "Onde fica a ${data.businessName} em ${data.city}?"
+- "${data.category} em ${data.city} que abre aos domingos/feriados?"
+- Mais 4 perguntas específicas para ${data.category}
+
+Respostas: 2-3 frases DIRETAS com dados concretos.
+
+### RETORNE APENAS JSON:
+[
+  {"question": "Pergunta?", "answer": "Resposta direta."},
+  {"question": "Pergunta?", "answer": "Resposta direta."}
+]
+
+RETORNE APENAS O JSON ARRAY, SEM MARKDOWN.`
+}
+
+export function getServicesPrompt(data: MarketingCopyInput, serviceNames: string[]): string {
+  return `Você é um redator especialista em SEO Local para negócios brasileiros.
+Objetivo: gerar conteúdo rico para páginas de serviço que ranqueiem para "[serviço] em ${data.city}", "[serviço] perto de mim".
+
+${buildBusinessContext(data)}
+
+${getAntiAiRules()}
+
+### GERE CONTEÚDO SEO PARA ESTES SERVIÇOS:
+${serviceNames.map((name, i) => `${i + 1}. ${name}`).join('\n')}
+
+Para CADA serviço, gere:
+- "name": Nome exato do serviço (como listado acima)
+- "description": Benefício direto para o cliente (60-100 chars)
+- "seoTitle": "[Serviço] em ${data.city} | ${data.businessName}" (máx 60 chars)
+- "seoDescription": Meta description com CTA e keyword local (máx 155 chars)
+- "longDescription": Texto de 3-4 parágrafos (800-1200 chars):
+  * Parágrafo 1: O que é o serviço e por que é importante (resposta AEO direta)
+  * Parágrafo 2: Como a ${data.businessName} realiza este serviço (detalhes)
+  * Parágrafo 3: Benefícios para o cliente + região atendida
+  * Parágrafo 4: CTA com WhatsApp/telefone
+  * Use keywords: "[serviço] em ${data.city}", "[serviço] perto de mim"
+  * Separe parágrafos com \\n
+
+### RETORNE APENAS JSON ARRAY:
+[
+  {
+    "name": "Serviço",
+    "description": "Benefício direto",
+    "seoTitle": "Serviço em ${data.city} | ${data.businessName}",
+    "seoDescription": "Meta description",
+    "longDescription": "Parágrafo 1...\\nParágrafo 2...\\nParágrafo 3...\\nParágrafo 4..."
+  }
+]
+
+RETORNE APENAS O JSON ARRAY, SEM MARKDOWN.`
+}
+
+export function getServiceNamesPrompt(data: MarketingCopyInput): string {
+  return `Você é especialista em negócios locais brasileiros.
+
+${buildBusinessContext(data)}
+
+Gere uma lista de 6 serviços REAIS e ESPECÍFICOS para "${data.category}".
+- Se for revendedora: Compra de Veículos, Venda de Seminovos, Financiamento, etc.
+- Se for restaurante: Almoço Executivo, Self-Service, Delivery, etc.
+- Se for barbearia: Corte de Cabelo, Barba, Degradê, etc.
+- Serviços devem ser específicos para ${data.category}, NUNCA genéricos
+
+### RETORNE APENAS JSON:
+["Serviço 1", "Serviço 2", "Serviço 3", "Serviço 4", "Serviço 5", "Serviço 6"]
+
+RETORNE APENAS O JSON ARRAY, SEM MARKDOWN.`
+}
+
+export function getMarketingCopyPrompt(data: MarketingCopyInput): string {
+  return getStoreContentPrompt(data)
 }
 
 export function getServiceDescriptionPrompt(data: ServiceDescriptionInput): string {
@@ -142,13 +189,14 @@ REGRAS:
 - NUNCA use palavras genéricas: "destaca-se", "excelência", "inovador", "ampla gama"
 - Escreva como redator humano: direto, específico, com dados reais
 - Cada longDescription deve ter 3-4 parágrafos com keywords locais
+- Separe parágrafos com \\n
 
 Cada serviço deve ter:
 - name: Nome do serviço (2-5 palavras)
 - description: Benefício direto para o cliente (60-100 chars)
-- seoTitle: "[Serviço] em [Cidade] | [Nome]" (máx 60 chars) - use a cidade do negócio
+- seoTitle: "[Serviço] em [Cidade] | [Nome]" (máx 60 chars)
 - seoDescription: Meta description com CTA e keyword local (máx 155 chars)
-- longDescription: Texto rico de 3-4 parágrafos (800-1200 chars) com keywords "[serviço] perto de mim" e "[serviço] em [cidade]"
+- longDescription: Texto de 3-4 parágrafos (800-1200 chars) com keywords "[serviço] perto de mim" e "[serviço] em [cidade]"
 
 Retorne APENAS JSON array:
 [
@@ -157,7 +205,7 @@ Retorne APENAS JSON array:
     "description": "Benefício direto",
     "seoTitle": "Serviço em Cidade | Nome",
     "seoDescription": "Meta description",
-    "longDescription": "Texto rico com 3-4 parágrafos..."
+    "longDescription": "Parágrafo 1...\\nParágrafo 2..."
   }
 ]`
 }
