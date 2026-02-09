@@ -1,9 +1,11 @@
 'use client'
 
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useAction } from 'next-safe-action/hooks'
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import {
@@ -13,9 +15,13 @@ import {
   IconHeading,
   IconFileText,
   IconCheck,
+  IconX,
+  IconLoader2,
+  IconAlertTriangle,
 } from '@tabler/icons-react'
 
 import { updateStoreAction } from '@/actions/stores/update-store.action'
+import { checkSlugAvailabilityAction } from '@/actions/stores/check-slug-availability.action'
 import {
   Form,
   FormControl,
@@ -36,7 +42,8 @@ const seoFormSchema = z.object({
   slug: z
     .string()
     .min(3, 'Slug deve ter pelo menos 3 caracteres')
-    .regex(/^[a-z0-9-]+$/, 'Apenas letras minúsculas, números e hífens'),
+    .max(60, 'Slug deve ter no máximo 60 caracteres')
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Apenas letras minúsculas, números e hífens (sem hífen no início/fim)'),
   seoTitle: z
     .string()
     .max(70, 'Máximo de 70 caracteres')
@@ -76,8 +83,15 @@ interface SeoTabProps {
   storeSlug: string
 }
 
-export function SeoTab({ store }: SeoTabProps) {
+type SlugStatus = 'idle' | 'checking' | 'available' | 'taken' | 'same'
+
+export function SeoTab({ store, storeSlug }: SeoTabProps) {
+  const router = useRouter()
   const { executeAsync, isExecuting } = useAction(updateStoreAction)
+  const { executeAsync: checkSlug } = useAction(checkSlugAvailabilityAction)
+
+  const [slugStatus, setSlugStatus] = useState<SlugStatus>('same')
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const form = useForm<SeoFormData>({
     resolver: zodResolver(seoFormSchema),
@@ -90,9 +104,62 @@ export function SeoTab({ store }: SeoTabProps) {
     },
   })
 
+  const watchSlug = form.watch('slug')
+
+  const checkSlugAvailability = useCallback(
+    async (slug: string) => {
+      if (slug === store.slug) {
+        setSlugStatus('same')
+        return
+      }
+
+      if (slug.length < 3 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+        setSlugStatus('idle')
+        return
+      }
+
+      setSlugStatus('checking')
+      try {
+        const result = await checkSlug({ slug, storeId: store.id })
+        if (result?.data) {
+          setSlugStatus(result.data.available ? 'available' : 'taken')
+        }
+      } catch {
+        setSlugStatus('idle')
+      }
+    },
+    [store.slug, store.id, checkSlug]
+  )
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+
+    if (watchSlug === store.slug) {
+      setSlugStatus('same')
+      return
+    }
+
+    setSlugStatus('checking')
+    debounceRef.current = setTimeout(() => {
+      checkSlugAvailability(watchSlug)
+    }, 500)
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [watchSlug, store.slug, checkSlugAvailability])
+
   async function onSubmit(data: SeoFormData) {
+    if (slugStatus === 'taken') {
+      toast.error('Este endereço já está em uso. Escolha outro.')
+      return
+    }
+
+    const slugChanged = data.slug !== store.slug
+
     const result = await executeAsync({
       storeId: store.id,
+      slug: slugChanged ? data.slug : undefined,
       seoTitle: data.seoTitle || undefined,
       seoDescription: data.seoDescription || undefined,
       heroTitle: data.heroTitle || undefined,
@@ -101,12 +168,19 @@ export function SeoTab({ store }: SeoTabProps) {
 
     if (result?.data) {
       toast.success('SEO atualizado!')
+      if (slugChanged) {
+        toast.success('Endereço alterado! Redirecionando...', { icon: '🔗' })
+        setTimeout(() => {
+          router.replace(`/painel/${data.slug}/editar?tab=seo`)
+        }, 1000)
+      }
     } else if (result?.serverError) {
       toast.error(result.serverError)
     }
   }
 
-  const siteUrl = getStoreUrl(store.slug)
+  const currentSlug = watchSlug || store.slug
+  const siteUrl = getStoreUrl(currentSlug)
   const watchTitle = form.watch('seoTitle')
   const watchDescription = form.watch('seoDescription')
 
@@ -209,20 +283,75 @@ export function SeoTab({ store }: SeoTabProps) {
             <FormField
               control={form.control}
               name="slug"
-              render={() => (
+              render={({ field }) => (
                 <FormItem>
                   <FormLabel>Endereço do site</FormLabel>
                   <FormControl>
-                    <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3 dark:border-slate-700 dark:bg-slate-800/50">
-                      <IconCheck className="h-4 w-4 text-emerald-500" />
-                      <code className="font-mono text-sm text-slate-700 dark:text-slate-300">
-                        {store.slug}.paginalocal.com.br
-                      </code>
+                    <div className="flex items-center gap-0 rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800/50 overflow-hidden focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary/30 transition-all">
+                      <span className="shrink-0 bg-slate-50 px-3 py-2.5 font-mono text-xs text-slate-400 dark:bg-slate-800 dark:text-slate-500 border-r border-slate-200 dark:border-slate-700 select-none">
+                        https://
+                      </span>
+                      <input
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value
+                            .toLowerCase()
+                            .replace(/[^a-z0-9-]/g, '')
+                            .replace(/--+/g, '-')
+                          field.onChange(value)
+                        }}
+                        className="flex-1 bg-transparent px-3 py-2.5 font-mono text-sm text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-400 min-w-0"
+                        placeholder={store.slug}
+                      />
+                      <span className="shrink-0 bg-slate-50 px-3 py-2.5 font-mono text-xs text-slate-400 dark:bg-slate-800 dark:text-slate-500 border-l border-slate-200 dark:border-slate-700 select-none">
+                        .paginalocal.com.br
+                      </span>
+                      <div className="shrink-0 px-2">
+                        {slugStatus === 'checking' && (
+                          <IconLoader2 className="h-4 w-4 animate-spin text-slate-400" />
+                        )}
+                        {slugStatus === 'available' && (
+                          <IconCheck className="h-4 w-4 text-emerald-500" />
+                        )}
+                        {slugStatus === 'taken' && (
+                          <IconX className="h-4 w-4 text-red-500" />
+                        )}
+                        {slugStatus === 'same' && (
+                          <IconCheck className="h-4 w-4 text-emerald-500" />
+                        )}
+                      </div>
                     </div>
                   </FormControl>
-                  <FormDescription>
-                    O endereço é gerado automaticamente e não pode ser alterado
-                  </FormDescription>
+                  {slugStatus === 'taken' && (
+                    <p className="flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400">
+                      <IconAlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                      Este endereço já está em uso. Escolha outro.
+                    </p>
+                  )}
+                  {slugStatus === 'available' && (
+                    <p className="flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400">
+                      <IconCheck className="h-3.5 w-3.5 shrink-0" />
+                      Endereço disponível!
+                    </p>
+                  )}
+                  {slugStatus === 'same' && (
+                    <FormDescription>
+                      Endereço atual do site. Você pode alterar se desejar.
+                    </FormDescription>
+                  )}
+                  {(slugStatus === 'idle' || slugStatus === 'checking') && (
+                    <FormDescription>
+                      Digite o novo endereço desejado para seu site.
+                    </FormDescription>
+                  )}
+                  {watchSlug !== store.slug && slugStatus !== 'taken' && slugStatus !== 'checking' && (
+                    <div className="flex items-start gap-2 rounded-lg border border-amber-200/60 bg-amber-50/50 px-3 py-2 dark:border-amber-900/40 dark:bg-amber-950/20">
+                      <IconAlertTriangle className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" />
+                      <p className="text-xs text-amber-700 dark:text-amber-300">
+                        Alterar o endereço vai atualizar o subdomínio. Links antigos deixarão de funcionar.
+                      </p>
+                    </div>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -391,7 +520,11 @@ export function SeoTab({ store }: SeoTabProps) {
           </motion.div>
 
           <div className="flex justify-end">
-            <EnhancedButton type="submit" loading={isExecuting}>
+            <EnhancedButton
+              type="submit"
+              loading={isExecuting}
+              disabled={slugStatus === 'taken' || slugStatus === 'checking'}
+            >
               Salvar Alterações
             </EnhancedButton>
           </div>

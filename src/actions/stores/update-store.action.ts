@@ -4,11 +4,20 @@ import { z } from 'zod'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
 import { store } from '@/db/schema'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, ne } from 'drizzle-orm'
+import { addDomainToVercel } from '@/actions/vercel/add-domain'
+import { removeDomainFromVercel } from '@/actions/vercel/add-domain'
+import { revalidateSitemap } from '@/lib/sitemap-revalidation'
 
 const updateStoreSchema = z.object({
   storeId: z.string().uuid(),
   name: z.string().min(2).max(255).optional(),
+  slug: z
+    .string()
+    .min(3, 'Slug deve ter pelo menos 3 caracteres')
+    .max(60, 'Slug deve ter no máximo 60 caracteres')
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Apenas letras minúsculas, números e hífens (sem hífen no início/fim)')
+    .optional(),
   description: z.string().optional(),
   phone: z.string().optional(),
   whatsapp: z.string().optional(),
@@ -38,12 +47,12 @@ const updateStoreSchema = z.object({
 export const updateStoreAction = authActionClient
   .schema(updateStoreSchema)
   .action(async ({ parsedInput, ctx }) => {
-    const { storeId, ...updateData } = parsedInput
+    const { storeId, slug: newSlug, ...updateData } = parsedInput
 
     const isAdmin = ctx.userRole === 'admin'
 
     const [existingStore] = await db
-      .select({ id: store.id })
+      .select({ id: store.id, slug: store.slug })
       .from(store)
       .where(
         isAdmin
@@ -56,14 +65,56 @@ export const updateStoreAction = authActionClient
       throw new Error('Loja não encontrada')
     }
 
+    // Slug uniqueness check
+    const slugChanged = newSlug && newSlug !== existingStore.slug
+    if (slugChanged) {
+      const [slugTaken] = await db
+        .select({ id: store.id })
+        .from(store)
+        .where(and(eq(store.slug, newSlug), ne(store.id, storeId)))
+        .limit(1)
+
+      if (slugTaken) {
+        throw new Error('Este endereço já está em uso. Escolha outro.')
+      }
+    }
+
+    const setData: Record<string, unknown> = {
+      ...updateData,
+      updatedAt: new Date(),
+    }
+
+    if (slugChanged) {
+      setData.slug = newSlug
+    }
+
     const [result] = await db
       .update(store)
-      .set({
-        ...updateData,
-        updatedAt: new Date(),
-      })
+      .set(setData)
       .where(eq(store.id, storeId))
       .returning()
+
+    // Update Vercel subdomain when slug changes
+    if (slugChanged) {
+      const oldDomain = `${existingStore.slug}.paginalocal.com.br`
+      const newDomain = `${newSlug}.paginalocal.com.br`
+
+      try {
+        await addDomainToVercel(newDomain)
+        console.log(`[UpdateStore] New subdomain added: ${newDomain}`)
+      } catch (error) {
+        console.error(`[UpdateStore] Error adding new subdomain ${newDomain}:`, error)
+      }
+
+      try {
+        await removeDomainFromVercel(oldDomain)
+        console.log(`[UpdateStore] Old subdomain removed: ${oldDomain}`)
+      } catch (error) {
+        console.error(`[UpdateStore] Error removing old subdomain ${oldDomain}:`, error)
+      }
+
+      await revalidateSitemap()
+    }
 
     return result
   })

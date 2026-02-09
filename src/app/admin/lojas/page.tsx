@@ -24,7 +24,6 @@ import {
 import { getAdminStoresAction } from '@/actions/admin/get-admin-stores.action'
 import { toggleStoreStatusAction } from '@/actions/admin/toggle-store-status.action'
 import { deleteStoreAdminAction } from '@/actions/admin/delete-store-admin.action'
-import { regenerateStoreContentAction } from '@/actions/admin/regenerate-store-content.action'
 import { getStoreUrl } from '@/lib/utils'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
 import { Badge } from '@/components/ui/badge'
@@ -65,6 +64,7 @@ import {
   FilterChip,
 } from '@/components/ui/filter-blocks'
 import { TransferStoreModal } from '../_components/transfer-store-modal'
+import { RegenerateStoreModal } from '../_components/regenerate-store-modal'
 
 type StoreStatus = 'all' | 'active' | 'inactive'
 
@@ -101,15 +101,14 @@ export default function AdminStoresPage() {
   const { executeAsync, result, isExecuting } = useAction(getAdminStoresAction)
   const { executeAsync: toggleAsync } = useAction(toggleStoreStatusAction)
   const { executeAsync: deleteAsync, isExecuting: isDeleting } = useAction(deleteStoreAdminAction)
-  const { executeAsync: regenerateAsync } = useAction(regenerateStoreContentAction)
 
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [status, setStatus] = useState<StoreStatus>('all')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
-  const [regeneratingId, setRegeneratingId] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
+  const [regenerateTarget, setRegenerateTarget] = useState<{ id: string; name: string } | null>(null)
   const [transferTarget, setTransferTarget] = useState<{
     id: string
     name: string
@@ -167,19 +166,8 @@ export default function AdminStoresPage() {
     }
   }
 
-  async function handleRegenerate(storeId: string, storeName: string) {
-    setRegeneratingId(storeId)
-    try {
-      const res = await regenerateAsync({ storeId })
-      if (res?.data) {
-        toast.success(`Conteúdo de "${storeName}" regenerado! ${res.data.servicesCreated} serviços criados.`)
-        loadStores()
-      } else if (res?.serverError) {
-        toast.error(res.serverError)
-      }
-    } finally {
-      setRegeneratingId(null)
-    }
+  function handleRegenerate(storeId: string, storeName: string) {
+    setRegenerateTarget({ id: storeId, name: storeName })
   }
 
   const data = result?.data
@@ -267,11 +255,10 @@ export default function AdminStoresPage() {
             <button
               type="button"
               onClick={() => handleRegenerate(s.id, s.name)}
-              disabled={regeneratingId === s.id}
               title="Regenerar conteúdo com IA"
-              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-500 disabled:opacity-50 disabled:cursor-not-allowed dark:hover:bg-amber-950"
+              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950"
             >
-              <IconSparkles className={`h-4 w-4 ${regeneratingId === s.id ? 'animate-spin' : ''}`} />
+              <IconSparkles className="h-4 w-4" />
             </button>
             <Link
               href={`/painel/${s.slug}`}
@@ -431,11 +418,10 @@ export default function AdminStoresPage() {
                           <button
                             type="button"
                             onClick={() => handleRegenerate(store.id, store.name)}
-                            disabled={regeneratingId === store.id}
                             aria-label="Regenerar IA"
-                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-500 disabled:opacity-50 dark:hover:bg-amber-950"
+                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950"
                           >
-                            <IconSparkles className={`h-4 w-4 ${regeneratingId === store.id ? 'animate-spin' : ''}`} />
+                            <IconSparkles className="h-4 w-4" />
                           </button>
                         </div>
                       }
@@ -483,11 +469,10 @@ export default function AdminStoresPage() {
                         <button
                           type="button"
                           onClick={() => handleRegenerate(store.id, store.name)}
-                          disabled={regeneratingId === store.id}
                           aria-label="Regenerar IA"
-                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-500 disabled:opacity-50 dark:hover:bg-amber-950"
+                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950"
                         >
-                          <IconSparkles className={`h-4 w-4 ${regeneratingId === store.id ? 'animate-spin' : ''}`} />
+                          <IconSparkles className="h-4 w-4" />
                         </button>
                         <Link
                           href={`/painel/${store.slug}`}
@@ -580,6 +565,15 @@ export default function AdminStoresPage() {
           open={!!transferTarget}
           onOpenChange={() => setTransferTarget(null)}
           store={transferTarget}
+          onSuccess={loadStores}
+        />
+      )}
+
+      {regenerateTarget && (
+        <RegenerateStoreModal
+          open={!!regenerateTarget}
+          onOpenChange={() => setRegenerateTarget(null)}
+          store={regenerateTarget}
           onSuccess={loadStores}
         />
       )}

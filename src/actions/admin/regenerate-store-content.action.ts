@@ -4,38 +4,21 @@ import { z } from 'zod'
 import { adminActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
 import { store, service, testimonial } from '@/db/schema'
-import { eq, and, desc } from 'drizzle-orm'
-import { generateMarketingCopy } from '@/lib/gemini'
-import { generateSlug } from '@/lib/utils'
+import { eq } from 'drizzle-orm'
+import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
+import { generateCitySlug } from '@/lib/utils'
+import { getPhotoUrl } from '@/lib/google-places'
+import { downloadImage, optimizeHeroImage } from '@/lib/image-optimizer'
+import { uploadToS3, generateS3Key } from '@/lib/s3'
 import {
-  getPlaceDetails,
-  summarizeReviews,
-  summarizeTestimonials,
-  extractBusinessAttributes,
-  parseOpeningHours,
-} from '@/lib/google-places'
-import { fixOpeningHoursInFAQ } from '@/lib/faq-utils'
-
-async function generateUniqueServiceSlug(storeId: string, name: string): Promise<string> {
-  const baseSlug = generateSlug(name)
-  let slug = baseSlug
-  let counter = 1
-
-  while (true) {
-    const [existing] = await db
-      .select({ id: service.id })
-      .from(service)
-      .where(and(eq(service.storeId, storeId), eq(service.slug, slug)))
-      .limit(1)
-
-    if (!existing) return slug
-    slug = `${baseSlug}-${counter}`
-    counter++
-  }
-}
+  buildStoreFromGoogle,
+  generateUniqueServiceSlugForStore,
+  truncate,
+} from '@/lib/store-builder'
 
 const regenerateStoreContentSchema = z.object({
   storeId: z.string().uuid(),
+  googlePlaceId: z.string().min(1, 'Google Place ID é obrigatório'),
 })
 
 export const regenerateStoreContentAction = adminActionClient
@@ -51,117 +34,117 @@ export const regenerateStoreContentAction = adminActionClient
       throw new Error('Loja não encontrada')
     }
 
-    // Fetch fresh data from Google if available
-    let googleAbout: string | undefined
-    let businessAttributes: string[] | undefined
-    let freshReviewHighlights: string | undefined
-    let freshOpeningHours: Record<string, string> | undefined
-    let freshRating: number | undefined
-    let freshReviewCount: number | undefined
+    const googlePlaceId = parsedInput.googlePlaceId
 
-    if (storeData.googlePlaceId) {
+    console.log(`[Regenerate] Rebuilding store "${storeData.name}" (id: ${storeData.id}) from Google Place ID: ${googlePlaceId}`)
+
+    // ===== Build store data from Google (same logic as creation) =====
+    const result = await buildStoreFromGoogle(googlePlaceId)
+
+    // ===== Update cover image from Google =====
+    let newCoverUrl = result.coverUrl
+    if (result.placeDetails.photos && result.placeDetails.photos.length > 0) {
       try {
-        console.log(`[Regenerate] Fetching fresh data from Google for "${storeData.name}"...`)
-        const placeDetails = await getPlaceDetails(storeData.googlePlaceId)
-
-        if (placeDetails) {
-          googleAbout = placeDetails.editorialSummary?.text
-          businessAttributes = extractBusinessAttributes(placeDetails)
-          freshReviewHighlights = summarizeReviews(placeDetails.reviews) || undefined
-          freshRating = placeDetails.rating
-          freshReviewCount = placeDetails.userRatingCount
-
-          if (placeDetails.regularOpeningHours?.weekdayDescriptions) {
-            freshOpeningHours = parseOpeningHours(placeDetails.regularOpeningHours.weekdayDescriptions)
-          }
-
-          // Update store with fresh Google data
-          await db.update(store).set({
-            googleRating: placeDetails.rating?.toString(),
-            googleReviewsCount: placeDetails.userRatingCount,
-            ...(freshOpeningHours ? { openingHours: freshOpeningHours } : {}),
-            updatedAt: new Date(),
-          }).where(eq(store.id, parsedInput.storeId))
-
-          console.log(`[Regenerate] Google data fetched: rating=${freshRating}, reviews=${freshReviewCount}, attributes=${businessAttributes?.length || 0}`)
-        }
+        const coverPhoto = result.placeDetails.photos[0]
+        const googlePhotoUrl = getPhotoUrl(coverPhoto.name, 1200)
+        const imageBuffer = await downloadImage(googlePhotoUrl)
+        const optimized = await optimizeHeroImage(imageBuffer)
+        const s3Key = generateS3Key(storeData.id, 'cover-regen')
+        const { url } = await uploadToS3(optimized.buffer, s3Key)
+        newCoverUrl = url
+        console.log(`[Regenerate] Cover image updated from Google`)
       } catch (error) {
-        console.error('[Regenerate] Error fetching Google data (continuing with DB data):', error)
+        console.error('[Regenerate] Error updating cover image, keeping existing:', error)
+        newCoverUrl = storeData.coverUrl || result.coverUrl
       }
     }
 
-    // Fallback to DB testimonials if no fresh Google reviews
-    const openingHours = freshOpeningHours || (storeData.openingHours as Record<string, string>) || undefined
-    let reviewHighlights = freshReviewHighlights
-
-    if (!reviewHighlights) {
-      const storeTestimonials = await db
-        .select({ rating: testimonial.rating, content: testimonial.content })
-        .from(testimonial)
-        .where(eq(testimonial.storeId, parsedInput.storeId))
-        .orderBy(desc(testimonial.rating))
-        .limit(30)
-
-      reviewHighlights = summarizeTestimonials(storeTestimonials) || undefined
-    }
-
-    const marketingCopy = await generateMarketingCopy({
-      businessName: storeData.name,
-      category: storeData.category,
-      city: storeData.city,
-      state: storeData.state,
-      rating: freshRating || (storeData.googleRating ? parseFloat(storeData.googleRating) : undefined),
-      reviewCount: freshReviewCount || storeData.googleReviewsCount || undefined,
-      googleAbout,
-      address: storeData.address || undefined,
-      reviewHighlights,
-      openingHours,
-      businessAttributes: businessAttributes && businessAttributes.length > 0 ? businessAttributes : undefined,
-    })
-
-    let realNeighborhoods: string[] = []
-    if (storeData.latitude && storeData.longitude) {
-      const { fetchNearbyNeighborhoods } = await import('@/lib/google-places')
-      realNeighborhoods = await fetchNearbyNeighborhoods(
-        parseFloat(storeData.latitude),
-        parseFloat(storeData.longitude),
-        storeData.city,
-      )
-    }
-
-    const fixedFaq = fixOpeningHoursInFAQ(
-      marketingCopy.faq || [],
-      openingHours,
-      storeData.name
-    )
-
+    // ===== Update store (preserve: id, userId, slug, isActive, logoUrl, faviconUrl, images in store_image) =====
     const [updatedStore] = await db
       .update(store)
       .set({
-        heroTitle: marketingCopy.heroTitle,
-        heroSubtitle: marketingCopy.heroSubtitle,
-        description: marketingCopy.aboutSection,
-        seoTitle: marketingCopy.seoTitle,
-        seoDescription: marketingCopy.seoDescription,
-        faq: fixedFaq,
-        ...(realNeighborhoods.length > 0 ? { neighborhoods: realNeighborhoods } : {}),
+        name: result.displayName,
+        category: truncate(result.category.name, 100)!,
+        categoryId: result.category.id,
+        phone: result.phone,
+        whatsapp: result.whatsapp,
+        address: result.fullAddress,
+        city: truncate(result.city, 100)!,
+        state: truncate(result.state, 2)!,
+        zipCode: result.zipCode,
+        googlePlaceId,
+        googleRating: result.rating?.toString(),
+        googleReviewsCount: result.reviewCount,
+        openingHours: result.openingHours,
+        latitude: result.latitude?.toString(),
+        longitude: result.longitude?.toString(),
+        coverUrl: newCoverUrl,
+        heroTitle: truncate(result.heroTitle, 100),
+        heroSubtitle: truncate(result.heroSubtitle, 200),
+        description: result.description,
+        seoTitle: result.seoTitle,
+        seoDescription: result.seoDescription,
+        faq: result.faq,
+        neighborhoods: result.neighborhoods,
         updatedAt: new Date(),
       })
       .where(eq(store.id, parsedInput.storeId))
       .returning()
 
+    // ===== Delete and recreate testimonials from fresh Google reviews =====
+    await db
+      .delete(testimonial)
+      .where(eq(testimonial.storeId, parsedInput.storeId))
+
+    let testimonialsSynced = 0
+    if (result.placeDetails.reviews && result.placeDetails.reviews.length > 0) {
+      const topReviews = result.placeDetails.reviews
+        .filter(r => r.rating >= 4)
+        .sort((a, b) => {
+          const aHasText = a.text?.text && a.text.text.trim().length > 0 ? 1 : 0
+          const bHasText = b.text?.text && b.text.text.trim().length > 0 ? 1 : 0
+          if (bHasText !== aHasText) return bHasText - aHasText
+          return b.rating - a.rating
+        })
+        .slice(0, 15)
+
+      for (const review of topReviews) {
+        const reviewContent = review.text?.text && review.text.text.trim().length > 0
+          ? review.text.text
+          : `Avaliou com ${review.rating} estrelas`
+
+        await db
+          .insert(testimonial)
+          .values({
+            storeId: parsedInput.storeId,
+            authorName: review.authorAttribution?.displayName || 'Anônimo',
+            content: reviewContent,
+            rating: review.rating,
+            imageUrl: review.authorAttribution?.photoUri || null,
+            isGoogleReview: true,
+          })
+          .onConflictDoNothing()
+
+        testimonialsSynced++
+      }
+
+      console.log(`[Regenerate] Synced ${testimonialsSynced} testimonials from Google reviews`)
+    }
+
+    // ===== Delete and recreate services =====
     await db
       .delete(service)
       .where(eq(service.storeId, parsedInput.storeId))
 
-    if (marketingCopy.services && marketingCopy.services.length > 0) {
-      for (let i = 0; i < marketingCopy.services.length; i++) {
-        const svc = marketingCopy.services[i]
-        const slug = await generateUniqueServiceSlug(parsedInput.storeId, svc.name)
-        await db.insert(service).values({
+    for (let i = 0; i < result.services.length; i++) {
+      const svc = result.services[i]
+      const svcSlug = await generateUniqueServiceSlugForStore(parsedInput.storeId, svc.name)
+      await db
+        .insert(service)
+        .values({
           storeId: parsedInput.storeId,
           name: svc.name,
-          slug,
+          slug: svcSlug,
           description: svc.description,
           seoTitle: svc.seoTitle || null,
           seoDescription: svc.seoDescription || null,
@@ -169,11 +152,29 @@ export const regenerateStoreContentAction = adminActionClient
           position: i + 1,
           isActive: true,
         })
+    }
+
+    console.log(`[Regenerate] Created ${result.services.length} services`)
+
+    // ===== Revalidate sitemap and category pages =====
+    if (storeData.isActive) {
+      await revalidateSitemap()
+
+      if (result.category.slug) {
+        await revalidateCategoryPages(result.category.slug, generateCitySlug(updatedStore.city))
       }
     }
 
+    console.log(`[Regenerate] Store "${result.displayName}" fully regenerated`)
+
     return {
       store: updatedStore,
-      servicesCreated: marketingCopy.services?.length || 0,
+      displayName: result.displayName,
+      categoryName: result.category.name,
+      servicesCreated: result.services.length,
+      faqGenerated: result.faq.length,
+      neighborhoodsGenerated: result.neighborhoods.length,
+      testimonialsSynced,
+      marketingGenerated: result.marketingGenerated,
     }
   })
