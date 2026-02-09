@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import { db } from './index'
-import { category } from './schema'
+import { category, store } from './schema'
+import { eq } from 'drizzle-orm'
 
 interface CategorySeed {
   name: string
@@ -188,7 +189,7 @@ const CATEGORIES_SEED: CategorySeed[] = [
     slug: 'restaurante',
     icon: 'IconToolsKitchen2',
     description: 'Gastronomia e alimentação',
-    typeGooglePlace: ['restaurant', 'brazilian_restaurant', 'japanese_restaurant', 'chinese_restaurant', 'italian_restaurant', 'french_restaurant', 'greek_restaurant', 'indian_restaurant', 'indonesian_restaurant', 'korean_restaurant', 'lebanese_restaurant', 'mediterranean_restaurant', 'mexican_restaurant', 'middle_eastern_restaurant', 'spanish_restaurant', 'thai_restaurant', 'turkish_restaurant', 'vietnamese_restaurant', 'american_restaurant', 'asian_restaurant', 'african_restaurant', 'afghani_restaurant', 'barbecue_restaurant', 'seafood_restaurant', 'steak_house', 'vegan_restaurant', 'vegetarian_restaurant', 'buffet_restaurant', 'brunch_restaurant', 'breakfast_restaurant', 'fine_dining_restaurant', 'ramen_restaurant', 'sushi_restaurant', 'diner', 'food_court'],
+    typeGooglePlace: ['restaurant', 'food', 'brazilian_restaurant', 'japanese_restaurant', 'chinese_restaurant', 'italian_restaurant', 'french_restaurant', 'greek_restaurant', 'indian_restaurant', 'indonesian_restaurant', 'korean_restaurant', 'lebanese_restaurant', 'mediterranean_restaurant', 'mexican_restaurant', 'middle_eastern_restaurant', 'spanish_restaurant', 'thai_restaurant', 'turkish_restaurant', 'vietnamese_restaurant', 'american_restaurant', 'asian_restaurant', 'african_restaurant', 'afghani_restaurant', 'barbecue_restaurant', 'seafood_restaurant', 'steak_house', 'vegan_restaurant', 'vegetarian_restaurant', 'buffet_restaurant', 'brunch_restaurant', 'breakfast_restaurant', 'fine_dining_restaurant', 'ramen_restaurant', 'sushi_restaurant', 'diner', 'food_court'],
     suggestedServices: ['Almoço Executivo', 'Self-Service', 'À la Carte', 'Delivery', 'Eventos', 'Marmitex'],
     seoTitle: 'Restaurante Perto de Mim - Onde Comer Bem',
     seoDescription: 'Encontre o melhor restaurante perto de você. Self-service, almoço executivo e delivery. Avaliações reais de clientes!',
@@ -1389,6 +1390,8 @@ function enrichCategory(cat: CategorySeed): CategorySeed {
 async function seed() {
   console.log('Iniciando seed de categorias...')
 
+  const seedSlugs = new Set(CATEGORIES_SEED.map(c => c.slug))
+
   for (const cat of CATEGORIES_SEED) {
     const enriched = enrichCategory(cat)
     await db
@@ -1412,6 +1415,51 @@ async function seed() {
         },
       })
     console.log(`Categoria "${enriched.name}" inserida/atualizada`)
+  }
+
+  // Cleanup: migrate stores from auto-created English categories to the correct seed category, then delete the orphan
+  const allCategories = await db.select().from(category)
+  const allSeedTypes = new Set(CATEGORIES_SEED.flatMap(c => c.typeGooglePlace || []))
+  let cleanedCount = 0
+
+  for (const cat of allCategories) {
+    if (seedSlugs.has(cat.slug)) continue
+
+    const catTypes = (cat.typeGooglePlace as string[]) || []
+    const allTypesCovered = catTypes.length > 0 && catTypes.every(t => allSeedTypes.has(t))
+
+    if (allTypesCovered) {
+      const firstType = catTypes[0]
+      const targetSeedCat = CATEGORIES_SEED.find(sc =>
+        sc.typeGooglePlace?.includes(firstType)
+      )
+
+      if (targetSeedCat) {
+        const [targetRow] = await db.select().from(category).where(eq(category.slug, targetSeedCat.slug)).limit(1)
+
+        if (targetRow) {
+          const storesUsingOldCat = await db.select({ id: store.id }).from(store).where(eq(store.categoryId, cat.id))
+
+          if (storesUsingOldCat.length > 0) {
+            await db.update(store).set({
+              categoryId: targetRow.id,
+              category: targetRow.name,
+              updatedAt: new Date(),
+            }).where(eq(store.categoryId, cat.id))
+
+            console.log(`Migrou ${storesUsingOldCat.length} loja(s) de "${cat.name}" -> "${targetRow.name}"`)
+          }
+
+          await db.delete(category).where(eq(category.id, cat.id))
+          console.log(`Removida categoria auto-criada "${cat.name}" (slug: ${cat.slug}, types: ${catTypes.join(', ')})`)
+          cleanedCount++
+        }
+      }
+    }
+  }
+
+  if (cleanedCount > 0) {
+    console.log(`${cleanedCount} categorias auto-criadas removidas e lojas migradas`)
   }
 
   console.log('Seed de categorias concluido!')

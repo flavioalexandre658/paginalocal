@@ -29,9 +29,20 @@ export function formatOpeningHoursForFAQ(hours?: Record<string, string>): string
   return `Nosso horário de funcionamento é: ${formatted}.`
 }
 
+function isOpeningHoursQuestion(question: string): boolean {
+  const lower = question.toLowerCase()
+  return (
+    lower.includes('horário') ||
+    lower.includes('horario') ||
+    lower.includes('funcionamento') ||
+    lower.includes('abre') ||
+    lower.includes('fecha')
+  )
+}
+
 /**
  * Post-processes FAQ items to ensure opening hours questions have correct answers
- * from actual Google data, and removes any FAQ items with "no information" answers.
+ * from actual Google data, removes duplicates, and filters useless answers.
  */
 export function fixOpeningHoursInFAQ(
   faq: FAQItem[],
@@ -39,20 +50,15 @@ export function fixOpeningHoursInFAQ(
   storeName?: string
 ): FAQItem[] {
   const hoursAnswer = formatOpeningHoursForFAQ(openingHours)
+  let hoursQuestionHandled = false
 
-  return faq
+  const processed = faq
     .map(item => {
-      const questionLower = item.question.toLowerCase()
-      if (
-        questionLower.includes('horário') ||
-        questionLower.includes('horario') ||
-        questionLower.includes('funcionamento') ||
-        questionLower.includes('abre') ||
-        questionLower.includes('fecha') ||
-        questionLower.includes('sábado') ||
-        questionLower.includes('sabado') ||
-        questionLower.includes('domingo')
-      ) {
+      if (isOpeningHoursQuestion(item.question)) {
+        if (hoursQuestionHandled) {
+          return null
+        }
+        hoursQuestionHandled = true
         return {
           question: storeName
             ? `Qual o horário de funcionamento da ${storeName}?`
@@ -62,17 +68,24 @@ export function fixOpeningHoursInFAQ(
       }
       return item
     })
+    .filter((item): item is FAQItem => item !== null)
     .filter(item => {
       const answerLower = item.answer.toLowerCase()
-      // Remove FAQ items with useless "I don't know" answers
       return !(
         answerLower.includes('não tenho informaç') ||
         answerLower.includes('nao tenho informaç') ||
         answerLower.includes('não possuo informaç') ||
         answerLower.includes('recomendo verificar diretamente') ||
-        answerLower.includes('entre em contato para') ||
         answerLower.includes('consulte diretamente') ||
         answerLower.includes('é melhor confirmar diretamente')
       )
     })
+
+  const seen = new Set<string>()
+  return processed.filter(item => {
+    const key = item.question.toLowerCase().trim()
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }

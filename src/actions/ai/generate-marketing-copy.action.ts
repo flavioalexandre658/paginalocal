@@ -108,14 +108,16 @@ export const generateMarketingCopyAction = authActionClient
       storeData.name
     )
 
+    const truncStr = (s: string | undefined, max: number) => s ? (s.length > max ? s.substring(0, max) : s) : s
+
     const [updatedStore] = await db
       .update(store)
       .set({
-        heroTitle: marketingCopy.heroTitle,
-        heroSubtitle: marketingCopy.heroSubtitle,
+        heroTitle: truncStr(marketingCopy.heroTitle, 100),
+        heroSubtitle: truncStr(marketingCopy.heroSubtitle, 200),
         description: marketingCopy.aboutSection,
-        seoTitle: marketingCopy.seoTitle,
-        seoDescription: marketingCopy.seoDescription,
+        seoTitle: truncStr(marketingCopy.seoTitle, 70),
+        seoDescription: truncStr(marketingCopy.seoDescription, 160),
         faq: fixedFaq,
         neighborhoods: marketingCopy.neighborhoods,
         updatedAt: new Date(),
@@ -137,8 +139,8 @@ export const generateMarketingCopyAction = authActionClient
           name: svc.name,
           slug,
           description: svc.description,
-          seoTitle: svc.seoTitle || null,
-          seoDescription: svc.seoDescription || null,
+          seoTitle: truncStr(svc.seoTitle, 70) || null,
+          seoDescription: truncStr(svc.seoDescription, 160) || null,
           longDescription: svc.longDescription || null,
           position: i + 1,
           isActive: true,
@@ -210,6 +212,8 @@ export const regenerateServicesAction = authActionClient
 
     const currentMaxPosition = existingServices.length
 
+    const truncSvc = (s: string | undefined, max: number) => s ? (s.length > max ? s.substring(0, max) : s) : s
+
     for (let i = 0; i < newServices.length; i++) {
       const svc = newServices[i]
       const slug = await generateUniqueServiceSlug(parsedInput.storeId, svc.name)
@@ -218,8 +222,8 @@ export const regenerateServicesAction = authActionClient
         name: svc.name,
         slug,
         description: svc.description,
-        seoTitle: svc.seoTitle || null,
-        seoDescription: svc.seoDescription || null,
+        seoTitle: truncSvc(svc.seoTitle, 70) || null,
+        seoDescription: truncSvc(svc.seoDescription, 160) || null,
         longDescription: svc.longDescription || null,
         position: currentMaxPosition + i + 1,
         isActive: true,

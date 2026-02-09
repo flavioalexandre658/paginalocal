@@ -7,8 +7,8 @@ import { store, service, testimonial } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
 import { generateCitySlug } from '@/lib/utils'
-import { getPhotoUrl } from '@/lib/google-places'
-import { downloadImage, optimizeHeroImage } from '@/lib/image-optimizer'
+import { downloadGooglePhoto } from '@/lib/google-places'
+import { optimizeHeroImage } from '@/lib/image-optimizer'
 import { uploadToS3, generateS3Key } from '@/lib/s3'
 import {
   buildStoreFromGoogle,
@@ -46,15 +46,15 @@ export const regenerateStoreContentAction = adminActionClient
     if (result.placeDetails.photos && result.placeDetails.photos.length > 0) {
       try {
         const coverPhoto = result.placeDetails.photos[0]
-        const googlePhotoUrl = getPhotoUrl(coverPhoto.name, 1200)
-        const imageBuffer = await downloadImage(googlePhotoUrl)
+        console.log(`[Regenerate] Downloading cover photo: ${coverPhoto.name.substring(0, 60)}...`)
+        const imageBuffer = await downloadGooglePhoto(coverPhoto.name, 1200)
         const optimized = await optimizeHeroImage(imageBuffer)
         const s3Key = generateS3Key(storeData.id, 'cover-regen')
         const { url } = await uploadToS3(optimized.buffer, s3Key)
         newCoverUrl = url
         console.log(`[Regenerate] Cover image updated from Google`)
       } catch (error) {
-        console.error('[Regenerate] Error updating cover image, keeping existing:', error)
+        console.error('[Regenerate] Error updating cover image, keeping existing:', error instanceof Error ? error.message : error)
         newCoverUrl = storeData.coverUrl || result.coverUrl
       }
     }
@@ -82,8 +82,8 @@ export const regenerateStoreContentAction = adminActionClient
         heroTitle: truncate(result.heroTitle, 100),
         heroSubtitle: truncate(result.heroSubtitle, 200),
         description: result.description,
-        seoTitle: result.seoTitle,
-        seoDescription: result.seoDescription,
+        seoTitle: truncate(result.seoTitle, 70),
+        seoDescription: truncate(result.seoDescription, 160),
         faq: result.faq,
         neighborhoods: result.neighborhoods,
         updatedAt: new Date(),
@@ -146,8 +146,8 @@ export const regenerateStoreContentAction = adminActionClient
           name: svc.name,
           slug: svcSlug,
           description: svc.description,
-          seoTitle: svc.seoTitle || null,
-          seoDescription: svc.seoDescription || null,
+          seoTitle: truncate(svc.seoTitle, 70) || null,
+          seoDescription: truncate(svc.seoDescription, 160) || null,
           longDescription: svc.longDescription || null,
           position: i + 1,
           isActive: true,

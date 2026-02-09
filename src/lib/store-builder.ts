@@ -59,10 +59,154 @@ export interface StoreBuilderOverrides {
   storeCity?: string
 }
 
+const GOOGLE_TYPE_PT_BR: Record<string, { name: string; icon: string; description: string }> = {
+  car_dealer: { name: 'Revendedora de Veículos', icon: 'IconCarGarage', description: 'Compra e venda de veículos novos e seminovos' },
+  car_rental: { name: 'Locadora de Veículos', icon: 'IconCar', description: 'Aluguel de carros e veículos' },
+  car_repair: { name: 'Oficina Mecânica', icon: 'IconTool', description: 'Manutenção e reparo de veículos' },
+  car_wash: { name: 'Lava Jato', icon: 'IconDroplet', description: 'Lavagem e estética automotiva' },
+  electric_vehicle_charging_station: { name: 'Posto de Recarga Elétrica', icon: 'IconBolt', description: 'Estação de carregamento para veículos elétricos' },
+  gas_station: { name: 'Posto de Combustível', icon: 'IconGasStation', description: 'Abastecimento de veículos' },
+  parking: { name: 'Estacionamento', icon: 'IconParking', description: 'Vagas de estacionamento' },
+  rest_stop: { name: 'Parada de Descanso', icon: 'IconBuildingStore', description: 'Parada para descanso em rodovias' },
+  tire_shop: { name: 'Borracharia', icon: 'IconTire', description: 'Serviços de pneus, alinhamento e balanceamento' },
+  corporate_office: { name: 'Escritório Corporativo', icon: 'IconBuilding', description: 'Escritório empresarial' },
+  farm: { name: 'Fazenda', icon: 'IconPlant', description: 'Produção agropecuária' },
+  ranch: { name: 'Rancho', icon: 'IconPlant', description: 'Propriedade rural' },
+  art_gallery: { name: 'Galeria de Arte', icon: 'IconPalette', description: 'Exposição e venda de obras de arte' },
+  art_studio: { name: 'Ateliê de Arte', icon: 'IconPalette', description: 'Estúdio de criação artística' },
+  auditorium: { name: 'Auditório', icon: 'IconBuildingStore', description: 'Espaço para palestras e apresentações' },
+  museum: { name: 'Museu', icon: 'IconBuildingStore', description: 'Acervo cultural e histórico' },
+  performing_arts_theater: { name: 'Teatro', icon: 'IconTheater', description: 'Apresentações teatrais e artísticas' },
+  library: { name: 'Biblioteca', icon: 'IconBook', description: 'Acervo de livros e espaço de leitura' },
+  preschool: { name: 'Creche', icon: 'IconSchool', description: 'Educação infantil' },
+  primary_school: { name: 'Escola', icon: 'IconSchool', description: 'Ensino fundamental' },
+  school: { name: 'Escola', icon: 'IconSchool', description: 'Instituição de ensino' },
+  secondary_school: { name: 'Escola', icon: 'IconSchool', description: 'Ensino médio' },
+  university: { name: 'Universidade', icon: 'IconSchool', description: 'Ensino superior' },
+  amusement_park: { name: 'Parque de Diversões', icon: 'IconFerrisWheel', description: 'Diversão e entretenimento' },
+  aquarium: { name: 'Aquário', icon: 'IconFish', description: 'Exposição de vida marinha' },
+  bowling_alley: { name: 'Boliche', icon: 'IconBallBowling', description: 'Pista de boliche e lazer' },
+  casino: { name: 'Cassino', icon: 'IconDice', description: 'Jogos e entretenimento' },
+  movie_theater: { name: 'Cinema', icon: 'IconMovie', description: 'Exibição de filmes' },
+  night_club: { name: 'Casa Noturna', icon: 'IconMusic', description: 'Entretenimento noturno e festas' },
+  zoo: { name: 'Zoológico', icon: 'IconPaw', description: 'Exposição de animais' },
+  accounting: { name: 'Escritório de Contabilidade', icon: 'IconCalculator', description: 'Serviços contábeis e fiscais' },
+  atm: { name: 'Caixa Eletrônico', icon: 'IconCash', description: 'Saques e operações bancárias' },
+  bank: { name: 'Banco', icon: 'IconBuildingBank', description: 'Serviços bancários e financeiros' },
+  food: { name: 'Restaurante', icon: 'IconToolsKitchen2', description: 'Gastronomia e alimentação' },
+  restaurant: { name: 'Restaurante', icon: 'IconToolsKitchen2', description: 'Gastronomia e alimentação' },
+  bakery: { name: 'Padaria', icon: 'IconBread', description: 'Pães artesanais e confeitaria' },
+  bar: { name: 'Bar', icon: 'IconGlass', description: 'Bebidas e petiscos' },
+  cafe: { name: 'Cafeteria', icon: 'IconCoffee', description: 'Café e lanches' },
+  coffee_shop: { name: 'Cafeteria', icon: 'IconCoffee', description: 'Café e lanches' },
+  fast_food_restaurant: { name: 'Lanchonete', icon: 'IconBurger', description: 'Lanches rápidos e sanduíches' },
+  ice_cream_shop: { name: 'Sorveteria', icon: 'IconIceCream', description: 'Sorvetes e sobremesas geladas' },
+  pizza_restaurant: { name: 'Pizzaria', icon: 'IconPizza', description: 'Pizzas artesanais e delivery' },
+  supermarket: { name: 'Supermercado', icon: 'IconShoppingCart', description: 'Produtos alimentícios e de limpeza' },
+  grocery_store: { name: 'Mercearia', icon: 'IconShoppingCart', description: 'Produtos alimentícios' },
+  market: { name: 'Mercado', icon: 'IconShoppingCart', description: 'Comércio de produtos variados' },
+  convenience_store: { name: 'Conveniência', icon: 'IconShoppingBag', description: 'Produtos de conveniência' },
+  meal_delivery: { name: 'Delivery', icon: 'IconTruckDelivery', description: 'Entrega de refeições' },
+  meal_takeaway: { name: 'Delivery', icon: 'IconTruckDelivery', description: 'Refeições para viagem' },
+  city_hall: { name: 'Prefeitura', icon: 'IconBuilding', description: 'Administração municipal' },
+  courthouse: { name: 'Fórum', icon: 'IconScale', description: 'Poder judiciário' },
+  fire_station: { name: 'Corpo de Bombeiros', icon: 'IconFlame', description: 'Serviço de bombeiros' },
+  police: { name: 'Delegacia', icon: 'IconShield', description: 'Segurança pública' },
+  post_office: { name: 'Correios', icon: 'IconMail', description: 'Serviços postais' },
+  dentist: { name: 'Consultório Odontológico', icon: 'IconDental', description: 'Serviços odontológicos' },
+  dental_clinic: { name: 'Clínica Odontológica', icon: 'IconDental', description: 'Serviços odontológicos' },
+  doctor: { name: 'Médico', icon: 'IconStethoscope', description: 'Atendimento médico' },
+  hospital: { name: 'Hospital', icon: 'IconBuildingHospital', description: 'Atendimento hospitalar' },
+  pharmacy: { name: 'Farmácia', icon: 'IconPill', description: 'Medicamentos e produtos de saúde' },
+  drugstore: { name: 'Farmácia', icon: 'IconPill', description: 'Medicamentos e drogaria' },
+  physiotherapist: { name: 'Fisioterapeuta', icon: 'IconStretching', description: 'Fisioterapia e reabilitação' },
+  spa: { name: 'Spa', icon: 'IconDroplet', description: 'Bem-estar e relaxamento' },
+  gym: { name: 'Academia', icon: 'IconBarbell', description: 'Musculação e atividades físicas' },
+  fitness_center: { name: 'Academia', icon: 'IconBarbell', description: 'Musculação e atividades físicas' },
+  hotel: { name: 'Hotel', icon: 'IconBed', description: 'Hospedagem e eventos' },
+  lodging: { name: 'Pousada', icon: 'IconBed', description: 'Hospedagem' },
+  church: { name: 'Igreja', icon: 'IconBuildingChurch', description: 'Local de culto religioso' },
+  barber_shop: { name: 'Barbearia', icon: 'IconScissors', description: 'Cortes masculinos e barba' },
+  beauty_salon: { name: 'Salão de Beleza', icon: 'IconSparkles', description: 'Serviços de beleza e estética' },
+  hair_salon: { name: 'Salão de Beleza', icon: 'IconSparkles', description: 'Cortes e tratamentos capilares' },
+  florist: { name: 'Floricultura', icon: 'IconFlower', description: 'Flores e arranjos' },
+  insurance_agency: { name: 'Seguradora', icon: 'IconShield', description: 'Seguros e proteção' },
+  laundry: { name: 'Lavanderia', icon: 'IconWash', description: 'Lavagem de roupas' },
+  lawyer: { name: 'Escritório de Advocacia', icon: 'IconScale', description: 'Serviços jurídicos' },
+  locksmith: { name: 'Chaveiro', icon: 'IconKey', description: 'Cópias de chaves e fechaduras' },
+  moving_company: { name: 'Empresa de Mudanças', icon: 'IconTruck', description: 'Mudanças e transportes' },
+  plumber: { name: 'Encanador', icon: 'IconDroplet', description: 'Serviços hidráulicos' },
+  electrician: { name: 'Eletricista', icon: 'IconBolt', description: 'Serviços elétricos' },
+  painter: { name: 'Pintor', icon: 'IconPaint', description: 'Pintura residencial e comercial' },
+  real_estate_agency: { name: 'Imobiliária', icon: 'IconHome', description: 'Compra, venda e aluguel de imóveis' },
+  travel_agency: { name: 'Agência de Viagens', icon: 'IconPlane', description: 'Pacotes de viagem e turismo' },
+  veterinary_care: { name: 'Clínica Veterinária', icon: 'IconStethoscope', description: 'Atendimento veterinário' },
+  pet_store: { name: 'Pet Shop', icon: 'IconDog', description: 'Produtos e serviços para pets' },
+  clothing_store: { name: 'Loja de Roupas', icon: 'IconShirt', description: 'Moda e vestuário' },
+  electronics_store: { name: 'Loja de Eletrônicos', icon: 'IconDevices', description: 'Eletrônicos e tecnologia' },
+  furniture_store: { name: 'Loja de Móveis', icon: 'IconArmchair', description: 'Móveis e decoração' },
+  hardware_store: { name: 'Loja de Ferragens', icon: 'IconHammer', description: 'Ferramentas e materiais' },
+  home_goods_store: { name: 'Loja de Decoração', icon: 'IconHome', description: 'Artigos para casa e decoração' },
+  jewelry_store: { name: 'Joalheria', icon: 'IconDiamond', description: 'Joias e acessórios' },
+  book_store: { name: 'Livraria', icon: 'IconBook', description: 'Livros e papelaria' },
+  shoe_store: { name: 'Sapataria', icon: 'IconShoe', description: 'Calçados e acessórios' },
+  shopping_mall: { name: 'Shopping Center', icon: 'IconBuildingStore', description: 'Centro comercial' },
+  department_store: { name: 'Loja de Departamentos', icon: 'IconBuildingStore', description: 'Produtos variados' },
+  bicycle_store: { name: 'Loja de Bicicletas', icon: 'IconBike', description: 'Bicicletas e acessórios' },
+  liquor_store: { name: 'Distribuidora de Bebidas', icon: 'IconBottle', description: 'Bebidas alcoólicas e não alcoólicas' },
+  cell_phone_store: { name: 'Loja de Celulares', icon: 'IconDeviceMobile', description: 'Smartphones e acessórios' },
+  airport: { name: 'Aeroporto', icon: 'IconPlane', description: 'Terminal aéreo' },
+  bus_station: { name: 'Rodoviária', icon: 'IconBus', description: 'Terminal rodoviário' },
+  train_station: { name: 'Estação de Trem', icon: 'IconTrain', description: 'Transporte ferroviário' },
+  subway_station: { name: 'Estação de Metrô', icon: 'IconTrain', description: 'Transporte metroviário' },
+  tourist_attraction: { name: 'Atração Turística', icon: 'IconMapPin', description: 'Ponto turístico' },
+  park: { name: 'Parque', icon: 'IconTree', description: 'Área verde e lazer' },
+  cemetery: { name: 'Cemitério', icon: 'IconBuildingStore', description: 'Serviços funerários' },
+  funeral_home: { name: 'Funerária', icon: 'IconBuildingStore', description: 'Serviços funerários' },
+  wedding_venue: { name: 'Espaço para Eventos', icon: 'IconBuildingStore', description: 'Espaço para casamentos e eventos' },
+  event_venue: { name: 'Espaço para Eventos', icon: 'IconBuildingStore', description: 'Local para eventos e conferências' },
+  child_care_agency: { name: 'Creche', icon: 'IconBabyCarriage', description: 'Cuidados infantis' },
+  storage: { name: 'Guarda-Volumes', icon: 'IconBox', description: 'Armazenamento e self-storage' },
+  roofing_contractor: { name: 'Telhados e Coberturas', icon: 'IconHome', description: 'Serviços de telhado e cobertura' },
+  courier_service: { name: 'Serviço de Entregas', icon: 'IconTruckDelivery', description: 'Entregas e logística' },
+}
+
+function buildCategorySeoContent(name: string) {
+  const lower = name.toLowerCase()
+  return {
+    seoTitle: truncate(`${name} Perto de Mim - Encontre a Melhor`, 70)!,
+    seoDescription: truncate(`Encontre ${lower} perto de você com avaliações reais de clientes. Compare serviços, veja endereços e entre em contato pelo WhatsApp.`, 160)!,
+    seoKeywords: [`${lower} perto de mim`, lower, `melhor ${lower}`],
+    heroTitle: truncate(`Encontre ${name} Perto de Você`, 100)!,
+    heroSubtitle: `Compare avaliações reais, veja endereços e entre em contato pelo WhatsApp com ${lower} da sua cidade.`,
+    longDescription: `Procurando ${lower} perto de você? No Página Local você encontra ${lower} com avaliações reais de clientes, endereço completo e contato direto por WhatsApp. Compare preços e serviços, veja quem atende na sua região e escolha a melhor opção para você.`,
+    faqs: [
+      {
+        question: `Qual a melhor ${lower} perto de mim?`,
+        answer: `No Página Local você encontra ${lower} com avaliações reais de clientes na sua cidade. Compare notas, serviços e localização para escolher a melhor opção perto de você.`,
+      },
+      {
+        question: `Como entrar em contato com ${lower}?`,
+        answer: `Você pode entrar em contato pelo WhatsApp ou telefone, disponíveis no perfil de cada estabelecimento no Página Local.`,
+      },
+      {
+        question: `${name} aceita cartão de crédito?`,
+        answer: `A maioria aceita cartões de crédito e débito, além de PIX. Consulte as formas de pagamento no perfil de cada estabelecimento.`,
+      },
+      {
+        question: `Como avaliar ${lower}?`,
+        answer: `Após utilizar o serviço, você pode deixar sua avaliação no perfil do estabelecimento. Avaliações reais ajudam outros clientes a escolher.`,
+      },
+    ],
+    suggestedServices: ['Atendimento Especializado', 'Orçamento Gratuito', 'Atendimento Rápido', 'Garantia de Satisfação'],
+  }
+}
+
 export async function findOrCreateCategory(
   primaryType: string | undefined,
   displayName: string
 ): Promise<{ id: string; name: string; slug: string }> {
+  // 1. Match by primaryType in existing categories
   if (primaryType) {
     const byType = await db
       .select()
@@ -77,8 +221,8 @@ export async function findOrCreateCategory(
     }
   }
 
+  // 2. Match by slug
   const slug = generateSlug(displayName)
-
   const existing = await db.query.category.findFirst({
     where: (c, { eq }) => eq(c.slug, slug),
   })
@@ -87,6 +231,7 @@ export async function findOrCreateCategory(
     return { id: existing.id, name: existing.name, slug: existing.slug }
   }
 
+  // 3. Match by name (case-insensitive)
   const byName = await db
     .select()
     .from(category)
@@ -98,17 +243,69 @@ export async function findOrCreateCategory(
     return { id: byName.id, name: byName.name, slug: byName.slug }
   }
 
-  console.log(`[Category] Auto-creating: "${displayName}" (primaryType: "${primaryType}", slug: "${slug}")`)
+  // 4. Auto-create with Portuguese name and full SEO if we have a translation
+  if (primaryType && GOOGLE_TYPE_PT_BR[primaryType]) {
+    const translation = GOOGLE_TYPE_PT_BR[primaryType]
+    const ptSlug = generateSlug(translation.name)
 
+    // Check if a category with this Portuguese name already exists
+    const existingPt = await db.query.category.findFirst({
+      where: (c, { eq }) => eq(c.slug, ptSlug),
+    })
+    if (existingPt) {
+      console.log(`[Category] Translation "${primaryType}" -> "${translation.name}" matched existing category "${existingPt.name}"`)
+      return { id: existingPt.id, name: existingPt.name, slug: existingPt.slug }
+    }
+
+    const seo = buildCategorySeoContent(translation.name)
+    console.log(`[Category] Auto-creating PT-BR category "${translation.name}" for primaryType "${primaryType}" with full SEO`)
+
+    const [created] = await db.insert(category).values({
+      name: truncate(translation.name, 100)!,
+      slug: truncate(ptSlug, 100)!,
+      icon: translation.icon,
+      description: translation.description,
+      suggestedServices: seo.suggestedServices,
+      seoTitle: seo.seoTitle,
+      seoDescription: seo.seoDescription,
+      seoKeywords: seo.seoKeywords,
+      heroTitle: seo.heroTitle,
+      heroSubtitle: seo.heroSubtitle,
+      longDescription: seo.longDescription,
+      faqs: seo.faqs,
+      typeGooglePlace: [primaryType],
+    }).returning()
+
+    return { id: created.id, name: created.name, slug: created.slug }
+  }
+
+  // 5. Fallback to "Outro"
+  const outroCategory = await db.query.category.findFirst({
+    where: (c, { eq }) => eq(c.slug, 'outro'),
+  })
+
+  if (outroCategory) {
+    console.log(`[Category] No match for "${displayName}" (primaryType: "${primaryType}"), falling back to "Outro"`)
+    return { id: outroCategory.id, name: outroCategory.name, slug: outroCategory.slug }
+  }
+
+  // 6. Last resort: create "Outro" if it doesn't exist
+  console.log(`[Category] Creating "Outro" category as fallback (no match for "${displayName}", primaryType: "${primaryType}")`)
+
+  const outroSeo = buildCategorySeoContent('Negócios Locais')
   const [created] = await db.insert(category).values({
-    name: displayName,
-    slug,
+    name: 'Outro',
+    slug: 'outro',
     icon: 'IconBuildingStore',
-    description: displayName,
-    seoTitle: `${displayName} perto de você`,
-    seoDescription: `Encontre os melhores estabelecimentos de ${displayName} na sua região. Compare avaliações e entre em contato.`,
-    heroTitle: `Encontre ${displayName}`,
-    heroSubtitle: `Os melhores estabelecimentos de ${displayName} perto de você.`,
+    description: 'Outros tipos de negócio',
+    suggestedServices: outroSeo.suggestedServices,
+    seoTitle: outroSeo.seoTitle,
+    seoDescription: outroSeo.seoDescription,
+    seoKeywords: outroSeo.seoKeywords,
+    heroTitle: outroSeo.heroTitle,
+    heroSubtitle: outroSeo.heroSubtitle,
+    longDescription: outroSeo.longDescription,
+    faqs: outroSeo.faqs,
     typeGooglePlace: primaryType ? [primaryType] : [],
   }).returning()
 
@@ -241,6 +438,16 @@ function buildSeoDescription(displayName: string, categoryName: string, city: st
   return `${displayName} é referência em ${lower} em ${city}, oferecendo serviços com rapidez, qualidade e atendimento de confiança.`
 }
 
+function deduplicateFAQ(faq: FAQItem[]): FAQItem[] {
+  const seen = new Set<string>()
+  return faq.filter(item => {
+    const key = normalizeText(item.question).replace(/[^a-z0-9]/g, '')
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 interface FAQContext {
   displayName: string
   city: string
@@ -313,8 +520,8 @@ function enrichServiceFields(
 ): ServiceItem[] {
   return services.map(svc => ({
     ...svc,
-    seoTitle: svc.seoTitle || `${svc.name} em ${city} | ${businessName}`,
-    seoDescription: svc.seoDescription || `${svc.name} na ${businessName}, ${categoryName.toLowerCase()} em ${city}. ${svc.description} Entre em contato pelo WhatsApp!`,
+    seoTitle: truncate(svc.seoTitle || `${svc.name} em ${city} | ${businessName}`, 70),
+    seoDescription: truncate(svc.seoDescription || `${svc.name} na ${businessName}, ${categoryName.toLowerCase()} em ${city}. ${svc.description} Entre em contato pelo WhatsApp!`, 160),
     longDescription: svc.longDescription || generateServiceLongDescription(svc.name, svc.description, businessName, categoryName, city, state),
   }))
 }
@@ -445,8 +652,8 @@ export async function buildStoreFromGoogle(
 
   const displayName = cleanBusinessName(placeDetails.displayName?.text || overrides?.searchTerm || 'Negócio')
 
-  const heroTitle = buildSeoH1(categoryName, city, displayName)
-  const heroSubtitle = buildSeoSubtitle(categoryName, city)
+  const heroTitle = truncate(buildSeoH1(categoryName, city, displayName), 100)!
+  const heroSubtitle = truncate(buildSeoSubtitle(categoryName, city), 200)!
   const aboutSection = buildSeoDescription(displayName, categoryName, city)
 
   const reviewHighlights = summarizeReviews(placeDetails.reviews)
@@ -476,8 +683,16 @@ export async function buildStoreFromGoogle(
     console.error('[StoreBuilder] Erro ao gerar marketing copy:', error)
   }
 
+  const finalHeroTitle = truncate(
+    marketingCopy?.heroTitle || heroTitle,
+    100
+  )!
+  const finalHeroSubtitle = truncate(
+    marketingCopy?.heroSubtitle || heroSubtitle,
+    200
+  )!
   const seoTitle = truncate(
-    `${categoryName} em ${city} | ${displayName}`,
+    marketingCopy?.seoTitle || `${categoryName} em ${city} | ${displayName}`,
     70
   )!
   const seoDescription = truncate(
@@ -496,7 +711,7 @@ export async function buildStoreFromGoogle(
   const fullAddress = address || placeDetails.formattedAddress
 
   const rawFAQ = (marketingCopy?.faq && marketingCopy.faq.length >= 6)
-    ? marketingCopy.faq.slice(0, 8)
+    ? deduplicateFAQ(marketingCopy.faq).slice(0, 8)
     : generateFallbackFAQLocal({
       displayName,
       city,
@@ -535,8 +750,8 @@ export async function buildStoreFromGoogle(
     rating: placeDetails.rating,
     reviewCount: placeDetails.userRatingCount,
     coverUrl,
-    heroTitle,
-    heroSubtitle,
+    heroTitle: finalHeroTitle,
+    heroSubtitle: finalHeroSubtitle,
     description: marketingCopy?.aboutSection || aboutSection,
     seoTitle,
     seoDescription,

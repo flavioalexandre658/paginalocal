@@ -8,8 +8,9 @@ import { store, testimonial, service, storeImage } from '@/db/schema'
 import { checkCanCreateStore, getUserPlanContext } from '@/lib/plan-middleware'
 import {
   getPhotoUrl,
+  downloadGooglePhoto,
 } from '@/lib/google-places'
-import { downloadImage, optimizeHeroImage, optimizeGalleryImage } from '@/lib/image-optimizer'
+import { optimizeHeroImage, optimizeGalleryImage } from '@/lib/image-optimizer'
 import { uploadToS3, generateS3Key } from '@/lib/s3'
 import { addDomainToVercel } from '@/actions/vercel/add-domain'
 import { notifyStoreActivated } from '@/lib/google-indexing'
@@ -110,8 +111,8 @@ export const createStoreFromGoogleAction = authActionClient
         heroTitle: truncate(result.heroTitle, 100),
         heroSubtitle: truncate(result.heroSubtitle, 200),
         description: result.description,
-        seoTitle: result.seoTitle,
-        seoDescription: result.seoDescription,
+        seoTitle: truncate(result.seoTitle, 70),
+        seoDescription: truncate(result.seoDescription, 160),
         faq: result.faq,
         neighborhoods: result.neighborhoods,
         isActive: shouldActivateStore,
@@ -164,8 +165,8 @@ export const createStoreFromGoogleAction = authActionClient
           name: svc.name,
           slug: svcSlug,
           description: svc.description,
-          seoTitle: svc.seoTitle || null,
-          seoDescription: svc.seoDescription || null,
+          seoTitle: truncate(svc.seoTitle, 70) || null,
+          seoDescription: truncate(svc.seoDescription, 160) || null,
           longDescription: svc.longDescription || null,
           position: i + 1,
           isActive: true,
@@ -176,14 +177,17 @@ export const createStoreFromGoogleAction = authActionClient
     let imagesProcessed = 0
     let heroImageUrl = result.coverUrl
 
-    if (result.placeDetails.photos && result.placeDetails.photos.length > 0) {
-      const allPhotos = [...result.placeDetails.photos]
+    const photos = result.placeDetails.photos
+    console.log(`[Images] Google returned ${photos?.length ?? 0} photos`)
+
+    if (photos && photos.length > 0) {
+      const allPhotos = [...photos]
       const coverPhotoIndex = selectedCoverIndex < allPhotos.length ? selectedCoverIndex : 0
       if (coverPhotoIndex > 0 && coverPhotoIndex < allPhotos.length) {
         const [selectedPhoto] = allPhotos.splice(coverPhotoIndex, 1)
         allPhotos.unshift(selectedPhoto)
       }
-      const photosToProcess = allPhotos.slice(0, 7)
+      const photosToProcess = allPhotos.slice(0, 10)
 
       const altTemplates = [
         `Fachada da ${result.displayName} em ${result.city}`,
@@ -193,6 +197,9 @@ export const createStoreFromGoogleAction = authActionClient
         `Atendimento na ${result.displayName} em ${result.city}`,
         `Serviços da ${result.displayName} em ${result.city}`,
         `Instalações da ${result.displayName} em ${result.city}`,
+        `Detalhes da ${result.displayName} em ${result.city}`,
+        `Vista da ${result.displayName} em ${result.city}`,
+        `Espaço da ${result.displayName} em ${result.city}`,
       ]
 
       for (let i = 0; i < photosToProcess.length; i++) {
@@ -201,8 +208,9 @@ export const createStoreFromGoogleAction = authActionClient
         const role = isHero ? 'hero' : 'gallery'
 
         try {
-          const googlePhotoUrl = getPhotoUrl(photoName, isHero ? 1200 : 800)
-          const imageBuffer = await downloadImage(googlePhotoUrl)
+          console.log(`[Images] Downloading photo ${i + 1}/${photosToProcess.length}: ${photoName.substring(0, 60)}...`)
+          const imageBuffer = await downloadGooglePhoto(photoName, isHero ? 1200 : 800)
+          console.log(`[Images] Downloaded ${imageBuffer.length} bytes, optimizing...`)
 
           const optimized = isHero
             ? await optimizeHeroImage(imageBuffer)
@@ -232,10 +240,15 @@ export const createStoreFromGoogleAction = authActionClient
           }
 
           imagesProcessed++
+          console.log(`[Images] Photo ${i + 1} saved successfully (${role})`)
         } catch (error) {
-          console.error(`[Images] Erro ao processar imagem ${i}:`, error)
+          console.error(`[Images] FAILED to process photo ${i + 1}/${photosToProcess.length} (${photoName}):`, error instanceof Error ? error.message : error)
         }
       }
+
+      console.log(`[Images] Completed: ${imagesProcessed}/${photosToProcess.length} photos saved`)
+    } else {
+      console.warn(`[Images] No photos available from Google for this place`)
     }
 
     // ===== Create subdomain =====

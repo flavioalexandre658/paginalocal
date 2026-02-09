@@ -186,8 +186,8 @@ export function applyFallbacks(parsed: MarketingCopy, data: MarketingCopyInput):
   if (parsed.services) {
     parsed.services = parsed.services.map(svc => ({
       ...svc,
-      seoTitle: svc.seoTitle || `${svc.name} em ${data.city} | ${parsed.brandName}`,
-      seoDescription: svc.seoDescription || `${svc.name} na ${parsed.brandName}, ${data.category.toLowerCase()} em ${data.city}. ${svc.description} Entre em contato pelo WhatsApp!`,
+      seoTitle: (svc.seoTitle || `${svc.name} em ${data.city} | ${parsed.brandName}`).substring(0, 70),
+      seoDescription: (svc.seoDescription || `${svc.name} na ${parsed.brandName}, ${data.category.toLowerCase()} em ${data.city}. ${svc.description} Entre em contato pelo WhatsApp!`).substring(0, 160),
       longDescription: svc.longDescription || generateFallbackServiceLongDescription(svc.name, parsed.brandName, data.category, data.city, data.state),
     }))
   }
@@ -199,10 +199,10 @@ export function applyFallbacks(parsed: MarketingCopy, data: MarketingCopyInput):
     parsed.neighborhoods = []
   }
   if (!parsed.seoTitle) {
-    parsed.seoTitle = `${data.category} em ${data.city} | ${parsed.brandName}`
+    parsed.seoTitle = `${data.category} em ${data.city} | ${parsed.brandName}`.substring(0, 70)
   }
   if (!parsed.seoDescription) {
-    parsed.seoDescription = `${data.category} em ${data.city}. ${parsed.brandName} oferece serviços profissionais com atendimento pelo WhatsApp. Veja avaliações e entre em contato!`
+    parsed.seoDescription = `${data.category} em ${data.city}. ${parsed.brandName} oferece serviços profissionais com atendimento pelo WhatsApp. Veja avaliações e entre em contato!`.substring(0, 160)
   }
 
   return parsed

@@ -268,9 +268,35 @@ export async function getPlaceReviews(placeId: string): Promise<GooglePlaceRevie
 
 export function getPhotoUrl(photoName: string, maxWidth: number = 800): string {
   const apiKey = getApiKey()
-  // New API format: photos have a resource name like "places/PLACE_ID/photos/PHOTO_REF"
-  // Photo URL: https://places.googleapis.com/v1/{photoName}/media?maxWidthPx=X&key=Y
   return `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${maxWidth}&key=${apiKey}`
+}
+
+export async function downloadGooglePhoto(photoName: string, maxWidth: number = 800): Promise<Buffer> {
+  const apiKey = getApiKey()
+  const mediaUrl = `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${maxWidth}&skipHttpRedirect=true&key=${apiKey}`
+
+  const metaResponse = await fetch(mediaUrl, {
+    headers: { 'Accept': 'application/json' },
+  })
+
+  if (!metaResponse.ok) {
+    throw new Error(`Google Photo meta fetch failed: ${metaResponse.status}`)
+  }
+
+  const metaData = await metaResponse.json() as { photoUri?: string }
+  const photoUri = metaData.photoUri
+
+  if (!photoUri) {
+    throw new Error(`Google Photo API did not return photoUri for ${photoName}`)
+  }
+
+  const imageResponse = await fetch(photoUri)
+  if (!imageResponse.ok) {
+    throw new Error(`Failed to download photo from ${photoUri}: ${imageResponse.status}`)
+  }
+
+  const arrayBuffer = await imageResponse.arrayBuffer()
+  return Buffer.from(arrayBuffer)
 }
 
 // ===== Address Parsing =====
