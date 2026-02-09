@@ -19,11 +19,13 @@ import {
   IconCategory,
   IconUser,
   IconSparkles,
+  IconRefresh,
 } from '@tabler/icons-react'
 
 import { getAdminStoresAction } from '@/actions/admin/get-admin-stores.action'
 import { toggleStoreStatusAction } from '@/actions/admin/toggle-store-status.action'
 import { deleteStoreAdminAction } from '@/actions/admin/delete-store-admin.action'
+import { purgeStoreCacheAction } from '@/actions/admin/purge-store-cache.action'
 import { getStoreUrl } from '@/lib/utils'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
 import { Badge } from '@/components/ui/badge'
@@ -101,6 +103,7 @@ export default function AdminStoresPage() {
   const { executeAsync, result, isExecuting } = useAction(getAdminStoresAction)
   const { executeAsync: toggleAsync } = useAction(toggleStoreStatusAction)
   const { executeAsync: deleteAsync, isExecuting: isDeleting } = useAction(deleteStoreAdminAction)
+  const { executeAsync: purgeAsync } = useAction(purgeStoreCacheAction)
 
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -168,6 +171,15 @@ export default function AdminStoresPage() {
 
   function handleRegenerate(storeId: string, storeName: string) {
     setRegenerateTarget({ id: storeId, name: storeName })
+  }
+
+  async function handlePurgeCache(storeId: string, storeName: string) {
+    const res = await purgeAsync({ storeId })
+    if (res?.data) {
+      toast.success(`Cache da loja "${storeName}" limpo com sucesso!`)
+    } else if (res?.serverError) {
+      toast.error(res.serverError)
+    }
   }
 
   const data = result?.data
@@ -259,6 +271,14 @@ export default function AdminStoresPage() {
               className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950"
             >
               <IconSparkles className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handlePurgeCache(s.id, s.name)}
+              title="Limpar cache"
+              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-green-50 hover:text-green-500 dark:hover:bg-green-950"
+            >
+              <IconRefresh className="h-4 w-4" />
             </button>
             <Link
               href={`/painel/${s.slug}`}
@@ -423,6 +443,14 @@ export default function AdminStoresPage() {
                           >
                             <IconSparkles className="h-4 w-4" />
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => handlePurgeCache(store.id, store.name)}
+                            aria-label="Limpar cache"
+                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-green-50 hover:text-green-500 dark:hover:bg-green-950"
+                          >
+                            <IconRefresh className="h-4 w-4" />
+                          </button>
                         </div>
                       }
                     >
@@ -473,6 +501,14 @@ export default function AdminStoresPage() {
                           className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950"
                         >
                           <IconSparkles className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handlePurgeCache(store.id, store.name)}
+                          aria-label="Limpar cache"
+                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-green-50 hover:text-green-500 dark:hover:bg-green-950"
+                        >
+                          <IconRefresh className="h-4 w-4" />
                         </button>
                         <Link
                           href={`/painel/${store.slug}`}
