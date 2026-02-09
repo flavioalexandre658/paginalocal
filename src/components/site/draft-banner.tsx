@@ -1,6 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import { IconAlertTriangle, IconRocket } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 
@@ -14,13 +13,12 @@ export function DraftBanner({ isOwner }: DraftBannerProps) {
   const plansUrl = `https://${MAIN_DOMAIN}/planos`
 
   return (
-    <motion.div
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
+    <div
       className={cn(
         'fixed left-0 right-0 top-0 z-50',
         'bg-gradient-to-r from-amber-500 to-amber-600',
-        'shadow-lg shadow-amber-500/20'
+        'shadow-lg shadow-amber-500/20',
+        'animate-fade-in-up'
       )}
     >
       <div className="container mx-auto flex items-center justify-between gap-2 px-3 py-2.5 sm:gap-4 sm:px-4 sm:py-3">
@@ -54,6 +52,6 @@ export function DraftBanner({ isOwner }: DraftBannerProps) {
           <span className="sm:hidden">Publicar</span>
         </a>
       </div>
-    </motion.div>
+    </div>
   )
 }

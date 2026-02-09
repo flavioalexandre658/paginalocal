@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { IconX, IconRocket, IconBell, IconCheck, IconLoader2 } from '@tabler/icons-react'
 import { useAction } from 'next-safe-action/hooks'
 import { z } from 'zod'
@@ -9,6 +8,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
+import { cn } from '@/lib/utils'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -81,60 +81,52 @@ export function DraftContactModal({
     onClose()
   }
 
+  if (!isOpen) return null
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={handleClose}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-          />
+    <>
+      <div
+        onClick={handleClose}
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in"
+      />
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 px-4"
-          >
-            <div className="rounded-2xl border border-slate-200/60 bg-white p-6 shadow-2xl dark:border-slate-700/60 dark:bg-slate-900">
-              <div className="mb-4 flex items-start justify-between">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/5">
-                  {isOwner ? (
-                    <IconRocket className="h-6 w-6 text-amber-600" />
-                  ) : (
-                    <IconBell className="h-6 w-6 text-amber-600" />
-                  )}
-                </div>
-                <button
-                  onClick={handleClose}
-                  className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
-                >
-                  <IconX className="h-5 w-5" />
-                </button>
-              </div>
-
+      <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 px-4">
+        <div className={cn(
+          'rounded-2xl border border-slate-200/60 bg-white p-6 shadow-2xl dark:border-slate-700/60 dark:bg-slate-900',
+          'animate-scale-in'
+        )}>
+          <div className="mb-4 flex items-start justify-between">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/5">
               {isOwner ? (
-                <OwnerContent />
-              ) : isSubmitted ? (
-                <SuccessContent storeName={storeName} onClose={handleClose} />
+                <IconRocket className="h-6 w-6 text-amber-600" />
               ) : (
-                <VisitorContent
-                  storeName={storeName}
-                  contactType={contactType}
-                  form={form}
-                  onSubmit={onSubmit}
-                  isExecuting={isExecuting}
-                />
+                <IconBell className="h-6 w-6 text-amber-600" />
               )}
             </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+            <button
+              onClick={handleClose}
+              className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+            >
+              <IconX className="h-5 w-5" />
+            </button>
+          </div>
+
+          {isOwner ? (
+            <OwnerContent />
+          ) : isSubmitted ? (
+            <SuccessContent storeName={storeName} onClose={handleClose} />
+          ) : (
+            <VisitorContent
+              storeName={storeName}
+              contactType={contactType}
+              form={form}
+              onSubmit={onSubmit}
+              isExecuting={isExecuting}
+            />
+          )}
+        </div>
+      </div>
+    </>
   )
 }
 

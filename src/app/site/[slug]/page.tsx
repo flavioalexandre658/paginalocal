@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import { unstable_cache } from 'next/cache'
+import dynamic from 'next/dynamic'
 import { db } from '@/db'
 import { store, service, testimonial, storeImage } from '@/db/schema'
 import { eq, asc, desc, and } from 'drizzle-orm'
@@ -10,17 +11,18 @@ import { auth } from '@/lib/auth'
 import { HeroSection } from './_components/hero-section'
 import { AboutSection } from './_components/about-section'
 import { ServicesSection } from './_components/services-section'
-import { TestimonialsSection } from './_components/testimonials-section'
 import { ContactSection } from './_components/contact-section'
-import { FloatingContact } from './_components/floating-contact'
-import { FAQSection } from './_components/faq-section'
-import { generateFAQJsonLd } from '@/lib/faq-json-ld'
-import { AreasSection } from './_components/areas-section'
 import { SiteFooter } from './_components/site-footer'
-import { GallerySection } from './_components/gallery-section'
-import { DraftBanner } from '@/components/site/draft-banner'
-import { DraftModal } from '@/components/site/draft-modal'
-import { PageviewTracker } from './_components/pageview-tracker'
+import { generateFAQJsonLd } from '@/lib/faq-json-ld'
+
+const TestimonialsSection = dynamic(() => import('./_components/testimonials-section').then(m => m.TestimonialsSection))
+const FloatingContact = dynamic(() => import('./_components/floating-contact').then(m => m.FloatingContact))
+const FAQSection = dynamic(() => import('./_components/faq-section').then(m => m.FAQSection))
+const AreasSection = dynamic(() => import('./_components/areas-section').then(m => m.AreasSection))
+const GallerySection = dynamic(() => import('./_components/gallery-section').then(m => m.GallerySection))
+const DraftBanner = dynamic(() => import('@/components/site/draft-banner').then(m => m.DraftBanner))
+const DraftModal = dynamic(() => import('@/components/site/draft-modal').then(m => m.DraftModal))
+const PageviewTracker = dynamic(() => import('./_components/pageview-tracker').then(m => m.PageviewTracker))
 
 interface FAQItem {
   question: string
