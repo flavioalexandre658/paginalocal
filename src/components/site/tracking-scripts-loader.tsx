@@ -24,7 +24,7 @@ declare global {
 }
 
 const INTERACTION_EVENTS = ['scroll', 'mousemove', 'touchstart', 'click', 'keydown']
-const LAZY_TIMEOUT_MS = 8000
+const LAZY_TIMEOUT_MS = 5000
 
 function injectInlineScript(id: string, code: string) {
   if (document.getElementById(id)) return
