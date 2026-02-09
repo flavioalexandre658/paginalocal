@@ -35,11 +35,11 @@ export const store = pgTable('store', {
   primaryColor: varchar('primary_color', { length: 7 }).default('#3b82f6'),
   openingHours: jsonb('opening_hours'),
 
-  heroTitle: varchar('hero_title', { length: 100 }),
-  heroSubtitle: varchar('hero_subtitle', { length: 200 }),
+  heroTitle: text('hero_title'),
+  heroSubtitle: text('hero_subtitle'),
 
-  seoTitle: varchar('seo_title', { length: 70 }),
-  seoDescription: varchar('seo_description', { length: 160 }),
+  seoTitle: text('seo_title'),
+  seoDescription: text('seo_description'),
 
   faq: jsonb('faq'),
   neighborhoods: jsonb('neighborhoods'),

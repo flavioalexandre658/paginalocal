@@ -13,10 +13,10 @@ export const category = pgTable('category', {
   description: text('description'),
   suggestedServices: jsonb('suggested_services').$type<string[]>(),
   
-  seoTitle: varchar('seo_title', { length: 70 }),
-  seoDescription: varchar('seo_description', { length: 160 }),
+  seoTitle: text('seo_title'),
+  seoDescription: text('seo_description'),
   seoKeywords: jsonb('seo_keywords').$type<string[]>(),
-  heroTitle: varchar('hero_title', { length: 100 }),
+  heroTitle: text('hero_title'),
   heroSubtitle: text('hero_subtitle'),
   longDescription: text('long_description'),
   faqs: jsonb('faqs').$type<CategoryFAQ[]>(),
