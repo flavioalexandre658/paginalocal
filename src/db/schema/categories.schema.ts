@@ -20,6 +20,10 @@ export const category = pgTable('category', {
   heroSubtitle: text('hero_subtitle'),
   longDescription: text('long_description'),
   faqs: jsonb('faqs').$type<CategoryFAQ[]>(),
+
+  // Google Places API primaryType values que mapeiam para esta categoria
+  // Ex: ["restaurant", "brazilian_restaurant", "japanese_restaurant"]
+  typeGooglePlace: jsonb('type_google_place').$type<string[]>(),
   
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })

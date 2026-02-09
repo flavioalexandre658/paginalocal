@@ -5,7 +5,7 @@ import { store, testimonial, storeImage } from '@/db/schema'
 import { authActionClient } from '@/lib/safe-action'
 import { eq, and } from 'drizzle-orm'
 import { z } from 'zod'
-import { getPlaceDetails, getPhotoUrl, GooglePlaceReview } from '@/lib/google-places'
+import { getPlaceDetails, getPhotoUrl, parseOpeningHours, type GooglePlaceReview } from '@/lib/google-places'
 import { downloadImage, optimizeHeroImage, optimizeGalleryImage } from '@/lib/image-optimizer'
 import { uploadToS3, generateS3Key } from '@/lib/s3'
 import { checkCanUseGmbSync } from '@/lib/plan-middleware'
@@ -61,36 +61,16 @@ export const syncStoreWithGoogleAction = authActionClient
       updateData.googleRating = placeDetails.rating.toString()
     }
 
-    if (placeDetails.user_ratings_total) {
-      updateData.googleReviewsCount = placeDetails.user_ratings_total
+    if (placeDetails.userRatingCount) {
+      updateData.googleReviewsCount = placeDetails.userRatingCount
     }
 
-    if (placeDetails.formatted_phone_number) {
-      updateData.phone = placeDetails.formatted_phone_number.replace(/\D/g, '')
+    if (placeDetails.nationalPhoneNumber) {
+      updateData.phone = placeDetails.nationalPhoneNumber.replace(/\D/g, '')
     }
 
-    if (placeDetails.opening_hours?.weekday_text) {
-      const openingHours: Record<string, string> = {}
-      const dayMapping: Record<string, string> = {
-        'Sunday': 'domingo',
-        'Monday': 'segunda',
-        'Tuesday': 'terça',
-        'Wednesday': 'quarta',
-        'Thursday': 'quinta',
-        'Friday': 'sexta',
-        'Saturday': 'sábado',
-      }
-
-      for (const text of placeDetails.opening_hours.weekday_text) {
-        const match = text.match(/^(\w+):\s*(.+)$/)
-        if (match) {
-          const dayEn = match[1]
-          const hours = match[2]
-          const dayPt = dayMapping[dayEn] || dayEn.toLowerCase()
-          openingHours[dayPt] = hours === 'Closed' ? 'Fechado' : hours
-        }
-      }
-      updateData.openingHours = openingHours
+    if (placeDetails.regularOpeningHours?.weekdayDescriptions) {
+      updateData.openingHours = parseOpeningHours(placeDetails.regularOpeningHours.weekdayDescriptions)
     }
 
     await db
@@ -98,33 +78,33 @@ export const syncStoreWithGoogleAction = authActionClient
       .set(updateData)
       .where(eq(store.id, storeId))
 
+    // ===== Sync reviews =====
     let newReviewsCount = 0
 
     if (placeDetails.reviews && placeDetails.reviews.length > 0) {
       const topReviews = placeDetails.reviews
         .filter((r: GooglePlaceReview) => r.rating >= 4)
         .sort((a: GooglePlaceReview, b: GooglePlaceReview) => {
-          const aHasText = a.text && a.text.trim().length > 0 ? 1 : 0
-          const bHasText = b.text && b.text.trim().length > 0 ? 1 : 0
+          const aHasText = a.text?.text && a.text.text.trim().length > 0 ? 1 : 0
+          const bHasText = b.text?.text && b.text.text.trim().length > 0 ? 1 : 0
           if (bHasText !== aHasText) return bHasText - aHasText
-          if (b.rating !== a.rating) return b.rating - a.rating
-          return b.time - a.time
+          return b.rating - a.rating
         })
         .slice(0, 15)
 
       for (const review of topReviews) {
-        const reviewContent = review.text && review.text.trim().length > 0
-          ? review.text
+        const reviewContent = review.text?.text && review.text.text.trim().length > 0
+          ? review.text.text
           : `Avaliou com ${review.rating} estrelas`
 
         const result = await db
           .insert(testimonial)
           .values({
             storeId: storeId,
-            authorName: review.author_name,
+            authorName: review.authorAttribution?.displayName || 'Anônimo',
             content: reviewContent,
             rating: review.rating,
-            imageUrl: review.profile_photo_url,
+            imageUrl: review.authorAttribution?.photoUri || null,
             isGoogleReview: true,
           })
           .onConflictDoNothing()
@@ -136,6 +116,7 @@ export const syncStoreWithGoogleAction = authActionClient
       }
     }
 
+    // ===== Sync images =====
     let imagesProcessed = 0
 
     if (placeDetails.photos && placeDetails.photos.length > 0) {
@@ -150,7 +131,7 @@ export const syncStoreWithGoogleAction = authActionClient
       const maxNewImages = Math.max(0, 7 - currentImageCount)
 
       const newPhotos = placeDetails.photos
-        .filter(photo => !existingRefs.has(photo.photo_reference))
+        .filter(photo => !existingRefs.has(photo.name))
         .slice(0, maxNewImages)
 
       const altTemplates = [
@@ -165,13 +146,13 @@ export const syncStoreWithGoogleAction = authActionClient
 
       for (let i = 0; i < newPhotos.length; i++) {
         const photo = newPhotos[i]
-        const photoRef = photo.photo_reference
+        const photoName = photo.name
         const imageIndex = currentImageCount + i
         const isHero = imageIndex === 0
         const role = isHero ? 'hero' : 'gallery'
 
         try {
-          const googlePhotoUrl = getPhotoUrl(photoRef, isHero ? 1200 : 800)
+          const googlePhotoUrl = getPhotoUrl(photoName, isHero ? 1200 : 800)
           const imageBuffer = await downloadImage(googlePhotoUrl)
 
           const optimized = isHero
@@ -190,7 +171,7 @@ export const syncStoreWithGoogleAction = authActionClient
             order: imageIndex,
             width: optimized.width,
             height: optimized.height,
-            originalGoogleRef: photoRef,
+            originalGoogleRef: photoName,
           })
 
           if (isHero) {

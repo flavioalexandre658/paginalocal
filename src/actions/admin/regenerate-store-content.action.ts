@@ -7,7 +7,13 @@ import { store, service, testimonial } from '@/db/schema'
 import { eq, and, desc } from 'drizzle-orm'
 import { generateMarketingCopy } from '@/lib/gemini'
 import { generateSlug } from '@/lib/utils'
-import { summarizeTestimonials } from '@/lib/google-places'
+import {
+  getPlaceDetails,
+  summarizeReviews,
+  summarizeTestimonials,
+  extractBusinessAttributes,
+  parseOpeningHours,
+} from '@/lib/google-places'
 import { fixOpeningHoursInFAQ } from '@/lib/faq-utils'
 
 async function generateUniqueServiceSlug(storeId: string, name: string): Promise<string> {
@@ -45,25 +51,72 @@ export const regenerateStoreContentAction = adminActionClient
       throw new Error('Loja não encontrada')
     }
 
-    const storeTestimonials = await db
-      .select({ rating: testimonial.rating, content: testimonial.content })
-      .from(testimonial)
-      .where(eq(testimonial.storeId, parsedInput.storeId))
-      .orderBy(desc(testimonial.rating))
-      .limit(30)
+    // Fetch fresh data from Google if available
+    let googleAbout: string | undefined
+    let businessAttributes: string[] | undefined
+    let freshReviewHighlights: string | undefined
+    let freshOpeningHours: Record<string, string> | undefined
+    let freshRating: number | undefined
+    let freshReviewCount: number | undefined
 
-    const reviewHighlights = summarizeTestimonials(storeTestimonials)
+    if (storeData.googlePlaceId) {
+      try {
+        console.log(`[Regenerate] Fetching fresh data from Google for "${storeData.name}"...`)
+        const placeDetails = await getPlaceDetails(storeData.googlePlaceId)
+
+        if (placeDetails) {
+          googleAbout = placeDetails.editorialSummary?.text
+          businessAttributes = extractBusinessAttributes(placeDetails)
+          freshReviewHighlights = summarizeReviews(placeDetails.reviews) || undefined
+          freshRating = placeDetails.rating
+          freshReviewCount = placeDetails.userRatingCount
+
+          if (placeDetails.regularOpeningHours?.weekdayDescriptions) {
+            freshOpeningHours = parseOpeningHours(placeDetails.regularOpeningHours.weekdayDescriptions)
+          }
+
+          // Update store with fresh Google data
+          await db.update(store).set({
+            googleRating: placeDetails.rating?.toString(),
+            googleReviewsCount: placeDetails.userRatingCount,
+            ...(freshOpeningHours ? { openingHours: freshOpeningHours } : {}),
+            updatedAt: new Date(),
+          }).where(eq(store.id, parsedInput.storeId))
+
+          console.log(`[Regenerate] Google data fetched: rating=${freshRating}, reviews=${freshReviewCount}, attributes=${businessAttributes?.length || 0}`)
+        }
+      } catch (error) {
+        console.error('[Regenerate] Error fetching Google data (continuing with DB data):', error)
+      }
+    }
+
+    // Fallback to DB testimonials if no fresh Google reviews
+    const openingHours = freshOpeningHours || (storeData.openingHours as Record<string, string>) || undefined
+    let reviewHighlights = freshReviewHighlights
+
+    if (!reviewHighlights) {
+      const storeTestimonials = await db
+        .select({ rating: testimonial.rating, content: testimonial.content })
+        .from(testimonial)
+        .where(eq(testimonial.storeId, parsedInput.storeId))
+        .orderBy(desc(testimonial.rating))
+        .limit(30)
+
+      reviewHighlights = summarizeTestimonials(storeTestimonials) || undefined
+    }
 
     const marketingCopy = await generateMarketingCopy({
       businessName: storeData.name,
       category: storeData.category,
       city: storeData.city,
       state: storeData.state,
-      rating: storeData.googleRating ? parseFloat(storeData.googleRating) : undefined,
-      reviewCount: storeData.googleReviewsCount || undefined,
+      rating: freshRating || (storeData.googleRating ? parseFloat(storeData.googleRating) : undefined),
+      reviewCount: freshReviewCount || storeData.googleReviewsCount || undefined,
+      googleAbout,
       address: storeData.address || undefined,
-      reviewHighlights: reviewHighlights || undefined,
-      openingHours: (storeData.openingHours as Record<string, string>) || undefined,
+      reviewHighlights,
+      openingHours,
+      businessAttributes: businessAttributes && businessAttributes.length > 0 ? businessAttributes : undefined,
     })
 
     let realNeighborhoods: string[] = []
@@ -76,7 +129,6 @@ export const regenerateStoreContentAction = adminActionClient
       )
     }
 
-    const openingHours = (storeData.openingHours as Record<string, string>) || undefined
     const fixedFaq = fixOpeningHoursInFAQ(
       marketingCopy.faq || [],
       openingHours,

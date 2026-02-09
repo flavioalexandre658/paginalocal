@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { authActionClient } from '@/lib/safe-action'
-import { getPlaceDetails, getPhotoUrl, inferCategory } from '@/lib/google-places'
+import { getPlaceDetails, getPhotoUrl } from '@/lib/google-places'
 
 const getPlacePreviewSchema = z.object({
   placeId: z.string().min(1, 'Place ID é obrigatório'),
@@ -40,38 +40,45 @@ export const getPlacePreviewAction = authActionClient
 
     const photos = (details.photos || [])
       .slice(0, 10)
-      .map(photo => getPhotoUrl(photo.photo_reference, 400))
+      .map(photo => getPhotoUrl(photo.name, 400))
 
     const topReviews = (details.reviews || [])
       .sort((a, b) => b.rating - a.rating)
       .map(r => ({
-        author: r.author_name,
+        author: r.authorAttribution?.displayName || 'Anônimo',
         rating: r.rating,
-        text: r.text && r.text.length > 0
-          ? (r.text.length > 200 ? r.text.substring(0, 200) + '...' : r.text)
+        text: r.text?.text
+          ? (r.text.text.length > 200 ? r.text.text.substring(0, 200) + '...' : r.text.text)
           : '',
-        photoUrl: r.profile_photo_url || null,
+        photoUrl: r.authorAttribution?.photoUri || null,
       }))
 
-    const category = details.types ? inferCategory(details.types) : null
+    // Categoria direta do Google em PT-BR
+    const category = details.primaryTypeDisplayName?.text || null
 
     let priceLevel: string | null = null
-    if (details.price_level !== undefined) {
-      const priceLevels = ['Gratuito', '$', '$$', '$$$', '$$$$']
-      priceLevel = priceLevels[details.price_level] || null
+    if (details.priceLevel) {
+      const priceLevels: Record<string, string> = {
+        'PRICE_LEVEL_FREE': 'Gratuito',
+        'PRICE_LEVEL_INEXPENSIVE': '$',
+        'PRICE_LEVEL_MODERATE': '$$',
+        'PRICE_LEVEL_EXPENSIVE': '$$$',
+        'PRICE_LEVEL_VERY_EXPENSIVE': '$$$$',
+      }
+      priceLevel = priceLevels[details.priceLevel] || null
     }
 
     return {
-      placeId: details.place_id,
-      name: details.name,
-      address: details.formatted_address,
-      phone: details.formatted_phone_number || null,
-      website: details.website || null,
+      placeId: details.id,
+      name: details.displayName?.text || '',
+      address: details.formattedAddress || '',
+      phone: details.nationalPhoneNumber || null,
+      website: details.websiteUri || null,
       rating: details.rating || null,
-      reviewsCount: details.user_ratings_total || null,
+      reviewsCount: details.userRatingCount || null,
       photos,
-      openingHours: details.opening_hours?.weekday_text || null,
-      isOpen: details.opening_hours?.open_now ?? null,
+      openingHours: details.regularOpeningHours?.weekdayDescriptions || null,
+      isOpen: details.regularOpeningHours?.openNow ?? null,
       category,
       priceLevel,
       topReviews,

@@ -38,6 +38,7 @@ export interface MarketingCopyInput {
   businessTypes?: string[]
   address?: string
   openingHours?: Record<string, string>
+  businessAttributes?: string[]
 }
 
 export interface ServiceDescriptionInput {

@@ -8,6 +8,13 @@ import { eq, and, or, sql } from 'drizzle-orm'
 import { generateMarketingCopy, generateServiceDescriptions } from '@/lib/gemini'
 import { checkCanUseAiRewrite } from '@/lib/plan-middleware'
 import { generateSlug } from '@/lib/utils'
+import {
+  getPlaceDetails,
+  summarizeReviews,
+  extractBusinessAttributes,
+  parseOpeningHours,
+} from '@/lib/google-places'
+import { fixOpeningHoursInFAQ } from '@/lib/faq-utils'
 
 async function generateUniqueServiceSlug(storeId: string, name: string): Promise<string> {
   const baseSlug = generateSlug(name)
@@ -49,16 +56,57 @@ export const generateMarketingCopyAction = authActionClient
       throw new Error('Loja não encontrada')
     }
 
+    // Fetch fresh data from Google if available
+    let googleAbout: string | undefined
+    let businessAttributes: string[] | undefined
+    let reviewHighlights: string | undefined
+    let openingHours: Record<string, string> | undefined
+    let freshRating: number | undefined
+    let freshReviewCount: number | undefined
+
+    if (storeData.googlePlaceId) {
+      try {
+        const placeDetails = await getPlaceDetails(storeData.googlePlaceId)
+        if (placeDetails) {
+          googleAbout = placeDetails.editorialSummary?.text
+          businessAttributes = extractBusinessAttributes(placeDetails)
+          reviewHighlights = summarizeReviews(placeDetails.reviews) || undefined
+          freshRating = placeDetails.rating
+          freshReviewCount = placeDetails.userRatingCount
+
+          if (placeDetails.regularOpeningHours?.weekdayDescriptions) {
+            openingHours = parseOpeningHours(placeDetails.regularOpeningHours.weekdayDescriptions)
+          }
+        }
+      } catch (error) {
+        console.error('[Marketing Copy] Error fetching Google data:', error)
+      }
+    }
+
+    // Fallback to DB data
+    if (!openingHours) {
+      openingHours = (storeData.openingHours as Record<string, string>) || undefined
+    }
+
     const marketingCopy = await generateMarketingCopy({
       businessName: storeData.name,
       category: storeData.category,
       city: storeData.city,
       state: storeData.state,
-      rating: storeData.googleRating ? parseFloat(storeData.googleRating) : undefined,
-      reviewCount: storeData.googleReviewsCount || undefined,
+      rating: freshRating || (storeData.googleRating ? parseFloat(storeData.googleRating) : undefined),
+      reviewCount: freshReviewCount || storeData.googleReviewsCount || undefined,
+      googleAbout,
       address: storeData.address || undefined,
-      openingHours: (storeData.openingHours as Record<string, string>) || undefined,
+      reviewHighlights,
+      openingHours,
+      businessAttributes: businessAttributes && businessAttributes.length > 0 ? businessAttributes : undefined,
     })
+
+    const fixedFaq = fixOpeningHoursInFAQ(
+      marketingCopy.faq || [],
+      openingHours,
+      storeData.name
+    )
 
     const [updatedStore] = await db
       .update(store)
@@ -68,7 +116,7 @@ export const generateMarketingCopyAction = authActionClient
         description: marketingCopy.aboutSection,
         seoTitle: marketingCopy.seoTitle,
         seoDescription: marketingCopy.seoDescription,
-        faq: marketingCopy.faq,
+        faq: fixedFaq,
         neighborhoods: marketingCopy.neighborhoods,
         updatedAt: new Date(),
       })

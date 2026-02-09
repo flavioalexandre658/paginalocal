@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { authActionClient } from '@/lib/safe-action'
-import { textSearchPlaces, getPhotoUrl, inferCategory } from '@/lib/google-places'
+import { textSearchPlaces, getPhotoUrl } from '@/lib/google-places'
 
 const searchPlacesSchema = z.object({
   query: z.string().min(3, 'Digite pelo menos 3 caracteres'),
@@ -14,15 +14,16 @@ export const searchPlacesAction = authActionClient
     const results = await textSearchPlaces(parsedInput.query)
 
     return results.map(place => ({
-      placeId: place.place_id,
-      name: place.name,
-      address: place.formatted_address,
+      placeId: place.id,
+      name: place.displayName?.text || '',
+      address: place.formattedAddress || '',
       rating: place.rating ?? null,
-      reviewsCount: place.user_ratings_total ?? null,
+      reviewsCount: place.userRatingCount ?? null,
       photoUrl: place.photos?.[0]
-        ? getPhotoUrl(place.photos[0].photo_reference, 200)
+        ? getPhotoUrl(place.photos[0].name, 200)
         : null,
-      isOpen: place.opening_hours?.open_now ?? null,
-      category: place.types ? inferCategory(place.types) : null,
+      isOpen: place.regularOpeningHours?.openNow ?? null,
+      // Categoria direta do Google em PT-BR (sem mapeamento!)
+      category: place.primaryTypeDisplayName?.text || null,
     }))
   })

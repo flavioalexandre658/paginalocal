@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, ilike, sql } from 'drizzle-orm'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
 import { store, testimonial, service, storeImage, category } from '@/db/schema'
@@ -11,9 +11,9 @@ import {
   getPlaceDetails,
   parseAddressComponents,
   parseOpeningHours,
-  inferCategory,
   getPhotoUrl,
   summarizeReviews,
+  extractBusinessAttributes,
 } from '@/lib/google-places'
 import { generateMarketingCopy, type MarketingCopy, type FAQItem, type ServiceItem } from '@/lib/gemini'
 import { fixOpeningHoursInFAQ, formatOpeningHoursForFAQ } from '@/lib/faq-utils'
@@ -24,197 +24,78 @@ import { notifyStoreActivated } from '@/lib/google-indexing'
 import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
 import { generateCitySlug } from '@/lib/utils'
 
+// ===== Schema =====
+
 const createStoreFromGoogleSchema = z.object({
   googlePlaceId: z.string().min(1),
   searchTerm: z.string().min(1),
   selectedCoverIndex: z.number().int().min(0).optional(),
-  // Override de contatos definidos pelo usuário no onboarding
   whatsappOverride: z.string().optional(),
   phoneOverride: z.string().optional(),
 })
 
-const CATEGORY_SERVICES: Record<string, string[]> = {
-  // ========== AUTOMOTIVO ==========
-  borracharia: ['troca', 'reparo', 'alinhamento', 'balanceamento de pneus'],
-  oficina: ['manutenção', 'reparo', 'revisão automotiva'],
-  mecânica: ['conserto', 'manutenção', 'diagnóstico de veículos'],
-  mecanica: ['conserto', 'manutenção', 'diagnóstico de veículos'],
-  'auto center': ['manutenção preventiva', 'ar condicionado', 'elétrica automotiva'],
-  autocenter: ['manutenção preventiva', 'ar condicionado', 'elétrica automotiva'],
-  revendedora: ['compra', 'venda', 'financiamento', 'troca de veículos'],
-  veículos: ['compra', 'venda', 'financiamento', 'avaliação de veículos'],
-  seminovos: ['compra', 'venda', 'financiamento', 'consignação'],
-  concessionária: ['venda', 'financiamento', 'revisão', 'peças originais'],
-  locadora: ['aluguel', 'locação', 'reserva de veículos'],
-  lava: ['lavagem', 'polimento', 'higienização'],
-  'lava jato': ['lavagem simples', 'lavagem completa', 'polimento', 'higienização'],
-  estacionamento: ['vaga', 'mensalista', 'rotativo'],
-  posto: ['abastecimento', 'combustíveis', 'conveniência'],
-  combustível: ['gasolina', 'etanol', 'diesel', 'GNV'],
+// ===== Category: Auto-create from Google =====
 
-  // ========== BELEZA E BEM-ESTAR ==========
-  barbearia: ['corte', 'barba', 'tratamentos capilares'],
-  barbeiro: ['corte masculino', 'barba', 'sobrancelha'],
-  salão: ['corte', 'coloração', 'tratamentos de beleza'],
-  salao: ['corte', 'coloração', 'tratamentos de beleza'],
-  cabeleireiro: ['corte', 'coloração', 'escova', 'hidratação'],
-  manicure: ['manicure', 'pedicure', 'unhas em gel'],
-  spa: ['massagem', 'tratamentos faciais', 'day spa', 'relaxamento'],
+async function findOrCreateCategory(
+  primaryType: string | undefined,
+  displayName: string
+): Promise<{ id: string; name: string; slug: string }> {
+  // 1. Match by Google primaryType in our typeGooglePlace array (preferred)
+  if (primaryType) {
+    const byType = await db
+      .select()
+      .from(category)
+      .where(sql`${category.typeGooglePlace} @> ${JSON.stringify([primaryType])}::jsonb`)
+      .limit(1)
+      .then(rows => rows[0] || null)
 
-  // ========== ALIMENTAÇÃO ==========
-  restaurante: ['almoço', 'jantar', 'refeições'],
-  pizzaria: ['pizzas', 'delivery', 'rodízio'],
-  padaria: ['pães', 'bolos', 'confeitaria'],
-  lanchonete: ['lanches', 'sanduíches', 'sucos'],
-  hamburgueria: ['hambúrgueres', 'porções', 'delivery'],
-  cafeteria: ['café especial', 'cappuccino', 'bolos', 'sanduíches'],
-  café: ['café especial', 'bebidas', 'acompanhamentos'],
-  bar: ['drinks', 'cervejas', 'petiscos', 'happy hour'],
-  'casa noturna': ['balada', 'drinks', 'shows', 'eventos'],
-  balada: ['festas', 'DJs', 'área VIP'],
-  delivery: ['entrega de comida', 'pedidos online', 'delivery rápido'],
-
-  // ========== PET ==========
-  petshop: ['banho', 'tosa', 'produtos pet'],
-  'pet shop': ['banho', 'tosa', 'ração', 'acessórios'],
-  veterinário: ['consultas', 'vacinas', 'cirurgias'],
-  veterinaria: ['consultas', 'exames', 'internação'],
-
-  // ========== SAÚDE ==========
-  clínica: ['consultas', 'exames', 'tratamentos'],
-  clinica: ['consultas', 'exames', 'tratamentos'],
-  médico: ['consultas', 'exames', 'especialidades'],
-  medico: ['consultas', 'exames', 'especialidades'],
-  hospital: ['emergência', 'internação', 'cirurgias', 'exames'],
-  dentista: ['consultas', 'tratamentos', 'implantes'],
-  odontologia: ['limpeza', 'restauração', 'clareamento', 'implantes'],
-  academia: ['musculação', 'treinos', 'aulas'],
-  fitness: ['musculação', 'funcional', 'spinning'],
-  farmácia: ['medicamentos', 'produtos de saúde'],
-  farmacia: ['medicamentos', 'dermocosméticos', 'manipulados'],
-  fisioterapeuta: ['fisioterapia', 'RPG', 'pilates', 'reabilitação'],
-  fisioterapia: ['tratamentos', 'recuperação', 'exercícios terapêuticos'],
-
-  // ========== VAREJO - MODA ==========
-  roupa: ['moda feminina', 'moda masculina', 'acessórios'],
-  roupas: ['vestuário', 'moda', 'acessórios'],
-  moda: ['roupas femininas', 'roupas masculinas', 'acessórios'],
-  boutique: ['moda', 'acessórios', 'exclusividades'],
-  noiva: ['vestido de noiva', 'aluguel', 'acessórios'],
-  noivas: ['vestidos de noiva', 'vestidos de festa', 'aluguel'],
-  'moda e eventos': ['vestido de noiva', 'vestido de festa', 'aluguel de trajes'],
-  sapataria: ['sapatos', 'tênis', 'bolsas', 'consertos'],
-  sapatos: ['calçados', 'tênis', 'sandálias'],
-  joalheria: ['joias', 'alianças', 'relógios', 'consertos'],
-  joias: ['anéis', 'colares', 'brincos', 'pulseiras'],
-
-  // ========== VAREJO - CASA ==========
-  móveis: ['móveis planejados', 'sofás', 'camas', 'mesas'],
-  moveis: ['móveis planejados', 'sofás', 'camas', 'decoração'],
-  decoração: ['objetos decorativos', 'quadros', 'iluminação'],
-  decoracao: ['artigos de decoração', 'utilidades', 'presentes'],
-  ferragens: ['ferramentas', 'parafusos', 'materiais de construção'],
-  ferramentas: ['ferramentas manuais', 'elétricas', 'acessórios'],
-
-  // ========== VAREJO - ELETRÔNICOS ==========
-  eletrônicos: ['celulares', 'computadores', 'acessórios'],
-  eletronicos: ['smartphones', 'notebooks', 'games'],
-  celular: ['celulares', 'acessórios', 'assistência técnica'],
-  informática: ['computadores', 'notebooks', 'periféricos'],
-
-  // ========== VAREJO - OUTROS ==========
-  bicicleta: ['bicicletas', 'peças', 'acessórios', 'manutenção'],
-  bike: ['bikes', 'peças', 'equipamentos de ciclismo'],
-  livraria: ['livros', 'papelaria', 'presentes'],
-  livros: ['literatura', 'didáticos', 'infantis'],
-  conveniência: ['bebidas', 'snacks', 'produtos básicos'],
-  distribuidora: ['bebidas', 'cervejas', 'refrigerantes'],
-  bebidas: ['cervejas', 'destilados', 'refrigerantes', 'delivery'],
-  supermercado: ['compras', 'produtos', 'delivery'],
-  mercado: ['hortifruti', 'açougue', 'padaria'],
-  shopping: ['lojas', 'alimentação', 'cinema', 'entretenimento'],
-  departamentos: ['roupas', 'eletrônicos', 'casa', 'utilidades'],
-  floricultura: ['flores', 'arranjos', 'decoração'],
-  flores: ['buquês', 'arranjos', 'plantas'],
-
-  // ========== SERVIÇOS PROFISSIONAIS ==========
-  imobiliária: ['compra', 'venda', 'aluguel de imóveis'],
-  imobiliaria: ['compra', 'venda', 'aluguel', 'administração'],
-  advogado: ['consultoria', 'processos', 'orientação jurídica'],
-  advocacia: ['direito trabalhista', 'cível', 'família', 'empresarial'],
-  contador: ['contabilidade', 'impostos', 'abertura de empresa'],
-  contabilidade: ['abertura de empresa', 'folha de pagamento', 'impostos'],
-  seguradora: ['seguro auto', 'residencial', 'vida', 'saúde'],
-  seguros: ['cotação', 'análise', 'sinistros'],
-  'agência de viagens': ['passagens', 'pacotes', 'hotéis', 'cruzeiros'],
-  viagens: ['turismo', 'pacotes', 'intercâmbio'],
-  banco: ['conta corrente', 'empréstimos', 'investimentos'],
-
-  // ========== SERVIÇOS RESIDENCIAIS ==========
-  lavanderia: ['lavagem', 'secagem', 'passadoria', 'delivery'],
-  chaveiro: ['cópias de chaves', 'abertura de portas', 'fechaduras'],
-  eletricista: ['instalação elétrica', 'manutenção', 'reparos'],
-  encanador: ['desentupimento', 'vazamentos', 'instalações'],
-  pintor: ['pintura interna', 'pintura externa', 'textura'],
-  mudanças: ['mudança residencial', 'comercial', 'embalagem'],
-  mudança: ['transporte de móveis', 'montagem', 'embalagem'],
-
-  // ========== EDUCAÇÃO E HOSPEDAGEM ==========
-  escola: ['matrículas', 'ensino', 'atividades'],
-  educação: ['cursos', 'aulas', 'capacitação'],
-  hotel: ['hospedagem', 'reservas', 'eventos'],
-  pousada: ['hospedagem', 'café da manhã', 'lazer'],
-
-  // ========== ENTRETENIMENTO ==========
-  cinema: ['filmes 2D', 'filmes 3D', 'IMAX', 'bomboniere'],
-  museu: ['exposições', 'visitas guiadas', 'eventos culturais'],
-}
-
-function getServicesForCategory(category: string): string {
-  const lower = category.toLowerCase()
-  for (const [key, services] of Object.entries(CATEGORY_SERVICES)) {
-    if (lower.includes(key)) {
-      return services.slice(0, 3).join(', ')
+    if (byType) {
+      console.log(`[Category] Matched by primaryType "${primaryType}" -> "${byType.name}"`)
+      return { id: byType.id, name: byType.name, slug: byType.slug }
     }
   }
-  return 'serviços especializados'
+
+  // 2. Fallback: match by displayName slug or name
+  const slug = generateSlug(displayName)
+
+  const existing = await db.query.category.findFirst({
+    where: (c, { eq }) => eq(c.slug, slug),
+  })
+  if (existing) {
+    console.log(`[Category] Matched by slug "${slug}" -> "${existing.name}"`)
+    return { id: existing.id, name: existing.name, slug: existing.slug }
+  }
+
+  const byName = await db
+    .select()
+    .from(category)
+    .where(ilike(category.name, displayName))
+    .limit(1)
+    .then(rows => rows[0] || null)
+  if (byName) {
+    console.log(`[Category] Matched by name "${displayName}" -> "${byName.name}"`)
+    return { id: byName.id, name: byName.name, slug: byName.slug }
+  }
+
+  // 3. Auto-create new category (rare - only for types not yet mapped)
+  console.log(`[Category] Auto-creating: "${displayName}" (primaryType: "${primaryType}", slug: "${slug}")`)
+
+  const [created] = await db.insert(category).values({
+    name: displayName,
+    slug,
+    icon: 'IconBuildingStore',
+    description: displayName,
+    seoTitle: `${displayName} perto de você`,
+    seoDescription: `Encontre os melhores estabelecimentos de ${displayName} na sua região. Compare avaliações e entre em contato.`,
+    heroTitle: `Encontre ${displayName}`,
+    heroSubtitle: `Os melhores estabelecimentos de ${displayName} perto de você.`,
+    typeGooglePlace: primaryType ? [primaryType] : [],
+  }).returning()
+
+  return { id: created.id, name: created.name, slug: created.slug }
 }
 
-const CATEGORY_PATTERNS_RAW = [
-  'borracharia', 'oficina', 'mecânica', 'mecanica', 'barbearia', 'barberia', 'barber', 'salão', 'salao',
-  'restaurante', 'pizzaria', 'lanchonete', 'padaria', 'mercado', 'supermercado',
-  'pet shop', 'petshop', 'veterinário', 'veterinaria', 'clínica', 'clinica',
-  'academia', 'estúdio', 'estudio', 'loja', 'farmácia', 'farmacia',
-  'auto peças', 'autopeças', 'auto center', 'autocenter', 'revendedora', 'revenda',
-  'concessionária', 'concessionaria', 'locadora', 'lava jato', 'lava rápido',
-  'estacionamento', 'hotel', 'pousada', 'imobiliária', 'imobiliaria',
-  'advogado', 'advocacia', 'contador', 'contabilidade', 'escola', 'colégio',
-  'colegio', 'faculdade', 'dentista', 'odontologia', 'floricultura', 'floriculturas',
-  'papelaria', 'livraria', 'açougue', 'acougue', 'distribuidora', 'atacado', 'varejo',
-  'sorveteria', 'açaí', 'acai', 'hamburgueria', 'churrascaria', 'bar', 'pub',
-  'posto', 'auto posto', 'conveniência', 'conveniencia', 'mercadinho', 'minimercado',
-  'móvel', 'movel', 'móveis', 'moveis', 'eletro', 'eletrônicos', 'eletronicos',
-  'criador', 'agropet', 'agropecuária', 'agropecuaria', 'canil', 'gatil', 'aquário', 'aquario',
-]
-
-const CATEGORY_PATTERNS = [...CATEGORY_PATTERNS_RAW].sort((a, b) => b.length - a.length)
-
-function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-function matchesAsWord(text: string, pattern: string): boolean {
-  const escaped = escapeRegex(pattern)
-  const regex = new RegExp(`\\b${escaped}\\b`, 'i')
-  return regex.test(text)
-}
-
-interface ExtractedBusinessInfo {
-  displayName: string
-  brandName: string
-  category: string
-  slug: string
-}
+// ===== Helper Functions =====
 
 function normalizeText(str: string): string {
   return str
@@ -263,19 +144,6 @@ function cleanBusinessName(gmbName: string): string {
   return cleaned
 }
 
-function detectCategoryFromName(name: string, googleCategory: string): string {
-  const normalized = normalizeText(name)
-
-  for (const pattern of CATEGORY_PATTERNS) {
-    const normalizedPattern = normalizeText(pattern)
-    if (matchesAsWord(normalized, normalizedPattern)) {
-      return pattern
-    }
-  }
-
-  return googleCategory.toLowerCase()
-}
-
 function extractEssentialWordsForSlug(name: string): string[] {
   const normalized = normalizeText(name)
   const words = normalized.split(/\s+/)
@@ -287,9 +155,7 @@ function extractEssentialWordsForSlug(name: string): string[] {
     const clean = word.replace(/[^a-z0-9]/g, '')
 
     if (clean.length < 2) continue
-
     if (FILLER_WORDS.includes(clean)) continue
-
     if (seen.has(clean)) continue
 
     seen.add(clean)
@@ -299,6 +165,18 @@ function extractEssentialWordsForSlug(name: string): string[] {
   }
 
   return essential
+}
+
+function generateSlugFromName(name: string, city: string): string {
+  const essentialWords = extractEssentialWordsForSlug(name)
+  const nameSlug = essentialWords.join('-').substring(0, 35)
+
+  const citySlug = normalizeText(city)
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '-')
+    .substring(0, 20)
+
+  return `${nameSlug}-${citySlug}`.replace(/-+/g, '-').substring(0, 60)
 }
 
 async function generateUniqueServiceSlugForStore(storeId: string, name: string): Promise<string> {
@@ -319,55 +197,36 @@ async function generateUniqueServiceSlugForStore(storeId: string, name: string):
   }
 }
 
-function generateSlugFromName(name: string, city: string): string {
-  const essentialWords = extractEssentialWordsForSlug(name)
-  const nameSlug = essentialWords.join('-').substring(0, 35)
-
-  const citySlug = normalizeText(city)
-    .replace(/[^a-z0-9\s]/g, '')
-    .replace(/\s+/g, '-')
-    .substring(0, 20)
-
-  return `${nameSlug}-${citySlug}`.replace(/-+/g, '-').substring(0, 60)
-}
-
-function extractBusinessInfo(
-  gmbName: string,
-  _gmbDescription: string | undefined,
-  googleCategory: string,
-  city: string
-): ExtractedBusinessInfo {
-  const displayName = cleanBusinessName(gmbName)
-  const detectedCategory = detectCategoryFromName(displayName, googleCategory)
-  const categoryForDisplay = capitalizeWords(detectedCategory)
-  const slug = generateSlugFromName(displayName, city)
-
-  return {
-    displayName,
-    brandName: displayName,
-    category: categoryForDisplay,
-    slug,
-  }
-}
-
 function truncate(str: string | undefined | null, maxLength: number): string | undefined {
   if (!str) return undefined
   return str.length > maxLength ? str.substring(0, maxLength) : str
 }
 
+function capitalizeWords(str: string): string {
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+}
+
+function buildSeoH1(category: string, city: string, displayName: string): string {
+  return `${category} em ${city} – ${displayName}`
+}
+
+function buildSeoSubtitle(category: string, city: string): string {
+  return `${category} em ${city} com atendimento rápido e de confiança`
+}
+
+function buildSeoDescription(displayName: string, category: string, city: string): string {
+  const lower = category.toLowerCase()
+  return `${displayName} é referência em ${lower} em ${city}, oferecendo serviços com rapidez, qualidade e atendimento de confiança.`
+}
+
+// ===== Fallback Services =====
+
 function generateFallbackServices(category: string): ServiceItem[] {
   const lower = category.toLowerCase()
-
-  if (lower.includes('borracharia')) {
-    return [
-      { name: 'Troca de Pneus', description: 'Troca rápida e segura de pneus de todas as marcas e tamanhos' },
-      { name: 'Reparo de Pneus', description: 'Conserto de furos e danos com garantia de qualidade' },
-      { name: 'Alinhamento', description: 'Alinhamento computadorizado para maior durabilidade dos pneus' },
-      { name: 'Balanceamento', description: 'Balanceamento preciso para conforto e segurança' },
-      { name: 'Calibragem', description: 'Calibragem gratuita com equipamentos de precisão' },
-      { name: 'Atendimento 24h', description: 'Socorro emergencial disponível a qualquer hora' },
-    ]
-  }
 
   return [
     { name: 'Atendimento Especializado', description: `Serviço profissional de ${lower} com qualidade garantida` },
@@ -379,6 +238,8 @@ function generateFallbackServices(category: string): ServiceItem[] {
   ]
 }
 
+// ===== Fallback FAQ =====
+
 interface FAQContext {
   displayName: string
   city: string
@@ -388,12 +249,9 @@ interface FAQContext {
   openingHours?: Record<string, string>
 }
 
-// formatOpeningHoursForFAQ and fixOpeningHoursInFAQ moved to @/lib/faq-utils
-
 function generateFallbackFAQ(ctx: FAQContext): FAQItem[] {
   const { displayName, city, category, address, phone, openingHours } = ctx
   const lower = category.toLowerCase()
-  const services = getServicesForCategory(category)
   const hoursText = formatOpeningHoursForFAQ(openingHours)
 
   const addressText = address
@@ -415,7 +273,7 @@ function generateFallbackFAQ(ctx: FAQContext): FAQItem[] {
     },
     {
       question: `Quais serviços a ${displayName} oferece?`,
-      answer: `Oferecemos ${services} com qualidade e garantia. Entre em contato para saber mais sobre cada serviço.`,
+      answer: `Oferecemos serviços de ${lower} com qualidade e garantia. Entre em contato para saber mais sobre cada serviço.`,
     },
     {
       question: `A ${displayName} atende em qual região de ${city}?`,
@@ -440,386 +298,7 @@ function generateFallbackFAQ(ctx: FAQContext): FAQItem[] {
   ]
 }
 
-function capitalizeWords(str: string): string {
-  return str
-    .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-}
-
-function buildSeoH1(category: string, city: string, displayName: string): string {
-  return `${category} em ${city} – ${displayName}`
-}
-
-function buildSeoSubtitle(category: string, city: string): string {
-  const services = getServicesForCategory(category)
-  return `${capitalizeWords(services)} em ${city} com atendimento rápido e de confiança`
-}
-
-function buildSeoDescription(displayName: string, category: string, city: string): string {
-  const lower = category.toLowerCase()
-  const services = getServicesForCategory(category)
-  return `${displayName} é referência em ${lower} em ${city}, oferecendo serviços de ${services} com rapidez, qualidade e atendimento de confiança.`
-}
-
-const CATEGORY_SLUG_MAPPING: Record<string, string> = {
-  // ========== AUTOMOTIVO ==========
-  'borracharia': 'borracharia',
-  'pneu': 'borracharia',
-  'pneus': 'borracharia',
-  'oficina': 'oficina-mecanica',
-  'mecânica': 'oficina-mecanica',
-  'mecanica': 'oficina-mecanica',
-  'mecânico': 'oficina-mecanica',
-  'mecanico': 'oficina-mecanica',
-  'auto center': 'auto-center',
-  'autocenter': 'auto-center',
-  'auto peças': 'auto-center',
-  'autopeças': 'auto-center',
-  'centro automotivo': 'auto-center',
-  'revendedora': 'revendedora-veiculos',
-  'revenda': 'revendedora-veiculos',
-  'concessionária': 'revendedora-veiculos',
-  'concessionaria': 'revendedora-veiculos',
-  'veículos': 'revendedora-veiculos',
-  'seminovos': 'revendedora-veiculos',
-  'carros': 'revendedora-veiculos',
-  'lava jato': 'lava-jato',
-  'lava rápido': 'lava-jato',
-  'lavagem': 'lava-jato',
-  'estacionamento': 'estacionamento',
-  'parking': 'estacionamento',
-  'valet': 'estacionamento',
-  'posto': 'posto-de-combustivel',
-  'posto de gasolina': 'posto-de-combustivel',
-  'combustível': 'posto-de-combustivel',
-  'combustivel': 'posto-de-combustivel',
-  'gasolina': 'posto-de-combustivel',
-  'locadora': 'locadora-de-veiculos',
-  'aluguel de carro': 'locadora-de-veiculos',
-  'rent a car': 'locadora-de-veiculos',
-
-  // ========== BELEZA E BEM-ESTAR ==========
-  'barbearia': 'barbearia',
-  'barberia': 'barbearia',
-  'barbeiro': 'barbearia',
-  'barber': 'barbearia',
-  'salão': 'salao-beleza',
-  'salao': 'salao-beleza',
-  'cabeleireiro': 'salao-beleza',
-  'cabeleireira': 'salao-beleza',
-  'manicure': 'salao-beleza',
-  'estética': 'salao-beleza',
-  'estetica': 'salao-beleza',
-  'spa': 'spa',
-  'day spa': 'spa',
-  'massagem': 'spa',
-
-  // ========== ALIMENTAÇÃO ==========
-  'restaurante': 'restaurante',
-  'churrascaria': 'restaurante',
-  'comida': 'restaurante',
-  'refeição': 'restaurante',
-  'pizzaria': 'pizzaria',
-  'pizza': 'pizzaria',
-  'hamburgueria': 'lanchonete',
-  'lanchonete': 'lanchonete',
-  'sorveteria': 'lanchonete',
-  'açaí': 'lanchonete',
-  'acai': 'lanchonete',
-  'lanche': 'lanchonete',
-  'fast food': 'lanchonete',
-  'padaria': 'padaria',
-  'confeitaria': 'padaria',
-  'panificadora': 'padaria',
-  'pão': 'padaria',
-  'pao': 'padaria',
-  'café': 'cafeteria',
-  'cafe': 'cafeteria',
-  'cafeteria': 'cafeteria',
-  'coffee': 'cafeteria',
-  'bar': 'bar',
-  'pub': 'bar',
-  'boteco': 'bar',
-  'choperia': 'bar',
-  'balada': 'casa-noturna',
-  'casa noturna': 'casa-noturna',
-  'boate': 'casa-noturna',
-  'night club': 'casa-noturna',
-  'club': 'casa-noturna',
-  'delivery': 'delivery',
-  'entrega': 'delivery',
-  'ifood': 'delivery',
-
-  // ========== PET ==========
-  'pet shop': 'pet-shop',
-  'petshop': 'pet-shop',
-  'pet': 'pet-shop',
-  'animais': 'pet-shop',
-  'criador': 'pet-shop',
-  'agropet': 'pet-shop',
-  'agropecuária': 'pet-shop',
-  'agropecuaria': 'pet-shop',
-  'canil': 'pet-shop',
-  'gatil': 'pet-shop',
-  'aquário': 'pet-shop',
-  'aquario': 'pet-shop',
-  'veterinário': 'clinica-veterinaria',
-  'veterinaria': 'clinica-veterinaria',
-  'vet': 'clinica-veterinaria',
-
-  // ========== SAÚDE ==========
-  'clínica médica': 'clinica-medica',
-  'clinica medica': 'clinica-medica',
-  'clínica': 'clinica-medica',
-  'clinica': 'clinica-medica',
-  'médico': 'medico',
-  'medico': 'medico',
-  'doutor': 'medico',
-  'hospital': 'hospital',
-  'pronto socorro': 'hospital',
-  'emergência': 'hospital',
-  'dentista': 'consultorio-odontologico',
-  'odontologia': 'consultorio-odontologico',
-  'odontológico': 'consultorio-odontologico',
-  'odontologico': 'consultorio-odontologico',
-  'academia': 'academia',
-  'estúdio': 'academia',
-  'estudio': 'academia',
-  'fitness': 'academia',
-  'crossfit': 'academia',
-  'musculação': 'academia',
-  'farmácia': 'farmacia',
-  'farmacia': 'farmacia',
-  'drogaria': 'farmacia',
-  'fisioterapeuta': 'fisioterapeuta',
-  'fisioterapia': 'fisioterapeuta',
-  'rpg': 'fisioterapeuta',
-  'pilates': 'fisioterapeuta',
-
-  // ========== VAREJO - MODA ==========
-  'loja de roupas': 'loja-de-roupas',
-  'roupa': 'loja-de-roupas',
-  'roupas': 'loja-de-roupas',
-  'vestuário': 'loja-de-roupas',
-  'vestuario': 'loja-de-roupas',
-  'moda': 'loja-de-roupas',
-  'boutique': 'loja-de-roupas',
-  'clothing': 'loja-de-roupas',
-  'noiva': 'moda-e-eventos',
-  'noivas': 'moda-e-eventos',
-  'casamento': 'moda-e-eventos',
-  'vestido de festa': 'moda-e-eventos',
-  'festa': 'moda-e-eventos',
-  'formatura': 'moda-e-eventos',
-  'debutante': 'moda-e-eventos',
-  'moda e eventos': 'moda-e-eventos',
-  'aluguel de vestido': 'moda-e-eventos',
-  'traje': 'moda-e-eventos',
-  'sapataria': 'sapataria',
-  'sapatos': 'sapataria',
-  'calçados': 'sapataria',
-  'calcados': 'sapataria',
-  'tênis': 'sapataria',
-  'tenis': 'sapataria',
-  'joalheria': 'joalheria',
-  'joia': 'joalheria',
-  'joias': 'joalheria',
-  'bijuteria': 'joalheria',
-  'aliança': 'joalheria',
-  'alianca': 'joalheria',
-  'relógio': 'joalheria',
-  'relogio': 'joalheria',
-
-  // ========== VAREJO - CASA E DECORAÇÃO ==========
-  'loja de móveis': 'loja-de-moveis',
-  'móveis': 'loja-de-moveis',
-  'moveis': 'loja-de-moveis',
-  'móvel': 'loja-de-moveis',
-  'movel': 'loja-de-moveis',
-  'colchão': 'loja-de-moveis',
-  'colchao': 'loja-de-moveis',
-  'sofá': 'loja-de-moveis',
-  'sofa': 'loja-de-moveis',
-  'decoração': 'loja-de-decoracao',
-  'decoracao': 'loja-de-decoracao',
-  'casa e decoração': 'loja-de-decoracao',
-  'utilidades': 'loja-de-decoracao',
-  'cama mesa banho': 'loja-de-decoracao',
-  'ferragens': 'loja-de-ferragens',
-  'ferramentas': 'loja-de-ferragens',
-  'material construção': 'loja-de-ferragens',
-  'material de construção': 'loja-de-ferragens',
-  'construção': 'loja-de-ferragens',
-  'construcao': 'loja-de-ferragens',
-
-  // ========== VAREJO - ELETRÔNICOS ==========
-  'eletrônicos': 'loja-de-eletronicos',
-  'eletronicos': 'loja-de-eletronicos',
-  'eletrônico': 'loja-de-eletronicos',
-  'eletronico': 'loja-de-eletronicos',
-  'celular': 'loja-de-eletronicos',
-  'celulares': 'loja-de-eletronicos',
-  'smartphone': 'loja-de-eletronicos',
-  'computador': 'loja-de-eletronicos',
-  'informática': 'loja-de-eletronicos',
-  'informatica': 'loja-de-eletronicos',
-  'notebook': 'loja-de-eletronicos',
-
-  // ========== VAREJO - OUTROS ==========
-  'bicicleta': 'loja-de-bicicletas',
-  'bicicletas': 'loja-de-bicicletas',
-  'bike': 'loja-de-bicicletas',
-  'ciclismo': 'loja-de-bicicletas',
-  'livraria': 'livraria',
-  'livros': 'livraria',
-  'livro': 'livraria',
-  'papelaria': 'livraria',
-  'conveniência': 'conveniencia',
-  'conveniencia': 'conveniencia',
-  'distribuidora': 'distribuidora-bebidas',
-  'bebidas': 'distribuidora-bebidas',
-  'cerveja': 'distribuidora-bebidas',
-  'adega': 'distribuidora-bebidas',
-  'vinhos': 'distribuidora-bebidas',
-  'supermercado': 'supermercado',
-  'mercado': 'supermercado',
-  'mercadinho': 'supermercado',
-  'minimercado': 'supermercado',
-  'atacado': 'supermercado',
-  'atacadão': 'supermercado',
-  'atacadao': 'supermercado',
-  'shopping': 'shopping-center',
-  'shopping center': 'shopping-center',
-  'centro comercial': 'shopping-center',
-  'magazine': 'loja-de-departamentos',
-  'departamentos': 'loja-de-departamentos',
-  'loja de departamentos': 'loja-de-departamentos',
-  'floricultura': 'floricultura',
-  'floriculturas': 'floricultura',
-  'flores': 'floricultura',
-
-  // ========== SERVIÇOS PROFISSIONAIS ==========
-  'imobiliária': 'imobiliaria',
-  'imobiliaria': 'imobiliaria',
-  'corretor': 'imobiliaria',
-  'imóveis': 'imobiliaria',
-  'imoveis': 'imobiliaria',
-  'advogado': 'escritorio-advocacia',
-  'advocacia': 'escritorio-advocacia',
-  'advogados': 'escritorio-advocacia',
-  'jurídico': 'escritorio-advocacia',
-  'juridico': 'escritorio-advocacia',
-  'contador': 'escritorio-contabilidade',
-  'contabilidade': 'escritorio-contabilidade',
-  'contábil': 'escritorio-contabilidade',
-  'contabil': 'escritorio-contabilidade',
-  'seguradora': 'seguradora',
-  'seguro': 'seguradora',
-  'seguros': 'seguradora',
-  'corretor de seguros': 'seguradora',
-  'agência de viagens': 'agencia-de-viagens',
-  'agencia de viagens': 'agencia-de-viagens',
-  'viagens': 'agencia-de-viagens',
-  'turismo': 'agencia-de-viagens',
-  'passagens': 'agencia-de-viagens',
-  'banco': 'banco',
-  'agência bancária': 'banco',
-  'agencia bancaria': 'banco',
-  'financeira': 'banco',
-
-  // ========== SERVIÇOS RESIDENCIAIS ==========
-  'lavanderia': 'lavanderia',
-  'lavagem de roupa': 'lavanderia',
-  'passar roupa': 'lavanderia',
-  'tinturaria': 'lavanderia',
-  'chaveiro': 'chaveiro',
-  'chaves': 'chaveiro',
-  'fechadura': 'chaveiro',
-  'eletricista': 'eletricista',
-  'elétrica': 'eletricista',
-  'eletrica': 'eletricista',
-  'instalação elétrica': 'eletricista',
-  'encanador': 'encanador',
-  'hidráulica': 'encanador',
-  'hidraulica': 'encanador',
-  'desentupidor': 'encanador',
-  'pintor': 'pintor',
-  'pintura': 'pintor',
-  'pintor de parede': 'pintor',
-  'mudanças': 'empresa-de-mudancas',
-  'mudancas': 'empresa-de-mudancas',
-  'mudança': 'empresa-de-mudancas',
-  'mudanca': 'empresa-de-mudancas',
-  'frete': 'empresa-de-mudancas',
-  'carreto': 'empresa-de-mudancas',
-  'transporte': 'empresa-de-mudancas',
-
-  // ========== EDUCAÇÃO E HOSPEDAGEM ==========
-  'escola': 'escola',
-  'colégio': 'escola',
-  'colegio': 'escola',
-  'faculdade': 'escola',
-  'curso': 'escola',
-  'educação': 'escola',
-  'educacao': 'escola',
-  'hotel': 'hotel',
-  'pousada': 'hotel',
-  'hostel': 'hotel',
-  'hospedagem': 'hotel',
-
-  // ========== ENTRETENIMENTO ==========
-  'cinema': 'cinema',
-  'filme': 'cinema',
-  'filmes': 'cinema',
-  'museu': 'museu',
-  'galeria de arte': 'museu',
-  'exposição': 'museu',
-}
-
-async function matchCategoryFromDatabase(detectedCategory: string): Promise<{ id: string; name: string } | null> {
-  const lower = detectedCategory.toLowerCase()
-
-  const mappedSlug = CATEGORY_SLUG_MAPPING[lower]
-
-  if (mappedSlug) {
-    const found = await db.query.category.findFirst({
-      where: (c, { eq }) => eq(c.slug, mappedSlug),
-    })
-    if (found) {
-      return { id: found.id, name: found.name }
-    }
-  }
-
-  const sortedEntries = Object.entries(CATEGORY_SLUG_MAPPING).sort(
-    ([a], [b]) => b.length - a.length
-  )
-  for (const [pattern, slug] of sortedEntries) {
-    if (matchesAsWord(lower, pattern)) {
-      const found = await db.query.category.findFirst({
-        where: (c, { eq }) => eq(c.slug, slug),
-      })
-      if (found) {
-        return { id: found.id, name: found.name }
-      }
-    }
-  }
-
-  const fuzzyMatch = await db.query.category.findFirst({
-    where: (c, { ilike }) => ilike(c.name, `%${lower}%`),
-  })
-
-  if (fuzzyMatch) {
-    return { id: fuzzyMatch.id, name: fuzzyMatch.name }
-  }
-
-  const outroCategory = await db.query.category.findFirst({
-    where: (c, { eq }) => eq(c.slug, 'outro'),
-  })
-
-  return outroCategory ? { id: outroCategory.id, name: outroCategory.name } : null
-}
+// ===== Main Action =====
 
 export const createStoreFromGoogleAction = authActionClient
   .schema(createStoreFromGoogleSchema)
@@ -851,51 +330,52 @@ export const createStoreFromGoogleAction = authActionClient
       throw new Error('Esta empresa já está cadastrada na plataforma. Cada empresa do Google pode ser cadastrada apenas uma vez.')
     }
 
+    // ===== Fetch Google Place Details (API v1 New) =====
     const placeDetails = await getPlaceDetails(googlePlaceId)
 
     if (!placeDetails) {
       throw new Error('Não foi possível buscar dados do Google')
     }
 
-    const { city, state, zipCode, address } = parseAddressComponents(placeDetails.address_components)
-    const openingHours = placeDetails.opening_hours?.weekday_text
-      ? parseOpeningHours(placeDetails.opening_hours.weekday_text)
+    // ===== Parse basic data =====
+    const { city, state, zipCode, address } = parseAddressComponents(placeDetails.addressComponents)
+    const openingHours = placeDetails.regularOpeningHours?.weekdayDescriptions
+      ? parseOpeningHours(placeDetails.regularOpeningHours.weekdayDescriptions)
       : undefined
-    const googleCategory = inferCategory(placeDetails.types || [])
 
-    const googlePhone = placeDetails.formatted_phone_number?.replace(/\D/g, '') || ''
-    const googleWhatsapp = placeDetails.international_phone_number?.replace(/\D/g, '') || googlePhone
-    
-    // Usar valores de override do onboarding se fornecidos, caso contrário usar dados do Google
+    // ===== Category: match by Google primaryType =====
+    const googlePrimaryType = placeDetails.primaryType
+    const googleDisplayName = placeDetails.primaryTypeDisplayName?.text || 'Outro'
+    console.log(`[Category] Google primaryType: "${googlePrimaryType}", displayName: "${googleDisplayName}"`)
+
+    const categoryRecord = await findOrCreateCategory(googlePrimaryType, googleDisplayName)
+    const categoryName = categoryRecord.name
+    const categoryId = categoryRecord.id
+    console.log(`[Category] Final: "${categoryName}" (id: ${categoryId}, slug: ${categoryRecord.slug})`)
+
+    // ===== Contact info =====
+    const googlePhone = placeDetails.nationalPhoneNumber?.replace(/\D/g, '') || ''
+    const googleWhatsapp = placeDetails.internationalPhoneNumber?.replace(/\D/g, '') || googlePhone
+
     const phone = parsedInput.phoneOverride?.replace(/\D/g, '') || googlePhone
     const whatsapp = parsedInput.whatsappOverride?.replace(/\D/g, '') || googleWhatsapp
 
+    // ===== Cover photo =====
     const coverPhotoIndex = placeDetails.photos && selectedCoverIndex < placeDetails.photos.length
       ? selectedCoverIndex
       : 0
 
     const coverUrl = placeDetails.photos?.[coverPhotoIndex]
-      ? getPhotoUrl(placeDetails.photos[coverPhotoIndex].photo_reference, 1200)
+      ? getPhotoUrl(placeDetails.photos[coverPhotoIndex].name, 1200)
       : undefined
 
-    const gmbName = placeDetails.name || searchTerm
-    const gmbDescription = placeDetails.editorial_summary?.overview
-
-    const businessInfo = extractBusinessInfo(gmbName, gmbDescription, googleCategory, city)
-
-    const { displayName, brandName, category: detectedCategory, slug: baseSlug } = businessInfo
-
-    const matchedCategory = await matchCategoryFromDatabase(detectedCategory)
-    const categoryName = matchedCategory?.name || detectedCategory
-    const categoryId = matchedCategory?.id || null
-
-    const heroTitle = buildSeoH1(categoryName, city, displayName)
-    const heroSubtitle = buildSeoSubtitle(categoryName, city)
-    const aboutSection = buildSeoDescription(displayName, categoryName, city)
+    // ===== Business name & slug =====
+    const displayName = cleanBusinessName(placeDetails.displayName?.text || searchTerm)
+    const brandName = displayName
+    const baseSlug = generateSlugFromName(displayName, city)
 
     let slug = baseSlug
     let counter = 1
-
     while (true) {
       const existing = await db.query.store.findFirst({
         where: (s, { eq }) => eq(s.slug, slug),
@@ -905,16 +385,24 @@ export const createStoreFromGoogleAction = authActionClient
       counter++
     }
 
-    const reviewHighlights = summarizeReviews(placeDetails.reviews)
+    // ===== SEO defaults =====
+    const heroTitle = buildSeoH1(categoryName, city, displayName)
+    const heroSubtitle = buildSeoSubtitle(categoryName, city)
+    const aboutSection = buildSeoDescription(displayName, categoryName, city)
 
-    const priceRangeMap: Record<number, string> = {
-      0: 'Gratuito',
-      1: 'Econômico',
-      2: 'Moderado',
-      3: 'Caro',
-      4: 'Muito Caro',
+    // ===== Reviews & Business Attributes for AI prompts =====
+    const reviewHighlights = summarizeReviews(placeDetails.reviews)
+    const businessAttributes = extractBusinessAttributes(placeDetails)
+
+    const priceMap: Record<string, string> = {
+      'PRICE_LEVEL_FREE': 'Gratuito',
+      'PRICE_LEVEL_INEXPENSIVE': 'Econômico',
+      'PRICE_LEVEL_MODERATE': 'Moderado',
+      'PRICE_LEVEL_EXPENSIVE': 'Caro',
+      'PRICE_LEVEL_VERY_EXPENSIVE': 'Muito Caro',
     }
 
+    // ===== Generate marketing copy with AI =====
     let marketingCopy: MarketingCopy | null = null
     try {
       marketingCopy = await generateMarketingCopy({
@@ -923,14 +411,15 @@ export const createStoreFromGoogleAction = authActionClient
         city,
         state,
         rating: placeDetails.rating,
-        reviewCount: placeDetails.user_ratings_total,
-        googleAbout: placeDetails.editorial_summary?.overview,
-        website: placeDetails.website,
-        priceRange: placeDetails.price_level !== undefined ? priceRangeMap[placeDetails.price_level] : undefined,
+        reviewCount: placeDetails.userRatingCount,
+        googleAbout: placeDetails.editorialSummary?.text,
+        website: placeDetails.websiteUri,
+        priceRange: placeDetails.priceLevel ? priceMap[placeDetails.priceLevel] : undefined,
         reviewHighlights: reviewHighlights || undefined,
         businessTypes: placeDetails.types,
-        address: placeDetails.formatted_address,
+        address: placeDetails.formattedAddress,
         openingHours,
+        businessAttributes: businessAttributes.length > 0 ? businessAttributes : undefined,
       })
     } catch (error) {
       console.error('Erro ao gerar marketing copy:', error)
@@ -949,7 +438,7 @@ export const createStoreFromGoogleAction = authActionClient
       ? marketingCopy.services.slice(0, 6)
       : generateFallbackServices(categoryName)
 
-    const fullAddress = address || placeDetails.formatted_address
+    const fullAddress = address || placeDetails.formattedAddress
 
     const rawFAQ = (marketingCopy?.faq && marketingCopy.faq.length >= 6)
       ? marketingCopy.faq.slice(0, 8)
@@ -958,18 +447,19 @@ export const createStoreFromGoogleAction = authActionClient
         city,
         category: categoryName,
         address: fullAddress,
-        phone: placeDetails.formatted_phone_number || phone,
+        phone: placeDetails.nationalPhoneNumber || phone,
         openingHours,
       })
 
     const finalFAQ = fixOpeningHoursInFAQ(rawFAQ, openingHours, displayName)
 
+    // ===== Neighborhoods =====
     let finalNeighborhoods: string[] = []
-    if (placeDetails.geometry?.location) {
+    if (placeDetails.location) {
       const { fetchNearbyNeighborhoods } = await import('@/lib/google-places')
       finalNeighborhoods = await fetchNearbyNeighborhoods(
-        placeDetails.geometry.location.lat,
-        placeDetails.geometry.location.lng,
+        placeDetails.location.latitude,
+        placeDetails.location.longitude,
         city,
       )
     }
@@ -977,6 +467,7 @@ export const createStoreFromGoogleAction = authActionClient
       finalNeighborhoods = marketingCopy.neighborhoods
     }
 
+    // ===== Create store =====
     const [newStore] = await db
       .insert(store)
       .values({
@@ -993,10 +484,10 @@ export const createStoreFromGoogleAction = authActionClient
         zipCode,
         googlePlaceId,
         googleRating: placeDetails.rating?.toString(),
-        googleReviewsCount: placeDetails.user_ratings_total,
+        googleReviewsCount: placeDetails.userRatingCount,
         openingHours,
-        latitude: placeDetails.geometry?.location.lat.toString(),
-        longitude: placeDetails.geometry?.location.lng.toString(),
+        latitude: placeDetails.location?.latitude.toString(),
+        longitude: placeDetails.location?.longitude.toString(),
         coverUrl,
         heroTitle: truncate(heroTitle, 100),
         heroSubtitle: truncate(heroSubtitle, 200),
@@ -1009,41 +500,42 @@ export const createStoreFromGoogleAction = authActionClient
       })
       .returning()
 
+    // ===== Save reviews as testimonials =====
     if (placeDetails.reviews && placeDetails.reviews.length > 0) {
-      console.log(`[Reviews Debug] Total recebido do Google: ${placeDetails.reviews.length}`)
+      console.log(`[Reviews] Total recebido do Google: ${placeDetails.reviews.length}`)
 
       const topReviews = placeDetails.reviews
         .filter(r => r.rating >= 4)
         .sort((a, b) => {
-          const aHasText = a.text && a.text.trim().length > 0 ? 1 : 0
-          const bHasText = b.text && b.text.trim().length > 0 ? 1 : 0
+          const aHasText = a.text?.text && a.text.text.trim().length > 0 ? 1 : 0
+          const bHasText = b.text?.text && b.text.text.trim().length > 0 ? 1 : 0
           if (bHasText !== aHasText) return bHasText - aHasText
-          if (b.rating !== a.rating) return b.rating - a.rating
-          return b.time - a.time
+          return b.rating - a.rating
         })
         .slice(0, 15)
 
-      console.log(`[Reviews Debug] ✅ Salvando ${topReviews.length} reviews com rating >= 4`)
+      console.log(`[Reviews] Salvando ${topReviews.length} reviews com rating >= 4`)
 
       for (const review of topReviews) {
-        const reviewContent = review.text && review.text.trim().length > 0
-          ? review.text
+        const reviewContent = review.text?.text && review.text.text.trim().length > 0
+          ? review.text.text
           : `Avaliou com ${review.rating} estrelas`
 
         await db
           .insert(testimonial)
           .values({
             storeId: newStore.id,
-            authorName: review.author_name,
+            authorName: review.authorAttribution?.displayName || 'Anônimo',
             content: reviewContent,
             rating: review.rating,
-            imageUrl: review.profile_photo_url,
+            imageUrl: review.authorAttribution?.photoUri || null,
             isGoogleReview: true,
           })
           .onConflictDoNothing()
       }
     }
 
+    // ===== Save services =====
     for (let i = 0; i < finalServices.length; i++) {
       const svc = finalServices[i]
       const svcSlug = await generateUniqueServiceSlugForStore(newStore.id, svc.name)
@@ -1062,6 +554,7 @@ export const createStoreFromGoogleAction = authActionClient
         })
     }
 
+    // ===== Process and upload images =====
     let imagesProcessed = 0
     let heroImageUrl = coverUrl
 
@@ -1071,7 +564,7 @@ export const createStoreFromGoogleAction = authActionClient
         const [selectedPhoto] = allPhotos.splice(coverPhotoIndex, 1)
         allPhotos.unshift(selectedPhoto)
       }
-      const photoRefs = allPhotos.slice(0, 7)
+      const photosToProcess = allPhotos.slice(0, 7)
 
       const altTemplates = [
         `Fachada da ${displayName} em ${city}`,
@@ -1083,13 +576,13 @@ export const createStoreFromGoogleAction = authActionClient
         `Instalações da ${displayName} em ${city}`,
       ]
 
-      for (let i = 0; i < photoRefs.length; i++) {
-        const photoRef = photoRefs[i].photo_reference
+      for (let i = 0; i < photosToProcess.length; i++) {
+        const photoName = photosToProcess[i].name
         const isHero = i === 0
         const role = isHero ? 'hero' : 'gallery'
 
         try {
-          const googlePhotoUrl = getPhotoUrl(photoRef, isHero ? 1200 : 800)
+          const googlePhotoUrl = getPhotoUrl(photoName, isHero ? 1200 : 800)
           const imageBuffer = await downloadImage(googlePhotoUrl)
 
           const optimized = isHero
@@ -1108,7 +601,7 @@ export const createStoreFromGoogleAction = authActionClient
             order: i,
             width: optimized.width,
             height: optimized.height,
-            originalGoogleRef: photoRef,
+            originalGoogleRef: photoName,
           })
 
           if (isHero) {
@@ -1126,6 +619,7 @@ export const createStoreFromGoogleAction = authActionClient
       }
     }
 
+    // ===== Create subdomain =====
     let subdomainCreated = false
     const subdomain = `${newStore.slug}.paginalocal.com.br`
     try {
@@ -1138,23 +632,16 @@ export const createStoreFromGoogleAction = authActionClient
       console.error('[Google Import] Erro ao criar subdomínio na Vercel:', error)
     }
 
+    // ===== Revalidate if active =====
     if (shouldActivateStore) {
       notifyStoreActivated(newStore.slug).catch((error) => {
         console.error('[Google Import] Erro ao notificar Google Indexing API:', error)
       })
 
-      // Revalida o sitemap e páginas de categoria
       await revalidateSitemap()
-      
-      // Busca o slug da categoria e revalida páginas de categoria/cidade
-      const [categoryData] = await db
-        .select({ slug: category.slug })
-        .from(category)
-        .where(eq(category.name, newStore.category))
-        .limit(1)
 
-      if (categoryData) {
-        await revalidateCategoryPages(categoryData.slug, generateCitySlug(newStore.city))
+      if (categoryRecord.slug) {
+        await revalidateCategoryPages(categoryRecord.slug, generateCitySlug(newStore.city))
       }
     }
 

@@ -1,261 +1,281 @@
+// =============================================================================
+// Google Places API (New) v1 - Interfaces and Functions
+// Docs: https://developers.google.com/maps/documentation/places/web-service
+// =============================================================================
+
+// ===== Response Interfaces =====
+
 export interface GooglePlaceReview {
-  author_name: string
+  authorAttribution: {
+    displayName: string
+    photoUri?: string
+  }
   rating: number
-  text: string
-  profile_photo_url?: string
-  time: number
-  relative_time_description?: string
+  text?: { text: string }
+  relativePublishTimeDescription?: string
+  publishTime?: string
+}
+
+export interface GooglePlacePhoto {
+  name: string // resource name: "places/{placeId}/photos/{photoRef}"
+  widthPx: number
+  heightPx: number
 }
 
 export interface GooglePlaceDetails {
-  place_id: string
-  name: string
-  formatted_address: string
-  formatted_phone_number?: string
-  international_phone_number?: string
-  opening_hours?: {
-    weekday_text: string[]
-    open_now?: boolean
+  id: string
+  displayName: { text: string }
+  formattedAddress: string
+  nationalPhoneNumber?: string
+  internationalPhoneNumber?: string
+  regularOpeningHours?: {
+    weekdayDescriptions: string[]
+    openNow?: boolean
   }
   rating?: number
-  user_ratings_total?: number
+  userRatingCount?: number
   reviews?: GooglePlaceReview[]
-  photos?: Array<{
-    photo_reference: string
-    height: number
-    width: number
-  }>
-  geometry?: {
-    location: {
-      lat: number
-      lng: number
-    }
-  }
+  photos?: GooglePlacePhoto[]
+  location?: { latitude: number; longitude: number }
   types?: string[]
-  website?: string
-  address_components?: Array<{
-    long_name: string
-    short_name: string
+  primaryType?: string
+  primaryTypeDisplayName?: { text: string }
+  websiteUri?: string
+  addressComponents?: Array<{
+    longText: string
+    shortText: string
     types: string[]
   }>
-  editorial_summary?: {
-    overview: string
-    language: string
+  editorialSummary?: { text: string }
+  generativeSummary?: {
+    overview?: { text: string }
+    description?: { text: string }
   }
-  business_status?: string
-  price_level?: number
-  url?: string
-  vicinity?: string
-}
+  businessStatus?: string
+  priceLevel?: string
+  googleMapsUri?: string
 
-export interface GooglePlacePrediction {
-  place_id: string
-  description: string
-  structured_formatting: {
-    main_text: string
-    secondary_text: string
+  // Business attributes (for enriching AI prompts)
+  delivery?: boolean
+  dineIn?: boolean
+  takeout?: boolean
+  reservable?: boolean
+  servesBreakfast?: boolean
+  servesLunch?: boolean
+  servesDinner?: boolean
+  servesBeer?: boolean
+  servesWine?: boolean
+  servesBrunch?: boolean
+  servesVegetarianFood?: boolean
+  goodForChildren?: boolean
+  goodForGroups?: boolean
+  outdoorSeating?: boolean
+  liveMusic?: boolean
+  allowsDogs?: boolean
+  curbsidePickup?: boolean
+  paymentOptions?: {
+    acceptsCreditCards?: boolean
+    acceptsDebitCards?: boolean
+    acceptsCashOnly?: boolean
+    acceptsNfc?: boolean
   }
-}
-
-export async function searchPlaces(query: string): Promise<GooglePlacePrediction[]> {
-  const apiKey = process.env.GOOGLE_PLACES_API_KEY
-  if (!apiKey) {
-    throw new Error('Google Places API key não configurada')
+  parkingOptions?: {
+    freeParkingLot?: boolean
+    paidParkingLot?: boolean
+    freeStreetParking?: boolean
+    valetParking?: boolean
   }
-
-  const response = await fetch(
-    `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&types=establishment&language=pt-BR&components=country:br&key=${apiKey}`
-  )
-
-  const data = await response.json()
-
-  if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-    throw new Error(`Google Places API error: ${data.status}`)
+  accessibilityOptions?: {
+    wheelchairAccessibleParking?: boolean
+    wheelchairAccessibleEntrance?: boolean
+    wheelchairAccessibleRestroom?: boolean
+    wheelchairAccessibleSeating?: boolean
   }
-
-  return data.predictions || []
 }
 
 export interface TextSearchResult {
-  place_id: string
-  name: string
-  formatted_address: string
+  id: string
+  displayName: { text: string }
+  formattedAddress: string
   rating?: number
-  user_ratings_total?: number
-  opening_hours?: {
-    open_now?: boolean
+  userRatingCount?: number
+  regularOpeningHours?: {
+    openNow?: boolean
   }
-  photos?: Array<{
-    photo_reference: string
-    height: number
-    width: number
-  }>
+  photos?: GooglePlacePhoto[]
   types?: string[]
-  business_status?: string
-  geometry?: {
-    location: {
-      lat: number
-      lng: number
-    }
-  }
+  primaryType?: string
+  primaryTypeDisplayName?: { text: string }
+  businessStatus?: string
+  location?: { latitude: number; longitude: number }
 }
+
+// ===== API Helper =====
+
+function getApiKey(): string {
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY
+  if (!apiKey) {
+    throw new Error('Google Places API key não configurada')
+  }
+  return apiKey
+}
+
+// ===== Text Search (New) =====
 
 export async function textSearchPlaces(query: string): Promise<TextSearchResult[]> {
-  const apiKey = process.env.GOOGLE_PLACES_API_KEY
-  if (!apiKey) {
-    throw new Error('Google Places API key não configurada')
-  }
+  const apiKey = getApiKey()
 
-  const response = await fetch(
-    `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&language=pt-BR&region=br&key=${apiKey}`
-  )
-
-  const data = await response.json()
-
-  if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-    throw new Error(`Google Places API error: ${data.status}`)
-  }
-
-  return data.results || []
-}
-
-export async function getPlaceDetails(placeId: string): Promise<GooglePlaceDetails | null> {
-  const apiKey = process.env.GOOGLE_PLACES_API_KEY
-  if (!apiKey) {
-    throw new Error('Google Places API key não configurada')
-  }
-
-  const fields = [
-    'place_id',
-    'name',
-    'formatted_address',
-    'formatted_phone_number',
-    'international_phone_number',
-    'opening_hours',
-    'rating',
-    'user_ratings_total',
-    'reviews',
-    'photos',
-    'geometry',
-    'types',
-    'website',
-    'address_components',
-    'editorial_summary',
-    'business_status',
-    'price_level',
-    'url',
-    'vicinity',
+  const fieldMask = [
+    'places.id',
+    'places.displayName',
+    'places.formattedAddress',
+    'places.rating',
+    'places.userRatingCount',
+    'places.regularOpeningHours',
+    'places.photos',
+    'places.primaryType',
+    'places.primaryTypeDisplayName',
+    'places.businessStatus',
+    'places.location',
   ].join(',')
 
-  const [mostRelevantResponse, newestResponse, highestResponse] = await Promise.all([
-    fetch(
-      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=${fields}&key=${apiKey}&language=pt-BR&reviews_sort=most_relevant`
-    ),
-    fetch(
-      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews&key=${apiKey}&language=pt-BR&reviews_sort=newest`
-    ),
-    fetch(
-      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews&key=${apiKey}&language=pt-BR&reviews_sort=highest_rating`
-    ),
-  ])
+  const response = await fetch('https://places.googleapis.com/v1/places:searchText', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Goog-Api-Key': apiKey,
+      'X-Goog-FieldMask': fieldMask,
+    },
+    body: JSON.stringify({
+      textQuery: query,
+      languageCode: 'pt-BR',
+      regionCode: 'BR',
+      maxResultCount: 10,
+    }),
+  })
 
-  const mostRelevantData = await mostRelevantResponse.json()
-  const newestData = await newestResponse.json()
-  const highestData = await highestResponse.json()
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    console.error('[Google Places] Text Search error:', error)
+    throw new Error(`Google Places API error: ${response.status}`)
+  }
 
-  if (mostRelevantData.status !== 'OK') {
+  const data = await response.json()
+  return data.places || []
+}
+
+// ===== Place Details (New) =====
+
+// Fields organized by pricing tier for cost control
+const PLACE_DETAILS_FIELDS = [
+  // Essentials (cheapest)
+  'id',
+  'displayName',
+  'formattedAddress',
+  'addressComponents',
+  'location',
+  'photos',
+
+  // Pro
+  'primaryType',
+  'primaryTypeDisplayName',
+  'businessStatus',
+  'googleMapsUri',
+
+  // Enterprise
+  'nationalPhoneNumber',
+  'internationalPhoneNumber',
+  'regularOpeningHours',
+  'rating',
+  'userRatingCount',
+  'reviews',
+  'websiteUri',
+  'priceLevel',
+
+  // Enterprise + Atmosphere (richer data for prompts)
+  'editorialSummary',
+  'delivery',
+  'dineIn',
+  'takeout',
+  'reservable',
+  'servesBreakfast',
+  'servesLunch',
+  'servesDinner',
+  'servesBeer',
+  'servesWine',
+  'servesBrunch',
+  'servesVegetarianFood',
+  'goodForChildren',
+  'goodForGroups',
+  'outdoorSeating',
+  'liveMusic',
+  'allowsDogs',
+  'curbsidePickup',
+  'paymentOptions',
+  'parkingOptions',
+  'accessibilityOptions',
+].join(',')
+
+export async function getPlaceDetails(placeId: string): Promise<GooglePlaceDetails | null> {
+  const apiKey = getApiKey()
+
+  const response = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
+    headers: {
+      'X-Goog-Api-Key': apiKey,
+      'X-Goog-FieldMask': PLACE_DETAILS_FIELDS,
+      'X-Goog-Api-Language': 'pt-BR',
+    },
+  })
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}))
+    console.error('[Google Places] Place Details error:', error)
     return null
   }
 
-  const result = mostRelevantData.result as GooglePlaceDetails
-  const allReviews: GooglePlaceReview[] = result.reviews ? [...result.reviews] : []
+  const result: GooglePlaceDetails = await response.json()
 
-  console.log(`[Reviews] most_relevant: ${result.reviews?.length || 0} reviews`)
-
-  const addUniqueReviews = (reviews: GooglePlaceReview[], source: string) => {
-    const existingIds = new Set(allReviews.map(r => `${r.author_name}-${r.time}`))
-    let added = 0
-    for (const r of reviews) {
-      const id = `${r.author_name}-${r.time}`
-      if (!existingIds.has(id)) {
-        allReviews.push(r)
-        existingIds.add(id)
-        added++
-      }
-    }
-    console.log(`[Reviews] ${source}: ${reviews.length} reviews (${added} novas)`)
-  }
-
-  if (newestData.status === 'OK' && newestData.result?.reviews) {
-    addUniqueReviews(newestData.result.reviews, 'newest')
-  }
-
-  if (highestData.status === 'OK' && highestData.result?.reviews) {
-    addUniqueReviews(highestData.result.reviews, 'highest_rating')
-  }
-
-  result.reviews = allReviews
-  console.log(`[Reviews] Total único: ${allReviews.length} reviews`)
+  console.log(`[Google Places] Details for "${result.displayName?.text}":`)
+  console.log(`  primaryType: ${result.primaryType}`)
+  console.log(`  primaryTypeDisplayName: ${result.primaryTypeDisplayName?.text}`)
+  console.log(`  reviews: ${result.reviews?.length || 0}`)
 
   return result
 }
 
+// ===== Place Reviews (separate call for more reviews) =====
+
 export async function getPlaceReviews(placeId: string): Promise<GooglePlaceReview[]> {
-  const apiKey = process.env.GOOGLE_PLACES_API_KEY
-  if (!apiKey) {
-    throw new Error('Google Places API key não configurada')
-  }
+  const apiKey = getApiKey()
 
-  const [mostRelevantResponse, newestResponse, highestResponse] = await Promise.all([
-    fetch(
-      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews&key=${apiKey}&language=pt-BR&reviews_sort=most_relevant`
-    ),
-    fetch(
-      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews&key=${apiKey}&language=pt-BR&reviews_sort=newest`
-    ),
-    fetch(
-      `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews&key=${apiKey}&language=pt-BR&reviews_sort=highest_rating`
-    ),
-  ])
+  // The new API returns reviews as part of Place Details (up to 5)
+  // For more, we fetch place details with reviews field
+  const response = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
+    headers: {
+      'X-Goog-Api-Key': apiKey,
+      'X-Goog-FieldMask': 'reviews',
+      'X-Goog-Api-Language': 'pt-BR',
+    },
+  })
 
-  const mostRelevantData = await mostRelevantResponse.json()
-  const newestData = await newestResponse.json()
-  const highestData = await highestResponse.json()
+  if (!response.ok) return []
 
-  const allReviews: GooglePlaceReview[] = []
-  const existingIds = new Set<string>()
-
-  const addUniqueReviews = (reviews: GooglePlaceReview[]) => {
-    for (const r of reviews) {
-      const id = `${r.author_name}-${r.time}`
-      if (!existingIds.has(id)) {
-        allReviews.push(r)
-        existingIds.add(id)
-      }
-    }
-  }
-
-  if (mostRelevantData.status === 'OK' && mostRelevantData.result?.reviews) {
-    addUniqueReviews(mostRelevantData.result.reviews)
-  }
-
-  if (newestData.status === 'OK' && newestData.result?.reviews) {
-    addUniqueReviews(newestData.result.reviews)
-  }
-
-  if (highestData.status === 'OK' && highestData.result?.reviews) {
-    addUniqueReviews(highestData.result.reviews)
-  }
-
-  return allReviews.sort((a, b) => b.rating - a.rating)
+  const data = await response.json()
+  return data.reviews || []
 }
 
-export function getPhotoUrl(photoReference: string, maxWidth: number = 800): string {
-  const apiKey = process.env.GOOGLE_PLACES_API_KEY
-  return `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photo_reference=${photoReference}&key=${apiKey}`
+// ===== Photo URL =====
+
+export function getPhotoUrl(photoName: string, maxWidth: number = 800): string {
+  const apiKey = getApiKey()
+  // New API format: photos have a resource name like "places/PLACE_ID/photos/PHOTO_REF"
+  // Photo URL: https://places.googleapis.com/v1/{photoName}/media?maxWidthPx=X&key=Y
+  return `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=${maxWidth}&key=${apiKey}`
 }
 
-export function parseAddressComponents(components: GooglePlaceDetails['address_components']): {
+// ===== Address Parsing =====
+
+export function parseAddressComponents(components: GooglePlaceDetails['addressComponents']): {
   city: string
   state: string
   zipCode: string
@@ -270,22 +290,22 @@ export function parseAddressComponents(components: GooglePlaceDetails['address_c
 
   components?.forEach(component => {
     if (component.types.includes('administrative_area_level_2')) {
-      city = component.long_name
+      city = component.longText
     }
     if (component.types.includes('administrative_area_level_1')) {
-      state = component.short_name
+      state = component.shortText
     }
     if (component.types.includes('postal_code')) {
-      zipCode = component.long_name
+      zipCode = component.longText
     }
     if (component.types.includes('street_number')) {
-      streetNumber = component.long_name
+      streetNumber = component.longText
     }
     if (component.types.includes('route')) {
-      route = component.long_name
+      route = component.longText
     }
     if (component.types.includes('sublocality_level_1') || component.types.includes('sublocality')) {
-      neighborhood = component.long_name
+      neighborhood = component.longText
     }
   })
 
@@ -295,7 +315,9 @@ export function parseAddressComponents(components: GooglePlaceDetails['address_c
   return { city, state, zipCode, address }
 }
 
-export function parseOpeningHours(weekdayText: string[]): Record<string, string> {
+// ===== Opening Hours Parsing =====
+
+export function parseOpeningHours(weekdayDescriptions: string[]): Record<string, string> {
   const daysMap: Record<string, string> = {
     'segunda-feira': 'seg',
     'terça-feira': 'ter',
@@ -308,7 +330,7 @@ export function parseOpeningHours(weekdayText: string[]): Record<string, string>
 
   const hours: Record<string, string> = {}
 
-  weekdayText.forEach(line => {
+  weekdayDescriptions.forEach(line => {
     const [day, time] = line.split(': ')
     const dayKey = daysMap[day?.toLowerCase()]
     if (dayKey && time && time !== 'Fechado') {
@@ -320,214 +342,93 @@ export function parseOpeningHours(weekdayText: string[]): Record<string, string>
   return hours
 }
 
-export function inferCategory(types: string[]): string {
-  // Tipos genéricos que devem ser ignorados (verificados por último)
-  const genericTypes = new Set([
-    'point_of_interest',
-    'establishment',
-    'store',
-    'food',
-    'health',
-  ])
+// ===== Business Attributes Extraction (for AI prompts) =====
 
-  const categoryMap: Record<string, string> = {
-    // ========== AUTOMOTIVO ==========
-    'car_dealer': 'Revendedora de Veículos',
-    'car_rental': 'Locadora de Veículos',
-    'car_repair': 'Oficina Mecânica',
-    'car_wash': 'Lava Jato',
-    'gas_station': 'Posto de Combustível',
-    'parking': 'Estacionamento',
+export function extractBusinessAttributes(place: GooglePlaceDetails): string[] {
+  const attributes: string[] = []
 
-    // ========== ALIMENTAÇÃO ==========
-    'restaurant': 'Restaurante',
-    'cafe': 'Cafeteria',
-    'bakery': 'Padaria',
-    'bar': 'Bar',
-    'night_club': 'Casa Noturna',
-    'meal_delivery': 'Delivery',
-    'meal_takeaway': 'Delivery',
-    'food': 'Restaurante',
+  if (place.delivery) attributes.push('Faz delivery/entrega')
+  if (place.dineIn) attributes.push('Atende no local')
+  if (place.takeout) attributes.push('Retirada no balcão')
+  if (place.reservable) attributes.push('Aceita reservas')
+  if (place.servesBreakfast) attributes.push('Serve café da manhã')
+  if (place.servesLunch) attributes.push('Serve almoço')
+  if (place.servesDinner) attributes.push('Serve jantar')
+  if (place.servesBrunch) attributes.push('Serve brunch')
+  if (place.servesBeer) attributes.push('Serve cerveja')
+  if (place.servesWine) attributes.push('Serve vinho')
+  if (place.servesVegetarianFood) attributes.push('Opções vegetarianas')
+  if (place.goodForChildren) attributes.push('Bom para crianças')
+  if (place.goodForGroups) attributes.push('Bom para grupos')
+  if (place.outdoorSeating) attributes.push('Área externa')
+  if (place.liveMusic) attributes.push('Música ao vivo')
+  if (place.allowsDogs) attributes.push('Aceita pets')
+  if (place.curbsidePickup) attributes.push('Coleta na calçada')
 
-    // ========== BELEZA E BEM-ESTAR ==========
-    'beauty_salon': 'Salão de Beleza',
-    'hair_care': 'Salão de Beleza',
-    'hair_salon': 'Salão de Beleza',
-    'barber_shop': 'Barbearia',
-    'spa': 'Spa',
-    'gym': 'Academia',
-    'health': 'Academia',
-
-    // ========== SAÚDE ==========
-    'physiotherapist': 'Fisioterapeuta',
-    'dentist': 'Consultório Odontológico',
-    'doctor': 'Médico',
-    'hospital': 'Hospital',
-    'pharmacy': 'Farmácia',
-    'drugstore': 'Farmácia',
-    'veterinary_care': 'Clínica Veterinária',
-    'pet_store': 'Pet Shop',
-    'health_and_beauty': 'Clínica Médica',
-    'medical_center': 'Clínica Médica',
-    'clinic': 'Clínica Médica',
-
-    // ========== VAREJO - MODA ==========
-    'clothing_store': 'Loja de Roupas',
-    'shoe_store': 'Sapataria',
-    'jewelry_store': 'Joalheria',
-    'bridal_shop': 'Moda e Eventos',
-    'formal_wear_store': 'Moda e Eventos',
-    'wedding_store': 'Moda e Eventos',
-    'dress_store': 'Moda e Eventos',
-
-    // ========== VAREJO - CASA E DECORAÇÃO ==========
-    'furniture_store': 'Loja de Móveis',
-    'home_goods_store': 'Loja de Decoração',
-    'home_improvement_store': 'Loja de Ferragens',
-    'hardware_store': 'Loja de Ferragens',
-
-    // ========== VAREJO - ELETRÔNICOS E TECNOLOGIA ==========
-    'electronics_store': 'Loja de Eletrônicos',
-    'cell_phone_store': 'Loja de Eletrônicos',
-    'computer_store': 'Loja de Eletrônicos',
-    'mobile_phone_store': 'Loja de Eletrônicos',
-
-    // ========== VAREJO - OUTROS ==========
-    'bicycle_store': 'Loja de Bicicletas',
-    'book_store': 'Livraria',
-    'bookstore': 'Livraria',
-    'florist': 'Floricultura',
-    'flower_shop': 'Floricultura',
-    'convenience_store': 'Conveniência',
-    'liquor_store': 'Distribuidora de Bebidas',
-    'wine_store': 'Distribuidora de Bebidas',
-    'supermarket': 'Supermercado',
-    'grocery_or_supermarket': 'Supermercado',
-    'grocery_store': 'Supermercado',
-    'department_store': 'Loja de Departamentos',
-    'shopping_mall': 'Shopping Center',
-    'store': 'Loja de Roupas',
-
-    // ========== SERVIÇOS PROFISSIONAIS ==========
-    'lawyer': 'Escritório de Advocacia',
-    'law_firm': 'Escritório de Advocacia',
-    'attorney': 'Escritório de Advocacia',
-    'accounting': 'Escritório de Contabilidade',
-    'accountant': 'Escritório de Contabilidade',
-    'real_estate_agency': 'Imobiliária',
-    'real_estate_agent': 'Imobiliária',
-    'insurance_agency': 'Seguradora',
-    'travel_agency': 'Agência de Viagens',
-    'bank': 'Banco',
-    'atm': 'Banco',
-    'finance': 'Banco',
-
-    // ========== SERVIÇOS RESIDENCIAIS ==========
-    'moving_company': 'Empresa de Mudanças',
-    'storage': 'Empresa de Mudanças',
-    'laundry': 'Lavanderia',
-    'dry_cleaning': 'Lavanderia',
-    'locksmith': 'Chaveiro',
-    'painter': 'Pintor',
-    'plumber': 'Encanador',
-    'electrician': 'Eletricista',
-    'roofing_contractor': 'Pintor',
-    'general_contractor': 'Pintor',
-    'hvac_contractor': 'Eletricista',
-
-    // ========== EDUCAÇÃO ==========
-    'school': 'Escola',
-    'university': 'Escola',
-    'primary_school': 'Escola',
-    'secondary_school': 'Escola',
-    'library': 'Livraria',
-
-    // ========== HOSPEDAGEM ==========
-    'lodging': 'Hotel',
-    'hotel': 'Hotel',
-    'motel': 'Hotel',
-    'guest_house': 'Hotel',
-    'hostel': 'Hotel',
-    'campground': 'Hotel',
-    'rv_park': 'Hotel',
-
-    // ========== ENTRETENIMENTO E CULTURA ==========
-    'museum': 'Museu',
-    'art_gallery': 'Museu',
-    'movie_theater': 'Cinema',
-    'amusement_park': 'Cinema',
-    'bowling_alley': 'Bar',
-    'casino': 'Casa Noturna',
-    'stadium': 'Academia',
-    'zoo': 'Museu',
-    'aquarium': 'Museu',
-
-    // ========== RELIGIÃO E SERVIÇOS PÚBLICOS ==========
-    'church': 'Outro',
-    'mosque': 'Outro',
-    'synagogue': 'Outro',
-    'hindu_temple': 'Outro',
-    'cemetery': 'Outro',
-    'funeral_home': 'Outro',
-    'police': 'Outro',
-    'fire_station': 'Outro',
-    'post_office': 'Outro',
-    'local_government_office': 'Outro',
-    'city_hall': 'Outro',
-    'courthouse': 'Outro',
-    'embassy': 'Outro',
-
-    // ========== TIPOS GENÉRICOS ==========
-    'point_of_interest': 'Outro',
-    'establishment': 'Outro',
+  if (place.paymentOptions) {
+    const payments: string[] = []
+    if (place.paymentOptions.acceptsCreditCards) payments.push('cartão de crédito')
+    if (place.paymentOptions.acceptsDebitCards) payments.push('cartão de débito')
+    if (place.paymentOptions.acceptsNfc) payments.push('pagamento por aproximação')
+    if (place.paymentOptions.acceptsCashOnly) payments.push('somente dinheiro')
+    if (payments.length > 0) attributes.push(`Aceita: ${payments.join(', ')}`)
   }
 
-  // Primeira passada: busca tipos específicos (ignora genéricos)
-  for (const type of types) {
-    if (!genericTypes.has(type) && categoryMap[type] && categoryMap[type] !== 'Outro') {
-      return categoryMap[type]
-    }
+  if (place.parkingOptions) {
+    const parking: string[] = []
+    if (place.parkingOptions.freeParkingLot) parking.push('estacionamento gratuito')
+    if (place.parkingOptions.freeStreetParking) parking.push('estacionamento na rua')
+    if (place.parkingOptions.valetParking) parking.push('manobrista')
+    if (parking.length > 0) attributes.push(`Estacionamento: ${parking.join(', ')}`)
   }
 
-  // Segunda passada: verifica tipos genéricos se não encontrou específico
-  for (const type of types) {
-    if (categoryMap[type]) {
-      return categoryMap[type]
-    }
+  if (place.accessibilityOptions) {
+    const access: string[] = []
+    if (place.accessibilityOptions.wheelchairAccessibleEntrance) access.push('entrada acessível')
+    if (place.accessibilityOptions.wheelchairAccessibleRestroom) access.push('banheiro acessível')
+    if (place.accessibilityOptions.wheelchairAccessibleSeating) access.push('assentos acessíveis')
+    if (access.length > 0) attributes.push(`Acessibilidade: ${access.join(', ')}`)
   }
 
-  return 'Outro'
+  return attributes
 }
+
+// ===== Business Context Extraction (for AI prompts) =====
 
 export function extractBusinessContext(place: GooglePlaceDetails): {
   about: string | null
   keyServices: string[]
   customerHighlights: string[]
   priceRange: string | null
+  businessAttributes: string[]
 } {
   let about: string | null = null
   const keyServices: string[] = []
   const customerHighlights: string[] = []
   let priceRange: string | null = null
 
-  if (place.editorial_summary?.overview) {
-    about = place.editorial_summary.overview
+  if (place.editorialSummary?.text) {
+    about = place.editorialSummary.text
   }
 
-  if (place.price_level !== undefined) {
-    const priceMap: Record<number, string> = {
-      0: 'Gratuito',
-      1: 'Econômico',
-      2: 'Moderado',
-      3: 'Caro',
-      4: 'Muito Caro',
+  if (place.generativeSummary?.overview?.text) {
+    about = (about ? about + '. ' : '') + place.generativeSummary.overview.text
+  }
+
+  if (place.priceLevel) {
+    const priceMap: Record<string, string> = {
+      'PRICE_LEVEL_FREE': 'Gratuito',
+      'PRICE_LEVEL_INEXPENSIVE': 'Econômico',
+      'PRICE_LEVEL_MODERATE': 'Moderado',
+      'PRICE_LEVEL_EXPENSIVE': 'Caro',
+      'PRICE_LEVEL_VERY_EXPENSIVE': 'Muito Caro',
     }
-    priceRange = priceMap[place.price_level] || null
+    priceRange = priceMap[place.priceLevel] || null
   }
 
   if (place.reviews && place.reviews.length > 0) {
     const positiveReviews = place.reviews
-      .filter(r => r.rating >= 4 && r.text && r.text.length > 5)
+      .filter(r => r.rating >= 4 && r.text?.text && r.text.text.length > 5)
       .slice(0, 10)
 
     const serviceKeywords = new Set<string>()
@@ -540,12 +441,13 @@ export function extractBusinessContext(place: GooglePlaceDetails): {
     ]
 
     positiveReviews.forEach(review => {
-      const text = review.text.toLowerCase()
+      const reviewText = review.text?.text || ''
+      const text = reviewText.toLowerCase()
 
       servicePatterns.forEach(pattern => {
         const match = text.match(pattern)
         if (match) {
-          const context = extractContext(review.text, match[0])
+          const context = extractContext(reviewText, match[0])
           if (context) {
             if (['atendimento', 'serviço', 'qualidade', 'preço'].some(k => match[0].toLowerCase().includes(k))) {
               serviceKeywords.add(context)
@@ -561,7 +463,9 @@ export function extractBusinessContext(place: GooglePlaceDetails): {
     customerHighlights.push(...Array.from(highlightKeywords).slice(0, 5))
   }
 
-  return { about, keyServices, customerHighlights, priceRange }
+  const businessAttributes = extractBusinessAttributes(place)
+
+  return { about, keyServices, customerHighlights, priceRange, businessAttributes }
 }
 
 function extractContext(text: string, keyword: string): string | null {
@@ -578,17 +482,57 @@ function extractContext(text: string, keyword: string): string | null {
   return context.length > 20 ? context : null
 }
 
+// ===== Reviews Summarization =====
+
+export function summarizeReviews(reviews: GooglePlaceDetails['reviews']): string {
+  if (!reviews || reviews.length === 0) return ''
+
+  const fiveStarReviews = reviews
+    .filter(r => r.rating === 5 && r.text?.text && r.text.text.length > 30)
+    .slice(0, 6)
+
+  const fourStarReviews = reviews
+    .filter(r => r.rating === 4 && r.text?.text && r.text.text.length > 30)
+    .slice(0, 3)
+
+  const bestReviews = [...fiveStarReviews, ...fourStarReviews].slice(0, 8)
+
+  if (bestReviews.length === 0) return ''
+
+  return bestReviews
+    .map(r => `[${r.rating}★] "${(r.text?.text || '').substring(0, 200)}"`)
+    .join('\n')
+}
+
+// Summarize testimonials from database (unchanged - uses DB format)
+export function summarizeTestimonials(testimonials: { rating: number; content: string }[]): string {
+  if (!testimonials || testimonials.length === 0) return ''
+
+  const fiveStarReviews = testimonials
+    .filter(t => t.rating === 5 && t.content && t.content.length > 30)
+    .slice(0, 6)
+
+  const fourStarReviews = testimonials
+    .filter(t => t.rating === 4 && t.content && t.content.length > 30)
+    .slice(0, 3)
+
+  const bestReviews = [...fiveStarReviews, ...fourStarReviews].slice(0, 8)
+
+  if (bestReviews.length === 0) return ''
+
+  return bestReviews
+    .map(t => `[${t.rating}★] "${t.content.substring(0, 200)}"`)
+    .join('\n')
+}
+
+// ===== Nearby Neighborhoods (uses Geocoding + Legacy Nearby Search) =====
+
 export async function fetchNearbyNeighborhoods(
   latitude: number,
   longitude: number,
   city: string,
 ): Promise<string[]> {
-  const apiKey = process.env.GOOGLE_PLACES_API_KEY
-  if (!apiKey) {
-    console.warn('[Google Places] API key não configurada para busca de bairros')
-    return []
-  }
-
+  const apiKey = getApiKey()
   const neighborhoods = new Set<string>()
   const nearbyCities = new Set<string>()
 
@@ -600,6 +544,7 @@ export async function fetchNearbyNeighborhoods(
     !name.match(/^(brasil|brazil)$/i)
 
   try {
+    // Geocoding API (separate from Places, stays the same)
     const response = await fetch(
       `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&language=pt-BR&result_type=sublocality|neighborhood|locality&key=${apiKey}`
     )
@@ -628,6 +573,7 @@ export async function fetchNearbyNeighborhoods(
       }
     }
 
+    // Legacy Nearby Search (for neighborhood discovery - no equivalent in New API)
     const radii = [10000, 25000, 40000]
 
     for (const radius of radii) {
@@ -684,44 +630,4 @@ export async function fetchNearbyNeighborhoods(
     console.error('[Google Places] Erro ao buscar bairros:', error)
     return []
   }
-}
-
-export function summarizeReviews(reviews: GooglePlaceDetails['reviews']): string {
-  if (!reviews || reviews.length === 0) return ''
-
-  const fiveStarReviews = reviews
-    .filter(r => r.rating === 5 && r.text && r.text.length > 30)
-    .slice(0, 6)
-
-  const fourStarReviews = reviews
-    .filter(r => r.rating === 4 && r.text && r.text.length > 30)
-    .slice(0, 3)
-
-  const bestReviews = [...fiveStarReviews, ...fourStarReviews].slice(0, 8)
-
-  if (bestReviews.length === 0) return ''
-
-  return bestReviews
-    .map(r => `[${r.rating}★] "${r.text.substring(0, 200)}"`)
-    .join('\n')
-}
-
-export function summarizeTestimonials(testimonials: { rating: number; content: string }[]): string {
-  if (!testimonials || testimonials.length === 0) return ''
-
-  const fiveStarReviews = testimonials
-    .filter(t => t.rating === 5 && t.content && t.content.length > 30)
-    .slice(0, 6)
-
-  const fourStarReviews = testimonials
-    .filter(t => t.rating === 4 && t.content && t.content.length > 30)
-    .slice(0, 3)
-
-  const bestReviews = [...fiveStarReviews, ...fourStarReviews].slice(0, 8)
-
-  if (bestReviews.length === 0) return ''
-
-  return bestReviews
-    .map(t => `[${t.rating}★] "${t.content.substring(0, 200)}"`)
-    .join('\n')
 }

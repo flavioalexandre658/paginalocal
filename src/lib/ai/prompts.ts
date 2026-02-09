@@ -24,6 +24,9 @@ function buildBusinessContext(data: MarketingCopyInput): string {
       .join('\n')
     contextSections.push(`\n### HORÁRIO DE FUNCIONAMENTO:\n${hoursText}`)
   }
+  if (data.businessAttributes && data.businessAttributes.length > 0) {
+    contextSections.push(`\n### ATRIBUTOS DO NEGÓCIO (dados reais do Google, USE nas descrições):\n${data.businessAttributes.map(a => `- ${a}`).join('\n')}`)
+  }
   if (data.reviewHighlights) {
     contextSections.push(`\n### O QUE OS CLIENTES DIZEM (use como base para serviços e diferenciais):\n${data.reviewHighlights}`)
   }
