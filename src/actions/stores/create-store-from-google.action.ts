@@ -131,7 +131,6 @@ export const createStoreFromGoogleAction = authActionClient
           if (bHasText !== aHasText) return bHasText - aHasText
           return b.rating - a.rating
         })
-        .slice(0, 15)
 
       console.log(`[Reviews] Salvando ${topReviews.length} reviews com rating >= 4`)
 
@@ -187,28 +186,22 @@ export const createStoreFromGoogleAction = authActionClient
         const [selectedPhoto] = allPhotos.splice(coverPhotoIndex, 1)
         allPhotos.unshift(selectedPhoto)
       }
-      const photosToProcess = allPhotos.slice(0, 10)
 
-      const altTemplates = [
-        `Fachada da ${result.displayName} em ${result.city}`,
-        `Ambiente interno da ${result.displayName} em ${result.city}`,
-        `Equipe da ${result.displayName} em ${result.city}`,
-        `Estrutura da ${result.displayName} em ${result.city}`,
-        `Atendimento na ${result.displayName} em ${result.city}`,
-        `Serviços da ${result.displayName} em ${result.city}`,
-        `Instalações da ${result.displayName} em ${result.city}`,
-        `Detalhes da ${result.displayName} em ${result.city}`,
-        `Vista da ${result.displayName} em ${result.city}`,
-        `Espaço da ${result.displayName} em ${result.city}`,
+      const altVariations = [
+        'Fachada', 'Ambiente interno', 'Equipe', 'Estrutura', 'Atendimento',
+        'Serviços', 'Instalações', 'Detalhes', 'Vista', 'Espaço',
+        'Área externa', 'Recepção', 'Produtos', 'Interior', 'Entrada',
+        'Vitrine', 'Salão', 'Área de trabalho', 'Decoração', 'Ambiente',
       ]
 
-      for (let i = 0; i < photosToProcess.length; i++) {
-        const photoName = photosToProcess[i].name
+      for (let i = 0; i < allPhotos.length; i++) {
+        const photoName = allPhotos[i].name
         const isHero = i === 0
         const role = isHero ? 'hero' : 'gallery'
+        const altPrefix = altVariations[i % altVariations.length]
 
         try {
-          console.log(`[Images] Downloading photo ${i + 1}/${photosToProcess.length}: ${photoName.substring(0, 60)}...`)
+          console.log(`[Images] Downloading photo ${i + 1}/${allPhotos.length}: ${photoName.substring(0, 60)}...`)
           const imageBuffer = await downloadGooglePhoto(photoName, isHero ? 1200 : 800)
           console.log(`[Images] Downloaded ${imageBuffer.length} bytes, optimizing...`)
 
@@ -223,7 +216,7 @@ export const createStoreFromGoogleAction = authActionClient
           await db.insert(storeImage).values({
             storeId: newStore.id,
             url,
-            alt: altTemplates[i] || `Foto da ${result.displayName} em ${result.city}`,
+            alt: `${altPrefix} da ${result.displayName} em ${result.city}`,
             role,
             order: i,
             width: optimized.width,
@@ -242,11 +235,11 @@ export const createStoreFromGoogleAction = authActionClient
           imagesProcessed++
           console.log(`[Images] Photo ${i + 1} saved successfully (${role})`)
         } catch (error) {
-          console.error(`[Images] FAILED to process photo ${i + 1}/${photosToProcess.length} (${photoName}):`, error instanceof Error ? error.message : error)
+          console.error(`[Images] FAILED to process photo ${i + 1}/${allPhotos.length} (${photoName}):`, error instanceof Error ? error.message : error)
         }
       }
 
-      console.log(`[Images] Completed: ${imagesProcessed}/${photosToProcess.length} photos saved`)
+      console.log(`[Images] Completed: ${imagesProcessed}/${allPhotos.length} photos saved`)
     } else {
       console.warn(`[Images] No photos available from Google for this place`)
     }

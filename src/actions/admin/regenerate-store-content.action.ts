@@ -3,12 +3,12 @@
 import { z } from 'zod'
 import { adminActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
-import { store, service, testimonial } from '@/db/schema'
+import { store, service, testimonial, storeImage } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
 import { generateCitySlug } from '@/lib/utils'
 import { downloadGooglePhoto } from '@/lib/google-places'
-import { optimizeHeroImage } from '@/lib/image-optimizer'
+import { optimizeHeroImage, optimizeGalleryImage } from '@/lib/image-optimizer'
 import { uploadToS3, generateS3Key } from '@/lib/s3'
 import {
   buildStoreFromGoogle,
@@ -41,22 +41,81 @@ export const regenerateStoreContentAction = adminActionClient
     // ===== Build store data from Google (same logic as creation) =====
     const result = await buildStoreFromGoogle(googlePlaceId)
 
-    // ===== Update cover image from Google =====
+    // ===== Process and upload ALL images from Google =====
     let newCoverUrl = result.coverUrl
-    if (result.placeDetails.photos && result.placeDetails.photos.length > 0) {
-      try {
-        const coverPhoto = result.placeDetails.photos[0]
-        console.log(`[Regenerate] Downloading cover photo: ${coverPhoto.name.substring(0, 60)}...`)
-        const imageBuffer = await downloadGooglePhoto(coverPhoto.name, 1200)
-        const optimized = await optimizeHeroImage(imageBuffer)
-        const s3Key = generateS3Key(storeData.id, 'cover-regen')
-        const { url } = await uploadToS3(optimized.buffer, s3Key)
-        newCoverUrl = url
-        console.log(`[Regenerate] Cover image updated from Google`)
-      } catch (error) {
-        console.error('[Regenerate] Error updating cover image, keeping existing:', error instanceof Error ? error.message : error)
-        newCoverUrl = storeData.coverUrl || result.coverUrl
+    let imagesProcessed = 0
+    const photos = result.placeDetails.photos
+
+    console.log(`[Regenerate] Google returned ${photos?.length ?? 0} photos`)
+
+    if (photos && photos.length > 0) {
+      // Delete existing Google-imported images (keep manually uploaded ones)
+      const existingImages = await db
+        .select({ id: storeImage.id, originalGoogleRef: storeImage.originalGoogleRef })
+        .from(storeImage)
+        .where(eq(storeImage.storeId, parsedInput.storeId))
+
+      const googleImages = existingImages.filter(img => img.originalGoogleRef)
+      if (googleImages.length > 0) {
+        for (const img of googleImages) {
+          await db.delete(storeImage).where(eq(storeImage.id, img.id))
+        }
+        console.log(`[Regenerate] Deleted ${googleImages.length} existing Google images`)
       }
+
+      const manualImageCount = existingImages.length - googleImages.length
+
+      const altVariations = [
+        'Fachada', 'Ambiente interno', 'Equipe', 'Estrutura', 'Atendimento',
+        'Serviços', 'Instalações', 'Detalhes', 'Vista', 'Espaço',
+        'Área externa', 'Recepção', 'Produtos', 'Interior', 'Entrada',
+        'Vitrine', 'Salão', 'Área de trabalho', 'Decoração', 'Ambiente',
+      ]
+
+      for (let i = 0; i < photos.length; i++) {
+        const photoName = photos[i].name
+        const isHero = i === 0
+        const role = isHero ? 'hero' : 'gallery'
+        const altPrefix = altVariations[i % altVariations.length]
+
+        try {
+          console.log(`[Regenerate] Downloading photo ${i + 1}/${photos.length}...`)
+          const imageBuffer = await downloadGooglePhoto(photoName, isHero ? 1200 : 800)
+
+          const optimized = isHero
+            ? await optimizeHeroImage(imageBuffer)
+            : await optimizeGalleryImage(imageBuffer)
+
+          const filename = `${role}-regen-${i}`
+          const s3Key = generateS3Key(storeData.id, filename)
+          const { url } = await uploadToS3(optimized.buffer, s3Key)
+
+          await db.insert(storeImage).values({
+            storeId: parsedInput.storeId,
+            url,
+            alt: `${altPrefix} da ${result.displayName} em ${result.city}`,
+            role,
+            order: manualImageCount + i,
+            width: optimized.width,
+            height: optimized.height,
+            originalGoogleRef: photoName,
+          })
+
+          if (isHero) {
+            newCoverUrl = url
+          }
+
+          imagesProcessed++
+          console.log(`[Regenerate] Photo ${i + 1} saved (${role})`)
+        } catch (error) {
+          console.error(`[Regenerate] FAILED photo ${i + 1}/${photos.length}:`, error instanceof Error ? error.message : error)
+          if (isHero) {
+            newCoverUrl = storeData.coverUrl || result.coverUrl
+          }
+        }
+      }
+
+      console.log(`[Regenerate] Images: ${imagesProcessed}/${photos.length} saved`)
     }
 
     // ===== Update store (preserve: id, userId, slug, isActive, logoUrl, faviconUrl, images in store_image) =====
@@ -106,7 +165,6 @@ export const regenerateStoreContentAction = adminActionClient
           if (bHasText !== aHasText) return bHasText - aHasText
           return b.rating - a.rating
         })
-        .slice(0, 15)
 
       for (const review of topReviews) {
         const reviewContent = review.text?.text && review.text.text.trim().length > 0
