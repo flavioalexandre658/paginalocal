@@ -14,6 +14,7 @@ import {
   IconMapPin,
   IconBuilding,
   IconEye,
+  IconMessage,
 } from '@tabler/icons-react'
 
 import { updateStoreAction } from '@/actions/stores/update-store.action'
@@ -27,12 +28,14 @@ import {
   FormDescription,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
 import { Switch } from '@/components/ui/switch'
 
 const contactFormSchema = z.object({
   whatsapp: z.string().min(10, 'WhatsApp inválido'),
   phone: z.string().optional(),
+  whatsappDefaultMessage: z.string().max(300, 'Máximo 300 caracteres').optional(),
   address: z.string().min(5, 'Endereço é obrigatório'),
   city: z.string().min(2, 'Cidade é obrigatória'),
   state: z.string().length(2, 'UF deve ter 2 caracteres'),
@@ -48,6 +51,7 @@ interface ContactTabProps {
     id: string
     whatsapp: string
     phone: string
+    whatsappDefaultMessage: string | null
     address: string
     city: string
     state: string
@@ -68,6 +72,7 @@ export function ContactTab({ store }: ContactTabProps) {
     defaultValues: {
       whatsapp: store.whatsapp,
       phone: store.phone || '',
+      whatsappDefaultMessage: store.whatsappDefaultMessage || '',
       address: store.address,
       city: store.city,
       state: store.state,
@@ -82,6 +87,7 @@ export function ContactTab({ store }: ContactTabProps) {
       storeId: store.id,
       whatsapp: data.whatsapp.replace(/\D/g, ''),
       phone: data.phone?.replace(/\D/g, '') || '',
+      whatsappDefaultMessage: data.whatsappDefaultMessage?.trim() || null,
       address: data.address,
       city: data.city,
       state: data.state,
@@ -183,6 +189,34 @@ export function ContactTab({ store }: ContactTabProps) {
                     </FormControl>
                     <FormDescription>
                       Opcional, será exibido se preenchido
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="mt-6 border-t border-slate-200/60 pt-6 dark:border-slate-700/40">
+              <FormField
+                control={form.control}
+                name="whatsappDefaultMessage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <IconMessage className="h-4 w-4 text-emerald-500" />
+                      Mensagem padrão do WhatsApp
+                    </FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Olá! Vi seu site e gostaria de mais informações."
+                        className="min-h-[80px] resize-none"
+                        maxLength={300}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Mensagem que será enviada automaticamente quando o cliente clicar no botão do WhatsApp.
+                      Deixe em branco para usar a mensagem padrão.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

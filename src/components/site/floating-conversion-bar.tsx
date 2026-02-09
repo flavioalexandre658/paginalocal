@@ -1,7 +1,7 @@
 'use client'
 
 import { IconBrandWhatsapp, IconPhone } from '@tabler/icons-react'
-import { getWhatsAppUrl, getPhoneUrl } from '@/lib/utils'
+import { getWhatsAppUrl, getPhoneUrl, getWhatsAppDefaultMessage } from '@/lib/utils'
 import { useTrackClick } from '@/hooks/use-track-click'
 
 interface FloatingConversionBarProps {
@@ -9,11 +9,12 @@ interface FloatingConversionBarProps {
   whatsapp: string
   phone: string
   storeName: string
+  whatsappDefaultMessage?: string | null
 }
 
-export function FloatingConversionBar({ storeId, whatsapp, phone, storeName }: FloatingConversionBarProps) {
+export function FloatingConversionBar({ storeId, whatsapp, phone, storeName, whatsappDefaultMessage }: FloatingConversionBarProps) {
   const { trackClick } = useTrackClick()
-  const whatsappMessage = `Olá! Vi o site da ${storeName} e gostaria de mais informações.`
+  const whatsappMessage = getWhatsAppDefaultMessage(storeName, whatsappDefaultMessage)
 
   const handleWhatsAppClick = () => {
     trackClick({

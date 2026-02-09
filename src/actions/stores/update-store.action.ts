@@ -40,6 +40,7 @@ const updateStoreSchema = z.object({
     answer: z.string(),
   })).optional(),
   neighborhoods: z.array(z.string()).optional(),
+  whatsappDefaultMessage: z.string().max(300, 'Mensagem deve ter no máximo 300 caracteres').optional().nullable(),
   showWhatsappButton: z.boolean().optional(),
   showCallButton: z.boolean().optional(),
 })

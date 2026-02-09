@@ -9,7 +9,7 @@ import {
   IconStar,
   IconChevronRight,
 } from '@tabler/icons-react'
-import { formatCurrency, getWhatsAppUrl, getPhoneUrl, getServicePageUrl, getStoreHomeUrl } from '@/lib/utils'
+import { formatCurrency, getWhatsAppUrl, getPhoneUrl, getWhatsAppDefaultMessage, getServicePageUrl, getStoreHomeUrl } from '@/lib/utils'
 
 interface ServiceDetailContentProps {
   store: {
@@ -21,6 +21,7 @@ interface ServiceDetailContentProps {
     state: string
     phone: string
     whatsapp: string
+    whatsappDefaultMessage?: string | null
     logoUrl: string | null
     primaryColor: string | null
     isActive: boolean
@@ -55,7 +56,8 @@ interface ServiceDetailContentProps {
 }
 
 export function ServiceDetailContent({ store, service, otherServices, testimonials }: ServiceDetailContentProps) {
-  const whatsappMessage = `Olá! Gostaria de saber mais sobre o serviço de ${service.name}.`
+  const whatsappMessage = store.whatsappDefaultMessage?.trim()
+    || `Olá! Gostaria de saber mais sobre o serviço de ${service.name} na ${store.name}.`
   const rating = store.googleRating ? parseFloat(store.googleRating) : 0
   const showRating = rating >= 4.0 && store.googleReviewsCount && store.googleReviewsCount > 0
 

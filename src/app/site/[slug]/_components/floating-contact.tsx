@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { IconPhone } from '@tabler/icons-react'
-import { getWhatsAppUrl, getPhoneUrl } from '@/lib/utils'
+import { getWhatsAppUrl, getPhoneUrl, getWhatsAppDefaultMessage } from '@/lib/utils'
 import { DraftContactModal } from '@/components/site/draft-contact-modal'
 import { useTrackClick } from '@/hooks/use-track-click'
 
@@ -13,6 +13,7 @@ interface FloatingContactProps {
     slug: string
     whatsapp: string
     phone?: string | null
+    whatsappDefaultMessage?: string | null
     isActive: boolean
     showWhatsappButton: boolean
     showCallButton: boolean
@@ -26,7 +27,7 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
   const [modalContactType, setModalContactType] = useState<'whatsapp' | 'phone'>('whatsapp')
   const { trackClick } = useTrackClick()
 
-  const whatsappLink = getWhatsAppUrl(store.whatsapp, `Olá! Vi o site de ${store.name} e gostaria de mais informações.`)
+  const whatsappLink = getWhatsAppUrl(store.whatsapp, getWhatsAppDefaultMessage(store.name, store.whatsappDefaultMessage))
   const phoneLink = getPhoneUrl(store.phone || store.whatsapp)
 
   const showWhatsapp = store.showWhatsappButton

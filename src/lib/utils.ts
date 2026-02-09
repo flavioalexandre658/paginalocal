@@ -50,6 +50,10 @@ export function getWhatsAppUrl(phone: string, message?: string): string {
   return message ? `${baseUrl}?text=${encodeURIComponent(message)}` : baseUrl
 }
 
+export function getWhatsAppDefaultMessage(storeName: string, customMessage?: string | null): string {
+  return customMessage?.trim() || `Olá! Vi o site da ${storeName} e gostaria de mais informações.`
+}
+
 export function getPhoneUrl(phone: string): string {
   const cleaned = phone.replace(/\D/g, '')
   const phoneWithCountry = cleaned.startsWith('55') ? cleaned : `55${cleaned}`

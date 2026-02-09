@@ -88,10 +88,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const pageUrl = `${baseUrl}/servicos/${serviceSlug}`
   const ogImage = storeData.coverUrl || storeData.logoUrl
+  const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
 
   return {
     title: { absolute: title },
     description,
+    icons: {
+      icon: faviconUrl,
+      apple: faviconUrl,
+    },
     authors: [{ name: storeData.name }],
     robots: {
       index: storeData.isActive,
@@ -264,6 +269,7 @@ export default async function ServicePage({ params }: PageProps) {
           state: storeData.state,
           phone: storeData.phone,
           whatsapp: storeData.whatsapp,
+          whatsappDefaultMessage: storeData.whatsappDefaultMessage,
           logoUrl: storeData.logoUrl,
           primaryColor: storeData.primaryColor,
           isActive: storeData.isActive,
@@ -297,6 +303,7 @@ export default async function ServicePage({ params }: PageProps) {
           slug: storeData.slug,
           whatsapp: storeData.whatsapp,
           phone: storeData.phone,
+          whatsappDefaultMessage: storeData.whatsappDefaultMessage,
           isActive: storeData.isActive,
           showWhatsappButton: storeData.showWhatsappButton,
           showCallButton: storeData.showCallButton,

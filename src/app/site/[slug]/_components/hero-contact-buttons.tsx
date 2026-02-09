@@ -9,6 +9,7 @@ interface HeroContactButtonsProps {
     slug: string
     whatsapp: string
     phone?: string | null
+    whatsappDefaultMessage?: string | null
     isActive: boolean
     showWhatsappButton: boolean
     showCallButton: boolean

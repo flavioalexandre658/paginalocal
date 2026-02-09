@@ -476,6 +476,7 @@ export default async function StorePage({ params }: PageProps) {
           slug: storeData.slug,
           whatsapp: storeData.whatsapp,
           phone: storeData.phone,
+          whatsappDefaultMessage: storeData.whatsappDefaultMessage,
           isActive: storeData.isActive,
           showWhatsappButton: storeData.showWhatsappButton,
           showCallButton: storeData.showCallButton,

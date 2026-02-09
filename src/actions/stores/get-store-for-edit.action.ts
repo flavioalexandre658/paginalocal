@@ -73,6 +73,7 @@ export const getStoreForEditAction = authActionClient
         isActive: storeData.isActive,
         googlePlaceId: storeData.googlePlaceId,
         customDomain: storeData.customDomain,
+        whatsappDefaultMessage: storeData.whatsappDefaultMessage,
         showWhatsappButton: storeData.showWhatsappButton,
         showCallButton: storeData.showCallButton,
       },

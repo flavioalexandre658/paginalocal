@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { IconPhone } from '@tabler/icons-react'
-import { getWhatsAppUrl, getPhoneUrl, cn } from '@/lib/utils'
+import { getWhatsAppUrl, getPhoneUrl, getWhatsAppDefaultMessage, cn } from '@/lib/utils'
 import { DraftContactModal } from './draft-contact-modal'
 import { useTrackClick } from '@/hooks/use-track-click'
 
@@ -13,6 +13,7 @@ interface ContactButtonProps {
     slug: string
     whatsapp: string
     phone?: string | null
+    whatsappDefaultMessage?: string | null
     isActive: boolean
   }
   type: 'whatsapp' | 'phone'
@@ -34,7 +35,7 @@ export function ContactButton({
   const { trackClick } = useTrackClick()
 
   const phoneNumber = store.phone || store.whatsapp
-  const whatsappLink = getWhatsAppUrl(store.whatsapp, 'Olá! Vi seu site e gostaria de mais informações.')
+  const whatsappLink = getWhatsAppUrl(store.whatsapp, getWhatsAppDefaultMessage(store.name, store.whatsappDefaultMessage))
   const phoneLink = getPhoneUrl(phoneNumber)
 
   async function handleClick(e: React.MouseEvent) {

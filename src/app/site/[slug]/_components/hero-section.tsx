@@ -16,6 +16,7 @@ interface HeroSectionProps {
     googleReviewsCount?: number | null
     whatsapp: string
     phone?: string | null
+    whatsappDefaultMessage?: string | null
     heroTitle?: string | null
     heroSubtitle?: string | null
     isActive: boolean

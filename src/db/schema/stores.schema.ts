@@ -44,6 +44,8 @@ export const store = pgTable('store', {
   faq: jsonb('faq'),
   neighborhoods: jsonb('neighborhoods'),
 
+  whatsappDefaultMessage: varchar('whatsapp_default_message', { length: 300 }),
+
   showWhatsappButton: boolean('show_whatsapp_button').default(true).notNull(),
   showCallButton: boolean('show_call_button').default(true).notNull(),
 
