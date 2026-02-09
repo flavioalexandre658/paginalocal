@@ -578,21 +578,150 @@ function extractContext(text: string, keyword: string): string | null {
   return context.length > 20 ? context : null
 }
 
+export async function fetchNearbyNeighborhoods(
+  latitude: number,
+  longitude: number,
+  city: string,
+): Promise<string[]> {
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY
+  if (!apiKey) {
+    console.warn('[Google Places] API key não configurada para busca de bairros')
+    return []
+  }
+
+  const neighborhoods = new Set<string>()
+  const nearbyCities = new Set<string>()
+
+  const isValidName = (name: string) =>
+    name &&
+    name !== city &&
+    name.length > 2 &&
+    !name.match(/^\d/) &&
+    !name.match(/^(brasil|brazil)$/i)
+
+  try {
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&language=pt-BR&result_type=sublocality|neighborhood|locality&key=${apiKey}`
+    )
+
+    const data = await response.json()
+
+    if (data.status === 'OK' && data.results) {
+      for (const result of data.results) {
+        for (const component of result.address_components || []) {
+          const types: string[] = component.types
+          if (
+            types.includes('sublocality_level_1') ||
+            types.includes('sublocality') ||
+            types.includes('neighborhood')
+          ) {
+            if (isValidName(component.long_name)) {
+              neighborhoods.add(component.long_name)
+            }
+          }
+          if (types.includes('locality') || types.includes('administrative_area_level_2')) {
+            if (isValidName(component.long_name)) {
+              nearbyCities.add(component.long_name)
+            }
+          }
+        }
+      }
+    }
+
+    const radii = [10000, 25000, 40000]
+
+    for (const radius of radii) {
+      if (neighborhoods.size >= 6) break
+
+      const nearbyResponse = await fetch(
+        `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=${radius}&type=sublocality&language=pt-BR&key=${apiKey}`
+      )
+
+      const nearbyData = await nearbyResponse.json()
+
+      if (nearbyData.status === 'OK' && nearbyData.results) {
+        for (const place of nearbyData.results.slice(0, 20)) {
+          if (isValidName(place.name)) {
+            neighborhoods.add(place.name)
+          }
+          if (place.vicinity) {
+            const parts = place.vicinity.split(',').map((p: string) => p.trim())
+            for (const part of parts) {
+              if (isValidName(part)) {
+                neighborhoods.add(part)
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (neighborhoods.size < 6) {
+      const cityResponse = await fetch(
+        `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${latitude},${longitude}&radius=50000&type=locality&language=pt-BR&key=${apiKey}`
+      )
+
+      const cityData = await cityResponse.json()
+
+      if (cityData.status === 'OK' && cityData.results) {
+        for (const place of cityData.results.slice(0, 15)) {
+          if (isValidName(place.name)) {
+            nearbyCities.add(place.name)
+          }
+        }
+      }
+    }
+
+    const allResults = [
+      ...Array.from(neighborhoods),
+      ...Array.from(nearbyCities),
+    ]
+
+    const unique = [...new Set(allResults)].slice(0, 10)
+    console.log(`[Google Places] Bairros/regiões encontrados para ${city}: [${unique.join(', ')}]`)
+    return unique
+  } catch (error) {
+    console.error('[Google Places] Erro ao buscar bairros:', error)
+    return []
+  }
+}
+
 export function summarizeReviews(reviews: GooglePlaceDetails['reviews']): string {
   if (!reviews || reviews.length === 0) return ''
 
-  const positiveReviews = reviews
-    .filter(r => r.rating >= 4 && r.text && r.text.length > 20)
-    .slice(0, 8)
+  const fiveStarReviews = reviews
+    .filter(r => r.rating === 5 && r.text && r.text.length > 30)
+    .slice(0, 6)
 
-  if (positiveReviews.length === 0) return ''
+  const fourStarReviews = reviews
+    .filter(r => r.rating === 4 && r.text && r.text.length > 30)
+    .slice(0, 3)
 
-  const highlights: string[] = []
+  const bestReviews = [...fiveStarReviews, ...fourStarReviews].slice(0, 8)
 
-  positiveReviews.forEach(review => {
-    const sentences = review.text.split(/[.!?]/).filter(s => s.trim().length > 10)
-    sentences.slice(0, 2).forEach(s => highlights.push(s.trim()))
-  })
+  if (bestReviews.length === 0) return ''
 
-  return highlights.slice(0, 10).join('. ')
+  return bestReviews
+    .map(r => `[${r.rating}★] "${r.text.substring(0, 200)}"`)
+    .join('\n')
+}
+
+export function summarizeTestimonials(testimonials: { rating: number; content: string }[]): string {
+  if (!testimonials || testimonials.length === 0) return ''
+
+  const fiveStarReviews = testimonials
+    .filter(t => t.rating === 5 && t.content && t.content.length > 30)
+    .slice(0, 6)
+
+  const fourStarReviews = testimonials
+    .filter(t => t.rating === 4 && t.content && t.content.length > 30)
+    .slice(0, 3)
+
+  const bestReviews = [...fiveStarReviews, ...fourStarReviews].slice(0, 8)
+
+  if (bestReviews.length === 0) return ''
+
+  return bestReviews
+    .map(t => `[${t.rating}★] "${t.content.substring(0, 200)}"`)
+    .join('\n')
 }

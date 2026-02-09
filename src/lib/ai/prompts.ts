@@ -18,6 +18,12 @@ function buildBusinessContext(data: MarketingCopyInput): string {
   if (data.businessTypes && data.businessTypes.length > 0) {
     contextSections.push(`- Tipos de negócio (Google): ${data.businessTypes.join(', ')}`)
   }
+  if (data.openingHours && Object.keys(data.openingHours).length > 0) {
+    const hoursText = Object.entries(data.openingHours)
+      .map(([day, hours]) => `  ${day}: ${hours}`)
+      .join('\n')
+    contextSections.push(`\n### HORÁRIO DE FUNCIONAMENTO:\n${hoursText}`)
+  }
   if (data.reviewHighlights) {
     contextSections.push(`\n### O QUE OS CLIENTES DIZEM (use como base para serviços e diferenciais):\n${data.reviewHighlights}`)
   }
@@ -45,7 +51,10 @@ function getAntiAiRules(): string {
 - Escreva como o DONO do negócio falaria: direto, simples, com detalhes reais
 - Use linguagem coloquial brasileira natural (como se falasse com um cliente no balcão)
 - Frases curtas (máx 25 palavras), parágrafos curtos (2-3 frases)
-- INCLUA dados concretos: serviços reais, bairros atendidos, preços quando possível, horários, formas de pagamento
+- Use APENAS dados que existem no contexto do negócio. NUNCA invente preços, horários, bairros ou dados que não foram fornecidos
+- PROIBIDO inventar preços (ex: "a partir de R$79,90") se não tiver essa informação nos dados
+- PROIBIDO inventar bairros ou regiões. Se não tiver, não mencione bairros
+- PROIBIDO inventar horários de funcionamento se não tiver nos dados
 - O texto deve ser tão ESPECÍFICO que só serve para ESTE negócio, nunca para outro`
 }
 
@@ -75,8 +84,8 @@ ${getAntiAiRules()}
    EXEMPLOS:
    - Borracharia: "Troca, Reparo e Venda de Pneus Novos e Seminovos para veículos pesados em Guarulhos com atendimento rápido e de confiança"
    - Barbearia: "Corte Masculino, Barba, Degradê e Tratamentos Capilares em São Paulo com agendamento pelo WhatsApp"
-   - Academia: "Musculação, Funcional, Spinning e Personal Trainer em Campinas com planos a partir de R$79,90"
-   - Restaurante: "Self-Service, Almoço Executivo e Marmitex por quilo em Osasco com estacionamento próprio"
+   - Academia: "Musculação, Funcional, Spinning e Personal Trainer em Campinas"
+   - Restaurante: "Self-Service, Almoço Executivo e Marmitex por quilo em Osasco"
    - Pet Shop: "Banho e Tosa, Veterinário e Vacinação para cães e gatos em Sorocaba"
    
    ERRADO (genérico demais): "Atendimento rápido e eficiente: sua borracharia em Guarulhos!"
@@ -86,9 +95,10 @@ ${getAntiAiRules()}
 
 4. **aboutSection** (4-6 frases, 300-500 chars):
    - Comece: "A ${data.businessName} é ${data.category.toLowerCase()} em ${data.city}, ${data.state}."
-   - Liste 3-4 serviços principais com as palavras que o cliente pesquisaria
-   - Diferencial concreto: nota ${data.rating ? data.rating + ' no Google' : 'nas avaliações'}, horário, preço, especialidade
-   - Mencione 2-3 bairros da região
+   - Descreva os serviços principais que o negócio oferece (use dados do Google e reviews)
+   - Explique o que torna esse negócio diferente (especialidade, tipo de público, método de trabalho)
+   - NÃO mencione nota do Google, número de avaliações, bairros ou horários (isso já é exibido visualmente na página)
+   - NÃO invente preços ou dados que não estejam no contexto fornecido
    - Termine com CTA prático: "Mande um WhatsApp para orçamento" ou "Ligue para agendar"
 
 5. **seoTitle** (máx 60 chars): "${data.category} em ${data.city} | ${data.businessName}"
@@ -98,8 +108,6 @@ ${getAntiAiRules()}
    BOM: "Troca de pneus, alinhamento e balanceamento em Guarulhos. Borracharia Salmo 23 com atendimento 24h. Ligue agora!"
    RUIM: "Sua borracharia de confiança em Guarulhos com atendimento diferenciado."
 
-7. **neighborhoods** (5-8 bairros): Bairros REAIS de ${data.city}
-
 ### RETORNE APENAS JSON:
 {
   "brandName": "${data.businessName}",
@@ -107,8 +115,7 @@ ${getAntiAiRules()}
   "heroSubtitle": "...",
   "aboutSection": "...",
   "seoTitle": "...",
-  "seoDescription": "...",
-  "neighborhoods": ["Bairro1", "Bairro2", "Bairro3", "Bairro4", "Bairro5"]
+  "seoDescription": "..."
 }
 
 RETORNE APENAS O JSON, SEM MARKDOWN.`
@@ -125,23 +132,29 @@ ${getAntiAiRules()}
 ### REGRAS PARA FEATURED SNIPPETS:
 - Primeira frase RESPONDE a pergunta de forma DIRETA (sem enrolação, sem "é importante notar que")
 - A resposta deve funcionar sozinha, sem precisar ler mais nada
-- Use nome do negócio, bairro e cidade nas respostas
-- Inclua dados concretos: preços médios, horários reais, formas de pagamento
+- Use nome do negócio e cidade nas respostas
+- Use APENAS dados que existem no contexto fornecido. NUNCA invente preços, horários ou endereços
 - Respostas entre 50-80 palavras (tamanho ideal para snippet)
 - Perguntas escritas EXATAMENTE como o usuário pesquisa no Google (linguagem natural)
 
 ### GERE 8 PERGUNTAS FAQ:
-OBRIGATÓRIAS:
+As 5 primeiras são obrigatórias (adapte o texto para o negócio):
 1. "Qual a melhor ${data.category.toLowerCase()} perto de mim em ${data.city}?"
-2. "Quanto custa [serviço principal da categoria] em ${data.city}?"
+2. "Quanto custa ${data.category.toLowerCase()} em ${data.city}?"
 3. "Onde fica a ${data.businessName} em ${data.city}?"
-4. "${data.category} em ${data.city} que abre [sábado/domingo/feriado]?"
-5. "Como agendar [serviço] na ${data.businessName}?"
+4. "A ${data.businessName} abre aos sábados?"
+5. "Como entrar em contato com a ${data.businessName}?"
 
-Mais 3 perguntas ESPECÍFICAS para ${data.category} — use as avaliações dos clientes para criar perguntas que pessoas reais fariam.
+Mais 3 perguntas baseadas nas avaliações dos clientes e nos serviços do negócio.
 
-Cada resposta: 2-4 frases com dados concretos. Comece SEMPRE respondendo direto.
-BOM: "A ${data.businessName} fica na [endereço], em ${data.city}. O local é de fácil acesso..."
+REGRAS CRÍTICAS:
+- Escreva TODAS as perguntas COMPLETAS. NUNCA use colchetes ou placeholders como [serviço], [horário], [cidade].
+- TODA resposta DEVE ser afirmativa e útil. NUNCA escreva "não tenho informações", "recomendo verificar", "entre em contato para saber". Se não souber a resposta exata, dê uma resposta genérica positiva sobre o serviço.
+- Se tiver horários de funcionamento nos dados, USE nas respostas.
+- Só gere perguntas que você CONSEGUE responder com os dados disponíveis.
+
+Cada resposta: 2-4 frases. Comece SEMPRE respondendo direto.
+BOM: "A ${data.businessName} fica em ${data.city}. O local é de fácil acesso..."
 RUIM: "Quando se trata de localização, é importante destacar que..."
 
 ### RETORNE APENAS JSON:
@@ -215,7 +228,7 @@ Para CADA serviço:
 - "longDescription": 3-4 parágrafos (800-1200 chars total):
   * Parágrafo 1: O que é o serviço, para quem serve, quando é necessário. Comece respondendo diretamente, como se o cliente perguntasse "O que é [serviço]?"
   * Parágrafo 2: Como a ${data.businessName} faz este serviço. Detalhes práticos: equipamentos, técnicas, tempo médio, o que está incluso.
-  * Parágrafo 3: Região atendida em ${data.city}, diferenciais concretos (preço, horário, garantia), condições de pagamento.
+  * Parágrafo 3: Região atendida em ${data.city}. Só mencione preços/horários se estiverem nos dados fornecidos.
   * Parágrafo 4: CTA claro: "Entre em contato pelo WhatsApp para agendar seu [serviço] na ${data.businessName}" ou similar.
   
   OBRIGATÓRIO no texto:

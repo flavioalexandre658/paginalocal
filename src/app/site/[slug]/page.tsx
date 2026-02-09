@@ -376,10 +376,9 @@ export default async function StorePage({ params }: PageProps) {
           state={storeData.state}
           description={storeData.description}
           neighborhoods={neighborhoods}
-          googleRating={storeData.googleRating}
-          googleReviewsCount={storeData.googleReviewsCount}
           openingHours={storeData.openingHours as Record<string, string> | null}
           servicesCount={services.length}
+          serviceNames={services.map(s => s.name)}
         />
 
         {services.length > 0 && (

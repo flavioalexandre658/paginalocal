@@ -1,4 +1,21 @@
-import { IconInfoCircle, IconMapPin, IconClock, IconStar } from '@tabler/icons-react'
+import { IconInfoCircle, IconMapPin, IconClock, IconCheck } from '@tabler/icons-react'
+
+const DAY_LABELS: Record<string, string> = {
+  monday: 'Segunda',
+  tuesday: 'Terça',
+  wednesday: 'Quarta',
+  thursday: 'Quinta',
+  friday: 'Sexta',
+  saturday: 'Sábado',
+  sunday: 'Domingo',
+  seg: 'Segunda',
+  ter: 'Terça',
+  qua: 'Quarta',
+  qui: 'Quinta',
+  sex: 'Sexta',
+  sab: 'Sábado',
+  dom: 'Domingo',
+}
 
 interface AboutSectionProps {
   name: string
@@ -7,10 +24,9 @@ interface AboutSectionProps {
   state: string
   description?: string | null
   neighborhoods?: string[]
-  googleRating?: string | null
-  googleReviewsCount?: number | null
   openingHours?: Record<string, string> | null
   servicesCount?: number
+  serviceNames?: string[]
 }
 
 export function AboutSection({
@@ -20,13 +36,10 @@ export function AboutSection({
   state,
   description,
   neighborhoods,
-  googleRating,
-  googleReviewsCount,
   openingHours,
   servicesCount,
+  serviceNames,
 }: AboutSectionProps) {
-  const rating = googleRating ? parseFloat(googleRating) : 0
-  const hasRating = rating > 0 && googleReviewsCount && googleReviewsCount > 0
   const hasHours = openingHours && Object.keys(openingHours).length > 0
 
   return (
@@ -41,7 +54,7 @@ export function AboutSection({
               Sobre
             </span>
             <h2 className="text-2xl font-semibold text-slate-900 dark:text-white md:text-3xl">
-              Conheça a {name}
+              {category} em {city} – {name}
             </h2>
           </div>
           
@@ -51,46 +64,78 @@ export function AboutSection({
                 {description || `A ${name} é ${category.toLowerCase()} em ${city}, ${state}. Oferecemos${servicesCount ? ` ${servicesCount} serviços` : ' atendimento'} para clientes de ${city} e região. Entre em contato pelo WhatsApp para saber mais.`}
               </p>
 
-              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <div className="flex items-center gap-3 rounded-xl bg-slate-50/80 p-3 dark:bg-slate-800/50">
-                  <IconMapPin className="h-5 w-5 shrink-0 text-primary" />
-                  <span className="text-sm text-slate-600 dark:text-slate-300">
-                    {city}, {state}
-                    {neighborhoods && neighborhoods.length > 0 && ` e ${neighborhoods.length} bairros`}
-                  </span>
+              {serviceNames && serviceNames.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    Serviços oferecidos
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {serviceNames.map((svcName) => (
+                      <span
+                        key={svcName}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200/60 bg-slate-50/80 px-3 py-1.5 text-sm text-slate-600 dark:border-slate-700/40 dark:bg-slate-800/50 dark:text-slate-300"
+                      >
+                        <IconCheck className="h-3.5 w-3.5 text-emerald-500" />
+                        {svcName}
+                      </span>
+                    ))}
+                  </div>
                 </div>
+              )}
+            </div>
 
-                {hasRating && (
-                  <div className="flex items-center gap-3 rounded-xl bg-slate-50/80 p-3 dark:bg-slate-800/50">
-                    <IconStar className="h-5 w-5 shrink-0 fill-amber-400 text-amber-400" />
-                    <span className="text-sm text-slate-600 dark:text-slate-300">
-                      {rating.toFixed(1)} estrelas ({googleReviewsCount} avaliações)
-                    </span>
-                  </div>
-                )}
+            {(hasHours || (neighborhoods && neighborhoods.length > 0)) && (
+              <div className="rounded-2xl border border-slate-200/60 bg-white/70 p-6 md:p-8 shadow-lg shadow-slate-200/20 backdrop-blur-sm dark:bg-slate-900/70 dark:border-slate-700/40 dark:shadow-slate-900/30">
+                <div className="grid gap-6 sm:grid-cols-2">
+                  {hasHours && (
+                    <div>
+                      <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-white">
+                        <IconClock className="h-5 w-5 text-primary" />
+                        Horário de Funcionamento
+                      </h3>
+                      <dl className="space-y-1.5">
+                        {Object.entries(openingHours!).map(([day, hours]) => (
+                          <div key={day} className="flex items-center justify-between text-sm">
+                            <dt className="font-medium text-slate-600 dark:text-slate-300">
+                              {DAY_LABELS[day.toLowerCase()] || day}
+                            </dt>
+                            <dd className="text-slate-500 dark:text-slate-400">
+                              {hours === 'Fechado' ? (
+                                <span className="text-red-400">Fechado</span>
+                              ) : (
+                                hours
+                              )}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  )}
 
-                {hasHours && (
-                  <div className="flex items-center gap-3 rounded-xl bg-slate-50/80 p-3 dark:bg-slate-800/50">
-                    <IconClock className="h-5 w-5 shrink-0 text-primary" />
-                    <span className="text-sm text-slate-600 dark:text-slate-300">
-                      Horários disponíveis
-                    </span>
-                  </div>
-                )}
+                  {neighborhoods && neighborhoods.length > 0 && (
+                    <div>
+                      <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-white">
+                        <IconMapPin className="h-5 w-5 text-primary" />
+                        Regiões Atendidas
+                      </h3>
+                      <ul className="space-y-1.5">
+                        {neighborhoods.slice(0, 6).map((n) => (
+                          <li key={n} className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
+                            {n}
+                          </li>
+                        ))}
+                        {neighborhoods.length > 6 && (
+                          <li className="text-sm text-slate-400 dark:text-slate-500">
+                            e mais {neighborhoods.length - 6} regiões
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200/60 bg-white/70 p-6 md:p-8 shadow-lg shadow-slate-200/20 backdrop-blur-sm dark:bg-slate-900/70 dark:border-slate-700/40 dark:shadow-slate-900/30">
-              <h3 className="mb-3 text-lg font-semibold text-slate-900 dark:text-white">
-                {category} em {city}
-              </h3>
-              <p className="text-slate-600 leading-relaxed dark:text-slate-300">
-                A {name} fica em {city}, {state}{neighborhoods && neighborhoods.length > 0 ? ` e atende os bairros ${neighborhoods.slice(0, 3).join(', ')} e região` : ''}.
-                {hasRating && ` Com nota ${rating.toFixed(1)} no Google e ${googleReviewsCount} avaliações de clientes.`}
-                {servicesCount && servicesCount > 0 ? ` São ${servicesCount} serviços disponíveis.` : ''}
-                {' '}Mande uma mensagem pelo WhatsApp para tirar dúvidas ou agendar um horário.
-              </p>
-            </div>
+            )}
           </div>
         </div>
       </div>

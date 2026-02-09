@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 import { db } from '@/db'
-import { store, category } from '@/db/schema'
-import { eq, ne, and } from 'drizzle-orm'
+import { store, category, service } from '@/db/schema'
+import { eq, ne, and, isNotNull } from 'drizzle-orm'
 import { generateCitySlug } from '@/lib/utils'
 
 // Garante que o sitemap seja sempre gerado dinamicamente
@@ -56,7 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: page.priority,
   }))
 
-  const [activeStores, categories, categoryCityCombinations] = await Promise.all([
+  const [activeStores, categories, categoryCityCombinations, activeServices] = await Promise.all([
     db
       .select({
         slug: store.slug,
@@ -81,6 +81,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .from(store)
       .innerJoin(category, eq(store.category, category.name))
       .where(and(eq(store.isActive, true), ne(category.slug, 'outro'))),
+
+    db
+      .select({
+        serviceSlug: service.slug,
+        storeSlug: store.slug,
+        customDomain: store.customDomain,
+        updatedAt: service.updatedAt,
+      })
+      .from(service)
+      .innerJoin(store, eq(service.storeId, store.id))
+      .where(and(eq(store.isActive, true), eq(service.isActive, true), isNotNull(service.slug))),
   ])
 
   const storePages: MetadataRoute.Sitemap = activeStores.map((s) => {
@@ -110,5 +121,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
-  return [...staticPages, ...categoryPages, ...categoryCityPages, ...storePages]
+  const servicePages: MetadataRoute.Sitemap = activeServices
+    .filter(s => s.serviceSlug)
+    .map((s) => {
+      const storeUrl = s.customDomain
+        ? `https://${s.customDomain}`
+        : `https://${s.storeSlug}.paginalocal.com.br`
+
+      return {
+        url: `${storeUrl}/servicos/${s.serviceSlug}`,
+        lastModified: s.updatedAt,
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      }
+    })
+
+  return [...staticPages, ...categoryPages, ...categoryCityPages, ...storePages, ...servicePages]
 }

@@ -3,10 +3,12 @@
 import { z } from 'zod'
 import { adminActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
-import { store, service } from '@/db/schema'
-import { eq, and } from 'drizzle-orm'
+import { store, service, testimonial } from '@/db/schema'
+import { eq, and, desc } from 'drizzle-orm'
 import { generateMarketingCopy } from '@/lib/gemini'
 import { generateSlug } from '@/lib/utils'
+import { summarizeTestimonials } from '@/lib/google-places'
+import { fixOpeningHoursInFAQ } from '@/lib/faq-utils'
 
 async function generateUniqueServiceSlug(storeId: string, name: string): Promise<string> {
   const baseSlug = generateSlug(name)
@@ -43,6 +45,15 @@ export const regenerateStoreContentAction = adminActionClient
       throw new Error('Loja não encontrada')
     }
 
+    const storeTestimonials = await db
+      .select({ rating: testimonial.rating, content: testimonial.content })
+      .from(testimonial)
+      .where(eq(testimonial.storeId, parsedInput.storeId))
+      .orderBy(desc(testimonial.rating))
+      .limit(30)
+
+    const reviewHighlights = summarizeTestimonials(storeTestimonials)
+
     const marketingCopy = await generateMarketingCopy({
       businessName: storeData.name,
       category: storeData.category,
@@ -50,7 +61,27 @@ export const regenerateStoreContentAction = adminActionClient
       state: storeData.state,
       rating: storeData.googleRating ? parseFloat(storeData.googleRating) : undefined,
       reviewCount: storeData.googleReviewsCount || undefined,
+      address: storeData.address || undefined,
+      reviewHighlights: reviewHighlights || undefined,
+      openingHours: (storeData.openingHours as Record<string, string>) || undefined,
     })
+
+    let realNeighborhoods: string[] = []
+    if (storeData.latitude && storeData.longitude) {
+      const { fetchNearbyNeighborhoods } = await import('@/lib/google-places')
+      realNeighborhoods = await fetchNearbyNeighborhoods(
+        parseFloat(storeData.latitude),
+        parseFloat(storeData.longitude),
+        storeData.city,
+      )
+    }
+
+    const openingHours = (storeData.openingHours as Record<string, string>) || undefined
+    const fixedFaq = fixOpeningHoursInFAQ(
+      marketingCopy.faq || [],
+      openingHours,
+      storeData.name
+    )
 
     const [updatedStore] = await db
       .update(store)
@@ -60,8 +91,8 @@ export const regenerateStoreContentAction = adminActionClient
         description: marketingCopy.aboutSection,
         seoTitle: marketingCopy.seoTitle,
         seoDescription: marketingCopy.seoDescription,
-        faq: marketingCopy.faq,
-        neighborhoods: marketingCopy.neighborhoods,
+        faq: fixedFaq,
+        ...(realNeighborhoods.length > 0 ? { neighborhoods: realNeighborhoods } : {}),
         updatedAt: new Date(),
       })
       .where(eq(store.id, parsedInput.storeId))

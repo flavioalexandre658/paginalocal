@@ -195,8 +195,8 @@ export function applyFallbacks(parsed: MarketingCopy, data: MarketingCopyInput):
   if (!parsed.faq || parsed.faq.length === 0) {
     parsed.faq = generateFallbackFAQ(parsed.brandName, data.city, data.category)
   }
-  if (!parsed.neighborhoods || parsed.neighborhoods.length === 0) {
-    parsed.neighborhoods = [`Centro de ${data.city}`, 'Região Central', 'Zona Norte', 'Zona Sul', 'Região Metropolitana']
+  if (!parsed.neighborhoods) {
+    parsed.neighborhoods = []
   }
   if (!parsed.seoTitle) {
     parsed.seoTitle = `${data.category} em ${data.city} | ${parsed.brandName}`

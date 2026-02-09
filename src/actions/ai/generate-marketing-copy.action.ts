@@ -56,6 +56,8 @@ export const generateMarketingCopyAction = authActionClient
       state: storeData.state,
       rating: storeData.googleRating ? parseFloat(storeData.googleRating) : undefined,
       reviewCount: storeData.googleReviewsCount || undefined,
+      address: storeData.address || undefined,
+      openingHours: (storeData.openingHours as Record<string, string>) || undefined,
     })
 
     const [updatedStore] = await db

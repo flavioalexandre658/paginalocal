@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 import { db } from '@/db'
 import { store, service } from '@/db/schema'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 
 interface SitemapParams {
   params: Promise<{ slug: string }>
@@ -11,7 +11,7 @@ export default async function sitemap({ params }: SitemapParams): Promise<Metada
   const { slug } = await params
 
   const storeResult = await db
-    .select({ customDomain: store.customDomain, updatedAt: store.updatedAt })
+    .select({ id: store.id, customDomain: store.customDomain, updatedAt: store.updatedAt })
     .from(store)
     .where(eq(store.slug, slug))
     .limit(1)
@@ -25,41 +25,28 @@ export default async function sitemap({ params }: SitemapParams): Promise<Metada
     : `https://${slug}.paginalocal.com.br`
 
   const storeServices = await db
-    .select({ id: service.id, slug: service.slug, updatedAt: service.updatedAt })
+    .select({ slug: service.slug, updatedAt: service.updatedAt })
     .from(service)
-    .innerJoin(store, eq(service.storeId, store.id))
-    .where(eq(store.slug, slug))
+    .where(and(eq(service.storeId, storeResult[0].id), eq(service.isActive, true)))
 
-  const sitemap: MetadataRoute.Sitemap = [
+  const entries: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       lastModified: storeResult[0].updatedAt,
       changeFrequency: 'weekly',
       priority: 1,
     },
-    {
-      url: `${baseUrl}/servicos`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/contato`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.7,
-    },
   ]
 
-  storeServices.forEach(svc => {
-    const serviceUrl = svc.slug ? `/servicos/${svc.slug}` : `/servicos/${svc.id}`
-    sitemap.push({
-      url: `${baseUrl}${serviceUrl}`,
+  for (const svc of storeServices) {
+    if (!svc.slug) continue
+    entries.push({
+      url: `${baseUrl}/servicos/${svc.slug}`,
       lastModified: svc.updatedAt,
       changeFrequency: 'weekly',
-      priority: 0.6,
+      priority: 0.8,
     })
-  })
+  }
 
-  return sitemap
+  return entries
 }

@@ -193,11 +193,16 @@ export const createStoreManualAction = authActionClient
 
     const finalFAQ = fixOpeningHoursInFAQ(rawFAQ, displayName)
 
-    const finalNeighborhoods = inputNeighborhoods && inputNeighborhoods.length > 0
-      ? inputNeighborhoods
-      : (marketingCopy?.neighborhoods && marketingCopy.neighborhoods.length > 0)
-        ? marketingCopy.neighborhoods
-        : ['Centro', `Centro de ${city}`, 'Região Central']
+    let finalNeighborhoods: string[] = []
+    if (inputNeighborhoods && inputNeighborhoods.length > 0) {
+      finalNeighborhoods = inputNeighborhoods
+    } else if (latitude && longitude) {
+      const { fetchNearbyNeighborhoods } = await import('@/lib/google-places')
+      finalNeighborhoods = await fetchNearbyNeighborhoods(latitude, longitude, city)
+    }
+    if (finalNeighborhoods.length === 0 && marketingCopy?.neighborhoods && marketingCopy.neighborhoods.length > 0) {
+      finalNeighborhoods = marketingCopy.neighborhoods
+    }
 
     const address = inputAddress || [neighborhood, city, state].filter(Boolean).join(', ')
 
