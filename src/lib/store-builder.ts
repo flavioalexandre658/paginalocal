@@ -13,7 +13,7 @@ import {
   fetchNearbyNeighborhoods,
   type GooglePlaceDetails,
 } from '@/lib/google-places'
-import { generateMarketingCopy, type MarketingCopy, type FAQItem, type ServiceItem } from '@/lib/gemini'
+import { generateMarketingCopy, type MarketingCopy, type FAQItem, type ServiceItem, generateFallbackServices } from '@/lib/gemini'
 import { fixOpeningHoursInFAQ, formatOpeningHoursForFAQ } from '@/lib/faq-utils'
 
 export type { FAQItem, ServiceItem }
@@ -241,19 +241,6 @@ function buildSeoDescription(displayName: string, categoryName: string, city: st
   return `${displayName} é referência em ${lower} em ${city}, oferecendo serviços com rapidez, qualidade e atendimento de confiança.`
 }
 
-function generateFallbackServicesLocal(categoryName: string): ServiceItem[] {
-  const lower = categoryName.toLowerCase()
-
-  return [
-    { name: 'Atendimento Especializado', description: `Serviço profissional de ${lower} com qualidade garantida` },
-    { name: 'Orçamento Gratuito', description: 'Avaliação sem compromisso para seu projeto' },
-    { name: 'Atendimento Rápido', description: 'Resposta ágil para suas necessidades' },
-    { name: 'Garantia de Satisfação', description: 'Compromisso com a qualidade do serviço' },
-    { name: 'Profissionais Qualificados', description: 'Equipe treinada e experiente' },
-    { name: 'Preço Justo', description: 'Melhor custo-benefício da região' },
-  ]
-}
-
 interface FAQContext {
   displayName: string
   city: string
@@ -310,6 +297,50 @@ function generateFallbackFAQLocal(ctx: FAQContext): FAQItem[] {
       answer: `Entre em contato conosco para informações sobre estacionamento e acesso ao local.`,
     },
   ]
+}
+
+/**
+ * Ensures every service has seoTitle, seoDescription, and longDescription.
+ * AI generation sometimes returns incomplete fields; fallback services never have them.
+ * This guarantees service pages always have rich SEO content.
+ */
+function enrichServiceFields(
+  services: ServiceItem[],
+  businessName: string,
+  categoryName: string,
+  city: string,
+  state: string,
+): ServiceItem[] {
+  return services.map(svc => ({
+    ...svc,
+    seoTitle: svc.seoTitle || `${svc.name} em ${city} | ${businessName}`,
+    seoDescription: svc.seoDescription || `${svc.name} na ${businessName}, ${categoryName.toLowerCase()} em ${city}. ${svc.description} Entre em contato pelo WhatsApp!`,
+    longDescription: svc.longDescription || generateServiceLongDescription(svc.name, svc.description, businessName, categoryName, city, state),
+  }))
+}
+
+/**
+ * Generates a rich long description for a service page when AI didn't provide one.
+ * Contains local SEO keywords: "[serviço] em [cidade]", "[serviço] perto de mim", business name.
+ */
+function generateServiceLongDescription(
+  serviceName: string,
+  description: string,
+  businessName: string,
+  categoryName: string,
+  city: string,
+  state: string,
+): string {
+  const lower = serviceName.toLowerCase()
+  const catLower = categoryName.toLowerCase()
+
+  return `Procurando por ${lower} em ${city}? A ${businessName} é ${catLower} em ${city}, ${state}, que oferece ${lower} com profissionais experientes e atendimento personalizado. ${description}
+
+Na ${businessName}, o serviço de ${lower} é realizado com atenção aos detalhes e foco no resultado para o cliente. Trabalhamos para que cada atendimento de ${lower} em ${city} supere suas expectativas, com equipamentos adequados e equipe preparada.
+
+Se você está buscando ${lower} perto de mim em ${city} e região, a ${businessName} atende clientes de toda a cidade e região metropolitana. Nossa localização facilita o acesso para quem precisa de ${lower} com praticidade.
+
+Entre em contato pelo WhatsApp para fazer seu orçamento de ${lower} na ${businessName} sem compromisso. Atendemos ${city}, ${state} e região.`
 }
 
 const PRICE_MAP: Record<string, string> = {
@@ -454,9 +485,13 @@ export async function buildStoreFromGoogle(
     160
   )!
 
-  const finalServices = (marketingCopy?.services && marketingCopy.services.length >= 4)
+  // Use AI services if available, otherwise category-specific fallbacks from ai/fallbacks.ts
+  const rawServices = (marketingCopy?.services && marketingCopy.services.length >= 4)
     ? marketingCopy.services.slice(0, 6)
-    : generateFallbackServicesLocal(categoryName)
+    : generateFallbackServices(categoryName)
+
+  // Always enrich: ensure every service has seoTitle, seoDescription, and longDescription
+  const finalServices = enrichServiceFields(rawServices, displayName, categoryName, city, state)
 
   const fullAddress = address || placeDetails.formattedAddress
 

@@ -24,8 +24,11 @@ export const uploadStoreImageAction = authActionClient
       throw new Error('Nenhum arquivo enviado')
     }
 
+    const isAdmin = ctx.userRole === 'admin'
     const storeData = await db.query.store.findFirst({
-      where: and(eq(store.id, storeId), eq(store.userId, ctx.userId)),
+      where: isAdmin
+        ? eq(store.id, storeId)
+        : and(eq(store.id, storeId), eq(store.userId, ctx.userId)),
     })
 
     if (!storeData) {
