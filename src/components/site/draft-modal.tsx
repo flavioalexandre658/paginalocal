@@ -18,7 +18,7 @@ export function DraftModal({ storeName, isOwner }: DraftModalProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsOpen(true)
-    }, 300)
+    }, 10000)
     return () => clearTimeout(timer)
   }, [])
 

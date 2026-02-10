@@ -260,7 +260,7 @@ export async function getPlaceDetails(placeId: string): Promise<GooglePlaceDetai
   console.log(`  primaryTypeDisplayName: ${result.primaryTypeDisplayName?.text}`)
   console.log(`  reviews: ${result.reviews?.length || 0}`)
   console.log(`  openingHours: ${result.regularOpeningHours?.weekdayDescriptions?.join(' | ') || 'N/A'}`)
-  console.log(`[Google Places] Full response:`, JSON.stringify(result, null, 2))
+  // console.log(`[Google Places] Full response:`, JSON.stringify(result, null, 2))
 
   return result
 }
