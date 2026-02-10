@@ -21,6 +21,14 @@ export const metadata: Metadata = {
     description: 'Crie o site do seu negócio local a partir de R$29/mês. SEO otimizado para aparecer no Google.',
     type: 'website',
     url: 'https://www.paginalocal.com.br/planos',
+    images: [
+      {
+        url: 'https://paginalocal.com.br/assets/images/seo/previa_social.png',
+        width: 1200,
+        height: 630,
+        alt: 'Página Local - Sua empresa no Google nas primeiras posições',
+      },
+    ],
   },
   alternates: {
     canonical: 'https://www.paginalocal.com.br/planos',

@@ -23,11 +23,20 @@ export const metadata: Metadata = {
     siteName: 'Página Local',
     locale: 'pt_BR',
     type: 'website',
+    images: [
+      {
+        url: 'https://paginalocal.com.br/assets/images/seo/previa_social.png',
+        width: 1200,
+        height: 630,
+        alt: 'Página Local - Sua empresa no Google nas primeiras posições',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Presença Digital para Negócios Locais | Página Local',
     description: 'Landing pages de alta conversão para negócios locais.',
+    images: ['https://paginalocal.com.br/assets/images/seo/previa_social.png'],
   },
   robots: {
     index: true,

@@ -450,6 +450,7 @@ export default function AdminStoresPage() {
                 columns={columns}
                 data={stores}
                 stickyLastColumn
+                manualPagination
                 emptyState={
                   <DataTableEmptyState
                     icon={<IconBuildingStore className="h-8 w-8" />}

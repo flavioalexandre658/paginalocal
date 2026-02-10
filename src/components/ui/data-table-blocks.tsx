@@ -137,6 +137,7 @@ interface DataTableProps<TData, TValue> {
   stickyLastColumn?: boolean
   emptyState?: React.ReactNode
   onRowClick?: (row: TData) => void
+  manualPagination?: boolean
 }
 
 export function DataTableTable<TData, TValue>({
@@ -145,6 +146,7 @@ export function DataTableTable<TData, TValue>({
   stickyLastColumn,
   emptyState,
   onRowClick,
+  manualPagination,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -158,7 +160,9 @@ export function DataTableTable<TData, TValue>({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    ...(manualPagination
+      ? { manualPagination: true }
+      : { getPaginationRowModel: getPaginationRowModel() }),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,

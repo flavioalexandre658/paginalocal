@@ -224,6 +224,7 @@ export default function AdminUsersPage() {
                 columns={columns}
                 data={users}
                 stickyLastColumn
+                manualPagination
                 emptyState={
                   <DataTableEmptyState
                     icon={<IconUsers className="h-8 w-8" />}
