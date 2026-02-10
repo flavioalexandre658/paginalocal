@@ -47,6 +47,12 @@ export interface ServiceDescriptionInput {
   existingServices?: string[]
 }
 
+export interface BusinessClassificationInput {
+  businessName: string
+  primaryType?: string
+  reviews?: Array<{ rating: number; text?: { text: string } }>
+}
+
 export type AIProvider = 'gemini' | 'openai'
 
 export const AI_PROVIDER: AIProvider = (process.env.AI_PROVIDER as AIProvider) || 'openai'

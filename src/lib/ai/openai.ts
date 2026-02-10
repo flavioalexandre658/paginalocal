@@ -1,11 +1,12 @@
 import OpenAI from 'openai'
-import type { MarketingCopy, MarketingCopyInput, ServiceItem, ServiceDescriptionInput } from './types'
+import type { MarketingCopy, MarketingCopyInput, ServiceItem, ServiceDescriptionInput, BusinessClassificationInput } from './types'
 import {
   getStoreContentPrompt,
   getFaqPrompt,
   getServiceNamesPrompt,
   getServicesPrompt,
   getServiceDescriptionPrompt,
+  getBusinessClassificationPrompt,
 } from './prompts'
 import { applyFallbacks, generateFallbackFAQ, generateFallbackServices } from './fallbacks'
 
@@ -177,4 +178,19 @@ export async function generateServiceDescriptionsWithOpenAI(data: ServiceDescrip
   )
 
   return safeParseJson<ServiceItem[]>(text, [])
+}
+
+export async function classifyBusinessCategoryWithOpenAI(data: BusinessClassificationInput): Promise<string | null> {
+  const systemPrompt = 'Você classifica negócios locais brasileiros. Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
+  const userPrompt = getBusinessClassificationPrompt(data)
+
+  console.log(`[AI OpenAI] Classificando categoria para "${data.businessName}"...`)
+
+  const result = await callOpenAIWithRetry<{ category: string | null }>(
+    systemPrompt, userPrompt, { category: null }, 200,
+  )
+
+  const categoryName = result?.category?.trim()?.toLowerCase() || null
+  console.log(`[AI OpenAI] Categoria identificada: "${categoryName}"`)
+  return categoryName
 }

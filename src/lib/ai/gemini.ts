@@ -1,11 +1,12 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import type { MarketingCopy, MarketingCopyInput, ServiceItem, ServiceDescriptionInput } from './types'
+import type { MarketingCopy, MarketingCopyInput, ServiceItem, ServiceDescriptionInput, BusinessClassificationInput } from './types'
 import {
   getStoreContentPrompt,
   getFaqPrompt,
   getServiceNamesPrompt,
   getServicesPrompt,
   getServiceDescriptionPrompt,
+  getBusinessClassificationPrompt,
 } from './prompts'
 import { applyFallbacks, generateFallbackFAQ, generateFallbackServices } from './fallbacks'
 
@@ -161,4 +162,18 @@ export async function generateServiceDescriptionsWithGemini(data: ServiceDescrip
   return callGeminiWithRetry<ServiceItem[]>(
     getServiceDescriptionPrompt(data), [], 4000,
   )
+}
+
+export async function classifyBusinessCategoryWithGemini(data: BusinessClassificationInput): Promise<string | null> {
+  const prompt = getBusinessClassificationPrompt(data)
+
+  console.log(`[AI Gemini] Classificando categoria para "${data.businessName}"...`)
+
+  const result = await callGeminiWithRetry<{ category: string | null }>(
+    prompt, { category: null }, 200,
+  )
+
+  const categoryName = result?.category?.trim()?.toLowerCase() || null
+  console.log(`[AI Gemini] Categoria identificada: "${categoryName}"`)
+  return categoryName
 }

@@ -271,7 +271,7 @@ export const createStoreManualAction = authActionClient
 
       // Revalida o sitemap e páginas de categoria
       await revalidateSitemap()
-      
+
       // Busca o slug da categoria e revalida páginas de categoria/cidade
       const [categoryData] = await db
         .select({ slug: category.slug })

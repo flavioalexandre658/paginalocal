@@ -13,7 +13,8 @@ import {
   fetchNearbyNeighborhoods,
   type GooglePlaceDetails,
 } from '@/lib/google-places'
-import { generateMarketingCopy, type MarketingCopy, type FAQItem, type ServiceItem, generateFallbackServices } from '@/lib/gemini'
+import { generateMarketingCopy, classifyBusinessCategory, type MarketingCopy, type FAQItem, type ServiceItem, generateFallbackServices } from '@/lib/gemini'
+import type { GooglePlaceReview } from '@/lib/google-places'
 import { fixOpeningHoursInFAQ, formatOpeningHoursForFAQ } from '@/lib/faq-utils'
 
 export type { FAQItem, ServiceItem }
@@ -202,11 +203,105 @@ function buildCategorySeoContent(name: string) {
   }
 }
 
+async function findCategoryBySlugOrName(name: string): Promise<{ id: string; name: string; slug: string } | null> {
+  const slug = generateSlug(name)
+
+  const bySlug = await db.query.category.findFirst({
+    where: (c, { eq: eqOp }) => eqOp(c.slug, slug),
+  })
+  if (bySlug) {
+    return { id: bySlug.id, name: bySlug.name, slug: bySlug.slug }
+  }
+
+  const byName = await db
+    .select()
+    .from(category)
+    .where(ilike(category.name, name))
+    .limit(1)
+    .then(rows => rows[0] || null)
+  if (byName) {
+    return { id: byName.id, name: byName.name, slug: byName.slug }
+  }
+
+  return null
+}
+
+async function autoCreateCategory(
+  name: string,
+  icon?: string,
+  description?: string,
+): Promise<{ id: string; name: string; slug: string }> {
+  const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1)
+  const slug = generateSlug(capitalizedName)
+
+  const existingPt = await db.query.category.findFirst({
+    where: (c, { eq: eqOp }) => eqOp(c.slug, slug),
+  })
+  if (existingPt) {
+    console.log(`[Category] Auto-create found existing by slug "${slug}" -> "${existingPt.name}"`)
+    return { id: existingPt.id, name: existingPt.name, slug: existingPt.slug }
+  }
+
+  const seo = buildCategorySeoContent(capitalizedName)
+  console.log(`[Category] Auto-creating category "${capitalizedName}" with full SEO (typeGooglePlace: [])`)
+
+  const [created] = await db.insert(category).values({
+    name: truncate(capitalizedName, 100)!,
+    slug: truncate(slug, 100)!,
+    icon: icon || 'IconBuildingStore',
+    description: description || `Serviços de ${capitalizedName.toLowerCase()}`,
+    suggestedServices: seo.suggestedServices,
+    seoTitle: seo.seoTitle,
+    seoDescription: seo.seoDescription,
+    seoKeywords: seo.seoKeywords,
+    heroTitle: seo.heroTitle,
+    heroSubtitle: seo.heroSubtitle,
+    longDescription: seo.longDescription,
+    faqs: seo.faqs,
+    typeGooglePlace: [],
+  }).returning()
+
+  return { id: created.id, name: created.name, slug: created.slug }
+}
+
 export async function findOrCreateCategory(
   primaryType: string | undefined,
-  displayName: string
+  displayName: string,
+  businessName?: string,
+  reviews?: GooglePlaceReview[],
 ): Promise<{ id: string; name: string; slug: string }> {
-  // 1. Match by primaryType in existing categories
+  // 1. AI-based classification (most accurate)
+  if (businessName) {
+    try {
+      const aiCategory = await classifyBusinessCategory({
+        businessName,
+        primaryType,
+        reviews,
+      })
+
+      if (aiCategory) {
+        console.log(`[Category] AI classified "${businessName}" as "${aiCategory}"`)
+
+        const found = await findCategoryBySlugOrName(aiCategory)
+        if (found) {
+          console.log(`[Category] AI match found in DB: "${found.name}" (slug: ${found.slug})`)
+          return found
+        }
+
+        console.log(`[Category] AI category "${aiCategory}" not in DB, auto-creating...`)
+        const translation = primaryType ? GOOGLE_TYPE_PT_BR[primaryType] : undefined
+        return autoCreateCategory(
+          aiCategory,
+          translation?.icon,
+          translation?.description,
+        )
+      }
+    } catch (error) {
+      console.error(`[Category] AI classification failed, falling back to rule-based:`, error)
+    }
+  }
+
+  // 2. Fallback: Match by primaryType in existing categories
   if (primaryType) {
     const byType = await db
       .select()
@@ -221,67 +316,28 @@ export async function findOrCreateCategory(
     }
   }
 
-  // 2. Match by slug
-  const slug = generateSlug(displayName)
-  const existing = await db.query.category.findFirst({
-    where: (c, { eq }) => eq(c.slug, slug),
-  })
-  if (existing) {
-    console.log(`[Category] Matched by slug "${slug}" -> "${existing.name}"`)
-    return { id: existing.id, name: existing.name, slug: existing.slug }
+  // 3. Fallback: Match by slug from displayName
+  const found = await findCategoryBySlugOrName(displayName)
+  if (found) {
+    console.log(`[Category] Matched by slug/name "${displayName}" -> "${found.name}"`)
+    return found
   }
 
-  // 3. Match by name (case-insensitive)
-  const byName = await db
-    .select()
-    .from(category)
-    .where(ilike(category.name, displayName))
-    .limit(1)
-    .then(rows => rows[0] || null)
-  if (byName) {
-    console.log(`[Category] Matched by name "${displayName}" -> "${byName.name}"`)
-    return { id: byName.id, name: byName.name, slug: byName.slug }
-  }
-
-  // 4. Auto-create with Portuguese name and full SEO if we have a translation
+  // 4. Fallback: Auto-create with GOOGLE_TYPE_PT_BR translation
   if (primaryType && GOOGLE_TYPE_PT_BR[primaryType]) {
     const translation = GOOGLE_TYPE_PT_BR[primaryType]
-    const ptSlug = generateSlug(translation.name)
-
-    // Check if a category with this Portuguese name already exists
-    const existingPt = await db.query.category.findFirst({
-      where: (c, { eq }) => eq(c.slug, ptSlug),
-    })
-    if (existingPt) {
-      console.log(`[Category] Translation "${primaryType}" -> "${translation.name}" matched existing category "${existingPt.name}"`)
-      return { id: existingPt.id, name: existingPt.name, slug: existingPt.slug }
+    const existingTranslation = await findCategoryBySlugOrName(translation.name)
+    if (existingTranslation) {
+      console.log(`[Category] Translation "${primaryType}" -> "${translation.name}" matched existing "${existingTranslation.name}"`)
+      return existingTranslation
     }
 
-    const seo = buildCategorySeoContent(translation.name)
-    console.log(`[Category] Auto-creating PT-BR category "${translation.name}" for primaryType "${primaryType}" with full SEO`)
-
-    const [created] = await db.insert(category).values({
-      name: truncate(translation.name, 100)!,
-      slug: truncate(ptSlug, 100)!,
-      icon: translation.icon,
-      description: translation.description,
-      suggestedServices: seo.suggestedServices,
-      seoTitle: seo.seoTitle,
-      seoDescription: seo.seoDescription,
-      seoKeywords: seo.seoKeywords,
-      heroTitle: seo.heroTitle,
-      heroSubtitle: seo.heroSubtitle,
-      longDescription: seo.longDescription,
-      faqs: seo.faqs,
-      typeGooglePlace: [primaryType],
-    }).returning()
-
-    return { id: created.id, name: created.name, slug: created.slug }
+    return autoCreateCategory(translation.name, translation.icon, translation.description)
   }
 
   // 5. Fallback to "Outro"
   const outroCategory = await db.query.category.findFirst({
-    where: (c, { eq }) => eq(c.slug, 'outro'),
+    where: (c, { eq: eqOp }) => eqOp(c.slug, 'outro'),
   })
 
   if (outroCategory) {
@@ -290,26 +346,7 @@ export async function findOrCreateCategory(
   }
 
   // 6. Last resort: create "Outro" if it doesn't exist
-  console.log(`[Category] Creating "Outro" category as fallback (no match for "${displayName}", primaryType: "${primaryType}")`)
-
-  const outroSeo = buildCategorySeoContent('Negócios Locais')
-  const [created] = await db.insert(category).values({
-    name: 'Outro',
-    slug: 'outro',
-    icon: 'IconBuildingStore',
-    description: 'Outros tipos de negócio',
-    suggestedServices: outroSeo.suggestedServices,
-    seoTitle: outroSeo.seoTitle,
-    seoDescription: outroSeo.seoDescription,
-    seoKeywords: outroSeo.seoKeywords,
-    heroTitle: outroSeo.heroTitle,
-    heroSubtitle: outroSeo.heroSubtitle,
-    longDescription: outroSeo.longDescription,
-    faqs: outroSeo.faqs,
-    typeGooglePlace: primaryType ? [primaryType] : [],
-  }).returning()
-
-  return { id: created.id, name: created.name, slug: created.slug }
+  return autoCreateCategory('Outro', 'IconBuildingStore', 'Outros tipos de negócio')
 }
 
 export function normalizeText(str: string): string {
@@ -629,9 +666,15 @@ export async function buildStoreFromGoogle(
 
   const googlePrimaryType = placeDetails.primaryType
   const googleDisplayName = placeDetails.primaryTypeDisplayName?.text || 'Outro'
-  console.log(`[StoreBuilder] Google primaryType: "${googlePrimaryType}", displayName: "${googleDisplayName}"`)
+  const businessDisplayName = placeDetails.displayName?.text || overrides?.searchTerm || ''
+  console.log(`[StoreBuilder] Google primaryType: "${googlePrimaryType}", displayName: "${googleDisplayName}", business: "${businessDisplayName}"`)
 
-  const categoryRecord = await findOrCreateCategory(googlePrimaryType, googleDisplayName)
+  const categoryRecord = await findOrCreateCategory(
+    googlePrimaryType,
+    googleDisplayName,
+    businessDisplayName,
+    placeDetails.reviews,
+  )
   const categoryName = categoryRecord.name
   console.log(`[StoreBuilder] Category: "${categoryName}" (id: ${categoryRecord.id}, slug: ${categoryRecord.slug})`)
 

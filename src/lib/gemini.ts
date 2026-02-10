@@ -1,6 +1,7 @@
 export {
   generateMarketingCopy,
   generateServiceDescriptions,
+  classifyBusinessCategory,
   getActiveProvider,
   extractBrandName,
   generateOptimizedSlug,
@@ -14,5 +15,6 @@ export type {
   FAQItem,
   ServiceItem,
   ServiceDescriptionInput,
+  BusinessClassificationInput,
   AIProvider,
 } from './ai'

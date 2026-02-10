@@ -1,4 +1,4 @@
-import type { MarketingCopyInput, ServiceDescriptionInput } from './types'
+import type { MarketingCopyInput, ServiceDescriptionInput, BusinessClassificationInput } from './types'
 
 function buildBusinessContext(data: MarketingCopyInput): string {
   const contextSections: string[] = []
@@ -288,4 +288,36 @@ Retorne APENAS JSON array:
     "longDescription": "Parágrafo 1...\\nParágrafo 2..."
   }
 ]`
+}
+
+export function getBusinessClassificationPrompt(data: BusinessClassificationInput): string {
+  const reviewSnippets = (data.reviews || [])
+    .filter(r => r.rating >= 4 && r.text?.text && r.text.text.trim().length > 10)
+    .slice(0, 5)
+    .map(r => `- "${r.text!.text!.substring(0, 150)}"`)
+    .join('\n')
+
+  const reviewSection = reviewSnippets
+    ? `\nAvaliações de clientes:\n${reviewSnippets}`
+    : ''
+
+  return `Você é um especialista em negócios locais no Brasil.
+Com base nas informações abaixo, identifique a categoria mais adequada para esta empresa no contexto brasileiro.
+
+Nome da empresa: "${data.businessName}"
+${data.primaryType ? `Tipo do Google: "${data.primaryType}"` : 'Tipo do Google: não informado'}
+${reviewSection}
+
+REGRAS:
+- O nome da categoria deve ser o MAIS COMUM no Brasil para este tipo de negócio
+- Responda em português, tudo minúsculo
+- Use nomes simples e diretos como os clientes pesquisariam (ex: "buffet", "restaurante", "barbearia", "academia", "oficina mecânica", "pet shop", "mercado", "loja de roupas")
+- Analise o NOME da empresa e as AVALIAÇÕES para entender o que o negócio realmente faz, não confie cegamente no tipo do Google
+- Exemplos de correção: se o Google diz "food" mas o nome é "Buffet Star Fashion" e reviews falam de festas → categoria é "buffet"
+- Se o Google diz "store" mas o nome é "Mercearia do João" → categoria é "mercearia"
+
+Responda APENAS com JSON válido, sem markdown:
+{"category": "nome da categoria"}
+
+RETORNE APENAS O JSON, SEM MARKDOWN.`
 }

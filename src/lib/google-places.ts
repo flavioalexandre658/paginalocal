@@ -31,6 +31,10 @@ export interface GooglePlaceDetails {
   regularOpeningHours?: {
     weekdayDescriptions: string[]
     openNow?: boolean
+    periods?: Array<{
+      open: { day: number; hour: number; minute: number }
+      close?: { day: number; hour: number; minute: number }
+    }>
   }
   rating?: number
   userRatingCount?: number
@@ -235,10 +239,28 @@ export async function getPlaceDetails(placeId: string): Promise<GooglePlaceDetai
 
   const result: GooglePlaceDetails = await response.json()
 
+  // Convert weekdayDescriptions from English to Portuguese using periods data
+  if (result.regularOpeningHours) {
+    const periods = result.regularOpeningHours.periods
+    const descriptions = result.regularOpeningHours.weekdayDescriptions
+
+    // If we have periods, always generate PT-BR descriptions from them (most reliable)
+    if (periods && periods.length > 0) {
+      result.regularOpeningHours.weekdayDescriptions = convertPeriodsToWeekdayDescriptions(periods)
+      console.log(`[Google Places] Opening hours converted to PT-BR from periods data`)
+    }
+    // If descriptions are in English (no periods available), convert AM/PM at least
+    else if (descriptions && descriptions.length > 0 && /monday|tuesday|wednesday/i.test(descriptions[0])) {
+      console.log(`[Google Places] weekdayDescriptions in English without periods, keeping as-is for parseOpeningHours fallback`)
+    }
+  }
+
   console.log(`[Google Places] Details for "${result.displayName?.text}":`)
   console.log(`  primaryType: ${result.primaryType}`)
   console.log(`  primaryTypeDisplayName: ${result.primaryTypeDisplayName?.text}`)
   console.log(`  reviews: ${result.reviews?.length || 0}`)
+  console.log(`  openingHours: ${result.regularOpeningHours?.weekdayDescriptions?.join(' | ') || 'N/A'}`)
+  console.log(`[Google Places] Full response:`, JSON.stringify(result, null, 2))
 
   return result
 }
@@ -341,9 +363,75 @@ export function parseAddressComponents(components: GooglePlaceDetails['addressCo
   return { city, state, zipCode, address }
 }
 
+// ===== Opening Hours: Convert periods to PT-BR weekdayDescriptions =====
+
+const DAY_NAMES_PT: Record<number, string> = {
+  0: 'domingo',
+  1: 'segunda-feira',
+  2: 'terça-feira',
+  3: 'quarta-feira',
+  4: 'quinta-feira',
+  5: 'sexta-feira',
+  6: 'sábado',
+}
+
+function pad(n: number): string {
+  return n.toString().padStart(2, '0')
+}
+
+/**
+ * Converts structured `periods` from Google Places API (New)
+ * into Portuguese weekdayDescriptions matching the old API format.
+ * e.g. "segunda-feira: 10:00 – 20:00"
+ */
+export function convertPeriodsToWeekdayDescriptions(
+  periods: Array<{
+    open: { day: number; hour: number; minute: number }
+    close?: { day: number; hour: number; minute: number }
+  }>
+): string[] {
+  // Group periods by day (a day can have multiple periods, e.g. lunch + dinner)
+  const dayPeriods: Record<number, string[]> = {}
+
+  for (const period of periods) {
+    const day = period.open.day
+    const openTime = `${pad(period.open.hour)}:${pad(period.open.minute)}`
+
+    let range: string
+    if (period.close) {
+      const closeTime = `${pad(period.close.hour)}:${pad(period.close.minute)}`
+      range = `${openTime} – ${closeTime}`
+    } else {
+      // No close = open 24h
+      range = 'Aberto 24 horas'
+    }
+
+    if (!dayPeriods[day]) {
+      dayPeriods[day] = []
+    }
+    dayPeriods[day].push(range)
+  }
+
+  // Build descriptions for all 7 days (Monday=1 first, then 2..6, then Sunday=0)
+  const orderedDays = [1, 2, 3, 4, 5, 6, 0]
+  const descriptions: string[] = []
+
+  for (const day of orderedDays) {
+    const dayName = DAY_NAMES_PT[day]
+    if (dayPeriods[day] && dayPeriods[day].length > 0) {
+      descriptions.push(`${dayName}: ${dayPeriods[day].join(', ')}`)
+    } else {
+      descriptions.push(`${dayName}: Fechado`)
+    }
+  }
+
+  return descriptions
+}
+
 // ===== Opening Hours Parsing =====
 
 export function parseOpeningHours(weekdayDescriptions: string[]): Record<string, string> {
+  // Support both Portuguese and English day names
   const daysMap: Record<string, string> = {
     'segunda-feira': 'seg',
     'terça-feira': 'ter',
@@ -352,20 +440,62 @@ export function parseOpeningHours(weekdayDescriptions: string[]): Record<string,
     'sexta-feira': 'sex',
     'sábado': 'sab',
     'domingo': 'dom',
+    // English fallback (in case weekdayDescriptions come in English)
+    'monday': 'seg',
+    'tuesday': 'ter',
+    'wednesday': 'qua',
+    'thursday': 'qui',
+    'friday': 'sex',
+    'saturday': 'sab',
+    'sunday': 'dom',
   }
 
   const hours: Record<string, string> = {}
 
   weekdayDescriptions.forEach(line => {
-    const [day, time] = line.split(': ')
-    const dayKey = daysMap[day?.toLowerCase()]
-    if (dayKey && time && time !== 'Fechado') {
-      const normalized = time.replace(/\s/g, '').replace('–', '-')
+    const [day, ...timeParts] = line.split(': ')
+    const time = timeParts.join(': ') // rejoin in case time contains ':'
+    const dayKey = daysMap[day?.toLowerCase()?.trim()]
+    if (dayKey && time && time !== 'Fechado' && time !== 'Closed') {
+      // Convert AM/PM format to 24h if needed
+      const normalized = convertTo24h(time)
       hours[dayKey] = normalized
     }
   })
 
   return hours
+}
+
+/**
+ * Converts time strings from AM/PM format to 24h format.
+ * "10:00 AM – 8:00 PM" -> "10:00-20:00"
+ * "10:00 – 20:00" -> "10:00-20:00" (already 24h, just normalize)
+ */
+function convertTo24h(timeStr: string): string {
+  // Normalize dashes and whitespace
+  const normalized = timeStr.replace(/\s/g, '').replace('–', '-').replace('—', '-')
+
+  // Check if it contains AM/PM
+  if (/[AP]M/i.test(normalized)) {
+    // Split by dash to get open-close
+    const parts = normalized.split('-')
+    const converted = parts.map(part => {
+      const match = part.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+      if (!match) return part.trim()
+
+      let hour = parseInt(match[1], 10)
+      const minute = match[2]
+      const period = match[3].toUpperCase()
+
+      if (period === 'PM' && hour !== 12) hour += 12
+      if (period === 'AM' && hour === 12) hour = 0
+
+      return `${pad(hour)}:${minute}`
+    })
+    return converted.join('-')
+  }
+
+  return normalized
 }
 
 // ===== Business Attributes Extraction (for AI prompts) =====
