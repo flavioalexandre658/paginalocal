@@ -25,10 +25,11 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://paginalocal.com.br/assets/images/seo/previa_social.png',
+        url: 'https://paginalocal.com.br/assets/images/seo/previa_social.jpg',
         width: 1200,
         height: 630,
         alt: 'Página Local - Sua empresa no Google nas primeiras posições',
+        type: 'image/jpeg',
       },
     ],
   },
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Presença Digital para Negócios Locais | Página Local',
     description: 'Landing pages de alta conversão para negócios locais.',
-    images: ['https://paginalocal.com.br/assets/images/seo/previa_social.png'],
+    images: ['https://paginalocal.com.br/assets/images/seo/previa_social.jpg'],
   },
   robots: {
     index: true,

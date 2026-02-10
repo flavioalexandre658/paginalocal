@@ -23,10 +23,11 @@ export const metadata: Metadata = {
     url: 'https://www.paginalocal.com.br/planos',
     images: [
       {
-        url: 'https://paginalocal.com.br/assets/images/seo/previa_social.png',
+        url: 'https://paginalocal.com.br/assets/images/seo/previa_social.jpg',
         width: 1200,
         height: 630,
         alt: 'Página Local - Sua empresa no Google nas primeiras posições',
+        type: 'image/jpeg',
       },
     ],
   },
