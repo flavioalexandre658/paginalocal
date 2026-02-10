@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
-import { store, category } from '@/db/schema'
+import { store, service, category } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
 import { generateCitySlug } from '@/lib/utils'
@@ -38,15 +38,21 @@ export const activateStoreAction = authActionClient
       })
       .where(eq(store.id, parsedInput.storeId))
 
-    // Notifica o Google sobre a ativação
-    notifyStoreActivated(storeData.slug, storeData.customDomain).catch((error) => {
+    const services = await db
+      .select({ slug: service.slug })
+      .from(service)
+      .where(eq(service.storeId, parsedInput.storeId))
+
+    const serviceSlugs = services
+      .map(s => s.slug)
+      .filter((slug): slug is string => !!slug)
+
+    notifyStoreActivated(storeData.slug, storeData.customDomain, serviceSlugs).catch((error) => {
       console.error(`[ActivateStore] Erro ao notificar Google sobre ativação de ${storeData.slug}:`, error)
     })
 
-    // Revalida o sitemap
     await revalidateSitemap()
 
-    // Busca o slug da categoria e revalida páginas de categoria/cidade
     const [categoryData] = await db
       .select({ slug: category.slug })
       .from(category)

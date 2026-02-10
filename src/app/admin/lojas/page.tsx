@@ -20,15 +20,26 @@ import {
   IconUser,
   IconSparkles,
   IconRefresh,
+  IconDotsVertical,
+  IconWorldWww,
 } from '@tabler/icons-react'
 
 import { getAdminStoresAction } from '@/actions/admin/get-admin-stores.action'
 import { toggleStoreStatusAction } from '@/actions/admin/toggle-store-status.action'
 import { deleteStoreAdminAction } from '@/actions/admin/delete-store-admin.action'
 import { purgeStoreCacheAction } from '@/actions/admin/purge-store-cache.action'
+import { reindexStoreAction } from '@/actions/admin/reindex-store.action'
 import { getStoreUrl } from '@/lib/utils'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
 import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   Modal,
   ModalContent,
@@ -47,7 +58,6 @@ import {
   DataTableContent,
   DataTableTable,
   DataTableEmptyState,
-  DataTableRowActions,
   DataTableSkeleton,
   ServerPagination,
   MobileCardList,
@@ -57,7 +67,6 @@ import {
   MobileCardTitle,
   MobileCardContent,
   MobileCardRow,
-  MobileCardFooter,
   MobileCardEmptyState,
   type ColumnDef,
 } from '@/components/ui/data-table-blocks'
@@ -96,6 +105,96 @@ function getStoreInitials(name: string) {
     .toUpperCase()
 }
 
+function StoreActionsDropdown({
+  store: s,
+  onToggle,
+  onRegenerate,
+  onPurgeCache,
+  onReindex,
+  onTransfer,
+  onDelete,
+}: {
+  store: AdminStore
+  onToggle: () => void
+  onRegenerate: () => void
+  onPurgeCache: () => void
+  onReindex: () => void
+  onTransfer: () => void
+  onDelete: () => void
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+        >
+          <IconDotsVertical className="h-4 w-4" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuLabel>Ações rápidas</DropdownMenuLabel>
+        <DropdownMenuItem onClick={onToggle}>
+          {s.isActive ? (
+            <IconToggleRight className="h-4 w-4 text-emerald-500" />
+          ) : (
+            <IconToggleLeft className="h-4 w-4" />
+          )}
+          {s.isActive ? 'Desativar' : 'Ativar'}
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <a
+            href={getStoreUrl(s.slug)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <IconExternalLink className="h-4 w-4" />
+            Ver site
+          </a>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={`/painel/${s.slug}`}>
+            <IconChartBar className="h-4 w-4" />
+            Acessar painel
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={`/painel/${s.slug}/editar`}>
+            <IconEdit className="h-4 w-4" />
+            Editar
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Ferramentas</DropdownMenuLabel>
+        <DropdownMenuItem onClick={onRegenerate}>
+          <IconSparkles className="h-4 w-4 text-amber-500" />
+          Regenerar IA
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onPurgeCache}>
+          <IconRefresh className="h-4 w-4 text-green-500" />
+          Limpar cache
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onReindex}>
+          <IconWorldWww className="h-4 w-4 text-blue-500" />
+          Indexar no Google
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>Administração</DropdownMenuLabel>
+        <DropdownMenuItem onClick={onTransfer}>
+          <IconArrowsExchange className="h-4 w-4 text-blue-500" />
+          Transferir
+        </DropdownMenuItem>
+        <DropdownMenuItem variant="destructive" onClick={onDelete}>
+          <IconTrash className="h-4 w-4" />
+          Excluir
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 export default function AdminStoresPage() {
   const searchParams = useSearchParams()
   const userIdFilter = searchParams.get('userId')
@@ -104,6 +203,7 @@ export default function AdminStoresPage() {
   const { executeAsync: toggleAsync } = useAction(toggleStoreStatusAction)
   const { executeAsync: deleteAsync, isExecuting: isDeleting } = useAction(deleteStoreAdminAction)
   const { executeAsync: purgeAsync } = useAction(purgeStoreCacheAction)
+  const { executeAsync: reindexAsync } = useAction(reindexStoreAction)
 
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -176,7 +276,24 @@ export default function AdminStoresPage() {
   async function handlePurgeCache(storeId: string, storeName: string) {
     const res = await purgeAsync({ storeId })
     if (res?.data) {
-      toast.success(`Cache da loja "${storeName}" limpo com sucesso!`)
+      toast.success(`Cache da loja "${storeName}" limpo!`)
+    } else if (res?.serverError) {
+      toast.error(res.serverError)
+    }
+  }
+
+  async function handleReindex(storeId: string, storeName: string) {
+    const loadingToast = toast.loading(`Indexando "${storeName}"...`)
+    const res = await reindexAsync({ storeId })
+    toast.dismiss(loadingToast)
+
+    if (res?.data) {
+      const { totalUrls, successCount, failedCount } = res.data
+      if (failedCount === 0) {
+        toast.success(`${successCount}/${totalUrls} URLs indexadas com sucesso!`)
+      } else {
+        toast.error(`${successCount}/${totalUrls} URLs indexadas. ${failedCount} falharam.`)
+      }
     } else if (res?.serverError) {
       toast.error(res.serverError)
     }
@@ -192,9 +309,14 @@ export default function AdminStoresPage() {
       accessorKey: 'name',
       header: 'Loja',
       cell: ({ row }) => (
-        <div>
-          <p className="font-medium text-slate-900 dark:text-white">{row.original.name}</p>
-          <p className="text-xs text-slate-500">{row.original.slug}</p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 text-xs font-semibold text-primary">
+            {getStoreInitials(row.original.name)}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate font-medium text-slate-900 dark:text-white">{row.original.name}</p>
+            <p className="truncate text-xs text-slate-500">{row.original.slug}</p>
+          </div>
         </div>
       ),
     },
@@ -212,14 +334,16 @@ export default function AdminStoresPage() {
       accessorKey: 'category',
       header: 'Categoria',
       cell: ({ row }) => (
-        <span className="text-slate-600 dark:text-slate-400">{row.original.category}</span>
+        <Badge variant="outline" className="font-normal">
+          {row.original.category}
+        </Badge>
       ),
     },
     {
       accessorKey: 'city',
       header: 'Cidade',
       cell: ({ row }) => (
-        <span className="text-slate-600 dark:text-slate-400">
+        <span className="text-sm text-slate-600 dark:text-slate-400">
           {row.original.city}/{row.original.state}
         </span>
       ),
@@ -238,65 +362,18 @@ export default function AdminStoresPage() {
     },
     {
       id: 'actions',
-      header: 'Ações',
+      header: '',
       cell: ({ row }) => {
         const s = row.original
         return (
-          <DataTableRowActions vertical={false}>
-            <button
-              type="button"
-              onClick={() => handleToggle(s.id, s.isActive)}
-              title={s.isActive ? 'Desativar' : 'Ativar'}
-              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
-            >
-              {s.isActive ? (
-                <IconToggleRight className="h-4 w-4 text-emerald-500" />
-              ) : (
-                <IconToggleLeft className="h-4 w-4" />
-              )}
-            </button>
-            <a
-              href={getStoreUrl(s.slug)}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Ver site"
-              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20"
-            >
-              <IconExternalLink className="h-4 w-4" />
-            </a>
-            <button
-              type="button"
-              onClick={() => handleRegenerate(s.id, s.name)}
-              title="Regenerar conteúdo com IA"
-              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950"
-            >
-              <IconSparkles className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePurgeCache(s.id, s.name)}
-              title="Limpar cache"
-              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-green-50 hover:text-green-500 dark:hover:bg-green-950"
-            >
-              <IconRefresh className="h-4 w-4" />
-            </button>
-            <Link
-              href={`/painel/${s.slug}`}
-              title="Acessar painel"
-              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
-            >
-              <IconChartBar className="h-4 w-4" />
-            </Link>
-            <Link
-              href={`/painel/${s.slug}/editar`}
-              title="Editar"
-              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
-            >
-              <IconEdit className="h-4 w-4" />
-            </Link>
-            <button
-              type="button"
-              onClick={() =>
+          <div className="flex items-center justify-end">
+            <StoreActionsDropdown
+              store={s}
+              onToggle={() => handleToggle(s.id, s.isActive)}
+              onRegenerate={() => handleRegenerate(s.id, s.name)}
+              onPurgeCache={() => handlePurgeCache(s.id, s.name)}
+              onReindex={() => handleReindex(s.id, s.name)}
+              onTransfer={() =>
                 setTransferTarget({
                   id: s.id,
                   name: s.name,
@@ -304,20 +381,9 @@ export default function AdminStoresPage() {
                   ownerEmail: s.ownerEmail,
                 })
               }
-              title="Transferir"
-              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-950"
-            >
-              <IconArrowsExchange className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setDeleteTarget({ id: s.id, name: s.name })}
-              title="Excluir"
-              className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950"
-            >
-              <IconTrash className="h-4 w-4" />
-            </button>
-          </DataTableRowActions>
+              onDelete={() => setDeleteTarget({ id: s.id, name: s.name })}
+            />
+          </div>
         )
       },
     },
@@ -403,9 +469,9 @@ export default function AdminStoresPage() {
             />
           ) : (
             <MobileCardList>
-              {stores.map((store, index) => (
+              {stores.map((storeItem, index) => (
                 <motion.div
-                  key={store.id}
+                  key={storeItem.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: Math.min(index * 0.05, 0.3) }}
@@ -413,57 +479,34 @@ export default function AdminStoresPage() {
                   <MobileCard>
                     <MobileCardHeader
                       actions={
-                        <div className="flex items-center gap-0.5">
-                          <button
-                            type="button"
-                            onClick={() => handleToggle(store.id, store.isActive)}
-                            aria-label={store.isActive ? 'Desativar' : 'Ativar'}
-                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
-                          >
-                            {store.isActive ? (
-                              <IconToggleRight className="h-4 w-4 text-emerald-500" />
-                            ) : (
-                              <IconToggleLeft className="h-4 w-4" />
-                            )}
-                          </button>
-                          <a
-                            href={getStoreUrl(store.slug)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="Ver site"
-                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-primary/10 hover:text-primary"
-                          >
-                            <IconExternalLink className="h-4 w-4" />
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => handleRegenerate(store.id, store.name)}
-                            aria-label="Regenerar IA"
-                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950"
-                          >
-                            <IconSparkles className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handlePurgeCache(store.id, store.name)}
-                            aria-label="Limpar cache"
-                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-green-50 hover:text-green-500 dark:hover:bg-green-950"
-                          >
-                            <IconRefresh className="h-4 w-4" />
-                          </button>
-                        </div>
+                        <StoreActionsDropdown
+                          store={storeItem}
+                          onToggle={() => handleToggle(storeItem.id, storeItem.isActive)}
+                          onRegenerate={() => handleRegenerate(storeItem.id, storeItem.name)}
+                          onPurgeCache={() => handlePurgeCache(storeItem.id, storeItem.name)}
+                          onReindex={() => handleReindex(storeItem.id, storeItem.name)}
+                          onTransfer={() =>
+                            setTransferTarget({
+                              id: storeItem.id,
+                              name: storeItem.name,
+                              ownerName: storeItem.ownerName,
+                              ownerEmail: storeItem.ownerEmail,
+                            })
+                          }
+                          onDelete={() => setDeleteTarget({ id: storeItem.id, name: storeItem.name })}
+                        />
                       }
                     >
                       <MobileCardAvatar
-                        initials={getStoreInitials(store.name)}
+                        initials={getStoreInitials(storeItem.name)}
                         color="bg-primary"
-                        statusColor={store.isActive ? 'bg-emerald-500' : 'bg-slate-400'}
+                        statusColor={storeItem.isActive ? 'bg-emerald-500' : 'bg-slate-400'}
                       />
                       <MobileCardTitle
-                        title={store.name}
-                        subtitle={store.slug}
+                        title={storeItem.name}
+                        subtitle={storeItem.slug}
                         badge={
-                          store.isActive ? (
+                          storeItem.isActive ? (
                             <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 text-[10px] px-1.5 py-0">
                               Ativa
                             </Badge>
@@ -478,77 +521,19 @@ export default function AdminStoresPage() {
                       <MobileCardRow
                         icon={<IconUser className="h-3.5 w-3.5" />}
                         label="Proprietário"
-                        value={store.ownerName}
+                        value={storeItem.ownerName}
                       />
                       <MobileCardRow
                         icon={<IconCategory className="h-3.5 w-3.5" />}
                         label="Categoria"
-                        value={store.category}
+                        value={storeItem.category}
                       />
                       <MobileCardRow
                         icon={<IconMapPin className="h-3.5 w-3.5" />}
                         label="Cidade"
-                        value={`${store.city}/${store.state}`}
+                        value={`${storeItem.city}/${storeItem.state}`}
                       />
                     </MobileCardContent>
-
-                    <MobileCardFooter>
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => handleRegenerate(store.id, store.name)}
-                          aria-label="Regenerar IA"
-                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-500 dark:hover:bg-amber-950"
-                        >
-                          <IconSparkles className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handlePurgeCache(store.id, store.name)}
-                          aria-label="Limpar cache"
-                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-green-50 hover:text-green-500 dark:hover:bg-green-950"
-                        >
-                          <IconRefresh className="h-4 w-4" />
-                        </button>
-                        <Link
-                          href={`/painel/${store.slug}`}
-                          aria-label="Acessar painel"
-                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
-                        >
-                          <IconChartBar className="h-4 w-4" />
-                        </Link>
-                        <Link
-                          href={`/painel/${store.slug}/editar`}
-                          aria-label="Editar"
-                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
-                        >
-                          <IconEdit className="h-4 w-4" />
-                        </Link>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setTransferTarget({
-                              id: store.id,
-                              name: store.name,
-                              ownerName: store.ownerName,
-                              ownerEmail: store.ownerEmail,
-                            })
-                          }
-                          aria-label="Transferir"
-                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-500 dark:hover:bg-blue-950"
-                        >
-                          <IconArrowsExchange className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeleteTarget({ id: store.id, name: store.name })}
-                          aria-label="Excluir"
-                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950"
-                        >
-                          <IconTrash className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </MobileCardFooter>
                   </MobileCard>
                 </motion.div>
               ))}

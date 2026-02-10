@@ -2,10 +2,17 @@ import { google } from 'googleapis'
 
 type IndexingType = 'URL_UPDATED' | 'URL_DELETED'
 
-interface IndexingResult {
+export interface IndexingResult {
   success: boolean
   url: string
   error?: string
+}
+
+export interface BatchIndexingResult {
+  total: number
+  success: number
+  failed: number
+  results: IndexingResult[]
 }
 
 function getServiceAccountCredentials() {
@@ -60,7 +67,7 @@ async function notifyGoogle(url: string, type: IndexingType): Promise<IndexingRe
       },
     })
 
-    console.log(`Google Indexing API: ${type} notification sent for ${url}`)
+    console.log(`[Indexing] ${type} -> ${url}`)
 
     return {
       success: true,
@@ -68,7 +75,7 @@ async function notifyGoogle(url: string, type: IndexingType): Promise<IndexingRe
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-    console.error(`Google Indexing API error for ${url}:`, errorMessage)
+    console.error(`[Indexing] Error for ${url}:`, errorMessage)
 
     return {
       success: false,
@@ -95,12 +102,47 @@ export function buildStoreUrl(slug: string, customDomain?: string | null): strin
   return `https://${slug}.${mainDomain}`
 }
 
+export function buildServiceUrl(storeSlug: string, serviceSlug: string, customDomain?: string | null): string {
+  const baseUrl = buildStoreUrl(storeSlug, customDomain)
+  return `${baseUrl}/servicos/${serviceSlug}`
+}
+
+export async function notifyBatchUrlsUpdated(urls: string[]): Promise<BatchIndexingResult> {
+  const results: IndexingResult[] = []
+
+  for (const url of urls) {
+    const result = await notifyUrlUpdated(url)
+    results.push(result)
+  }
+
+  const success = results.filter(r => r.success).length
+  const failed = results.filter(r => !r.success).length
+
+  console.log(`[Indexing] Batch complete: ${success}/${urls.length} URLs indexed successfully`)
+
+  return {
+    total: urls.length,
+    success,
+    failed,
+    results,
+  }
+}
+
 export async function notifyStoreActivated(
   slug: string,
-  customDomain?: string | null
-): Promise<IndexingResult> {
-  const url = buildStoreUrl(slug, customDomain)
-  return notifyUrlUpdated(url)
+  customDomain?: string | null,
+  serviceSlugs?: string[],
+): Promise<BatchIndexingResult> {
+  const urls: string[] = [buildStoreUrl(slug, customDomain)]
+
+  if (serviceSlugs && serviceSlugs.length > 0) {
+    for (const serviceSlug of serviceSlugs) {
+      urls.push(buildServiceUrl(slug, serviceSlug, customDomain))
+    }
+  }
+
+  console.log(`[Indexing] Indexing store "${slug}" with ${urls.length} URLs (1 store + ${urls.length - 1} services)`)
+  return notifyBatchUrlsUpdated(urls)
 }
 
 export async function notifyStoreDeactivated(
