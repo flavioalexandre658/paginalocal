@@ -7,6 +7,7 @@ import { db } from '@/db'
 import { store, storeImage } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
 import sharp from 'sharp'
+import { revalidateStoreCache } from '@/lib/sitemap-revalidation'
 
 const uploadStoreImageSchema = z.object({
   storeId: z.string().uuid(),
@@ -88,6 +89,8 @@ export const uploadStoreImageAction = authActionClient
         .set({ coverUrl: url, updatedAt: new Date() })
         .where(eq(store.id, storeId))
     }
+
+    revalidateStoreCache(storeData.slug)
 
     return {
       image: newImage,

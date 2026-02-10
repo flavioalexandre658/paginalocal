@@ -6,6 +6,7 @@ import { db } from '@/db'
 import { service, store } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { generateSlug } from '@/lib/utils'
+import { revalidateStoreCache } from '@/lib/sitemap-revalidation'
 
 const updateServiceSchema = z.object({
   id: z.string().uuid(),
@@ -45,7 +46,7 @@ export const updateServiceAction = authActionClient
     const { id, storeId, ...data } = parsedInput
 
     const [storeResult] = await db
-      .select({ id: store.id })
+      .select({ id: store.id, slug: store.slug })
       .from(store)
       .where(and(eq(store.id, storeId), eq(store.userId, ctx.userId)))
       .limit(1)
@@ -68,6 +69,8 @@ export const updateServiceAction = authActionClient
       .set(updateData)
       .where(and(eq(service.id, id), eq(service.storeId, storeId)))
       .returning()
+
+    revalidateStoreCache(storeResult.slug)
 
     return result
   })

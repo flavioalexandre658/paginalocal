@@ -5,6 +5,7 @@ import { eq, and, desc } from 'drizzle-orm'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
 import { store, storeImage } from '@/db/schema'
+import { revalidateStoreCache } from '@/lib/sitemap-revalidation'
 
 const setImageAsHeroSchema = z.object({
   imageId: z.string().uuid(),
@@ -92,6 +93,8 @@ export const setImageAsHeroAction = authActionClient
         updatedAt: new Date(),
       })
       .where(eq(store.id, storeId))
+
+    revalidateStoreCache(storeData.slug)
 
     return {
       success: true,

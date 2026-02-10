@@ -7,7 +7,7 @@ import { store } from '@/db/schema'
 import { eq, and, ne } from 'drizzle-orm'
 import { addDomainToVercel } from '@/actions/vercel/add-domain'
 import { removeDomainFromVercel } from '@/actions/vercel/add-domain'
-import { revalidateSitemap } from '@/lib/sitemap-revalidation'
+import { revalidateSitemap, revalidateStoreCache } from '@/lib/sitemap-revalidation'
 
 const updateStoreSchema = z.object({
   storeId: z.string().uuid(),
@@ -95,10 +95,14 @@ export const updateStoreAction = authActionClient
       .where(eq(store.id, storeId))
       .returning()
 
-    // Update Vercel subdomain when slug changes
+    const currentSlug = slugChanged ? newSlug! : existingStore.slug
+    revalidateStoreCache(currentSlug)
+
     if (slugChanged) {
       const oldDomain = `${existingStore.slug}.paginalocal.com.br`
       const newDomain = `${newSlug}.paginalocal.com.br`
+
+      revalidateStoreCache(existingStore.slug)
 
       try {
         await addDomainToVercel(newDomain)

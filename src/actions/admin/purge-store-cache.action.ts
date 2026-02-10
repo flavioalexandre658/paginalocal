@@ -5,7 +5,8 @@ import { adminActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
 import { store } from '@/db/schema'
 import { eq } from 'drizzle-orm'
-import { revalidatePath, revalidateTag } from 'next/cache'
+import { revalidatePath } from 'next/cache'
+import { revalidateStoreCache } from '@/lib/sitemap-revalidation'
 
 const purgeStoreCacheSchema = z.object({
   storeId: z.string().uuid(),
@@ -24,10 +25,7 @@ export const purgeStoreCacheAction = adminActionClient
       throw new Error('Loja não encontrada')
     }
 
-    revalidateTag('store-data')
-    revalidateTag(`store-${storeData.slug}`)
-    revalidatePath(`/site/${storeData.slug}`, 'layout')
-    revalidatePath(`/site/${storeData.slug}/servicos`, 'layout')
+    revalidateStoreCache(storeData.slug)
     revalidatePath('/sitemap.xml')
 
     console.log(`[Cache] Purged cache for store "${storeData.slug}"`)

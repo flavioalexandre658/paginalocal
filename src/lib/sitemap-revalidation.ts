@@ -30,3 +30,10 @@ export async function revalidateStoreRoutes(categorySlug: string, citySlug?: str
   await revalidateSitemap()
   await revalidateCategoryPages(categorySlug, citySlug)
 }
+
+export async function revalidateStoreCache(slug: string) {
+  revalidateTag('store-data')
+  revalidateTag(`store-${slug}`)
+  revalidatePath(`/site/${slug}`, 'layout')
+  revalidatePath(`/site/${slug}/servicos`, 'layout')
+}

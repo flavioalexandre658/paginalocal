@@ -5,6 +5,7 @@ import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
 import { store, storeImage } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
+import { revalidateStoreCache } from '@/lib/sitemap-revalidation'
 
 const deleteStoreImageSchema = z.object({
   imageId: z.string().uuid(),
@@ -43,6 +44,8 @@ export const deleteStoreImageAction = authActionClient
         .set({ coverUrl: null, updatedAt: new Date() })
         .where(eq(store.id, storeId))
     }
+
+    revalidateStoreCache(storeData.slug)
 
     return { success: true }
   })

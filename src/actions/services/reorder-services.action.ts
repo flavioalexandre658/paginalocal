@@ -5,6 +5,7 @@ import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
 import { service, store } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
+import { revalidateStoreCache } from '@/lib/sitemap-revalidation'
 
 const reorderServicesSchema = z.object({
   storeId: z.string().uuid(),
@@ -18,7 +19,7 @@ export const reorderServicesAction = authActionClient
   .schema(reorderServicesSchema)
   .action(async ({ parsedInput, ctx }) => {
     const [storeResult] = await db
-      .select({ id: store.id })
+      .select({ id: store.id, slug: store.slug })
       .from(store)
       .where(and(eq(store.id, parsedInput.storeId), eq(store.userId, ctx.userId)))
       .limit(1)
@@ -35,6 +36,8 @@ export const reorderServicesAction = authActionClient
     )
 
     await Promise.all(updates)
+
+    revalidateStoreCache(storeResult.slug)
 
     return { success: true }
   })

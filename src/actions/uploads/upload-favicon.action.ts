@@ -7,6 +7,7 @@ import { db } from '@/db'
 import { store } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
 import sharp from 'sharp'
+import { revalidateStoreCache } from '@/lib/sitemap-revalidation'
 
 const uploadFaviconSchema = z.object({
   storeId: z.string().uuid(),
@@ -63,6 +64,8 @@ export const uploadFaviconAction = authActionClient
       .update(store)
       .set({ faviconUrl: url, updatedAt: new Date() })
       .where(eq(store.id, storeId))
+
+    revalidateStoreCache(storeData.slug)
 
     return { url }
   })

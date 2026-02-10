@@ -6,6 +6,7 @@ import {
   IconLayoutDashboard,
   IconUsers,
   IconBuildingStore,
+  IconCategory,
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 
@@ -13,6 +14,7 @@ const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: IconLayoutDashboard },
   { href: '/admin/usuarios', label: 'Usuários', icon: IconUsers },
   { href: '/admin/lojas', label: 'Lojas', icon: IconBuildingStore },
+  { href: '/admin/categorias', label: 'Categorias', icon: IconCategory },
 ]
 
 export function AdminSidebar() {

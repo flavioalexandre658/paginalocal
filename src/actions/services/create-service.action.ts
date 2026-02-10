@@ -6,6 +6,7 @@ import { db } from '@/db'
 import { service, store } from '@/db/schema'
 import { eq, and, sql } from 'drizzle-orm'
 import { generateSlug } from '@/lib/utils'
+import { revalidateStoreCache } from '@/lib/sitemap-revalidation'
 
 const createServiceSchema = z.object({
   storeId: z.string().uuid(),
@@ -37,7 +38,7 @@ export const createServiceAction = authActionClient
   .schema(createServiceSchema)
   .action(async ({ parsedInput, ctx }) => {
     const [storeResult] = await db
-      .select({ id: store.id })
+      .select({ id: store.id, slug: store.slug })
       .from(store)
       .where(and(eq(store.id, parsedInput.storeId), eq(store.userId, ctx.userId)))
       .limit(1)
@@ -61,6 +62,8 @@ export const createServiceAction = authActionClient
         position: (maxPosition?.max || 0) + 1,
       })
       .returning()
+
+    revalidateStoreCache(storeResult.slug)
 
     return result
   })
