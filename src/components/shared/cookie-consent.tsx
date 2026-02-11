@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { IconCookie, IconSettings, IconChevronUp } from '@tabler/icons-react'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
 const COOKIE_CONSENT_KEY = 'pgl-cookie-consent'
@@ -17,6 +19,9 @@ interface CookiePreferences {
 }
 
 export function CookieConsent() {
+  const pathname = usePathname()
+  const isStorePage = pathname?.startsWith('/site/')
+
   const [isVisible, setIsVisible] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [preferences, setPreferences] = useState<CookiePreferences>({
@@ -60,11 +65,14 @@ export function CookieConsent() {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ y: 100, opacity: 0 }}
+          initial={{ y: isStorePage ? -100 : 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 100, opacity: 0 }}
+          exit={{ y: isStorePage ? -100 : 100, opacity: 0 }}
           transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          className="fixed bottom-0 left-0 right-0 z-50 p-2 sm:p-4"
+          className={cn(
+            'fixed left-0 right-0 z-50 p-2 sm:p-4',
+            isStorePage ? 'top-0' : 'bottom-0'
+          )}
         >
           <div className="mx-auto max-w-2xl">
             <div className="overflow-hidden rounded-xl border border-slate-200/60 bg-white/98 shadow-lg backdrop-blur-xl sm:rounded-2xl dark:border-slate-700/60 dark:bg-slate-900/98">

@@ -48,8 +48,11 @@ export function GalleryTab({ store, images: initialImages }: GalleryTabProps) {
   const [deletingImageId, setDeletingImageId] = useState<string | null>(null)
   const [settingAsHeroId, setSettingAsHeroId] = useState<string | null>(null)
 
+  const [heroRemovedLocally, setHeroRemovedLocally] = useState(false)
+
   const heroImage = images.find((img) => img.role === 'hero')
   const galleryImages = images.filter((img) => img.role !== 'hero')
+  const heroUrl = heroRemovedLocally ? null : (heroImage?.url || store.coverUrl)
 
   async function handleFileUpload(
     event: React.ChangeEvent<HTMLInputElement>,
@@ -90,6 +93,7 @@ export function GalleryTab({ store, images: initialImages }: GalleryTabProps) {
           }
           return [...prev, result.data!.image as Image]
         })
+        if (role === 'hero') setHeroRemovedLocally(false)
         toast.success('Imagem enviada com sucesso!')
       } else if (result?.serverError) {
         toast.error(result.serverError)
@@ -103,6 +107,8 @@ export function GalleryTab({ store, images: initialImages }: GalleryTabProps) {
   async function handleDeleteImage(imageId: string) {
     setDeletingImageId(imageId)
 
+    const isHeroDeletion = heroImage?.id === imageId
+
     const result = await deleteImage({
       imageId,
       storeId: store.id,
@@ -110,6 +116,7 @@ export function GalleryTab({ store, images: initialImages }: GalleryTabProps) {
 
     if (result?.data?.success) {
       setImages((prev) => prev.filter((img) => img.id !== imageId))
+      if (isHeroDeletion) setHeroRemovedLocally(true)
       toast.success('Imagem removida!')
     } else if (result?.serverError) {
       toast.error(result.serverError)
@@ -181,14 +188,14 @@ export function GalleryTab({ store, images: initialImages }: GalleryTabProps) {
             className="hidden"
           />
 
-          {heroImage || store.coverUrl ? (
+          {heroUrl ? (
             <div className="relative aspect-video max-w-xl overflow-hidden rounded-xl border border-slate-200/60 dark:border-slate-700/60">
               <img
-                src={heroImage?.url || store.coverUrl || ''}
+                src={heroUrl}
                 alt="Imagem de destaque"
                 className="h-full w-full object-cover"
               />
-              <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/50 opacity-0 transition-opacity hover:opacity-100">
+              <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-3 bg-gradient-to-t from-black/70 to-transparent p-4 pt-10 sm:absolute sm:inset-0 sm:bg-black/50 sm:p-0 sm:pt-0 sm:opacity-0 sm:transition-opacity sm:hover:opacity-100">
                 <button
                   onClick={() => heroInputRef.current?.click()}
                   disabled={isUploading}
@@ -300,8 +307,8 @@ export function GalleryTab({ store, images: initialImages }: GalleryTabProps) {
                     <div
                       className={cn(
                         "absolute inset-0 flex items-center justify-center gap-2 bg-black/50 transition-opacity",
-                        "opacity-0 group-hover:opacity-100",
-                        selectedImageId === image.id && "opacity-100"
+                        "pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100",
+                        selectedImageId === image.id && "pointer-events-auto opacity-100"
                       )}
                     >
                       {/* Botão Destacar */}

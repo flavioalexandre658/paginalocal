@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
-import { IconX, IconChevronLeft, IconChevronRight, IconPhoto } from '@tabler/icons-react'
+import { IconX, IconChevronLeft, IconChevronRight, IconPhoto, IconZoomIn, IconZoomOut, IconZoomReset } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 
 interface GalleryImage {
@@ -22,19 +22,71 @@ interface GallerySectionProps {
 
 export function GallerySection({ images, storeName, city, category }: GallerySectionProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  const [zoom, setZoom] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const dragStart = useRef({ x: 0, y: 0 })
+  const panStart = useRef({ x: 0, y: 0 })
+  const imageContainerRef = useRef<HTMLDivElement>(null)
 
-  const openLightbox = (index: number) => setSelectedIndex(index)
-  const closeLightbox = useCallback(() => setSelectedIndex(null), [])
+  const openLightbox = (index: number) => {
+    setSelectedIndex(index)
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
+  }
+
+  const closeLightbox = useCallback(() => {
+    setSelectedIndex(null)
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
+  }, [])
 
   const goToPrevious = useCallback(() => {
     if (selectedIndex === null) return
     setSelectedIndex(selectedIndex === 0 ? images.length - 1 : selectedIndex - 1)
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
   }, [selectedIndex, images.length])
 
   const goToNext = useCallback(() => {
     if (selectedIndex === null) return
     setSelectedIndex(selectedIndex === images.length - 1 ? 0 : selectedIndex + 1)
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
   }, [selectedIndex, images.length])
+
+  const handleZoomChange = useCallback((newZoom: number) => {
+    setZoom(newZoom)
+    if (newZoom <= 1) setPan({ x: 0, y: 0 })
+  }, [])
+
+  const resetZoom = useCallback(() => {
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
+  }, [])
+
+  // Drag to pan when zoomed
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if (zoom <= 1) return
+    setIsDragging(true)
+    dragStart.current = { x: e.clientX, y: e.clientY }
+    panStart.current = { ...pan }
+    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+  }, [zoom, pan])
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!isDragging || zoom <= 1) return
+    const dx = e.clientX - dragStart.current.x
+    const dy = e.clientY - dragStart.current.y
+    setPan({
+      x: panStart.current.x + dx,
+      y: panStart.current.y + dy,
+    })
+  }, [isDragging, zoom])
+
+  const handlePointerUp = useCallback(() => {
+    setIsDragging(false)
+  }, [])
 
   useEffect(() => {
     if (selectedIndex === null) return
@@ -120,63 +172,131 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
         </div>
       </section>
 
+      {/* Lightbox */}
       {selectedIndex !== null && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 p-4 backdrop-blur-xl animate-fade-in"
+          className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-xl animate-fade-in"
           onClick={closeLightbox}
         >
+          {/* Close button */}
           <button
             onClick={closeLightbox}
-            className="absolute right-4 top-4 z-10 rounded-full bg-white/10 p-2 text-white backdrop-blur-sm border border-white/10 transition-all hover:bg-white/20 hover:scale-110"
+            className="absolute right-3 top-3 z-20 rounded-full bg-white/10 p-2 text-white backdrop-blur-sm border border-white/10 transition-all hover:bg-white/20 hover:scale-110"
             aria-label="Fechar (Esc)"
           >
-            <IconX className="h-6 w-6" />
+            <IconX className="h-5 w-5" />
           </button>
 
+          {/* Navigation arrows */}
           <button
             onClick={(e) => {
               e.stopPropagation()
               goToPrevious()
             }}
-            className="absolute left-4 z-10 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm border border-white/10 transition-all hover:bg-white/20 hover:scale-110"
+            className="absolute left-3 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-2.5 text-white backdrop-blur-sm border border-white/10 transition-all hover:bg-white/20 hover:scale-110"
             aria-label="Anterior"
           >
-            <IconChevronLeft className="h-6 w-6" />
+            <IconChevronLeft className="h-5 w-5" />
           </button>
-
-          <div
-            className="relative max-h-[85vh] max-w-[90vw] animate-scale-in"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Image
-              src={images[selectedIndex].url}
-              alt={images[selectedIndex].alt}
-              width={images[selectedIndex].width || 1200}
-              height={images[selectedIndex].height || 800}
-              className="rounded-2xl object-contain shadow-2xl"
-            />
-            <div className="absolute bottom-4 left-4 right-4">
-              <div className="rounded-xl bg-black/40 backdrop-blur-xl border border-white/10 p-4">
-                <p className="text-center text-white font-medium">
-                  {images[selectedIndex].alt}
-                </p>
-                <p className="mt-1 text-center text-sm text-white/60">
-                  {selectedIndex + 1} / {images.length}
-                </p>
-              </div>
-            </div>
-          </div>
 
           <button
             onClick={(e) => {
               e.stopPropagation()
               goToNext()
             }}
-            className="absolute right-4 z-10 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm border border-white/10 transition-all hover:bg-white/20 hover:scale-110"
+            className="absolute right-3 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-2.5 text-white backdrop-blur-sm border border-white/10 transition-all hover:bg-white/20 hover:scale-110"
             aria-label="Próxima"
           >
-            <IconChevronRight className="h-6 w-6" />
+            <IconChevronRight className="h-5 w-5" />
           </button>
+
+          {/* Image area */}
+          <div
+            className="flex flex-1 items-center justify-center overflow-hidden px-12 pt-14 pb-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              ref={imageContainerRef}
+              className={cn(
+                'relative overflow-hidden rounded-xl',
+                zoom > 1 ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
+              )}
+              style={{ maxWidth: '90vw', maxHeight: '70vh' }}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+            >
+              <Image
+                src={images[selectedIndex].url}
+                alt={images[selectedIndex].alt}
+                width={images[selectedIndex].width || 1200}
+                height={images[selectedIndex].height || 800}
+                className="select-none rounded-xl"
+                style={{
+                  maxHeight: '70vh',
+                  width: 'auto',
+                  transform: `scale(${zoom}) translate(${pan.x / zoom}px, ${pan.y / zoom}px)`,
+                  transformOrigin: 'center center',
+                  transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+                }}
+                draggable={false}
+              />
+            </div>
+          </div>
+
+          {/* Caption + Zoom controls (below image) */}
+          <div
+            className="shrink-0 px-4 pb-4 pt-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Caption */}
+            <p className="mb-3 text-center text-sm font-medium text-white/90">
+              {images[selectedIndex].alt}
+              <span className="ml-2 text-white/40">
+                {selectedIndex + 1} / {images.length}
+              </span>
+            </p>
+
+            {/* Zoom slider */}
+            <div className="mx-auto flex max-w-xs items-center gap-3">
+              <button
+                onClick={() => handleZoomChange(Math.max(1, zoom - 0.5))}
+                className="rounded-full bg-white/10 p-1.5 text-white/70 transition-colors hover:bg-white/20 hover:text-white"
+                aria-label="Diminuir zoom"
+              >
+                <IconZoomOut className="h-4 w-4" />
+              </button>
+
+              <input
+                type="range"
+                min={100}
+                max={300}
+                step={10}
+                value={zoom * 100}
+                onChange={(e) => handleZoomChange(Number(e.target.value) / 100)}
+                className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/20 accent-white"
+              />
+
+              <button
+                onClick={() => handleZoomChange(Math.min(3, zoom + 0.5))}
+                className="rounded-full bg-white/10 p-1.5 text-white/70 transition-colors hover:bg-white/20 hover:text-white"
+                aria-label="Aumentar zoom"
+              >
+                <IconZoomIn className="h-4 w-4" />
+              </button>
+
+              {zoom > 1 && (
+                <button
+                  onClick={resetZoom}
+                  className="rounded-full bg-white/10 p-1.5 text-white/70 transition-colors hover:bg-white/20 hover:text-white"
+                  aria-label="Resetar zoom"
+                >
+                  <IconZoomReset className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </>
