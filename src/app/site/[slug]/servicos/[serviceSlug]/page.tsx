@@ -87,7 +87,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'}`
 
   const pageUrl = `${baseUrl}/servicos/${serviceSlug}`
-  const ogImage = storeData.coverUrl || storeData.logoUrl
+  const ogImage = serviceData.heroImageUrl || serviceData.imageUrl || storeData.coverUrl || storeData.logoUrl
   const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
 
   return {
@@ -285,6 +285,7 @@ export default async function ServicePage({ params }: PageProps) {
           longDescription: serviceData.longDescription,
           priceInCents: serviceData.priceInCents,
           imageUrl: serviceData.imageUrl,
+          heroImageUrl: serviceData.heroImageUrl,
         }}
         otherServices={otherServices}
         testimonials={testimonials}

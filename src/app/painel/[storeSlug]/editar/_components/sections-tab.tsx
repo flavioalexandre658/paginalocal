@@ -60,6 +60,7 @@ interface Service {
   description: string | null
   priceInCents: number | null
   position: number
+  heroImageUrl?: string | null
 }
 
 interface SectionsTabProps {

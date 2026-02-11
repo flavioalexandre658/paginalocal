@@ -9,6 +9,7 @@ import {
   IconStar,
   IconChevronRight,
 } from '@tabler/icons-react'
+import { cn } from '@/lib/utils'
 import { formatCurrency, getWhatsAppUrl, getPhoneUrl, getWhatsAppDefaultMessage, getServicePageUrl, getStoreHomeUrl } from '@/lib/utils'
 
 interface ServiceDetailContentProps {
@@ -37,6 +38,7 @@ interface ServiceDetailContentProps {
     longDescription: string | null
     priceInCents: number | null
     imageUrl: string | null
+    heroImageUrl: string | null
   }
   otherServices: {
     id: string
@@ -63,8 +65,24 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
 
   return (
     <main>
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 py-16 md:py-24">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
+      <section className="relative overflow-hidden py-16 md:py-24">
+        {service.heroImageUrl ? (
+          <div className="absolute inset-0 z-0">
+            <Image
+              src={service.heroImageUrl}
+              alt={`${service.name} - ${store.name}`}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-slate-900/95" />
+          </div>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
+          </div>
+        )}
 
         <div className="container relative z-10 mx-auto px-4">
           <Link

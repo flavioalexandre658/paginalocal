@@ -1,16 +1,17 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useAction } from 'next-safe-action/hooks'
 import toast from 'react-hot-toast'
-import { IconListDetails } from '@tabler/icons-react'
+import { IconListDetails, IconPhoto, IconUpload, IconTrash, IconLoader2 } from '@tabler/icons-react'
 import { NumericFormat } from 'react-number-format'
 
 import { createServiceAction } from '@/actions/services/create-service.action'
 import { updateServiceAction } from '@/actions/services/update-service.action'
+import { uploadServiceHeroAction } from '@/actions/services/upload-service-hero.action'
 import {
   Modal,
   ModalContent,
@@ -47,6 +48,7 @@ interface ServiceForEdit {
   name: string
   description: string | null
   priceInCents: number | null
+  heroImageUrl?: string | null
 }
 
 interface ServiceFormModalProps {
@@ -72,8 +74,13 @@ export function ServiceFormModal({
     useAction(createServiceAction)
   const { executeAsync: updateAsync, isExecuting: isUpdating } =
     useAction(updateServiceAction)
+  const { executeAsync: uploadHero, isExecuting: isUploadingHero } =
+    useAction(uploadServiceHeroAction)
 
   const isExecuting = isCreating || isUpdating
+
+  const [heroPreview, setHeroPreview] = useState<string | null>(null)
+  const heroInputRef = useRef<HTMLInputElement>(null)
 
   const form = useForm<ServiceFormData>({
     resolver: zodResolver(serviceFormSchema),
@@ -91,8 +98,59 @@ export function ServiceFormModal({
         description: service?.description || '',
         priceInCents: service?.priceInCents ?? null,
       })
+      setHeroPreview(service?.heroImageUrl || null)
     }
   }, [open, service, form])
+
+  async function handleHeroUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file || !isEditing || !service) return
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('O arquivo deve ser uma imagem')
+      return
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('A imagem deve ter no máximo 10MB')
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const result = await uploadHero({
+      serviceId: service.id,
+      storeId,
+      file: formData,
+    })
+
+    if (result?.data?.url) {
+      setHeroPreview(result.data.url)
+      toast.success('Imagem de destaque salva!')
+    } else if (result?.serverError) {
+      toast.error(result.serverError)
+    }
+
+    event.target.value = ''
+  }
+
+  async function handleRemoveHero() {
+    if (!isEditing || !service) return
+
+    const result = await updateAsync({
+      id: service.id,
+      storeId,
+      heroImageUrl: null,
+    })
+
+    if (result?.data) {
+      setHeroPreview(null)
+      toast.success('Imagem de destaque removida!')
+    } else if (result?.serverError) {
+      toast.error(result.serverError)
+    }
+  }
 
   async function onSubmit(data: ServiceFormData) {
     if (isEditing && service) {
@@ -224,6 +282,77 @@ export function ServiceFormModal({
                   </FormItem>
                 )}
               />
+              {isEditing && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-900 dark:text-white">
+                    Imagem de destaque (hero)
+                  </label>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Aparece no fundo da página do serviço. Recomendado: 1200x675px
+                  </p>
+
+                  <input
+                    ref={heroInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleHeroUpload}
+                    className="hidden"
+                  />
+
+                  {heroPreview ? (
+                    <div className="relative aspect-video overflow-hidden rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                      <img
+                        src={heroPreview}
+                        alt="Imagem de destaque do serviço"
+                        className="h-full w-full object-cover"
+                      />
+                      <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-2 bg-gradient-to-t from-black/70 to-transparent p-3 pt-8">
+                        <button
+                          type="button"
+                          onClick={() => heroInputRef.current?.click()}
+                          disabled={isUploadingHero}
+                          className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-medium text-slate-900 shadow-lg transition-transform hover:scale-105 disabled:opacity-50"
+                        >
+                          {isUploadingHero ? (
+                            <IconLoader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <IconUpload className="h-3.5 w-3.5" />
+                          )}
+                          Trocar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleRemoveHero}
+                          disabled={isUploadingHero}
+                          className="flex items-center gap-1.5 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-medium text-white shadow-lg transition-transform hover:scale-105 disabled:opacity-50"
+                        >
+                          <IconTrash className="h-3.5 w-3.5" />
+                          Remover
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => heroInputRef.current?.click()}
+                      disabled={isUploadingHero}
+                      className="flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 py-6 transition-colors hover:border-primary/50 hover:bg-primary/5 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800/50"
+                    >
+                      {isUploadingHero ? (
+                        <>
+                          <IconLoader2 className="h-8 w-8 animate-spin text-primary" />
+                          <span className="mt-2 text-xs font-medium text-primary">Enviando...</span>
+                        </>
+                      ) : (
+                        <>
+                          <IconPhoto className="h-8 w-8 text-slate-300 dark:text-slate-600" />
+                          <span className="mt-2 text-xs font-medium text-slate-500">Clique para adicionar</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              )}
             </ModalBody>
 
             <ModalFooter>

@@ -17,6 +17,7 @@ const updateServiceSchema = z.object({
   description: z.string().nullable().optional(),
   priceInCents: z.number().int().positive().nullable().optional(),
   imageUrl: z.string().nullable().optional(),
+  heroImageUrl: z.string().nullable().optional(),
   position: z.number().int().optional(),
   isActive: z.boolean().optional(),
 })
