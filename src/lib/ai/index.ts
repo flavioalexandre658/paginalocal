@@ -1,6 +1,6 @@
 import type { MarketingCopy, MarketingCopyInput, ServiceItem, ServiceDescriptionInput, BusinessClassificationInput, AIProvider } from './types'
-import { generateMarketingCopyWithGemini, generateServiceDescriptionsWithGemini, classifyBusinessCategoryWithGemini } from './gemini'
-import { generateMarketingCopyWithOpenAI, generateServiceDescriptionsWithOpenAI, classifyBusinessCategoryWithOpenAI } from './openai'
+import { generateMarketingCopyWithGemini, generateServiceDescriptionsWithGemini, classifyBusinessCategoryWithGemini, generateServiceSeoWithGemini } from './gemini'
+import { generateMarketingCopyWithOpenAI, generateServiceDescriptionsWithOpenAI, classifyBusinessCategoryWithOpenAI, generateServiceSeoWithOpenAI } from './openai'
 
 export type { MarketingCopy, MarketingCopyInput, FAQItem, ServiceItem, ServiceDescriptionInput, BusinessClassificationInput, AIProvider } from './types'
 export { extractBrandName, generateOptimizedSlug, generateFallbackServices, generateFallbackFAQ } from './fallbacks'
@@ -35,6 +35,19 @@ export async function classifyBusinessCategory(data: BusinessClassificationInput
   }
 
   return classifyBusinessCategoryWithGemini(data)
+}
+
+export async function generateServiceSeo(
+  data: MarketingCopyInput,
+  serviceNames: string[],
+): Promise<ServiceItem[]> {
+  console.log(`[AI] Gerando SEO para serviço(s) "${serviceNames.join(', ')}" com provider: ${AI_PROVIDER}`)
+
+  if (AI_PROVIDER === 'openai') {
+    return generateServiceSeoWithOpenAI(data, serviceNames)
+  }
+
+  return generateServiceSeoWithGemini(data, serviceNames)
 }
 
 export function getActiveProvider(): AIProvider {

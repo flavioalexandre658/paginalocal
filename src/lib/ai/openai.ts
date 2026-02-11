@@ -180,6 +180,25 @@ export async function generateServiceDescriptionsWithOpenAI(data: ServiceDescrip
   return safeParseJson<ServiceItem[]>(text, [])
 }
 
+export async function generateServiceSeoWithOpenAI(
+  data: MarketingCopyInput,
+  serviceNames: string[],
+): Promise<ServiceItem[]> {
+  const systemPrompt = 'Você é um especialista em Marketing Local e SEO brasileiro. Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
+
+  console.log(`[AI OpenAI] Gerando SEO para ${serviceNames.length} serviço(s): ${serviceNames.join(', ')}`)
+
+  const result = await callOpenAIWithRetry<ServiceItem[]>(
+    systemPrompt, getServicesPrompt(data, serviceNames), [], 4000,
+  )
+
+  return result.map(svc => ({
+    ...svc,
+    seoTitle: (svc.seoTitle || '').substring(0, 70),
+    seoDescription: (svc.seoDescription || '').substring(0, 160),
+  }))
+}
+
 export async function classifyBusinessCategoryWithOpenAI(data: BusinessClassificationInput): Promise<string | null> {
   const systemPrompt = 'Você classifica negócios locais brasileiros. Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
   const userPrompt = getBusinessClassificationPrompt(data)

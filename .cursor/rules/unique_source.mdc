@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+
+Sempre antes de implementar um ajuste ou nova feature, verifique se já temos um método que faz isso e que pode ser reaproveitado
+
+Queremos evitar código duplicado e facilitar manutenção e escala futura, exemplo se temos um método que já é usado em uma feature e precisamos de algo que esse método atende, use ele ao invez de criar um novo método.
+
+Dessa forma temos uma única fonte de verdade para essa feature

@@ -7,6 +7,8 @@ import { service, store } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { generateSlug } from '@/lib/utils'
 import { revalidateStoreCache } from '@/lib/sitemap-revalidation'
+import { generateServiceSeo } from '@/lib/ai'
+import type { MarketingCopyInput } from '@/lib/ai'
 
 const updateServiceSchema = z.object({
   id: z.string().uuid(),
@@ -46,7 +48,14 @@ export const updateServiceAction = authActionClient
     const { id, storeId, ...data } = parsedInput
 
     const [storeResult] = await db
-      .select({ id: store.id, slug: store.slug })
+      .select({
+        id: store.id,
+        slug: store.slug,
+        name: store.name,
+        category: store.category,
+        city: store.city,
+        state: store.state,
+      })
       .from(store)
       .where(and(eq(store.id, storeId), eq(store.userId, ctx.userId)))
       .limit(1)
@@ -71,6 +80,39 @@ export const updateServiceAction = authActionClient
       .returning()
 
     revalidateStoreCache(storeResult.slug)
+
+    if (data.name) {
+      try {
+        const aiInput: MarketingCopyInput = {
+          businessName: storeResult.name,
+          category: storeResult.category,
+          city: storeResult.city,
+          state: storeResult.state,
+        }
+
+        const [seo] = await generateServiceSeo(aiInput, [data.name])
+
+        if (seo) {
+          const [updated] = await db
+            .update(service)
+            .set({
+              description: seo.description,
+              seoTitle: seo.seoTitle,
+              seoDescription: seo.seoDescription,
+              longDescription: seo.longDescription,
+              updatedAt: new Date(),
+            })
+            .where(eq(service.id, id))
+            .returning()
+
+          revalidateStoreCache(storeResult.slug)
+          console.log(`[Service] SEO regenerado para "${data.name}"`)
+          return updated
+        }
+      } catch (error) {
+        console.error(`[Service] Erro ao regenerar SEO para "${data.name}":`, error)
+      }
+    }
 
     return result
   })

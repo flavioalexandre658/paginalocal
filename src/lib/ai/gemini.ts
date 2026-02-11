@@ -164,6 +164,23 @@ export async function generateServiceDescriptionsWithGemini(data: ServiceDescrip
   )
 }
 
+export async function generateServiceSeoWithGemini(
+  data: MarketingCopyInput,
+  serviceNames: string[],
+): Promise<ServiceItem[]> {
+  console.log(`[AI Gemini] Gerando SEO para ${serviceNames.length} serviço(s): ${serviceNames.join(', ')}`)
+
+  const result = await callGeminiWithRetry<ServiceItem[]>(
+    getServicesPrompt(data, serviceNames), [], 4000,
+  )
+
+  return result.map(svc => ({
+    ...svc,
+    seoTitle: (svc.seoTitle || '').substring(0, 70),
+    seoDescription: (svc.seoDescription || '').substring(0, 160),
+  }))
+}
+
 export async function classifyBusinessCategoryWithGemini(data: BusinessClassificationInput): Promise<string | null> {
   const prompt = getBusinessClassificationPrompt(data)
 
