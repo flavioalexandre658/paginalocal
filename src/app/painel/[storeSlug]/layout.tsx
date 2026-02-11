@@ -72,25 +72,25 @@ export default async function DashboardLayout({ children, params }: LayoutProps)
               className="flex shrink-0 items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <IconArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">{isAdmin ? 'Admin' : 'Minhas Lojas'}</span>
+              <span className="hidden sm:inline">{isAdmin ? 'Admin' : 'Meus Sites'}</span>
             </Link>
             <div className="hidden h-6 w-px shrink-0 bg-slate-200 dark:bg-slate-700 sm:block" />
             <div className="flex min-w-0 flex-1 items-center gap-2">
               {storeFavicon ? (
-                <Image 
-                  src={storeFavicon} 
-                  alt={storeData[0].name} 
-                  width={28} 
+                <Image
+                  src={storeFavicon}
+                  alt={storeData[0].name}
+                  width={28}
                   height={28}
                   className="rounded-md object-cover"
                   unoptimized
                 />
               ) : (
-                <Image 
-                  src="/assets/images/icon/favicon.ico" 
-                  alt="Página Local" 
-                  width={28} 
-                  height={28} 
+                <Image
+                  src="/assets/images/icon/favicon.ico"
+                  alt="Página Local"
+                  width={28}
+                  height={28}
                 />
               )}
 

@@ -66,7 +66,7 @@ export function AdminHeader({ userName }: AdminHeaderProps) {
             >
               <Link href="/painel">
                 <IconBuildingStore className="h-4 w-4" />
-                <span className="hidden sm:inline">Minhas Lojas</span>
+                <span className="hidden sm:inline">Meus Sites</span>
               </Link>
             </EnhancedButton>
             <LogoutButton />

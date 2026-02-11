@@ -89,7 +89,7 @@ export default function PainelPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl">
-                Minhas Lojas
+                Meus Sites
               </h1>
               <p className="mt-2 text-slate-500 dark:text-slate-400">
                 Gerencie seus negócios e acompanhe o desempenho

@@ -297,6 +297,9 @@ export default async function ServicePage({ params }: PageProps) {
         storeName={storeData.name}
         city={storeData.city}
         state={storeData.state}
+        instagramUrl={storeData.instagramUrl}
+        facebookUrl={storeData.facebookUrl}
+        googleBusinessUrl={storeData.googleBusinessUrl}
       />
 
       <FloatingContact

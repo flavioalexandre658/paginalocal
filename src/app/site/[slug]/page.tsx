@@ -469,6 +469,9 @@ export default async function StorePage({ params }: PageProps) {
         categorySlug={storeData.category.toLowerCase().replace(/\s+/g, '-')}
         hasServices={services.length > 0}
         hasFaq={faq.length > 0}
+        instagramUrl={storeData.instagramUrl}
+        facebookUrl={storeData.facebookUrl}
+        googleBusinessUrl={storeData.googleBusinessUrl}
       />
 
       <FloatingContact

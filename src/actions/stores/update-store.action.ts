@@ -45,6 +45,9 @@ const updateStoreSchema = z.object({
   whatsappDefaultMessage: z.string().max(300, 'Mensagem deve ter no máximo 300 caracteres').optional().nullable(),
   showWhatsappButton: z.boolean().optional(),
   showCallButton: z.boolean().optional(),
+  instagramUrl: z.string().url().optional().nullable(),
+  facebookUrl: z.string().url().optional().nullable(),
+  googleBusinessUrl: z.string().url().optional().nullable(),
 })
 
 export const updateStoreAction = authActionClient

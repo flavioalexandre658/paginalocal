@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { IconMapPin, IconExternalLink } from '@tabler/icons-react'
+import { IconMapPin, IconExternalLink, IconBrandInstagram, IconBrandFacebook, IconBrandGoogle } from '@tabler/icons-react'
 import Image from 'next/image'
 
 interface SiteFooterProps {
@@ -10,9 +10,12 @@ interface SiteFooterProps {
   categorySlug?: string
   hasServices?: boolean
   hasFaq?: boolean
+  instagramUrl?: string | null
+  facebookUrl?: string | null
+  googleBusinessUrl?: string | null
 }
 
-export function SiteFooter({ storeName, city, state, category, categorySlug, hasServices, hasFaq }: SiteFooterProps) {
+export function SiteFooter({ storeName, city, state, category, categorySlug, hasServices, hasFaq, instagramUrl, facebookUrl, googleBusinessUrl }: SiteFooterProps) {
   const currentYear = new Date().getFullYear()
 
   const navLinks = [
@@ -22,6 +25,14 @@ export function SiteFooter({ storeName, city, state, category, categorySlug, has
     ...(hasFaq ? [{ href: '#faq', label: 'Perguntas Frequentes' }] : []),
     { href: '#contato', label: 'Contato' },
   ]
+
+  const socialLinks = [
+    { url: instagramUrl, icon: IconBrandInstagram, label: 'Instagram', hoverColor: 'hover:text-pink-500 hover:border-pink-500/30 hover:bg-pink-500/10 hover:shadow-pink-500/10' },
+    { url: facebookUrl, icon: IconBrandFacebook, label: 'Facebook', hoverColor: 'hover:text-blue-600 hover:border-blue-600/30 hover:bg-blue-600/10 hover:shadow-blue-600/10' },
+    { url: googleBusinessUrl, icon: IconBrandGoogle, label: 'Google Meu Negócio', hoverColor: 'hover:text-emerald-500 hover:border-emerald-500/30 hover:bg-emerald-500/10 hover:shadow-emerald-500/10' },
+  ].filter((link) => link.url)
+
+  const hasSocialLinks = socialLinks.length > 0
 
   return (
     <footer className="relative border-t border-slate-200/60 pb-24 pt-8 md:pb-10 md:pt-10 dark:border-slate-800/60 overflow-hidden">
@@ -43,20 +54,42 @@ export function SiteFooter({ storeName, city, state, category, categorySlug, has
             </div>
           </div>
 
-          <nav aria-label="Navegação do site">
-            <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-              {navLinks.map((link) => (
-                <li key={link.href}>
-                  <a
-                    href={link.href}
-                    className="text-sm text-slate-500 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <div className="flex flex-col items-center gap-4 md:items-end">
+            <nav aria-label="Navegação do site">
+              <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+                {navLinks.map((link) => (
+                  <li key={link.href}>
+                    <a
+                      href={link.href}
+                      className="text-sm text-slate-500 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            {hasSocialLinks && (
+              <div className="flex items-center gap-2">
+                {socialLinks.map((link) => {
+                  const Icon = link.icon
+                  return (
+                    <a
+                      key={link.label}
+                      href={link.url!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={link.label}
+                      className={`flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/60 bg-white/70 text-slate-500 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md dark:border-slate-700/40 dark:bg-slate-900/70 dark:text-slate-400 ${link.hoverColor}`}
+                    >
+                      <Icon className="h-4.5 w-4.5" />
+                    </a>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-200/40 pt-6 md:flex-row dark:border-slate-700/40">

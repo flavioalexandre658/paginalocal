@@ -12,6 +12,7 @@ import {
   IconPhoto,
   IconListDetails,
   IconSearch,
+  IconShare,
 } from '@tabler/icons-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -21,6 +22,7 @@ import { ContactTab } from './contact-tab'
 import { GalleryTab } from './gallery-tab'
 import { SectionsTab } from './sections-tab'
 import { SeoTab } from './seo-tab'
+import { SocialTab } from './social-tab'
 
 interface EditStoreContentProps {
   storeSlug: string
@@ -33,6 +35,7 @@ const TABS = [
   { id: 'galeria', label: 'Galeria', icon: IconPhoto },
   { id: 'secoes', label: 'Seções', icon: IconListDetails },
   { id: 'seo', label: 'SEO', icon: IconSearch },
+  { id: 'redes-sociais', label: 'Redes Sociais', icon: IconShare },
 ]
 
 export function EditStoreContent({ storeSlug, initialTab }: EditStoreContentProps) {
@@ -82,7 +85,7 @@ export function EditStoreContent({ storeSlug, initialTab }: EditStoreContentProp
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <TabsList className="flex w-full flex-wrap gap-2 bg-transparent p-0 sm:grid sm:grid-cols-5">
+        <TabsList className="flex w-full flex-wrap gap-2 bg-transparent p-0 sm:grid sm:grid-cols-6">
           {TABS.map((tab) => (
             <TabsTrigger
               key={tab.id}
@@ -114,6 +117,10 @@ export function EditStoreContent({ storeSlug, initialTab }: EditStoreContentProp
 
           <TabsContent value="seo" className="mt-0">
             <SeoTab store={data.store} storeSlug={storeSlug} />
+          </TabsContent>
+
+          <TabsContent value="redes-sociais" className="mt-0">
+            <SocialTab store={data.store} />
           </TabsContent>
         </div>
       </Tabs>

@@ -51,6 +51,10 @@ export const store = pgTable('store', {
   showWhatsappButton: boolean('show_whatsapp_button').default(true).notNull(),
   showCallButton: boolean('show_call_button').default(true).notNull(),
 
+  instagramUrl: text('instagram_url'),
+  facebookUrl: text('facebook_url'),
+  googleBusinessUrl: text('google_business_url'),
+
   isActive: boolean('is_active').default(false).notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
