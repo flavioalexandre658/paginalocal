@@ -63,6 +63,8 @@ export const getStoreForEditAction = authActionClient
         faviconUrl: storeData.faviconUrl,
         coverUrl: storeData.coverUrl,
         primaryColor: storeData.primaryColor,
+        heroBackgroundColor: storeData.heroBackgroundColor,
+        buttonColor: storeData.buttonColor,
         openingHours: storeData.openingHours as Record<string, string> | null,
         heroTitle: storeData.heroTitle,
         heroSubtitle: storeData.heroSubtitle,

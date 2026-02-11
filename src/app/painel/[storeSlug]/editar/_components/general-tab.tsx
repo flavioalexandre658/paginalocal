@@ -30,6 +30,32 @@ const PRESET_COLORS = [
   { name: 'Slate', value: '#475569' },
 ]
 
+const HERO_BG_COLORS = [
+  { name: 'Slate Escuro', value: '#1e293b' },
+  { name: 'Cinza Escuro', value: '#111827' },
+  { name: 'Preto', value: '#0a0a0a' },
+  { name: 'Azul Escuro', value: '#1e3a5f' },
+  { name: 'Verde Escuro', value: '#14532d' },
+  { name: 'Roxo Escuro', value: '#3b0764' },
+  { name: 'Branco', value: '#ffffff' },
+  { name: 'Cinza Claro', value: '#f1f5f9' },
+  { name: 'Bege', value: '#fef3c7' },
+  { name: 'Azul Claro', value: '#dbeafe' },
+]
+
+const BUTTON_COLORS = [
+  { name: 'Esmeralda', value: '#22c55e' },
+  { name: 'Verde Escuro', value: '#16a34a' },
+  { name: 'Azul', value: '#3b82f6' },
+  { name: 'Índigo', value: '#6366f1' },
+  { name: 'Roxo', value: '#8b5cf6' },
+  { name: 'Rosa', value: '#ec4899' },
+  { name: 'Vermelho', value: '#ef4444' },
+  { name: 'Laranja', value: '#f97316' },
+  { name: 'Ciano', value: '#06b6d4' },
+  { name: 'Slate', value: '#475569' },
+]
+
 import { updateStoreAction } from '@/actions/stores/update-store.action'
 import { uploadStoreImageAction } from '@/actions/uploads/upload-store-image.action'
 import { uploadFaviconAction } from '@/actions/uploads/upload-favicon.action'
@@ -45,11 +71,14 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
+import { getContrastColor } from '@/lib/color-contrast'
 
 const generalFormSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(255),
   description: z.string().min(10, 'Descrição deve ter pelo menos 10 caracteres').optional().or(z.literal('')),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Cor inválida'),
+  heroBackgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Cor inválida'),
+  buttonColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Cor inválida'),
 })
 
 type GeneralFormData = z.infer<typeof generalFormSchema>
@@ -61,6 +90,8 @@ interface GeneralTabProps {
     description: string | null
     category: string
     primaryColor: string | null
+    heroBackgroundColor: string | null
+    buttonColor: string | null
     logoUrl: string | null
     faviconUrl: string | null
   }
@@ -85,6 +116,8 @@ export function GeneralTab({ store }: GeneralTabProps) {
       name: store.name,
       description: store.description || '',
       primaryColor: store.primaryColor || '#3b82f6',
+      heroBackgroundColor: store.heroBackgroundColor || '#1e293b',
+      buttonColor: store.buttonColor || '#22c55e',
     },
   })
 
@@ -367,80 +400,274 @@ export function GeneralTab({ store }: GeneralTabProps) {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="primaryColor"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cor Principal</FormLabel>
-                <FormControl>
-                  <div className="space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                      {PRESET_COLORS.map((color) => (
-                        <button
-                          key={color.value}
-                          type="button"
-                          onClick={() => field.onChange(color.value)}
-                          className={`group relative h-10 w-10 rounded-xl transition-all hover:scale-110 ${field.value === color.value
-                            ? 'ring-2 ring-slate-900 ring-offset-2 dark:ring-white'
-                            : ''
-                            }`}
-                          style={{ backgroundColor: color.value }}
-                          title={color.name}
-                        >
-                          {field.value === color.value && (
-                            <IconCheck className="absolute inset-0 m-auto h-5 w-5 text-white drop-shadow-md" />
-                          )}
-                        </button>
-                      ))}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="rounded-2xl border border-slate-200/60 bg-white p-6 dark:border-slate-700/60 dark:bg-slate-900/50"
+          >
+            <div className="mb-6">
+              <h3 className="font-semibold text-slate-900 dark:text-white">
+                Cores do Site
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Personalize as cores do seu site. O texto se adapta automaticamente ao fundo.
+              </p>
+            </div>
 
-                      <div className="relative">
-                        <input
-                          type="color"
-                          value={field.value}
-                          onChange={field.onChange}
-                          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                        />
-                        <div
-                          className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-dashed border-slate-300 transition-colors hover:border-slate-400 dark:border-slate-600"
-                          style={{
-                            background: !PRESET_COLORS.some((c) => c.value === field.value)
-                              ? field.value
-                              : undefined,
-                          }}
-                        >
-                          {PRESET_COLORS.some((c) => c.value === field.value) ? (
-                            <IconPalette className="h-5 w-5 text-slate-400" />
-                          ) : (
-                            <IconCheck className="h-5 w-5 text-white drop-shadow-md" />
-                          )}
+            <div className="space-y-8">
+              <FormField
+                control={form.control}
+                name="heroBackgroundColor"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cor do Fundo (Hero)</FormLabel>
+                    <FormControl>
+                      <div className="space-y-4">
+                        <div className="flex flex-wrap gap-2">
+                          {HERO_BG_COLORS.map((color) => (
+                            <button
+                              key={color.value}
+                              type="button"
+                              onClick={() => field.onChange(color.value)}
+                              className={`group relative h-10 w-10 rounded-xl border border-slate-200 transition-all hover:scale-110 dark:border-slate-700 ${field.value === color.value
+                                ? 'ring-2 ring-slate-900 ring-offset-2 dark:ring-white'
+                                : ''
+                                }`}
+                              style={{ backgroundColor: color.value }}
+                              title={color.name}
+                            >
+                              {field.value === color.value && (
+                                <IconCheck
+                                  className="absolute inset-0 m-auto h-5 w-5 drop-shadow-md"
+                                  style={{ color: getContrastColor(color.value) }}
+                                />
+                              )}
+                            </button>
+                          ))}
+
+                          <div className="relative">
+                            <input
+                              type="color"
+                              value={field.value}
+                              onChange={field.onChange}
+                              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                            />
+                            <div
+                              className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-dashed border-slate-300 transition-colors hover:border-slate-400 dark:border-slate-600"
+                              style={{
+                                background: !HERO_BG_COLORS.some((c) => c.value === field.value)
+                                  ? field.value
+                                  : undefined,
+                              }}
+                            >
+                              {HERO_BG_COLORS.some((c) => c.value === field.value) ? (
+                                <IconPalette className="h-5 w-5 text-slate-400" />
+                              ) : (
+                                <IconCheck
+                                  className="h-5 w-5 drop-shadow-md"
+                                  style={{ color: getContrastColor(field.value) }}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl shadow-lg"
+                            style={{ backgroundColor: field.value }}
+                          >
+                            <span
+                              className="text-xs font-bold"
+                              style={{ color: getContrastColor(field.value) }}
+                            >
+                              Aa
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <Input
+                              value={field.value}
+                              onChange={field.onChange}
+                              className="font-mono text-sm"
+                              placeholder="#1e293b"
+                            />
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </FormControl>
+                    <FormDescription>
+                      Cor de fundo das seções de destaque do site
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="h-12 w-12 shrink-0 rounded-xl shadow-lg"
-                        style={{ backgroundColor: field.value }}
-                      />
-                      <div className="flex-1">
-                        <Input
-                          value={field.value}
-                          onChange={field.onChange}
-                          className="font-mono text-sm"
-                          placeholder="#3b82f6"
-                        />
+              <FormField
+                control={form.control}
+                name="primaryColor"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cor Principal</FormLabel>
+                    <FormControl>
+                      <div className="space-y-4">
+                        <div className="flex flex-wrap gap-2">
+                          {PRESET_COLORS.map((color) => (
+                            <button
+                              key={color.value}
+                              type="button"
+                              onClick={() => field.onChange(color.value)}
+                              className={`group relative h-10 w-10 rounded-xl transition-all hover:scale-110 ${field.value === color.value
+                                ? 'ring-2 ring-slate-900 ring-offset-2 dark:ring-white'
+                                : ''
+                                }`}
+                              style={{ backgroundColor: color.value }}
+                              title={color.name}
+                            >
+                              {field.value === color.value && (
+                                <IconCheck className="absolute inset-0 m-auto h-5 w-5 text-white drop-shadow-md" />
+                              )}
+                            </button>
+                          ))}
+
+                          <div className="relative">
+                            <input
+                              type="color"
+                              value={field.value}
+                              onChange={field.onChange}
+                              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                            />
+                            <div
+                              className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-dashed border-slate-300 transition-colors hover:border-slate-400 dark:border-slate-600"
+                              style={{
+                                background: !PRESET_COLORS.some((c) => c.value === field.value)
+                                  ? field.value
+                                  : undefined,
+                              }}
+                            >
+                              {PRESET_COLORS.some((c) => c.value === field.value) ? (
+                                <IconPalette className="h-5 w-5 text-slate-400" />
+                              ) : (
+                                <IconCheck className="h-5 w-5 text-white drop-shadow-md" />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="h-12 w-12 shrink-0 rounded-xl shadow-lg"
+                            style={{ backgroundColor: field.value }}
+                          />
+                          <div className="flex-1">
+                            <Input
+                              value={field.value}
+                              onChange={field.onChange}
+                              className="font-mono text-sm"
+                              placeholder="#3b82f6"
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </FormControl>
-                <FormDescription>
-                  Essa cor será usada nos botões e destaques do site
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                    </FormControl>
+                    <FormDescription>
+                      Usada em destaques, links e elementos de ênfase
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="buttonColor"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cor dos Botões</FormLabel>
+                    <FormControl>
+                      <div className="space-y-4">
+                        <div className="flex flex-wrap gap-2">
+                          {BUTTON_COLORS.map((color) => (
+                            <button
+                              key={color.value}
+                              type="button"
+                              onClick={() => field.onChange(color.value)}
+                              className={`group relative h-10 w-10 rounded-xl transition-all hover:scale-110 ${field.value === color.value
+                                ? 'ring-2 ring-slate-900 ring-offset-2 dark:ring-white'
+                                : ''
+                                }`}
+                              style={{ backgroundColor: color.value }}
+                              title={color.name}
+                            >
+                              {field.value === color.value && (
+                                <IconCheck
+                                  className="absolute inset-0 m-auto h-5 w-5 drop-shadow-md"
+                                  style={{ color: getContrastColor(color.value) }}
+                                />
+                              )}
+                            </button>
+                          ))}
+
+                          <div className="relative">
+                            <input
+                              type="color"
+                              value={field.value}
+                              onChange={field.onChange}
+                              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                            />
+                            <div
+                              className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-dashed border-slate-300 transition-colors hover:border-slate-400 dark:border-slate-600"
+                              style={{
+                                background: !BUTTON_COLORS.some((c) => c.value === field.value)
+                                  ? field.value
+                                  : undefined,
+                              }}
+                            >
+                              {BUTTON_COLORS.some((c) => c.value === field.value) ? (
+                                <IconPalette className="h-5 w-5 text-slate-400" />
+                              ) : (
+                                <IconCheck
+                                  className="h-5 w-5 drop-shadow-md"
+                                  style={{ color: getContrastColor(field.value) }}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="flex h-12 shrink-0 items-center justify-center rounded-xl px-4 shadow-lg"
+                            style={{ backgroundColor: field.value }}
+                          >
+                            <span
+                              className="text-xs font-semibold"
+                              style={{ color: getContrastColor(field.value) }}
+                            >
+                              WhatsApp
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <Input
+                              value={field.value}
+                              onChange={field.onChange}
+                              className="font-mono text-sm"
+                              placeholder="#22c55e"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      Cor dos botões de WhatsApp e contato
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </motion.div>
 
           <div className="flex justify-end border-t border-slate-200/60 pt-6 dark:border-slate-700/60">
             <EnhancedButton type="submit" loading={isExecuting}>

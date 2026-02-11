@@ -33,6 +33,8 @@ export const store = pgTable('store', {
   faviconUrl: text('favicon_url'),
   coverUrl: text('cover_url'),
   primaryColor: varchar('primary_color', { length: 7 }).default('#3b82f6'),
+  heroBackgroundColor: varchar('hero_background_color', { length: 7 }).default('#1e293b'),
+  buttonColor: varchar('button_color', { length: 7 }).default('#22c55e'),
   openingHours: jsonb('opening_hours'),
 
   heroTitle: text('hero_title'),

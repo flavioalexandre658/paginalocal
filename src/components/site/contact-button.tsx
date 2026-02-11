@@ -5,6 +5,7 @@ import { IconPhone } from '@tabler/icons-react'
 import { getWhatsAppUrl, getPhoneUrl, getWhatsAppDefaultMessage, cn } from '@/lib/utils'
 import { DraftContactModal } from './draft-contact-modal'
 import { useTrackClick } from '@/hooks/use-track-click'
+import { getContrastColor, isLightColor } from '@/lib/color-contrast'
 
 interface ContactButtonProps {
   store: {
@@ -15,6 +16,8 @@ interface ContactButtonProps {
     phone?: string | null
     whatsappDefaultMessage?: string | null
     isActive: boolean
+    buttonColor?: string | null
+    heroBackgroundColor?: string | null
   }
   type: 'whatsapp' | 'phone'
   isOwner?: boolean
@@ -37,6 +40,10 @@ export function ContactButton({
   const phoneNumber = store.phone || store.whatsapp
   const whatsappLink = getWhatsAppUrl(store.whatsapp, getWhatsAppDefaultMessage(store.name, store.whatsappDefaultMessage))
   const phoneLink = getPhoneUrl(phoneNumber)
+  const btnColor = store.buttonColor || '#22c55e'
+  const btnTextColor = getContrastColor(btnColor)
+  const heroBg = store.heroBackgroundColor || '#1e293b'
+  const heroIsLight = isLightColor(heroBg)
 
   async function handleClick(e: React.MouseEvent) {
     if (!store.isActive) {
@@ -55,13 +62,27 @@ export function ContactButton({
     })
   }
 
+  const useCustomColor = type === 'whatsapp' && store.buttonColor
+
+  const phoneHeroStyle = heroIsLight
+    ? 'inline-flex items-center gap-3 rounded-2xl border-2 border-black/20 bg-black/5 px-6 py-3.5 text-base font-semibold text-slate-900 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-black/10 sm:px-8 sm:py-4 sm:text-lg'
+    : 'inline-flex items-center gap-3 rounded-2xl border-2 border-white/30 bg-white/10 px-6 py-3.5 text-base font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white/20 sm:px-8 sm:py-4 sm:text-lg'
+
   const variantStyles = {
     hero: type === 'whatsapp'
-      ? 'inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-700 to-emerald-800 px-6 py-3.5 text-base font-semibold text-white shadow-xl shadow-emerald-700/25 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-emerald-700/30 sm:px-8 sm:py-4 sm:text-lg'
-      : 'inline-flex items-center gap-3 rounded-2xl border-2 border-white/30 bg-white/5 px-6 py-3.5 text-base font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white/10 sm:px-8 sm:py-4 sm:text-lg',
-    floating: 'group flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-700 to-emerald-800 text-white shadow-lg shadow-emerald-700/30 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-emerald-700/40',
+      ? 'inline-flex items-center gap-3 rounded-2xl px-6 py-3.5 text-base font-semibold shadow-xl transition-all duration-300 hover:scale-105 hover:shadow-2xl sm:px-8 sm:py-4 sm:text-lg'
+      : phoneHeroStyle,
+    floating: 'group flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl',
     outline: 'inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200',
   }
+
+  const inlineStyle = (type === 'whatsapp' && variant !== 'outline')
+    ? {
+        backgroundColor: btnColor,
+        color: btnTextColor,
+        boxShadow: `0 10px 15px -3px ${btnColor}40`,
+      }
+    : undefined
 
   const href = type === 'whatsapp' ? whatsappLink : phoneLink
 
@@ -73,6 +94,7 @@ export function ContactButton({
         rel={type === 'whatsapp' ? 'noopener noreferrer' : undefined}
         onClick={handleClick}
         className={cn(variantStyles[variant], className)}
+        style={inlineStyle}
       >
         {children || (
           <>

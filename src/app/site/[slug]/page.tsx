@@ -482,6 +482,7 @@ export default async function StorePage({ params }: PageProps) {
           isActive: storeData.isActive,
           showWhatsappButton: storeData.showWhatsappButton,
           showCallButton: storeData.showCallButton,
+          buttonColor: storeData.buttonColor,
         }}
         isOwner={isOwner}
       />

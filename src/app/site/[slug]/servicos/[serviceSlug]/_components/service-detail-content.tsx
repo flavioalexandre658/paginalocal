@@ -11,6 +11,13 @@ import {
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { formatCurrency, getWhatsAppUrl, getPhoneUrl, getWhatsAppDefaultMessage, getServicePageUrl, getStoreHomeUrl } from '@/lib/utils'
+import {
+  getContrastColor,
+  getContrastTextClass,
+  getContrastMutedClass,
+  getContrastBadgeClasses,
+  isLightColor,
+} from '@/lib/color-contrast'
 
 interface ServiceDetailContentProps {
   store: {
@@ -25,6 +32,8 @@ interface ServiceDetailContentProps {
     whatsappDefaultMessage?: string | null
     logoUrl: string | null
     primaryColor: string | null
+    heroBackgroundColor: string | null
+    buttonColor: string | null
     isActive: boolean
     showWhatsappButton: boolean
     showCallButton: boolean
@@ -63,62 +72,54 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
   const rating = store.googleRating ? parseFloat(store.googleRating) : 0
   const showRating = rating >= 4.0 && store.googleReviewsCount && store.googleReviewsCount > 0
 
-  return (
-    <main>
-      <section className="relative overflow-hidden py-16 md:py-24">
-        {service.heroImageUrl ? (
-          <div className="absolute inset-0 z-0">
-            <Image
-              src={service.heroImageUrl}
-              alt={`${service.name} - ${store.name}`}
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-slate-900/95" />
-          </div>
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
-          </div>
-        )}
+  const heroBg = store.heroBackgroundColor || '#1e293b'
+  const btnColor = store.buttonColor || '#22c55e'
+  const textClass = getContrastTextClass(heroBg)
+  const mutedClass = getContrastMutedClass(heroBg)
+  const badgeClasses = getContrastBadgeClasses(heroBg)
+  const isLight = isLightColor(heroBg)
+  const btnTextColor = getContrastColor(btnColor)
 
-        <div className="container relative z-10 mx-auto px-4">
+  return (
+    <main className="w-full max-w-full overflow-x-clip">
+      <section className="relative overflow-hidden py-16 md:py-24">
+        <div className="absolute inset-0" style={{ backgroundColor: heroBg }} />
+
+        <div className={`container relative z-10 mx-auto px-4 ${textClass}`}>
           <Link
             href={getStoreHomeUrl(store.slug)}
-            className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white/80 backdrop-blur-md transition-all hover:bg-white/20"
+            className={`mb-8 inline-flex max-w-full items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-md transition-all ${badgeClasses} ${isLight ? 'hover:bg-black/10' : 'hover:bg-white/20'}`}
           >
-            <IconArrowLeft className="h-4 w-4" />
-            Voltar para {store.name}
+            <IconArrowLeft className="h-4 w-4 shrink-0" />
+            <span className="truncate">Voltar para {store.name}</span>
           </Link>
 
           <div className="mx-auto max-w-4xl">
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white/70 backdrop-blur-md">
+            <div className={`mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-md ${badgeClasses}`}>
               <IconMapPin className="h-4 w-4" />
               {store.city}, {store.state}
             </div>
 
-            <h1 className="mb-4 text-3xl font-semibold tracking-tight text-white md:text-4xl lg:text-5xl">
+            <h1 className="mb-4 text-3xl font-semibold tracking-tight md:text-4xl lg:text-5xl">
               {service.name}
             </h1>
 
-            <p className="mb-6 text-lg text-white/70">
+            <p className={`mb-6 text-lg ${mutedClass}`}>
               {store.category} em {store.city} &middot; {store.name}
             </p>
 
             <div className="flex flex-wrap items-center gap-4">
               {service.priceInCents && (
-                <span className="rounded-full bg-emerald-500/20 px-5 py-2 text-lg font-semibold text-emerald-400">
+                <span className={`rounded-full px-5 py-2 text-lg font-semibold ${isLight ? 'bg-emerald-100 text-emerald-700' : 'bg-emerald-500/20 text-emerald-400'}`}>
                   {formatCurrency(service.priceInCents)}
                 </span>
               )}
 
               {showRating && (
-                <div className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-md">
+                <div className={`flex items-center gap-2 rounded-full px-4 py-2 backdrop-blur-md ${isLight ? 'bg-black/5' : 'bg-white/10'}`}>
                   <IconStar className="h-5 w-5 fill-amber-400 text-amber-400" />
-                  <span className="font-semibold text-white">{store.googleRating}</span>
-                  <span className="text-white/60">({store.googleReviewsCount} avaliações)</span>
+                  <span className="font-semibold">{store.googleRating}</span>
+                  <span className={mutedClass}>({store.googleReviewsCount} avaliações)</span>
                 </div>
               )}
             </div>
@@ -126,9 +127,26 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
         </div>
       </section>
 
+      {service.heroImageUrl && (
+        <section className="py-6 md:py-8">
+          <div className="container mx-auto px-4">
+            <div className="mx-auto max-w-6xl overflow-hidden rounded-2xl border border-slate-200/60 shadow-xl dark:border-slate-700/40">
+              <Image
+                src={service.heroImageUrl}
+                alt={`${service.name} - ${store.name}`}
+                width={1200}
+                height={675}
+                priority
+                className="h-auto w-full object-cover"
+              />
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">
-          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-3">
+          <div className="mx-auto max-w-6xl gap-8 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-8">
               {service.imageUrl && (
                 <div className="overflow-hidden rounded-2xl border border-slate-200/60 shadow-lg dark:border-slate-700/40">
@@ -185,7 +203,7 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
                         className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-slate-700/40 dark:bg-slate-800/50"
                       >
                         <div className="mb-2 flex items-center gap-2">
-                          <span className="font-semibold text-slate-900 dark:text-white">{t.authorName}</span>
+                          <span className="font-semibold text-slate-900 dark:text-white line-clamp-1">{t.authorName}</span>
                           <div className="flex">
                             {[...Array(5)].map((_, i) => (
                               <IconStar
@@ -221,7 +239,12 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
                         href={getWhatsAppUrl(store.whatsapp, whatsappMessage)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/40"
+                        className="flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+                        style={{
+                          backgroundColor: btnColor,
+                          color: btnTextColor,
+                          boxShadow: `0 10px 15px -3px ${btnColor}30`,
+                        }}
                       >
                         <IconBrandWhatsapp className="h-5 w-5" />
                         Chamar no WhatsApp

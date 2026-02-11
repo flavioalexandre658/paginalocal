@@ -1,6 +1,14 @@
 import Image from 'next/image'
 import { IconStar, IconMapPin } from '@tabler/icons-react'
 import { HeroContactButtons } from './hero-contact-buttons'
+import {
+  getContrastColor,
+  getContrastTextClass,
+  getContrastMutedClass,
+  getContrastBorderClass,
+  getContrastBadgeClasses,
+  isLightColor,
+} from '@/lib/color-contrast'
 
 interface HeroSectionProps {
   store: {
@@ -12,6 +20,7 @@ interface HeroSectionProps {
     state: string
     description?: string | null
     coverUrl?: string | null
+    heroBackgroundColor?: string | null
     googleRating?: string | null
     googleReviewsCount?: number | null
     whatsapp: string
@@ -34,12 +43,19 @@ export function HeroSection({ store, heroImageAlt, isOwner = false }: HeroSectio
   const rating = store.googleRating ? parseFloat(store.googleRating) : 0
   const showRating = rating >= 4.5 && store.googleReviewsCount && store.googleReviewsCount > 0
 
+  const hasCover = !!store.coverUrl
+  const heroBg = store.heroBackgroundColor || '#1e293b'
+  const isLight = isLightColor(heroBg)
+  const textClass = getContrastTextClass(heroBg)
+  const mutedClass = getContrastMutedClass(heroBg)
+  const badgeClasses = getContrastBadgeClasses(heroBg)
+
   return (
     <section className="relative overflow-hidden">
-      {store.coverUrl ? (
+      {hasCover ? (
         <div className="absolute inset-0 z-0">
           <Image
-            src={store.coverUrl}
+            src={store.coverUrl!}
             alt={heroImageAlt || `Fachada da ${store.name} em ${store.city}`}
             fill
             priority
@@ -47,18 +63,21 @@ export function HeroSection({ store, heroImageAlt, isOwner = false }: HeroSectio
             sizes="100vw"
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-slate-900/95" />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(to bottom, ${heroBg}b3, ${heroBg}80, ${heroBg}f2)`,
+            }}
+          />
         </div>
       ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
-        </div>
+        <div className="absolute inset-0" style={{ backgroundColor: heroBg }} />
       )}
 
-      <div className="relative z-10 py-20 text-white md:py-36">
+      <div className={`relative z-10 py-20 md:py-36 ${textClass}`}>
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl text-center">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-medium shadow-lg backdrop-blur-md">
+            <div className={`mb-6 inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-medium shadow-lg backdrop-blur-md ${badgeClasses}`}>
               <IconMapPin className="h-4 w-4" />
               <span>{store.city}, {store.state}</span>
             </div>
@@ -68,27 +87,27 @@ export function HeroSection({ store, heroImageAlt, isOwner = false }: HeroSectio
             </h1>
 
             {showRating && (
-              <div className="mb-6 inline-flex items-center gap-3 rounded-full bg-white/10 px-4 py-2 backdrop-blur-md">
+              <div className={`mb-6 inline-flex items-center gap-3 rounded-full px-4 py-2 backdrop-blur-md ${isLight ? 'bg-black/5' : 'bg-white/10'}`}>
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
                     <IconStar
                       key={i}
                       className={`h-5 w-5 ${i < Math.round(rating)
                         ? 'fill-amber-400 text-amber-400'
-                        : 'text-slate-400/50'
+                        : isLight ? 'text-slate-300' : 'text-slate-400/50'
                         }`}
                     />
                   ))}
                 </div>
                 <span className="font-semibold">{store.googleRating}</span>
-                <span className="text-white/70">
+                <span className={mutedClass}>
                   ({store.googleReviewsCount} avaliações)
                 </span>
               </div>
             )}
 
             {subtitle && (
-              <p className="mx-auto mb-10 max-w-2xl text-lg text-white/80">
+              <p className={`mx-auto mb-10 max-w-2xl text-lg font-medium ${mutedClass}`}>
                 {subtitle}
               </p>
             )}

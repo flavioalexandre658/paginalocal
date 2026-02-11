@@ -29,6 +29,8 @@ const updateStoreSchema = z.object({
   faviconUrl: z.string().url().optional().nullable(),
   coverUrl: z.string().url().optional().nullable(),
   primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  heroBackgroundColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  buttonColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   openingHours: z.record(z.string(), z.string()).optional().nullable(),
   heroTitle: z.string().max(100).optional(),
   heroSubtitle: z.string().max(200).optional(),

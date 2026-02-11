@@ -5,6 +5,7 @@ import { IconPhone } from '@tabler/icons-react'
 import { getWhatsAppUrl, getPhoneUrl, getWhatsAppDefaultMessage } from '@/lib/utils'
 import { DraftContactModal } from '@/components/site/draft-contact-modal'
 import { useTrackClick } from '@/hooks/use-track-click'
+import { getContrastColor } from '@/lib/color-contrast'
 
 interface FloatingContactProps {
   store: {
@@ -17,6 +18,7 @@ interface FloatingContactProps {
     isActive: boolean
     showWhatsappButton: boolean
     showCallButton: boolean
+    buttonColor?: string | null
   }
   isOwner?: boolean
 }
@@ -29,6 +31,8 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
 
   const whatsappLink = getWhatsAppUrl(store.whatsapp, getWhatsAppDefaultMessage(store.name, store.whatsappDefaultMessage))
   const phoneLink = getPhoneUrl(store.phone || store.whatsapp)
+  const btnColor = store.buttonColor || '#22c55e'
+  const btnTextColor = getContrastColor(btnColor)
 
   const showWhatsapp = store.showWhatsappButton
   const showCall = store.showCallButton && (store.phone || store.whatsapp)
@@ -88,8 +92,18 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
             className="group flex items-center justify-center"
             aria-label="Conversar no WhatsApp"
           >
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-600 opacity-20" />
-            <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-700 to-emerald-800 text-white shadow-2xl shadow-emerald-700/30 transition-all duration-300 hover:scale-110 hover:shadow-emerald-700/40">
+            <span
+              className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-20"
+              style={{ backgroundColor: btnColor }}
+            />
+            <span
+              className="relative flex h-16 w-16 items-center justify-center rounded-full shadow-2xl transition-all duration-300 hover:scale-110"
+              style={{
+                backgroundColor: btnColor,
+                color: btnTextColor,
+                boxShadow: `0 25px 50px -12px ${btnColor}30`,
+              }}
+            >
               <WhatsAppIcon className="h-8 w-8" />
             </span>
           </a>
@@ -120,7 +134,11 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => handleClick(e, 'whatsapp')}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-700 py-3.5 font-semibold text-white transition-all active:scale-98 active:bg-emerald-800"
+              className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold transition-all active:scale-98"
+              style={{
+                backgroundColor: btnColor,
+                color: btnTextColor,
+              }}
             >
               <WhatsAppIcon className="h-5 w-5" />
               <span>WhatsApp</span>

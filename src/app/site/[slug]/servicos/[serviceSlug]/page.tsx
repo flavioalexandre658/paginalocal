@@ -272,6 +272,8 @@ export default async function ServicePage({ params }: PageProps) {
           whatsappDefaultMessage: storeData.whatsappDefaultMessage,
           logoUrl: storeData.logoUrl,
           primaryColor: storeData.primaryColor,
+          heroBackgroundColor: storeData.heroBackgroundColor,
+          buttonColor: storeData.buttonColor,
           isActive: storeData.isActive,
           showWhatsappButton: storeData.showWhatsappButton,
           showCallButton: storeData.showCallButton,
@@ -308,6 +310,7 @@ export default async function ServicePage({ params }: PageProps) {
           isActive: storeData.isActive,
           showWhatsappButton: storeData.showWhatsappButton,
           showCallButton: storeData.showCallButton,
+          buttonColor: storeData.buttonColor,
         }}
       />
     </>

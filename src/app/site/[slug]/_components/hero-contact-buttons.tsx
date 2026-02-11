@@ -13,6 +13,8 @@ interface HeroContactButtonsProps {
     isActive: boolean
     showWhatsappButton: boolean
     showCallButton: boolean
+    buttonColor?: string | null
+    heroBackgroundColor?: string | null
   }
   isOwner?: boolean
 }
