@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { IconMapPin, IconExternalLink, IconBrandInstagram, IconBrandFacebook, IconBrandGoogle } from '@tabler/icons-react'
 import Image from 'next/image'
+import { getInstitutionalPageUrl, getServicePageUrl } from '@/lib/utils'
 
 interface FooterService {
   name: string
@@ -143,7 +144,7 @@ export function SiteFooter({
                     <li key={svc.slug}>
                       {storeSlug ? (
                         <Link
-                          href={`/site/${storeSlug}/servicos/${svc.slug}`}
+                          href={getServicePageUrl(storeSlug, svc.slug)}
                           className="text-sm text-slate-500 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary"
                         >
                           {svc.name}
@@ -169,7 +170,7 @@ export function SiteFooter({
                     <li key={page.slug}>
                       {storeSlug ? (
                         <Link
-                          href={`/site/${storeSlug}/${page.slug}`}
+                          href={getInstitutionalPageUrl(storeSlug, page.slug)}
                           className="text-sm text-slate-500 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary"
                         >
                           {page.title}

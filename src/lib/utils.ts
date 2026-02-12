@@ -74,6 +74,13 @@ export function getServicePageUrl(storeSlug: string, serviceSlug: string): strin
   return `/servicos/${serviceSlug}`
 }
 
+export function getInstitutionalPageUrl(storeSlug: string, pageSlug: string): string {
+  if (process.env.NODE_ENV === 'development') {
+    return `/site/${storeSlug}/${pageSlug}`
+  }
+  return `/${pageSlug}`
+}
+
 export function getStoreHomeUrl(storeSlug: string): string {
   if (process.env.NODE_ENV === 'development') {
     return `/site/${storeSlug}`
