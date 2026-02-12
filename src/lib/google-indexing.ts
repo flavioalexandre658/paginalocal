@@ -107,6 +107,11 @@ export function buildServiceUrl(storeSlug: string, serviceSlug: string, customDo
   return `${baseUrl}/servicos/${serviceSlug}`
 }
 
+export function buildPageUrl(storeSlug: string, pageSlug: string, customDomain?: string | null): string {
+  const baseUrl = buildStoreUrl(storeSlug, customDomain)
+  return `${baseUrl}/${pageSlug}`
+}
+
 export async function notifyBatchUrlsUpdated(urls: string[]): Promise<BatchIndexingResult> {
   const results: IndexingResult[] = []
 
@@ -132,6 +137,7 @@ export async function notifyStoreActivated(
   slug: string,
   customDomain?: string | null,
   serviceSlugs?: string[],
+  pageSlugs?: string[],
 ): Promise<BatchIndexingResult> {
   const urls: string[] = [buildStoreUrl(slug, customDomain)]
 
@@ -141,7 +147,15 @@ export async function notifyStoreActivated(
     }
   }
 
-  console.log(`[Indexing] Indexing store "${slug}" with ${urls.length} URLs (1 store + ${urls.length - 1} services)`)
+  if (pageSlugs && pageSlugs.length > 0) {
+    for (const pageSlug of pageSlugs) {
+      urls.push(buildPageUrl(slug, pageSlug, customDomain))
+    }
+  }
+
+  const serviceCount = serviceSlugs?.length || 0
+  const pageCount = pageSlugs?.length || 0
+  console.log(`[Indexing] Indexing store "${slug}" with ${urls.length} URLs (1 store + ${serviceCount} services + ${pageCount} pages)`)
   return notifyBatchUrlsUpdated(urls)
 }
 

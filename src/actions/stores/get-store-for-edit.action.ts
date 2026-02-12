@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
-import { store, service, storeImage } from '@/db/schema'
+import { store, service, storeImage, storePage } from '@/db/schema'
 import { eq, and, asc } from 'drizzle-orm'
 
 const getStoreForEditSchema = z.object({
@@ -30,7 +30,7 @@ export const getStoreForEditAction = authActionClient
       throw new Error('Loja não encontrada')
     }
 
-    const [services, images] = await Promise.all([
+    const [services, images, pages] = await Promise.all([
       db
         .select()
         .from(service)
@@ -41,6 +41,10 @@ export const getStoreForEditAction = authActionClient
         .from(storeImage)
         .where(eq(storeImage.storeId, storeData.id))
         .orderBy(asc(storeImage.order)),
+      db
+        .select()
+        .from(storePage)
+        .where(eq(storePage.storeId, storeData.id)),
     ])
 
     return {
@@ -81,8 +85,11 @@ export const getStoreForEditAction = authActionClient
         instagramUrl: storeData.instagramUrl,
         facebookUrl: storeData.facebookUrl,
         googleBusinessUrl: storeData.googleBusinessUrl,
+        highlightBadge: storeData.highlightBadge,
+        highlightText: storeData.highlightText,
       },
       services,
       images,
+      pages,
     }
   })

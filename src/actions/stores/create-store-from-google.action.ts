@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { eq } from 'drizzle-orm'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
-import { store, testimonial, service, storeImage } from '@/db/schema'
+import { store, testimonial, service, storeImage, storePage } from '@/db/schema'
 import { checkCanCreateStore, getUserPlanContext } from '@/lib/plan-middleware'
 import {
   getPhotoUrl,
@@ -14,6 +14,8 @@ import { optimizeHeroImage, optimizeGalleryImage } from '@/lib/image-optimizer'
 import { uploadToS3, generateS3Key } from '@/lib/s3'
 import { addDomainToVercel } from '@/actions/vercel/add-domain'
 import { notifyStoreActivated } from '@/lib/google-indexing'
+import { generateInstitutionalPages } from '@/lib/ai'
+import type { MarketingCopyInput } from '@/lib/ai'
 import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
 import { generateCitySlug } from '@/lib/utils'
 import {
@@ -257,9 +259,53 @@ export const createStoreFromGoogleAction = authActionClient
       console.error('[Google Import] Erro ao criar subdomínio na Vercel:', error)
     }
 
+    // ===== Generate institutional pages =====
+    let pagesGenerated = false
+    try {
+      const aiInput: MarketingCopyInput = {
+        businessName: result.displayName,
+        category: result.category.name,
+        city: newStore.city,
+        state: newStore.state,
+        rating: result.placeDetails.rating,
+        reviewCount: result.placeDetails.userRatingCount,
+        googleAbout: result.placeDetails.editorialSummary?.text,
+        address: newStore.address,
+      }
+
+      const institutionalPages = await generateInstitutionalPages(aiInput)
+
+      await db.insert(storePage).values([
+        {
+          storeId: newStore.id,
+          type: 'ABOUT' as const,
+          slug: 'sobre-nos',
+          title: institutionalPages.about.title,
+          content: institutionalPages.about.content,
+          seoTitle: institutionalPages.about.seoTitle,
+          seoDescription: institutionalPages.about.seoDescription,
+        },
+        {
+          storeId: newStore.id,
+          type: 'CONTACT' as const,
+          slug: 'contato',
+          title: institutionalPages.contact.title,
+          content: institutionalPages.contact.content,
+          seoTitle: institutionalPages.contact.seoTitle,
+          seoDescription: institutionalPages.contact.seoDescription,
+        },
+      ])
+
+      pagesGenerated = true
+      console.log(`[Google Import] Páginas institucionais geradas para "${result.displayName}"`)
+    } catch (error) {
+      console.error('[Google Import] Erro ao gerar páginas institucionais:', error)
+    }
+
     // ===== Revalidate if active =====
+    const pageSlugs = pagesGenerated ? ['sobre-nos', 'contato'] : undefined
     if (shouldActivateStore) {
-      notifyStoreActivated(newStore.slug).catch((error) => {
+      notifyStoreActivated(newStore.slug, newStore.customDomain, undefined, pageSlugs).catch((error) => {
         console.error('[Google Import] Erro ao notificar Google Indexing API:', error)
       })
 

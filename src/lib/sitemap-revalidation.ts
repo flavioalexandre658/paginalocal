@@ -36,4 +36,6 @@ export async function revalidateStoreCache(slug: string) {
   revalidateTag(`store-${slug}`)
   revalidatePath(`/site/${slug}`, 'layout')
   revalidatePath(`/site/${slug}/servicos`, 'layout')
+  revalidatePath(`/site/${slug}/sobre-nos`)
+  revalidatePath(`/site/${slug}/contato`)
 }

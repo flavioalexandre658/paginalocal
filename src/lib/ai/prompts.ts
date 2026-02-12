@@ -197,7 +197,14 @@ EXEMPLOS por categoria:
 RETORNE APENAS O JSON ARRAY, SEM MARKDOWN.`
 }
 
-export function getServicesPrompt(data: MarketingCopyInput, serviceNames: string[]): string {
+export function getServicesPrompt(data: MarketingCopyInput, serviceNames: string[], serviceDescriptions?: (string | undefined)[]): string {
+  const servicesList = serviceNames.map((name, i) => {
+    const desc = serviceDescriptions?.[i]
+    return desc
+      ? `${i + 1}. ${name}\n   Descrição fornecida pelo dono: "${desc}"`
+      : `${i + 1}. ${name}`
+  }).join('\n')
+
   return `Você é redator de conteúdo para negócios locais brasileiros.
 Cada serviço vai ter sua PRÓPRIA página no Google. Precisa ranquear para:
 - "[serviço] em ${data.city}"
@@ -209,7 +216,9 @@ ${buildBusinessContext(data)}
 ${getAntiAiRules()}
 
 ### GERE CONTEÚDO SEO PARA ESTES SERVIÇOS:
-${serviceNames.map((name, i) => `${i + 1}. ${name}`).join('\n')}
+${servicesList}
+
+IMPORTANTE: Quando houver "Descrição fornecida pelo dono", use-a como BASE para entender o serviço e gerar conteúdo mais preciso e alinhado com o que o negócio realmente oferece. NÃO copie a descrição literalmente, mas use as informações para criar conteúdo SEO melhor.
 
 Para CADA serviço:
 
@@ -288,6 +297,71 @@ Retorne APENAS JSON array:
     "longDescription": "Parágrafo 1...\\nParágrafo 2..."
   }
 ]`
+}
+
+export function getInstitutionalPagesPrompt(data: MarketingCopyInput): string {
+  return `Você é redator de conteúdo para negócios locais brasileiros.
+Objetivo: gerar conteúdo para as páginas institucionais "Sobre Nós" e "Contato" do site.
+Essas páginas precisam ranquear para:
+- "sobre ${data.businessName.toLowerCase()}"
+- "contato ${data.businessName.toLowerCase()} ${data.city}"
+- "${data.category.toLowerCase()} em ${data.city} contato"
+
+${buildBusinessContext(data)}
+
+${getAntiAiRules()}
+
+### GERE CONTEÚDO PARA 2 PÁGINAS:
+
+**1. PÁGINA SOBRE NÓS (about)**
+
+- "title": "Sobre a ${data.businessName}" ou "Conheça a ${data.businessName}" (máx 60 chars)
+
+- "content" (500-800 chars, 3-4 parágrafos separados por \\n):
+  * Parágrafo 1: Apresente o negócio. O que é, onde fica, o que faz. Comece direto: "A ${data.businessName} é ${data.category.toLowerCase()} em ${data.city}, ${data.state}."
+  * Parágrafo 2: O que o negócio oferece. Liste os serviços/produtos principais. Use dados do Google e reviews.
+  * Parágrafo 3: Diferencial do negócio. O que o torna único na região. Se tiver reviews positivos, use como base.
+  * Parágrafo 4: CTA claro. "Entre em contato pelo WhatsApp para conhecer nossos serviços" ou similar.
+  
+  OBRIGATÓRIO no texto: "${data.businessName}" (pelo menos 2x), "${data.city}" (pelo menos 1x)
+
+- "seoTitle": "Sobre a ${data.businessName} | ${data.category} em ${data.city}" (máx 60 chars)
+
+- "seoDescription": Resumo do negócio + cidade + CTA (máx 155 chars)
+  BOM: "Conheça a ${data.businessName}, ${data.category.toLowerCase()} em ${data.city}. Saiba mais sobre nossos serviços e diferenciais."
+
+**2. PÁGINA CONTATO (contact)**
+
+- "title": "Contato | ${data.businessName}" ou "Fale com a ${data.businessName}" (máx 60 chars)
+
+- "content" (200-400 chars, 2 parágrafos separados por \\n):
+  * Parágrafo 1: Convite para contato. "Precisa de ${data.category.toLowerCase()} em ${data.city}? Fale com a ${data.businessName}."
+  * Parágrafo 2: Como entrar em contato. Mencione WhatsApp e telefone como canais disponíveis. CTA direto.
+  
+  NÃO inclua dados como número de telefone ou endereço no texto (eles são exibidos dinamicamente na página).
+
+- "seoTitle": "Contato ${data.businessName} | ${data.category} em ${data.city}" (máx 60 chars)
+
+- "seoDescription": Convite + cidade + canais de contato (máx 155 chars)
+  BOM: "Entre em contato com a ${data.businessName} em ${data.city}. Atendemos por WhatsApp e telefone. Solicite um orçamento!"
+
+### RETORNE APENAS JSON:
+{
+  "about": {
+    "title": "...",
+    "content": "...",
+    "seoTitle": "...",
+    "seoDescription": "..."
+  },
+  "contact": {
+    "title": "...",
+    "content": "...",
+    "seoTitle": "...",
+    "seoDescription": "..."
+  }
+}
+
+RETORNE APENAS O JSON, SEM MARKDOWN.`
 }
 
 export function getBusinessClassificationPrompt(data: BusinessClassificationInput): string {

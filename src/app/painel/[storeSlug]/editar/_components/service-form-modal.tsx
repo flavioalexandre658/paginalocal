@@ -30,6 +30,7 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -240,11 +241,14 @@ export function ServiceFormModal({
                     <FormLabel>Descrição (opcional)</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Descreva o serviço brevemente..."
+                        placeholder="Ex: Troca de óleo para carros e motos, com filtro incluso e atendimento rápido"
                         className="min-h-[80px] resize-none"
                         {...field}
                       />
                     </FormControl>
+                    <FormDescription>
+                      Se preenchida, será usada como base para a IA gerar o conteúdo da página do serviço. Se vazia, a IA gera tudo automaticamente.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

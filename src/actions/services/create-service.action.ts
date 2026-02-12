@@ -82,13 +82,14 @@ export const createServiceAction = authActionClient
         state: storeResult.state,
       }
 
-      const [seo] = await generateServiceSeo(aiInput, [parsedInput.name])
+      const userDescription = parsedInput.description?.trim() || undefined
+      const [seo] = await generateServiceSeo(aiInput, [parsedInput.name], [userDescription])
 
       if (seo) {
         const [updated] = await db
           .update(service)
           .set({
-            description: seo.description,
+            description: userDescription || seo.description,
             seoTitle: seo.seoTitle,
             seoDescription: seo.seoDescription,
             longDescription: seo.longDescription,

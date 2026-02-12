@@ -20,6 +20,9 @@ const updateServiceSchema = z.object({
   heroImageUrl: z.string().nullable().optional(),
   position: z.number().int().optional(),
   isActive: z.boolean().optional(),
+  seoTitle: z.string().max(70).nullable().optional(),
+  seoDescription: z.string().max(160).nullable().optional(),
+  longDescription: z.string().nullable().optional(),
 })
 
 async function generateUniqueServiceSlug(storeId: string, name: string, excludeId: string): Promise<string> {
@@ -82,7 +85,8 @@ export const updateServiceAction = authActionClient
 
     revalidateStoreCache(storeResult.slug)
 
-    if (data.name) {
+    const shouldRegenerateAi = !!data.name
+    if (shouldRegenerateAi) {
       try {
         const aiInput: MarketingCopyInput = {
           businessName: storeResult.name,
@@ -91,13 +95,15 @@ export const updateServiceAction = authActionClient
           state: storeResult.state,
         }
 
-        const [seo] = await generateServiceSeo(aiInput, [data.name])
+        const serviceName = data.name!
+        const userDescription = (data.description && data.description.trim()) || undefined
+        const [seo] = await generateServiceSeo(aiInput, [serviceName], [userDescription])
 
         if (seo) {
           const [updated] = await db
             .update(service)
             .set({
-              description: seo.description,
+              description: userDescription || seo.description,
               seoTitle: seo.seoTitle,
               seoDescription: seo.seoDescription,
               longDescription: seo.longDescription,
@@ -107,7 +113,7 @@ export const updateServiceAction = authActionClient
             .returning()
 
           revalidateStoreCache(storeResult.slug)
-          console.log(`[Service] SEO regenerado para "${data.name}"`)
+          console.log(`[Service] SEO regenerado para "${serviceName}"`)
           return updated
         }
       } catch (error) {

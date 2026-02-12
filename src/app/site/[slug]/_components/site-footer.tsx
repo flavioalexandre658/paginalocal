@@ -2,6 +2,16 @@ import Link from 'next/link'
 import { IconMapPin, IconExternalLink, IconBrandInstagram, IconBrandFacebook, IconBrandGoogle } from '@tabler/icons-react'
 import Image from 'next/image'
 
+interface FooterService {
+  name: string
+  slug: string
+}
+
+interface FooterPage {
+  title: string
+  slug: string
+}
+
 interface SiteFooterProps {
   storeName: string
   city: string
@@ -13,9 +23,28 @@ interface SiteFooterProps {
   instagramUrl?: string | null
   facebookUrl?: string | null
   googleBusinessUrl?: string | null
+  highlightText?: string | null
+  storeSlug?: string
+  services?: FooterService[]
+  institutionalPages?: FooterPage[]
 }
 
-export function SiteFooter({ storeName, city, state, category, categorySlug, hasServices, hasFaq, instagramUrl, facebookUrl, googleBusinessUrl }: SiteFooterProps) {
+export function SiteFooter({
+  storeName,
+  city,
+  state,
+  category,
+  categorySlug,
+  hasServices,
+  hasFaq,
+  instagramUrl,
+  facebookUrl,
+  googleBusinessUrl,
+  highlightText,
+  storeSlug,
+  services,
+  institutionalPages,
+}: SiteFooterProps) {
   const currentYear = new Date().getFullYear()
 
   const navLinks = [
@@ -33,30 +62,64 @@ export function SiteFooter({ storeName, city, state, category, categorySlug, has
   ].filter((link) => link.url)
 
   const hasSocialLinks = socialLinks.length > 0
+  const hasServiceLinks = services && services.length > 0
+  const hasInstitutionalPages = institutionalPages && institutionalPages.length > 0
+  const hasMultiColumn = hasServiceLinks || hasInstitutionalPages
 
   return (
-    <footer className="relative border-t border-slate-200/60 pb-24 pt-8 md:pb-10 md:pt-10 dark:border-slate-800/60 overflow-hidden">
+    <footer className="relative border-t border-slate-200/60 pb-24 pt-10 md:pb-10 md:pt-12 dark:border-slate-800/60 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-t from-slate-100 via-white to-white dark:from-slate-950 dark:via-slate-900 dark:to-slate-900" />
 
       <div className="container relative mx-auto px-4">
-        <div className="mb-8 flex flex-col items-center gap-6 md:flex-row md:justify-between">
-          <div className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 ring-1 ring-primary/20 transition-all duration-300 group-hover:ring-primary/30 group-hover:shadow-md group-hover:shadow-primary/10">
-              <IconMapPin className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
-                {storeName}
-              </span>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                {category && `${category} em `}{city}, {state}
-              </p>
-            </div>
-          </div>
+        {hasMultiColumn ? (
+          <div className="mb-10 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 group">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 ring-1 ring-primary/20">
+                  <IconMapPin className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    {storeName}
+                  </span>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {category && `${category} em `}{city}, {state}
+                  </p>
+                </div>
+              </div>
 
-          <div className="flex flex-col items-center gap-4 md:items-end">
-            <nav aria-label="Navegação do site">
-              <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+              {highlightText && (
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {highlightText}
+                </p>
+              )}
+
+              {hasSocialLinks && (
+                <div className="flex items-center gap-2 pt-1">
+                  {socialLinks.map((link) => {
+                    const Icon = link.icon
+                    return (
+                      <a
+                        key={link.label}
+                        href={link.url!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={link.label}
+                        className={`flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/60 bg-white/70 text-slate-500 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md dark:border-slate-700/40 dark:bg-slate-900/70 dark:text-slate-400 ${link.hoverColor}`}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </a>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <h4 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
+                Navegação
+              </h4>
+              <ul className="space-y-2.5">
                 {navLinks.map((link) => (
                   <li key={link.href}>
                     <a
@@ -68,29 +131,114 @@ export function SiteFooter({ storeName, city, state, category, categorySlug, has
                   </li>
                 ))}
               </ul>
-            </nav>
+            </div>
 
-            {hasSocialLinks && (
-              <div className="flex items-center gap-2">
-                {socialLinks.map((link) => {
-                  const Icon = link.icon
-                  return (
-                    <a
-                      key={link.label}
-                      href={link.url!}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={link.label}
-                      className={`flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/60 bg-white/70 text-slate-500 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md dark:border-slate-700/40 dark:bg-slate-900/70 dark:text-slate-400 ${link.hoverColor}`}
-                    >
-                      <Icon className="h-4.5 w-4.5" />
-                    </a>
-                  )
-                })}
+            {hasServiceLinks && (
+              <div>
+                <h4 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
+                  Serviços
+                </h4>
+                <ul className="space-y-2.5">
+                  {services!.slice(0, 6).map((svc) => (
+                    <li key={svc.slug}>
+                      {storeSlug ? (
+                        <Link
+                          href={`/site/${storeSlug}/servicos/${svc.slug}`}
+                          className="text-sm text-slate-500 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary"
+                        >
+                          {svc.name}
+                        </Link>
+                      ) : (
+                        <span className="text-sm text-slate-500 dark:text-slate-400">
+                          {svc.name}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {hasInstitutionalPages && (
+              <div>
+                <h4 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
+                  Páginas
+                </h4>
+                <ul className="space-y-2.5">
+                  {institutionalPages!.map((page) => (
+                    <li key={page.slug}>
+                      {storeSlug ? (
+                        <Link
+                          href={`/site/${storeSlug}/${page.slug}`}
+                          className="text-sm text-slate-500 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary"
+                        >
+                          {page.title}
+                        </Link>
+                      ) : (
+                        <span className="text-sm text-slate-500 dark:text-slate-400">
+                          {page.title}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>
-        </div>
+        ) : (
+          <div className="mb-8 flex flex-col items-center gap-6 md:flex-row md:justify-between">
+            <div className="flex items-center gap-3 group">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 ring-1 ring-primary/20 transition-all duration-300 group-hover:ring-primary/30 group-hover:shadow-md group-hover:shadow-primary/10">
+                <IconMapPin className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  {storeName}
+                </span>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {category && `${category} em `}{city}, {state}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center gap-4 md:items-end">
+              <nav aria-label="Navegação do site">
+                <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+                  {navLinks.map((link) => (
+                    <li key={link.href}>
+                      <a
+                        href={link.href}
+                        className="text-sm text-slate-500 transition-colors hover:text-primary dark:text-slate-400 dark:hover:text-primary"
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+
+              {hasSocialLinks && (
+                <div className="flex items-center gap-2">
+                  {socialLinks.map((link) => {
+                    const Icon = link.icon
+                    return (
+                      <a
+                        key={link.label}
+                        href={link.url!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={link.label}
+                        className={`flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/60 bg-white/70 text-slate-500 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md dark:border-slate-700/40 dark:bg-slate-900/70 dark:text-slate-400 ${link.hoverColor}`}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </a>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-slate-200/40 pt-6 md:flex-row dark:border-slate-700/40">
           <p className="text-center text-sm text-slate-500 dark:text-slate-400">

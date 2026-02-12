@@ -4,7 +4,7 @@ import { headers } from 'next/headers'
 import { unstable_cache } from 'next/cache'
 import dynamic from 'next/dynamic'
 import { db } from '@/db'
-import { store, service, testimonial, storeImage } from '@/db/schema'
+import { store, service, testimonial, storeImage, storePage } from '@/db/schema'
 import { eq, asc, desc, and } from 'drizzle-orm'
 import { generateLocalBusinessJsonLd, generateBreadcrumbJsonLd } from '@/lib/local-seo'
 import { auth } from '@/lib/auth'
@@ -75,12 +75,18 @@ async function fetchStoreData(slug: string) {
       .limit(1),
   ])
 
+  const institutionalPages = await db
+    .select({ title: storePage.title, slug: storePage.slug })
+    .from(storePage)
+    .where(and(eq(storePage.storeId, storeData[0].id), eq(storePage.isActive, true)))
+
   return {
     store: storeData[0],
     services: services.filter(s => s.isActive),
     testimonials,
     galleryImages,
     heroImage: heroImage[0] || null,
+    institutionalPages,
   }
 }
 
@@ -182,7 +188,7 @@ export default async function StorePage({ params }: PageProps) {
     notFound()
   }
 
-  const { store: storeData, services, testimonials, galleryImages, heroImage } = data
+  const { store: storeData, services, testimonials, galleryImages, heroImage, institutionalPages } = data
 
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -472,6 +478,10 @@ export default async function StorePage({ params }: PageProps) {
         instagramUrl={storeData.instagramUrl}
         facebookUrl={storeData.facebookUrl}
         googleBusinessUrl={storeData.googleBusinessUrl}
+        highlightText={storeData.highlightText}
+        storeSlug={storeData.slug}
+        services={services.map(s => ({ name: s.name, slug: s.slug || '' }))}
+        institutionalPages={institutionalPages}
       />
 
       <FloatingContact

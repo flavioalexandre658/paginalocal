@@ -55,6 +55,9 @@ export const store = pgTable('store', {
   facebookUrl: text('facebook_url'),
   googleBusinessUrl: text('google_business_url'),
 
+  highlightBadge: varchar('highlight_badge', { length: 50 }),
+  highlightText: text('highlight_text'),
+
   isActive: boolean('is_active').default(false).notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),

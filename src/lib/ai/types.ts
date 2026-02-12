@@ -47,6 +47,18 @@ export interface ServiceDescriptionInput {
   existingServices?: string[]
 }
 
+export interface InstitutionalPageContent {
+  title: string
+  content: string
+  seoTitle: string
+  seoDescription: string
+}
+
+export interface InstitutionalPages {
+  about: InstitutionalPageContent
+  contact: InstitutionalPageContent
+}
+
 export interface BusinessClassificationInput {
   businessName: string
   primaryType?: string

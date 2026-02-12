@@ -1,6 +1,8 @@
 import Image from 'next/image'
-import { IconStar, IconMapPin } from '@tabler/icons-react'
+import Link from 'next/link'
+import { IconStar, IconMapPin, IconSparkles, IconArrowLeft } from '@tabler/icons-react'
 import { HeroContactButtons } from './hero-contact-buttons'
+import { getStoreHomeUrl } from '@/lib/utils'
 import {
   getContrastColor,
   getContrastTextClass,
@@ -28,17 +30,22 @@ interface HeroSectionProps {
     whatsappDefaultMessage?: string | null
     heroTitle?: string | null
     heroSubtitle?: string | null
+    highlightBadge?: string | null
     isActive: boolean
     showWhatsappButton: boolean
     showCallButton: boolean
   }
   heroImageAlt?: string | null
   isOwner?: boolean
+  pageTitle?: string
+  pageSubtitle?: string
+  compact?: boolean
+  showBackLink?: boolean
 }
 
-export function HeroSection({ store, heroImageAlt, isOwner = false }: HeroSectionProps) {
-  const h1Title = store.heroTitle || `${store.category} em ${store.city} – ${store.name}`
-  const subtitle = store.heroSubtitle || store.description
+export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, pageSubtitle, compact = false, showBackLink = false }: HeroSectionProps) {
+  const h1Title = pageTitle || store.heroTitle || `${store.category} em ${store.city} – ${store.name}`
+  const subtitle = pageSubtitle || store.heroSubtitle || store.description
 
   const rating = store.googleRating ? parseFloat(store.googleRating) : 0
   const showRating = rating >= 4.5 && store.googleReviewsCount && store.googleReviewsCount > 0
@@ -74,9 +81,19 @@ export function HeroSection({ store, heroImageAlt, isOwner = false }: HeroSectio
         <div className="absolute inset-0" style={{ backgroundColor: heroBg }} />
       )}
 
-      <div className={`relative z-10 py-20 md:py-36 ${textClass}`}>
+      <div className={`relative z-10 ${compact ? 'py-16 md:py-24' : 'py-20 md:py-36'} ${textClass}`}>
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl text-center">
+            {showBackLink && (
+              <Link
+                href={getStoreHomeUrl(store.slug)}
+                className={`mb-8 mr-2 inline-flex max-w-full items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-md transition-all ${badgeClasses} ${isLight ? 'hover:bg-black/10' : 'hover:bg-white/20'}`}
+              >
+                <IconArrowLeft className="h-4 w-4 shrink-0" />
+                <span className="truncate">Voltar para {store.name}</span>
+              </Link>
+            )}
+
             <div className={`mb-6 inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-medium shadow-lg backdrop-blur-md ${badgeClasses}`}>
               <IconMapPin className="h-4 w-4" />
               <span>{store.city}, {store.state}</span>
@@ -86,8 +103,8 @@ export function HeroSection({ store, heroImageAlt, isOwner = false }: HeroSectio
               {h1Title}
             </h1>
 
-            {showRating && (
-              <div className={`mb-6 inline-flex items-center gap-3 rounded-full px-4 py-2 backdrop-blur-md ${isLight ? 'bg-black/5' : 'bg-white/10'}`}>
+            {!compact && showRating && (
+              <div className={`mb-4 inline-flex items-center gap-3 rounded-full px-4 py-2 backdrop-blur-md ${isLight ? 'bg-black/5' : 'bg-white/10'}`}>
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
                     <IconStar
@@ -106,13 +123,20 @@ export function HeroSection({ store, heroImageAlt, isOwner = false }: HeroSectio
               </div>
             )}
 
+            {!compact && store.highlightBadge && (
+              <div className={`mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium backdrop-blur-md ${isLight ? 'bg-black/5' : 'bg-white/10'}`}>
+                <IconSparkles className="h-4 w-4 text-amber-400" />
+                <span>{store.highlightBadge}</span>
+              </div>
+            )}
+
             {subtitle && (
-              <p className={`mx-auto mb-10 max-w-2xl text-lg font-medium ${mutedClass}`}>
+              <p className={`mx-auto ${compact ? 'mb-0' : 'mb-10'} max-w-2xl text-lg font-medium ${mutedClass}`}>
                 {subtitle}
               </p>
             )}
 
-            <HeroContactButtons store={store} isOwner={isOwner} />
+            {!compact && <HeroContactButtons store={store} isOwner={isOwner} />}
           </div>
         </div>
       </div>

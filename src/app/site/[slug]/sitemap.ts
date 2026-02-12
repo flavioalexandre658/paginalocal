@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next'
 import { db } from '@/db'
-import { store, service } from '@/db/schema'
+import { store, service, storePage } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
 
 interface SitemapParams {
@@ -45,6 +45,20 @@ export default async function sitemap({ params }: SitemapParams): Promise<Metada
       lastModified: svc.updatedAt,
       changeFrequency: 'weekly',
       priority: 0.8,
+    })
+  }
+
+  const storePages = await db
+    .select({ slug: storePage.slug, updatedAt: storePage.updatedAt })
+    .from(storePage)
+    .where(and(eq(storePage.storeId, storeResult[0].id), eq(storePage.isActive, true)))
+
+  for (const page of storePages) {
+    entries.push({
+      url: `${baseUrl}/${page.slug}`,
+      lastModified: page.updatedAt,
+      changeFrequency: 'monthly',
+      priority: 0.7,
     })
   }
 

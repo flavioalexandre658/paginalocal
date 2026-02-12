@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import type { MarketingCopy, MarketingCopyInput, ServiceItem, ServiceDescriptionInput, BusinessClassificationInput } from './types'
+import type { MarketingCopy, MarketingCopyInput, ServiceItem, ServiceDescriptionInput, BusinessClassificationInput, InstitutionalPages } from './types'
 import {
   getStoreContentPrompt,
   getFaqPrompt,
@@ -7,6 +7,7 @@ import {
   getServicesPrompt,
   getServiceDescriptionPrompt,
   getBusinessClassificationPrompt,
+  getInstitutionalPagesPrompt,
 } from './prompts'
 import { applyFallbacks, generateFallbackFAQ, generateFallbackServices } from './fallbacks'
 
@@ -167,11 +168,12 @@ export async function generateServiceDescriptionsWithGemini(data: ServiceDescrip
 export async function generateServiceSeoWithGemini(
   data: MarketingCopyInput,
   serviceNames: string[],
+  serviceDescriptions?: (string | undefined)[],
 ): Promise<ServiceItem[]> {
   console.log(`[AI Gemini] Gerando SEO para ${serviceNames.length} serviço(s): ${serviceNames.join(', ')}`)
 
   const result = await callGeminiWithRetry<ServiceItem[]>(
-    getServicesPrompt(data, serviceNames), [], 4000,
+    getServicesPrompt(data, serviceNames, serviceDescriptions), [], 4000,
   )
 
   return result.map(svc => ({
@@ -193,4 +195,42 @@ export async function classifyBusinessCategoryWithGemini(data: BusinessClassific
   const categoryName = result?.category?.trim()?.toLowerCase() || null
   console.log(`[AI Gemini] Categoria identificada: "${categoryName}"`)
   return categoryName
+}
+
+export async function generateInstitutionalPagesWithGemini(data: MarketingCopyInput): Promise<InstitutionalPages> {
+  console.log(`[AI Gemini] Gerando páginas institucionais para "${data.businessName}"`)
+
+  const fallback: InstitutionalPages = {
+    about: {
+      title: `Sobre a ${data.businessName}`,
+      content: `A ${data.businessName} é ${data.category.toLowerCase()} em ${data.city}, ${data.state}. Entre em contato para conhecer nossos serviços.`,
+      seoTitle: `Sobre a ${data.businessName} | ${data.category} em ${data.city}`,
+      seoDescription: `Conheça a ${data.businessName}, ${data.category.toLowerCase()} em ${data.city}. Saiba mais sobre nossos serviços.`,
+    },
+    contact: {
+      title: `Contato | ${data.businessName}`,
+      content: `Entre em contato com a ${data.businessName} em ${data.city}. Atendemos por WhatsApp e telefone.`,
+      seoTitle: `Contato ${data.businessName} | ${data.category} em ${data.city}`,
+      seoDescription: `Entre em contato com a ${data.businessName} em ${data.city}. Atendemos por WhatsApp e telefone.`,
+    },
+  }
+
+  const result = await callGeminiWithRetry<InstitutionalPages>(
+    getInstitutionalPagesPrompt(data), fallback, 3000,
+  )
+
+  return {
+    about: {
+      title: (result.about?.title || fallback.about.title).substring(0, 255),
+      content: result.about?.content || fallback.about.content,
+      seoTitle: (result.about?.seoTitle || fallback.about.seoTitle).substring(0, 70),
+      seoDescription: (result.about?.seoDescription || fallback.about.seoDescription).substring(0, 160),
+    },
+    contact: {
+      title: (result.contact?.title || fallback.contact.title).substring(0, 255),
+      content: result.contact?.content || fallback.contact.content,
+      seoTitle: (result.contact?.seoTitle || fallback.contact.seoTitle).substring(0, 70),
+      seoDescription: (result.contact?.seoDescription || fallback.contact.seoDescription).substring(0, 160),
+    },
+  }
 }

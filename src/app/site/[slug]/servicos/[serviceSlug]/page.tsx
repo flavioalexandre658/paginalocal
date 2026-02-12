@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { db } from '@/db'
-import { store, service, testimonial } from '@/db/schema'
+import { store, service, testimonial, storePage } from '@/db/schema'
 import { eq, and, asc, desc } from 'drizzle-orm'
 import { ServiceDetailContent } from './_components/service-detail-content'
 import { SiteFooter } from '../../_components/site-footer'
@@ -58,11 +58,17 @@ async function getServiceData(storeSlug: string, serviceSlug: string) {
     .orderBy(desc(testimonial.rating))
     .limit(6)
 
+  const institutionalPages = await db
+    .select({ title: storePage.title, slug: storePage.slug })
+    .from(storePage)
+    .where(and(eq(storePage.storeId, storeData[0].id), eq(storePage.isActive, true)))
+
   return {
     store: storeData[0],
     service: serviceData[0],
     otherServices: otherServices.filter(s => s.id !== serviceData[0].id),
     testimonials: storeTestimonials,
+    institutionalPages,
   }
 }
 
@@ -151,7 +157,7 @@ export default async function ServicePage({ params }: PageProps) {
     notFound()
   }
 
-  const { store: storeData, service: serviceData, otherServices, testimonials } = data
+  const { store: storeData, service: serviceData, otherServices, testimonials, institutionalPages } = data
 
   const baseUrl = storeData.customDomain
     ? `https://${storeData.customDomain}`
@@ -297,9 +303,14 @@ export default async function ServicePage({ params }: PageProps) {
         storeName={storeData.name}
         city={storeData.city}
         state={storeData.state}
+        category={storeData.category}
         instagramUrl={storeData.instagramUrl}
         facebookUrl={storeData.facebookUrl}
         googleBusinessUrl={storeData.googleBusinessUrl}
+        highlightText={storeData.highlightText}
+        storeSlug={storeData.slug}
+        services={otherServices.map(s => ({ name: s.name, slug: s.slug || '' }))}
+        institutionalPages={institutionalPages}
       />
 
       <FloatingContact

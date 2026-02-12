@@ -8,7 +8,7 @@ import {
   IconArrowLeft,
   IconLoader2,
   IconSettings,
-  IconPhone,
+  IconFileText,
   IconPhoto,
   IconListDetails,
   IconSearch,
@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 import { getStoreForEditAction } from '@/actions/stores/get-store-for-edit.action'
 import { GeneralTab } from './general-tab'
-import { ContactTab } from './contact-tab'
+import { PagesTab } from './pages-tab'
 import { GalleryTab } from './gallery-tab'
 import { SectionsTab } from './sections-tab'
 import { SeoTab } from './seo-tab'
@@ -31,7 +31,7 @@ interface EditStoreContentProps {
 
 const TABS = [
   { id: 'geral', label: 'Geral', icon: IconSettings },
-  { id: 'contato', label: 'Contato', icon: IconPhone },
+  { id: 'paginas', label: 'Páginas', icon: IconFileText },
   { id: 'galeria', label: 'Galeria', icon: IconPhoto },
   { id: 'secoes', label: 'Seções', icon: IconListDetails },
   { id: 'seo', label: 'SEO', icon: IconSearch },
@@ -103,8 +103,8 @@ export function EditStoreContent({ storeSlug, initialTab }: EditStoreContentProp
             <GeneralTab store={data.store} />
           </TabsContent>
 
-          <TabsContent value="contato" className="mt-0">
-            <ContactTab store={data.store} storeSlug={storeSlug} />
+          <TabsContent value="paginas" className="mt-0">
+            <PagesTab store={data.store} pages={data.pages} services={data.services} storeSlug={storeSlug} />
           </TabsContent>
 
           <TabsContent value="galeria" className="mt-0">

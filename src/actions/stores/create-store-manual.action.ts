@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
-import { store, service, category } from '@/db/schema'
+import { store, service, category, storePage } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { generateSlug } from '@/lib/utils'
 import {
@@ -15,6 +15,8 @@ import {
   type ServiceItem,
   type FAQItem,
 } from '@/lib/gemini'
+import { generateInstitutionalPages } from '@/lib/ai'
+import type { MarketingCopyInput } from '@/lib/ai'
 import { checkCanCreateStore, getUserPlanContext } from '@/lib/plan-middleware'
 import { addDomainToVercel } from '@/actions/vercel/add-domain'
 import { notifyStoreActivated } from '@/lib/google-indexing'
@@ -264,8 +266,49 @@ export const createStoreManualAction = authActionClient
       console.error('[Manual Creation] Erro ao criar subdomínio na Vercel:', error)
     }
 
+    // ===== Generate institutional pages =====
+    let pagesGenerated = false
+    try {
+      const aiPageInput: MarketingCopyInput = {
+        businessName: newStore.name,
+        category: newStore.category,
+        city: newStore.city,
+        state: newStore.state,
+        googleAbout: differential || undefined,
+      }
+
+      const institutionalPages = await generateInstitutionalPages(aiPageInput)
+
+      await db.insert(storePage).values([
+        {
+          storeId: newStore.id,
+          type: 'ABOUT' as const,
+          slug: 'sobre-nos',
+          title: institutionalPages.about.title,
+          content: institutionalPages.about.content,
+          seoTitle: institutionalPages.about.seoTitle,
+          seoDescription: institutionalPages.about.seoDescription,
+        },
+        {
+          storeId: newStore.id,
+          type: 'CONTACT' as const,
+          slug: 'contato',
+          title: institutionalPages.contact.title,
+          content: institutionalPages.contact.content,
+          seoTitle: institutionalPages.contact.seoTitle,
+          seoDescription: institutionalPages.contact.seoDescription,
+        },
+      ])
+
+      pagesGenerated = true
+      console.log(`[Manual Creation] Páginas institucionais geradas para "${newStore.name}"`)
+    } catch (error) {
+      console.error('[Manual Creation] Erro ao gerar páginas institucionais:', error)
+    }
+
+    const pageSlugs = pagesGenerated ? ['sobre-nos', 'contato'] : undefined
     if (shouldActivateStore) {
-      notifyStoreActivated(newStore.slug).catch((error) => {
+      notifyStoreActivated(newStore.slug, newStore.customDomain, undefined, pageSlugs).catch((error) => {
         console.error('[Manual Creation] Erro ao notificar Google Indexing API:', error)
       })
 

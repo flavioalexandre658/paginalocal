@@ -48,6 +48,8 @@ const updateStoreSchema = z.object({
   instagramUrl: z.string().url().optional().nullable(),
   facebookUrl: z.string().url().optional().nullable(),
   googleBusinessUrl: z.string().url().optional().nullable(),
+  highlightBadge: z.string().max(50).optional().nullable(),
+  highlightText: z.string().max(500).optional().nullable(),
 })
 
 export const updateStoreAction = authActionClient
