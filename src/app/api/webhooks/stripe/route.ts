@@ -2,7 +2,7 @@ import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { stripe, STRIPE_WEBHOOK_SECRET } from '@/lib/stripe'
 import { db } from '@/db'
-import { subscription, plan, store, category } from '@/db/schema'
+import { subscription, plan, store, category, storeTransfer } from '@/db/schema'
 import { eq, desc, and, inArray } from 'drizzle-orm'
 import type Stripe from 'stripe'
 import type { SubscriptionStatus } from '@/db/schema'
@@ -148,8 +148,64 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
   await db.insert(subscription).values(subscriptionData)
 
-  // Sincroniza as lojas do usuário com o limite do novo plano
   const maxStores = selectedPlan.features.maxStores
+
+  if (storeSlug) {
+    try {
+      const [storeToTransfer] = await db
+        .select({ id: store.id, name: store.name, slug: store.slug, userId: store.userId, city: store.city, category: store.category })
+        .from(store)
+        .where(eq(store.slug, storeSlug))
+        .limit(1)
+
+      if (storeToTransfer && storeToTransfer.userId !== userId) {
+        const fromUserId = storeToTransfer.userId
+
+        await db
+          .update(store)
+          .set({
+            userId: userId,
+            isActive: true,
+            updatedAt: new Date(),
+          })
+          .where(eq(store.id, storeToTransfer.id))
+
+        await db.insert(storeTransfer).values({
+          storeId: storeToTransfer.id,
+          fromUserId,
+          toUserId: userId,
+          adminId: fromUserId,
+          wasActivated: true,
+        })
+
+        try {
+          await notifyStoreActivated(storeToTransfer.slug)
+          await revalidateSitemap()
+
+          const [categoryData] = await db
+            .select({ slug: category.slug })
+            .from(category)
+            .where(eq(category.name, storeToTransfer.category))
+            .limit(1)
+
+          if (categoryData) {
+            await revalidateCategoryPages(categoryData.slug, generateCitySlug(storeToTransfer.city))
+          }
+        } catch (indexError) {
+          console.error(`[Webhook] Error indexing transferred store "${storeSlug}":`, indexError)
+        }
+
+        console.log(`[Webhook] Store "${storeSlug}" auto-transferred to user ${userId}`)
+      } else if (storeToTransfer) {
+        console.log(`[Webhook] Store "${storeSlug}" already belongs to user ${userId}, skipping transfer`)
+      } else {
+        console.error(`[Webhook] Store "${storeSlug}" not found for auto-transfer`)
+      }
+    } catch (transferError) {
+      console.error(`[Webhook] Error auto-transferring store "${storeSlug}":`, transferError)
+    }
+  }
+
   await syncUserStoresWithPlanLimit(userId, maxStores)
 
   console.log(`Subscription created for user ${userId} with plan ${selectedPlan.name} (max stores: ${maxStores})`)

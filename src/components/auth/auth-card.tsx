@@ -13,7 +13,7 @@ interface AuthCardProps {
 
 export function AuthCard({ title, description, footer, children }: AuthCardProps) {
   return (
-    <div className="w-full">
+    <div className="mx-auto w-full max-w-md">
       <div className="mb-6 text-center">
         <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
           {title}

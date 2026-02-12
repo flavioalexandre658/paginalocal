@@ -11,13 +11,15 @@ const createCheckoutSessionSchema = z.object({
   planId: z.string().uuid(),
   billingInterval: z.enum(['MONTHLY', 'YEARLY']),
   storeSlug: z.string().optional(),
+  successUrl: z.string().optional(),
+  cancelUrl: z.string().optional(),
 })
 
 export const createCheckoutSession = authActionClient
   .schema(createCheckoutSessionSchema)
   .action(async ({ parsedInput, ctx }) => {
     const { userId, userEmail } = ctx
-    const { planId, billingInterval, storeSlug } = parsedInput
+    const { planId, billingInterval, storeSlug, successUrl: customSuccessUrl, cancelUrl: customCancelUrl } = parsedInput
 
     const [selectedPlan] = await db
       .select()
@@ -83,13 +85,17 @@ export const createCheckoutSession = authActionClient
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-    const successUrl = storeSlug
-      ? `${appUrl}/painel/${storeSlug}?subscription=success`
-      : `${appUrl}/painel?subscription=success`
+    const successUrl = customSuccessUrl
+      ? `${appUrl}${customSuccessUrl}`
+      : storeSlug
+        ? `${appUrl}/painel/${storeSlug}?subscription=success`
+        : `${appUrl}/painel?subscription=success`
 
-    const cancelUrl = storeSlug
-      ? `${appUrl}/painel/${storeSlug}?subscription=canceled`
-      : `${appUrl}/planos?subscription=canceled`
+    const cancelUrl = customCancelUrl
+      ? `${appUrl}${customCancelUrl}`
+      : storeSlug
+        ? `${appUrl}/painel/${storeSlug}?subscription=canceled`
+        : `${appUrl}/planos?subscription=canceled`
 
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomerId,

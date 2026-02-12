@@ -68,7 +68,7 @@ export default function AguardandoTransferenciaPage() {
   }, [checkTransfer])
 
   return (
-    <div className="w-full">
+    <div className="mx-auto w-full max-w-md">
       {showConfetti && <ConfettiEffect />}
 
       <AnimatePresence mode="wait">

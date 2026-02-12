@@ -39,6 +39,9 @@ export function SignUpForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const isTransferFlow = searchParams.get('q') === 'transferir'
+  const planParam = searchParams.get('p')
+  const storeSlugParam = searchParams.get('s')
+  const hasTransferPlan = isTransferFlow && !!planParam
   const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<SignUpFormData>({
@@ -71,12 +74,27 @@ export function SignUpForm() {
     }
 
     toast.success('Conta criada com sucesso!')
-    router.push(isTransferFlow ? '/cadastro/aguardando-transferencia' : '/painel')
+
+    const slugQuery = storeSlugParam ? `&s=${storeSlugParam}` : ''
+    const redirectUrl = hasTransferPlan
+      ? `/cadastro/plano-transferencia?p=${planParam}${slugQuery}`
+      : isTransferFlow
+        ? '/cadastro/aguardando-transferencia'
+        : '/painel'
+
+    router.push(redirectUrl)
   }
+
+  const slugQuery = storeSlugParam ? `&s=${storeSlugParam}` : ''
+  const callbackURL = hasTransferPlan
+    ? `/cadastro/plano-transferencia?p=${planParam}${slugQuery}`
+    : isTransferFlow
+      ? '/cadastro/aguardando-transferencia'
+      : '/painel'
 
   return (
     <div className="space-y-6">
-      <SocialLoginButton callbackURL={isTransferFlow ? '/cadastro/aguardando-transferencia' : '/painel'} />
+      <SocialLoginButton callbackURL={callbackURL} />
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">

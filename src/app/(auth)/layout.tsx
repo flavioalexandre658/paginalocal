@@ -14,7 +14,7 @@ export default function AuthLayout({
     <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
-      <div className="relative z-10 w-full max-w-md">
+      <div className="relative z-10 w-full">
         <div className="mb-8 flex justify-center">
           <Logo size="lg" href="/" />
         </div>
