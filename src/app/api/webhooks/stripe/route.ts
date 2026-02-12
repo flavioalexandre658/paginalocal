@@ -70,6 +70,12 @@ export async function POST(request: Request) {
         break
       }
 
+      case 'invoice.paid': {
+        const invoice = event.data.object as Stripe.Invoice
+        await handleInvoicePaymentSucceeded(invoice)
+        break
+      }
+
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice
         await handleInvoicePaymentFailed(invoice)
@@ -207,13 +213,13 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
 
   // Verifica se o plano mudou (pelo priceId - tenta monthly ou yearly)
   let selectedPlan = null
-  
+
   const [planByMonthly] = await db
     .select()
     .from(plan)
     .where(eq(plan.stripeMonthlyPriceId, newPriceId))
     .limit(1)
-  
+
   if (planByMonthly) {
     selectedPlan = planByMonthly
   } else {
@@ -222,7 +228,7 @@ async function handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription
       .from(plan)
       .where(eq(plan.stripeYearlyPriceId, newPriceId))
       .limit(1)
-    
+
     selectedPlan = planByYearly || null
   }
 
@@ -282,7 +288,7 @@ async function handleSubscriptionDeleted(stripeSubscription: Stripe.Subscription
 
   // Desativa todas as lojas do usuário quando a assinatura é cancelada
   await deactivateAllUserStores(existingSubscription.userId)
-  
+
   console.log(`[Webhook] Assinatura cancelada para usuário ${existingSubscription.userId}, lojas desativadas`)
 }
 
@@ -392,7 +398,7 @@ async function syncUserStoresWithPlanLimit(userId: string, maxStores: number) {
   // Ativa as lojas que devem estar ativas
   if (activatedIds.length > 0) {
     const storesNeedingActivation = storesToActivate.filter((s) => !s.isActive)
-    
+
     if (storesNeedingActivation.length > 0) {
       await db
         .update(store)
@@ -419,7 +425,7 @@ async function syncUserStoresWithPlanLimit(userId: string, maxStores: number) {
   // Desativa as lojas excedentes
   if (deactivatedIds.length > 0) {
     const storesNeedingDeactivation = storesToDeactivate.filter((s) => s.isActive)
-    
+
     if (storesNeedingDeactivation.length > 0) {
       await db
         .update(store)
@@ -446,7 +452,7 @@ async function syncUserStoresWithPlanLimit(userId: string, maxStores: number) {
   // Revalida o sitemap e páginas de categoria se houve mudanças
   if (activatedCount > 0 || deactivatedCount > 0) {
     await revalidateSitemap()
-    
+
     // Revalida páginas de categoria/cidade afetadas
     for (const pair of categoryCityPairsToRevalidate) {
       const [categoryName, city] = pair.split('|')
@@ -456,7 +462,7 @@ async function syncUserStoresWithPlanLimit(userId: string, maxStores: number) {
         .from(category)
         .where(eq(category.name, categoryName))
         .limit(1)
-      
+
       if (categoryData) {
         await revalidateCategoryPages(categoryData.slug, generateCitySlug(city))
       }
@@ -504,7 +510,7 @@ async function deactivateAllUserStores(userId: string) {
 
   // Revalida o sitemap e páginas de categoria
   await revalidateSitemap()
-  
+
   // Revalida páginas de categoria/cidade afetadas
   for (const pair of categoryCityPairsToRevalidate) {
     const [categoryName, city] = pair.split('|')
@@ -513,7 +519,7 @@ async function deactivateAllUserStores(userId: string) {
       .from(category)
       .where(eq(category.name, categoryName))
       .limit(1)
-    
+
     if (categoryData) {
       await revalidateCategoryPages(categoryData.slug, generateCitySlug(city))
     }
