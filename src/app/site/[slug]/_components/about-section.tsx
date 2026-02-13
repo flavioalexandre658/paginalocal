@@ -73,10 +73,10 @@ export function AboutSection({
           {/* Section header */}
           <div className="mb-12 animate-fade-in-up">
             <span className="text-sm font-bold uppercase tracking-widest text-primary">
-              Sobre
+              Sobre a {name}
             </span>
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-              Saiba mais sobre {category} em <span className="text-primary">{city}</span> — {name}
+              Sobre a {name} — {category} em <span className="text-primary">{city}</span>, {state}
             </h2>
           </div>
 
@@ -84,13 +84,13 @@ export function AboutSection({
             {/* Main description card */}
             <div className="animate-fade-in-up animation-delay-200 rounded-2xl border-2 border-slate-100 border-l-4 border-l-primary bg-white p-8 md:p-10 shadow-lg dark:border-slate-800 dark:border-l-primary dark:bg-slate-900 dark:shadow-slate-900/30">
               <p className="text-lg leading-relaxed text-slate-600 dark:text-slate-300 md:text-xl">
-                {description || `A ${name} é ${category.toLowerCase()} em ${city}, ${state}. Oferecemos${servicesCount ? ` ${servicesCount} serviços` : ' atendimento'} para clientes de ${city} e região. Entre em contato pelo WhatsApp para saber mais.`}
+                {description || `A ${name} é referência em ${category.toLowerCase()} em ${city}, ${state}. Com atendimento profissional e personalizado, oferecemos${servicesCount ? ` ${servicesCount} serviços especializados` : ' atendimento de qualidade'} para clientes de ${city} e toda a região. Nossa equipe está pronta para atender você com qualidade e dedicação. Entre em contato pelo WhatsApp e agende sua visita.`}
               </p>
 
               {serviceNames && serviceNames.length > 0 && (
                 <div className="mt-8">
                   <h3 className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                    Serviços oferecidos
+                    Principais serviços de {category} em {city}
                   </h3>
                   <div className="flex flex-wrap gap-2.5">
                     {serviceNames.map((svcName) => (
@@ -175,7 +175,7 @@ export function AboutSection({
                         {neighborhoods.length}+
                       </div>
                       <p className="text-sm font-medium text-white/80">
-                        Regiões atendidas em {city}
+                        Bairros e regiões atendidas por {category.toLowerCase()} em {city}
                       </p>
                     </div>
                   </div>
@@ -184,7 +184,7 @@ export function AboutSection({
                 {/* Content area */}
                 <div className="px-8 py-8 md:px-10">
                   <p className="mb-6 text-slate-500 leading-relaxed dark:text-slate-400">
-                    Atendemos diversas regiões de {city} e proximidades com a mesma qualidade e dedicação. Confira abaixo as áreas de cobertura.
+                    A {name} atende diversas regiões de {city}, {state} e proximidades com a mesma qualidade, dedicação e profissionalismo. Confira abaixo os bairros e áreas de cobertura dos nossos serviços de {category.toLowerCase()}.
                   </p>
                   <div className="flex flex-wrap gap-2.5">
                     {neighborhoods.map((n) => (

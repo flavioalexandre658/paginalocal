@@ -87,7 +87,7 @@ export function SiteFooter({
               )}
               <h4 className="text-xl font-bold text-primary">{storeName}</h4>
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                {category && `${category} em `}{city}, {state}.
+                {category ? `${category} em ${city}, ${state}. Atendimento profissional e de qualidade.` : `${city}, ${state}.`}
               </p>
               {highlightText && (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -235,7 +235,7 @@ export function SiteFooter({
                     rel="noopener"
                     className="mt-1 inline-block text-xs text-slate-400 transition-colors hover:text-primary dark:text-slate-500"
                   >
-                    Mais {category?.toLowerCase() || 'negócios'} na região
+                    Encontre mais {category?.toLowerCase() || 'negócios'} em {city} e região
                   </Link>
                 )}
               </div>

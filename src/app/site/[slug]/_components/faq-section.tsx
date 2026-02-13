@@ -11,9 +11,11 @@ interface FAQItem {
 interface FAQSectionProps {
   faq: FAQItem[]
   storeName: string
+  city?: string
+  category?: string
 }
 
-export function FAQSection({ faq, storeName }: FAQSectionProps) {
+export function FAQSection({ faq, storeName, city, category }: FAQSectionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   if (!faq || faq.length === 0) return null
@@ -25,13 +27,13 @@ export function FAQSection({ faq, storeName }: FAQSectionProps) {
           {/* Section header */}
           <div className="mb-14 animate-fade-in-up">
             <span className="text-sm font-bold uppercase tracking-widest text-primary">
-              Tire suas dúvidas
+              Dúvidas Frequentes
             </span>
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-              Perguntas <span className="text-primary">Frequentes</span>
+              Perguntas Frequentes sobre <span className="text-primary">{storeName}</span>{city ? ` em ${city}` : ''}
             </h2>
             <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-              Respostas rápidas sobre {storeName}
+              Encontre respostas para as dúvidas mais comuns sobre {storeName}{category && city ? `, ${category.toLowerCase()} em ${city}` : ''}. Se precisar de mais informações, entre em contato pelo WhatsApp.
             </p>
           </div>
 

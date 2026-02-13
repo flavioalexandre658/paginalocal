@@ -17,6 +17,8 @@ interface Testimonial {
 interface TestimonialsSectionProps {
   testimonials: Testimonial[]
   storeName?: string
+  city?: string
+  category?: string
 }
 
 const ITEMS_PER_PAGE = 6
@@ -39,7 +41,7 @@ function Stars({ rating }: { rating: number }) {
   )
 }
 
-export function TestimonialsSection({ testimonials, storeName }: TestimonialsSectionProps) {
+export function TestimonialsSection({ testimonials, storeName, city, category }: TestimonialsSectionProps) {
   const [currentPage, setCurrentPage] = useState(0)
 
   const totalPages = Math.ceil(testimonials.length / ITEMS_PER_PAGE)
@@ -56,15 +58,15 @@ export function TestimonialsSection({ testimonials, storeName }: TestimonialsSec
           {/* Section header — white text on primary bg */}
           <div className="mb-14 animate-fade-in-up">
             <span className="text-sm font-bold uppercase tracking-widest text-white/90">
-              Avaliações
+              Avaliações de Clientes
             </span>
             <h2 className="mt-3 text-3xl tracking-tight text-white md:text-4xl lg:text-5xl">
-              O que nossos <span className="text-white font-extrabold">clientes dizem</span>
+              Avaliações sobre <span className="text-white font-extrabold">{storeName || 'nosso trabalho'}</span>{city ? ` em ${city}` : ''}
             </h2>
             <p className="mt-4 text-lg text-white/90">
               {testimonials.length > 0
-                ? `${testimonials.length} avaliações de clientes satisfeitos${storeName ? ` da ${storeName}` : ''}`
-                : 'Feedback de quem já conhece nosso trabalho'}
+                ? `Veja o que ${testimonials.length} clientes satisfeitos dizem sobre a ${storeName || 'nossa empresa'}${category && city ? `, ${category.toLowerCase()} em ${city}` : ''}. Avaliações reais de quem já conhece nosso trabalho.`
+                : `Avaliações de clientes${storeName ? ` da ${storeName}` : ''}${category && city ? `, ${category.toLowerCase()} em ${city}` : ''}`}
             </p>
           </div>
 

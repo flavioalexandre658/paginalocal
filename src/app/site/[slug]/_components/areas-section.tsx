@@ -5,9 +5,10 @@ interface AreasSectionProps {
   city: string
   state: string
   category: string
+  storeName?: string
 }
 
-export function AreasSection({ neighborhoods, city, state, category }: AreasSectionProps) {
+export function AreasSection({ neighborhoods, city, state, category, storeName }: AreasSectionProps) {
   if (!neighborhoods || neighborhoods.length === 0) return null
 
   return (
@@ -17,13 +18,13 @@ export function AreasSection({ neighborhoods, city, state, category }: AreasSect
           {/* Section header */}
           <div className="mb-14 animate-fade-in-up">
             <span className="text-sm font-bold uppercase tracking-widest text-primary">
-              Cobertura de Atendimento
+              Áreas de Atendimento em {city}
             </span>
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-              Áreas <span className="text-primary">Atendidas</span>
+              Bairros e Regiões Atendidas por {category} em <span className="text-primary">{city}</span>, {state}
             </h2>
             <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-              {category} em {city}, {state} atendemos sua região com qualidade e agilidade
+              {storeName ? `A ${storeName} atende` : 'Atendemos'} diversos bairros de {city} com serviços de {category.toLowerCase()} de qualidade. Confira abaixo as regiões onde atuamos.
             </p>
           </div>
 
@@ -39,7 +40,7 @@ export function AreasSection({ neighborhoods, city, state, category }: AreasSect
                   {category} em {city}
                 </h3>
                 <p className="mt-3 text-sm text-white/70 leading-relaxed">
-                  Oferecemos nossos serviços para toda a região de {city} e bairros próximos. Nossa equipe está preparada para atender você com rapidez e qualidade.
+                  Somos {category.toLowerCase()} em {city}, {state}, atendendo toda a região com qualidade, profissionalismo e compromisso. Nossa equipe está preparada para atender você com agilidade.
                 </p>
               </div>
             </div>
@@ -62,7 +63,7 @@ export function AreasSection({ neighborhoods, city, state, category }: AreasSect
           </div>
 
           <p className="mt-8 text-center text-sm text-slate-400 animate-fade-in-up dark:text-slate-500">
-            Não encontrou seu bairro? Entre em contato que verificamos a disponibilidade na sua região.
+            Não encontrou seu bairro? {storeName ? `Entre em contato com a ${storeName}` : 'Entre em contato'} e verificaremos a disponibilidade de atendimento na sua região.
           </p>
         </div>
       </div>

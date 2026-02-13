@@ -414,6 +414,7 @@ export default async function StorePage({ params }: PageProps) {
             city={storeData.city}
             state={storeData.state}
             category={storeData.category}
+            storeName={storeData.name}
           />
         )}
 
@@ -421,10 +422,12 @@ export default async function StorePage({ params }: PageProps) {
           <TestimonialsSection
             testimonials={testimonials}
             storeName={storeData.name}
+            city={storeData.city}
+            category={storeData.category}
           />
         )}
 
-        {faq.length > 0 && <FAQSection faq={faq} storeName={storeData.name} />}
+        {faq.length > 0 && <FAQSection faq={faq} storeName={storeData.name} city={storeData.city} category={storeData.category} />}
 
         <ContactSection
           store={{

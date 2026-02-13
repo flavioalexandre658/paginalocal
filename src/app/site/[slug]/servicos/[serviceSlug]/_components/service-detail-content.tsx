@@ -107,7 +107,7 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
             </h1>
 
             <p className={`mb-6 text-lg leading-relaxed ${mutedClass}`}>
-              {store.category} em {store.city} &middot; {store.name}
+              {store.name} &middot; {store.category} em {store.city}, {store.state}
             </p>
 
             <div className="flex flex-wrap items-center gap-4">
@@ -167,7 +167,7 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
             {/* Description card */}
             <div className="rounded-2xl border-2 border-slate-100 border-l-4 border-l-primary bg-white p-8 shadow-lg md:p-10 dark:border-slate-800 dark:border-l-primary dark:bg-slate-900">
               <h2 className="mb-4 text-2xl font-extrabold text-slate-900 dark:text-white md:text-3xl">
-                {service.name} <span className="text-primary">em {store.city}</span>
+                {service.name} em <span className="text-primary">{store.city}, {store.state}</span> — {store.name}
               </h2>
               {service.longDescription ? (
                 <div className="space-y-4 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
@@ -178,7 +178,7 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
               ) : (
                 <p className="text-lg leading-relaxed text-slate-600 dark:text-slate-300">
                   {service.description
-                    || `A ${store.name} oferece o serviço de ${service.name.toLowerCase()} em ${store.city}, ${store.state}. Entre em contato pelo WhatsApp para saber mais sobre este serviço e agendar um horário.`
+                    || `A ${store.name}, ${store.category.toLowerCase()} em ${store.city}, ${store.state}, oferece o serviço de ${service.name.toLowerCase()} com atendimento profissional e personalizado. Entre em contato pelo WhatsApp para saber mais detalhes, consultar valores e agendar um horário.`
                   }
                 </p>
               )}
@@ -199,10 +199,10 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
             {/* CTA card */}
             <div className="overflow-hidden rounded-2xl bg-primary p-8 shadow-lg md:p-10">
               <h3 className="mb-2 text-xl font-extrabold text-white">
-                Solicitar {service.name}
+                Solicite {service.name} em {store.city}
               </h3>
               <p className="mb-6 text-white/70">
-                Entre em contato com a {store.name} para solicitar este serviço.
+                Fale agora com a {store.name} e solicite o serviço de {service.name.toLowerCase()}. Atendemos em {store.city} e região com qualidade e profissionalismo.
               </p>
               <div className="flex flex-col gap-3 sm:flex-row">
                 {store.showWhatsappButton && (
@@ -213,7 +213,7 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
                     className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 font-bold text-slate-900 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
                   >
                     <IconBrandWhatsapp className="h-5 w-5" />
-                    Chamar no WhatsApp
+                    Solicitar via WhatsApp
                   </a>
                 )}
                 {store.showCallButton && store.phone && (
@@ -222,7 +222,7 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
                     className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/30 px-7 py-3.5 font-bold text-white transition-all hover:bg-white/10"
                   >
                     <IconPhone className="h-5 w-5" />
-                    Ligar agora
+                    Ligar para {store.name}
                   </a>
                 )}
               </div>
@@ -236,6 +236,8 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
         <TestimonialsSection
           testimonials={testimonials}
           storeName={store.name}
+          city={store.city}
+          category={store.category}
         />
       )}
 
@@ -252,16 +254,17 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
 
       {/* FAQ */}
       {faq.length > 0 && (
-        <FAQSection faq={faq} storeName={store.name} />
+        <FAQSection faq={faq} storeName={store.name} city={store.city} category={store.category} />
       )}
 
       <section className="sr-only" aria-hidden="false">
-        <h2>{service.name} perto de mim em {store.city}</h2>
+        <h2>{service.name} perto de mim em {store.city}, {store.state}</h2>
         <p>
           Procurando por {service.name.toLowerCase()} perto de você em {store.city}, {store.state}?
-          A {store.name} é {store.category.toLowerCase()} em {store.city} que oferece {service.name.toLowerCase()} com atendimento profissional.
-          {store.googleRating && parseFloat(store.googleRating) >= 4.0 && ` Com nota ${store.googleRating} no Google e ${store.googleReviewsCount} avaliações de clientes.`}
-          Entre em contato pelo WhatsApp para agendar.
+          A {store.name} é {store.category.toLowerCase()} em {store.city} que oferece {service.name.toLowerCase()} com atendimento profissional e personalizado.
+          {store.googleRating && parseFloat(store.googleRating) >= 4.0 && ` Com nota ${store.googleRating} no Google e ${store.googleReviewsCount} avaliações de clientes satisfeitos.`}
+          {` Nosso serviço de ${service.name.toLowerCase()} está disponível para clientes de ${store.city} e toda a região.`}
+          {` Agende pelo WhatsApp e garanta atendimento de qualidade em ${store.category.toLowerCase()} em ${store.city}, ${store.state}.`}
         </p>
       </section>
     </main>

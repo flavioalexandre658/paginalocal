@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { store: storeData, page } = data
 
   const title = page.seoTitle || `Sobre | ${storeData.name}`
-  const description = page.seoDescription || `Conheça a ${storeData.name} - ${storeData.category} em ${storeData.city}, ${storeData.state}.`
+  const description = page.seoDescription || `Conheça a ${storeData.name} - ${storeData.category} em ${storeData.city}, ${storeData.state}. Nossa história, serviços e compromisso com a qualidade. Visite-nos!`
   const pageUrl = buildStoreUrl(storeData.slug, storeData.customDomain) + '/sobre-nos'
   const ogImage = storeData.coverUrl || storeData.logoUrl
   const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
@@ -209,13 +209,13 @@ export default async function SobreNosPage({ params }: PageProps) {
             {/* Section header */}
             <div className="mb-14 animate-fade-in-up">
               <span className="text-sm font-bold uppercase tracking-widest text-primary">
-                Sobre nós
+                Quem Somos
               </span>
               <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-                Conheça a <span className="text-primary">{storeData.name}</span>
+                Conheça a <span className="text-primary">{storeData.name}</span> — {storeData.category} em {storeData.city}
               </h2>
               <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-                {storeData.category} em {storeData.city}, {storeData.state}
+                Saiba mais sobre a história e os serviços da {storeData.name}, {storeData.category.toLowerCase()} referência em {storeData.city}, {storeData.state}. Profissionalismo, qualidade e compromisso com nossos clientes.
               </p>
             </div>
 
@@ -232,10 +232,10 @@ export default async function SobreNosPage({ params }: PageProps) {
             {/* CTA block */}
             <div className="mt-8 animate-fade-in-up animation-delay-300 overflow-hidden rounded-2xl bg-primary p-8 shadow-lg md:p-10">
               <h3 className="mb-2 text-xl font-extrabold text-white">
-                Gostou? Entre em contato!
+                Entre em contato com a {storeData.name}
               </h3>
               <p className="text-white/70">
-                Fale conosco pelo WhatsApp ou visite a {storeData.name} em {storeData.city}.
+                Fale conosco pelo WhatsApp, ligue ou visite a {storeData.name} em {storeData.city}, {storeData.state}. Estamos prontos para atender você com qualidade e dedicação.
               </p>
             </div>
           </div>
@@ -243,7 +243,7 @@ export default async function SobreNosPage({ params }: PageProps) {
       </main>
 
       {Array.isArray(storeData.faq) && (storeData.faq as { question: string; answer: string }[]).length > 0 && (
-        <FAQSection faq={storeData.faq as { question: string; answer: string }[]} storeName={storeData.name} />
+        <FAQSection faq={storeData.faq as { question: string; answer: string }[]} storeName={storeData.name} city={storeData.city} category={storeData.category} />
       )}
 
       <SiteFooter

@@ -27,13 +27,13 @@ export function ServicesSection({ services, storeName, storeSlug, category, city
           {/* Section header */}
           <div className="mb-14 animate-fade-in-up">
             <span className="text-sm font-bold uppercase tracking-widest text-primary">
-              Nossos Serviços
+              Serviços Profissionais
             </span>
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-              Serviços de {category} em <span className="text-primary">{city}</span>
+              Serviços de {category} em <span className="text-primary">{city}</span> — {storeName}
             </h2>
             <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-              Conheça os serviços oferecidos pela {storeName}
+              Confira os serviços de {category.toLowerCase()} oferecidos pela {storeName} em {city}. Atendimento profissional e de qualidade para você e sua família.
             </p>
           </div>
 
@@ -71,7 +71,7 @@ export function ServicesSection({ services, storeName, storeSlug, category, city
 
                   {/* Link */}
                   <span className="mt-auto inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-all group-hover:gap-3">
-                    Saiba mais
+                    Ver detalhes de {svc.name}
                     <IconArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </span>
                 </div>

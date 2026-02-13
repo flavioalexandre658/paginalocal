@@ -44,7 +44,7 @@ interface HeroSectionProps {
 }
 
 export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, pageSubtitle, compact = false, showBackLink = false }: HeroSectionProps) {
-  const h1Title = pageTitle || store.heroTitle || `${store.category} em ${store.city} – ${store.name}`
+  const h1Title = pageTitle || store.heroTitle || `${store.category} em ${store.city}, ${store.state} – ${store.name}`
   const subtitle = pageSubtitle || store.heroSubtitle || store.description
 
   const rating = store.googleRating ? parseFloat(store.googleRating) : 0
@@ -58,7 +58,7 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
   const badgeClasses = getContrastBadgeClasses(heroBg)
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-hidden" aria-label={`${store.name} - ${store.category} em ${store.city}, ${store.state}`}>
       {hasCover ? (
         <div className="absolute inset-0 z-0">
           <Image
@@ -100,7 +100,7 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
 
             <div className={`mb-6 inline-flex items-center gap-2 rounded-full border px-5 py-2 text-sm font-medium shadow-lg backdrop-blur-md ${badgeClasses}`}>
               <IconMapPin className="h-4 w-4" />
-              <span>{store.city}, {store.state}</span>
+              <span>{store.category} em {store.city}, {store.state}</span>
             </div>
 
             <h1 className="mb-4 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl">

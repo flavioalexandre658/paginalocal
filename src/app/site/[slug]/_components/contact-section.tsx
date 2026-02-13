@@ -30,6 +30,7 @@ interface ContactSectionProps {
     latitude?: string | null
     longitude?: string | null
     isActive: boolean
+    category?: string
   }
   isOwner?: boolean
 }
@@ -60,13 +61,13 @@ export function ContactSection({ store, isOwner = false }: ContactSectionProps) 
           {/* Section header — white on primary */}
           <div className="mb-14 animate-fade-in-up">
             <span className="text-sm font-bold uppercase tracking-widest text-white/90">
-              Localização & Contato
+              Contato e Localização
             </span>
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-white md:text-4xl lg:text-5xl">
-              Onde nos encontrar
+              Como chegar na {store.name} em {store.city}
             </h2>
             <p className="mt-4 text-lg text-white/90">
-              Venha nos visitar ou entre em contato com a {store.name}
+              Visite a {store.name}{store.category ? `, ${store.category.toLowerCase()}` : ''} em {store.city}, {store.state}. Estamos prontos para atender você. Confira nosso endereço, telefone e horário de funcionamento.
             </p>
           </div>
 
