@@ -21,6 +21,7 @@ import {
   IconShieldCheck,
   IconRocket,
 } from '@tabler/icons-react'
+import { trackWhatsAppClick } from '@/lib/tracking'
 import { createCheckoutSession } from '@/actions/subscriptions/create-checkout-session.action'
 import type { IPlan, BillingInterval } from '@/interfaces/subscription.interface'
 
@@ -228,6 +229,7 @@ export function PricingPageClient({ plans, isLoggedIn = false }: PricingPageClie
                     href={`https://wa.me/55${process.env.NEXT_PUBLIC_SUPPORT_NUMBER || '73981269904'}?text=${encodeURIComponent('Olá! Tenho dúvidas sobre os planos do Página Local.')}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => trackWhatsAppClick('planos_whatsapp')}
                   >
                     <IconBrandWhatsapp className="h-5 w-5" />
                     Falar no WhatsApp

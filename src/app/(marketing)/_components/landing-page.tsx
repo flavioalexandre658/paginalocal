@@ -45,6 +45,7 @@ import {
   IconTrendingUp,
 } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
+import { trackWhatsAppClick } from '@/lib/tracking'
 import { MarketingHeader } from './marketing-header'
 import { MarketingFooter } from './marketing-footer'
 
@@ -167,6 +168,7 @@ function HeroSection() {
             href={WHATSAPP_URL}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackWhatsAppClick('hero')}
             className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
           >
             <IconBrandWhatsapp className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
@@ -1194,6 +1196,7 @@ function CTASection() {
                   href={WHATSAPP_URL}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackWhatsAppClick('cta_section')}
                   className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-10 py-5 text-lg font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
                 >
                   <IconBrandWhatsapp className="h-6 w-6 transition-transform group-hover:-translate-y-0.5" />
@@ -1242,6 +1245,7 @@ function FloatingWhatsAppButton() {
         href={WHATSAPP_URL}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => trackWhatsAppClick('floating_mobile')}
         className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-4 text-base font-semibold text-white shadow-lg shadow-[#25D366]/30 transition-all active:scale-[0.98]"
       >
         <IconBrandWhatsapp className="h-5 w-5" />

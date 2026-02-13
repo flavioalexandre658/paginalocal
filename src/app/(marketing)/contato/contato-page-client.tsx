@@ -14,6 +14,7 @@ import {
   IconMessageCircle,
   IconLoader2,
 } from '@tabler/icons-react'
+import { trackWhatsAppClick } from '@/lib/tracking'
 import { MarketingHeader } from '../_components/marketing-header'
 import { MarketingFooter } from '../_components/marketing-footer'
 import { Breadcrumb } from '@/components/shared/breadcrumb'
@@ -192,6 +193,7 @@ function ContactSection() {
                   href={card.href}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={card.title === 'WhatsApp' ? () => trackWhatsAppClick('contato_whatsapp') : undefined}
                   className="inline-flex items-center text-sm font-medium text-primary transition-colors hover:text-primary/80"
                 >
                   {card.action}

@@ -14,6 +14,7 @@ import {
   IconMapPin,
   IconBrandWhatsapp,
 } from '@tabler/icons-react'
+import { trackWhatsAppClick } from '@/lib/tracking'
 import { MarketingHeader } from '../_components/marketing-header'
 import { MarketingFooter } from '../_components/marketing-footer'
 import { Breadcrumb } from '@/components/shared/breadcrumb'
@@ -296,6 +297,7 @@ function CTASection() {
                 href={WHATSAPP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackWhatsAppClick('sobre_nos_cta')}
                 className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
               >
                 <IconBrandWhatsapp className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
