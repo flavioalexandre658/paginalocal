@@ -18,7 +18,10 @@ import {
   IconChevronUp,
   IconSparkles,
   IconEdit,
+  IconChartBar,
+  IconRefresh,
 } from '@tabler/icons-react'
+import type { StoreStat } from '@/db/schema/stores.schema'
 
 import { updateStoreAction } from '@/actions/stores/update-store.action'
 import { deleteServiceAction } from '@/actions/services/delete-service.action'
@@ -66,8 +69,10 @@ interface Service {
 interface SectionsTabProps {
   store: {
     id: string
+    category: string
     faq: Array<{ question: string; answer: string }> | null
     neighborhoods: string[] | null
+    stats: StoreStat[] | null
   }
   services: Service[]
   storeSlug: string
@@ -152,6 +157,145 @@ function SectionCard({
         )}
       </AnimatePresence>
     </motion.div>
+  )
+}
+
+const DEFAULT_STATS: StoreStat[] = [
+  { label: 'Clientes Atendidos', value: '500', prefix: '+' },
+  { label: 'Anos de Experiência', value: '5', prefix: '+' },
+  { label: 'Satisfação dos Clientes', value: '98', suffix: '%' },
+  { label: 'Atendimentos Realizados', value: '1000', prefix: '+' },
+]
+
+interface StatsEditorProps {
+  storeId: string
+  category: string
+  initialStats: StoreStat[] | null
+  isOpen: boolean
+  onToggle: () => void
+}
+
+function StatsEditor({ storeId, initialStats, isOpen, onToggle }: StatsEditorProps) {
+  const { executeAsync, isExecuting } = useAction(updateStoreAction)
+  const [stats, setStats] = useState<StoreStat[]>(
+    initialStats && initialStats.length > 0 ? initialStats : DEFAULT_STATS
+  )
+
+  function updateStat(index: number, field: keyof StoreStat, value: string) {
+    setStats((prev) => prev.map((s, i) => (i === index ? { ...s, [field]: value } : s)))
+  }
+
+  function resetToDefaults() {
+    setStats(DEFAULT_STATS)
+  }
+
+  async function handleSave() {
+    const result = await executeAsync({
+      storeId,
+      stats,
+    })
+
+    if (result?.data) {
+      toast.success('Contadores atualizados!')
+    } else if (result?.serverError) {
+      toast.error(result.serverError)
+    }
+  }
+
+  return (
+    <SectionCard
+      title="Contadores"
+      subtitle="Números em destaque no site"
+      icon={<IconChartBar className="h-6 w-6 text-cyan-500" />}
+      iconBg="bg-gradient-to-br from-cyan-500/20 to-cyan-500/5 shadow-cyan-500/10"
+      count={stats.length}
+      isOpen={isOpen}
+      onToggle={onToggle}
+    >
+      <div className="space-y-4">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Os contadores aparecem logo abaixo da capa do seu site. Personalize os números e textos.
+        </p>
+
+        <div className="space-y-3">
+          {stats.map((stat, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="space-y-2 rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-slate-700/60 dark:bg-slate-800/30"
+            >
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500/20 text-cyan-600">
+                    {index + 1}
+                  </span>
+                  Contador {index + 1}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-500">Prefixo</label>
+                  <Input
+                    value={stat.prefix || ''}
+                    onChange={(e) => updateStat(index, 'prefix', e.target.value)}
+                    placeholder="+"
+                    className="text-center"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-500">Valor</label>
+                  <Input
+                    value={stat.value}
+                    onChange={(e) => updateStat(index, 'value', e.target.value)}
+                    placeholder="500"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-500">Sufixo</label>
+                  <Input
+                    value={stat.suffix || ''}
+                    onChange={(e) => updateStat(index, 'suffix', e.target.value)}
+                    placeholder="%"
+                    className="text-center"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-500">Label</label>
+                  <Input
+                    value={stat.label}
+                    onChange={(e) => updateStat(index, 'label', e.target.value)}
+                    placeholder="Clientes"
+                  />
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <button
+            type="button"
+            onClick={resetToDefaults}
+            className="flex items-center gap-2 rounded-xl border-2 border-dashed border-slate-200 px-4 py-3 text-sm font-medium text-slate-500 transition-all hover:border-primary hover:bg-primary/5 hover:text-primary dark:border-slate-700"
+          >
+            <IconRefresh className="h-4 w-4" />
+            Restaurar padrão
+          </button>
+
+          <EnhancedButton
+            type="button"
+            onClick={handleSave}
+            loading={isExecuting}
+            size="sm"
+          >
+            Salvar Contadores
+          </EnhancedButton>
+        </div>
+      </div>
+    </SectionCard>
   )
 }
 
@@ -419,6 +563,14 @@ export function SectionsTab({ store, services: initialServices, storeSlug }: Sec
             </button>
           </div>
         </SectionCard>
+
+        <StatsEditor
+          storeId={store.id}
+          category={store.category}
+          initialStats={store.stats}
+          isOpen={openSections.includes('stats')}
+          onToggle={() => toggleSection('stats')}
+        />
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>

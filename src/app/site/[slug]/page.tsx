@@ -15,6 +15,7 @@ import { ContactSection } from './_components/contact-section'
 import { SiteFooter } from './_components/site-footer'
 import { generateFAQJsonLd } from '@/lib/faq-json-ld'
 
+const StatsSection = dynamic(() => import('./_components/stats-section').then(m => m.StatsSection))
 const TestimonialsSection = dynamic(() => import('./_components/testimonials-section').then(m => m.TestimonialsSection))
 const FloatingContact = dynamic(() => import('./_components/floating-contact').then(m => m.FloatingContact))
 const FAQSection = dynamic(() => import('./_components/faq-section').then(m => m.FAQSection))
@@ -375,6 +376,11 @@ export default async function StorePage({ params }: PageProps) {
           }}
           heroImageAlt={heroImage?.alt}
           isOwner={isOwner}
+        />
+
+        <StatsSection
+          stats={storeData.stats as import('@/db/schema/stores.schema').StoreStat[] | null}
+          category={storeData.category}
         />
 
         <AboutSection

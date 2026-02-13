@@ -85,22 +85,23 @@ export const createServiceAction = authActionClient
       const userDescription = parsedInput.description?.trim() || undefined
       const [seo] = await generateServiceSeo(aiInput, [parsedInput.name], [userDescription])
 
-      if (seo) {
-        const [updated] = await db
-          .update(service)
-          .set({
-            description: userDescription || seo.description,
-            seoTitle: seo.seoTitle,
-            seoDescription: seo.seoDescription,
-            longDescription: seo.longDescription,
-            updatedAt: new Date(),
-          })
-          .where(eq(service.id, result.id))
-          .returning()
+        if (seo) {
+          const [updated] = await db
+            .update(service)
+            .set({
+              description: userDescription || seo.description,
+              seoTitle: seo.seoTitle,
+              seoDescription: seo.seoDescription,
+              longDescription: seo.longDescription,
+              iconName: seo.iconName || null,
+              updatedAt: new Date(),
+            })
+            .where(eq(service.id, result.id))
+            .returning()
 
-        revalidateStoreCache(storeResult.slug)
-        console.log(`[Service] SEO gerado para "${parsedInput.name}"`)
-        return updated
+          revalidateStoreCache(storeResult.slug)
+          console.log(`[Service] SEO gerado para "${parsedInput.name}"`)
+          return updated
       }
     } catch (error) {
       console.error(`[Service] Erro ao gerar SEO para "${parsedInput.name}":`, error)

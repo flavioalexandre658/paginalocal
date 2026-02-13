@@ -4,6 +4,13 @@ import { category } from './categories.schema'
 
 export type CreationSource = 'GOOGLE_IMPORT' | 'MANUAL_CREATION'
 
+export interface StoreStat {
+  label: string
+  value: string
+  prefix?: string
+  suffix?: string
+}
+
 export const store = pgTable('store', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }).notNull(),
@@ -45,6 +52,7 @@ export const store = pgTable('store', {
 
   faq: jsonb('faq'),
   neighborhoods: jsonb('neighborhoods'),
+  stats: jsonb('stats').$type<StoreStat[]>(),
 
   whatsappDefaultMessage: varchar('whatsapp_default_message', { length: 300 }),
 
@@ -54,6 +62,8 @@ export const store = pgTable('store', {
   instagramUrl: text('instagram_url'),
   facebookUrl: text('facebook_url'),
   googleBusinessUrl: text('google_business_url'),
+
+  fontFamily: varchar('font_family', { length: 50 }),
 
   highlightBadge: varchar('highlight_badge', { length: 50 }),
   highlightText: text('highlight_text'),

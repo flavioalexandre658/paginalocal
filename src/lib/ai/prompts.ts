@@ -224,6 +224,11 @@ Para CADA serviço:
 
 - "name": Nome exato (como listado acima)
 
+- "iconName": Nome do ícone @tabler/icons-react que MELHOR representa visualmente o serviço.
+  Use APENAS um ícone desta lista:
+  IconScissors, IconBarbell, IconToolsKitchen2, IconCar, IconTool, IconDog, IconStethoscope, IconHome, IconBolt, IconDroplet, IconPaint, IconCamera, IconBook, IconMusic, IconHeart, IconShirt, IconCoffee, IconPizza, IconBread, IconFlower, IconDental, IconPill, IconScale, IconCalculator, IconSchool, IconBed, IconWash, IconTruck, IconKey, IconDeviceMobile, IconShoppingCart, IconDiamond, IconSparkles, IconBrush, IconNeedle, IconBike, IconSwimming, IconYoga, IconMassage, IconEye, IconEar, IconBrain, IconBone, IconBurger, IconIceCream, IconGlass, IconBottle, IconArmchair, IconHammer, IconShoe, IconPaw, IconBabyCarriage, IconBox, IconPlane, IconTree, IconStar, IconUsers, IconClock, IconShield, IconMapPin, IconPhone, IconMail, IconWifi, IconPrinter, IconMicrophone, IconHeadphones, IconGlobe, IconRocket, IconFlag, IconAward, IconCrown, IconTarget, IconChartBar, IconDatabase, IconCode, IconBug, IconTestPipe, IconFlask, IconAtom, IconDna, IconLeaf, IconSun, IconMoon, IconCloud, IconUmbrella, IconWind, IconSnowflake, IconFish, IconButterfly, IconCat, IconHorse, IconApple, IconCarrot, IconCookie, IconCake, IconSoup, IconGrill
+  Escolha o ícone que MELHOR representa o serviço. NÃO invente nomes de ícones fora desta lista.
+
 - "description": O que o CLIENTE ganha com este serviço (60-100 chars)
   Descreva o RESULTADO para o cliente, não elogie o negócio.
   BOM: "Montagem e desmontagem de pneus de todos os aros com agilidade"
@@ -254,6 +259,7 @@ Para CADA serviço:
 [
   {
     "name": "Serviço",
+    "iconName": "IconSparkles",
     "description": "O que o cliente ganha",
     "seoTitle": "Serviço em ${data.city} | ${data.businessName}",
     "seoDescription": "Meta description prática",
@@ -282,6 +288,7 @@ REGRAS:
 
 Cada serviço:
 - name: Nome do serviço (2-5 palavras) como o cliente pesquisaria no Google
+- iconName: Ícone @tabler/icons-react que representa o serviço. Use APENAS desta lista: IconScissors, IconBarbell, IconToolsKitchen2, IconCar, IconTool, IconDog, IconStethoscope, IconHome, IconBolt, IconDroplet, IconPaint, IconCamera, IconBook, IconMusic, IconHeart, IconShirt, IconCoffee, IconPizza, IconBread, IconFlower, IconDental, IconPill, IconScale, IconCalculator, IconSchool, IconBed, IconWash, IconTruck, IconKey, IconDeviceMobile, IconShoppingCart, IconDiamond, IconSparkles, IconBrush, IconNeedle, IconBike, IconSwimming, IconYoga, IconMassage, IconEye, IconEar, IconBrain, IconBone, IconBurger, IconIceCream, IconGlass, IconBottle, IconArmchair, IconHammer, IconShoe, IconPaw, IconBabyCarriage, IconBox, IconPlane, IconTree, IconStar, IconUsers, IconClock, IconShield, IconMapPin, IconPhone, IconMail, IconWifi, IconPrinter, IconMicrophone, IconHeadphones, IconGlobe, IconRocket, IconFlag, IconAward, IconCrown, IconTarget, IconChartBar, IconDatabase, IconCode, IconBug, IconTestPipe, IconFlask, IconAtom, IconDna, IconLeaf, IconSun, IconMoon, IconCloud, IconUmbrella, IconWind, IconSnowflake, IconFish, IconButterfly, IconCat, IconHorse, IconApple, IconCarrot, IconCookie, IconCake, IconSoup, IconGrill
 - description: Resultado prático para o cliente (60-100 chars)
 - seoTitle: "[Serviço] em [Cidade] | [Nome]" (máx 60 chars)
 - seoDescription: Serviço + cidade + CTA (máx 155 chars)
@@ -291,6 +298,7 @@ Retorne APENAS JSON array:
 [
   {
     "name": "Serviço",
+    "iconName": "IconSparkles",
     "description": "O que o cliente ganha",
     "seoTitle": "Serviço em Cidade | Nome",
     "seoDescription": "Meta description com CTA",

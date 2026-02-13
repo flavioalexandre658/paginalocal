@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -65,9 +65,11 @@ const BUTTON_COLORS = [
   { name: 'Slate', value: '#475569' },
 ]
 
+import { IconTypography } from '@tabler/icons-react'
 import { updateStoreAction } from '@/actions/stores/update-store.action'
 import { uploadStoreImageAction } from '@/actions/uploads/upload-store-image.action'
 import { uploadFaviconAction } from '@/actions/uploads/upload-favicon.action'
+import { AVAILABLE_FONTS } from '@/lib/fonts'
 import {
   Form,
   FormControl,
@@ -82,6 +84,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
 import { Switch } from '@/components/ui/switch'
 import { getContrastColor } from '@/lib/color-contrast'
+import { cn } from '@/lib/utils'
 
 const generalFormSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(255),
@@ -128,6 +131,7 @@ interface GeneralTabProps {
     showCallButton: boolean
     highlightBadge: string | null
     highlightText: string | null
+    fontFamily: string | null
   }
 }
 
@@ -140,6 +144,37 @@ export function GeneralTab({ store }: GeneralTabProps) {
   const [faviconUrl, setFaviconUrl] = useState<string | null>(store.faviconUrl)
   const [isUploadingLogo, setIsUploadingLogo] = useState(false)
   const [isUploadingFavicon, setIsUploadingFavicon] = useState(false)
+  const [selectedFont, setSelectedFont] = useState<string>(store.fontFamily || 'inter')
+  const [isSavingFont, setIsSavingFont] = useState(false)
+  const [fontsLoaded, setFontsLoaded] = useState(false)
+
+  useEffect(() => {
+    const families = AVAILABLE_FONTS.map(f => `family=${f.name.replace(/\s+/g, '+')}:wght@400;600;700`).join('&')
+    const link = document.createElement('link')
+    link.href = `https://fonts.googleapis.com/css2?${families}&display=swap`
+    link.rel = 'stylesheet'
+    link.onload = () => setFontsLoaded(true)
+    document.head.appendChild(link)
+    return () => { document.head.removeChild(link) }
+  }, [])
+
+  async function handleSaveFont(fontSlug: string) {
+    setSelectedFont(fontSlug)
+    setIsSavingFont(true)
+
+    const result = await executeAsync({
+      storeId: store.id,
+      fontFamily: fontSlug,
+    })
+
+    if (result?.data) {
+      toast.success('Fonte atualizada!')
+    } else if (result?.serverError) {
+      toast.error(result.serverError)
+    }
+
+    setIsSavingFont(false)
+  }
 
   const logoInputRef = useRef<HTMLInputElement>(null)
   const faviconInputRef = useRef<HTMLInputElement>(null)
@@ -1108,6 +1143,101 @@ export function GeneralTab({ store }: GeneralTabProps) {
           </div>
         </form>
       </Form>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="mt-6 rounded-2xl border border-slate-200/60 bg-white p-6 dark:border-slate-700/60 dark:bg-slate-900/50"
+      >
+        <div className="mb-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500/20 to-violet-500/5 shadow-lg shadow-violet-500/10">
+              <IconTypography className="h-5 w-5 text-violet-500" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-slate-900 dark:text-white">
+                Fonte do Site
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Escolha a tipografia do seu site. Clique para aplicar.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-6 overflow-hidden rounded-xl border border-slate-200/60 bg-slate-50 p-6 text-center dark:border-slate-700/60 dark:bg-slate-800/30">
+          <p className="text-xs font-medium uppercase tracking-widest text-slate-400 dark:text-slate-500">
+            Prévia
+          </p>
+          <p
+            className="mt-2 text-2xl font-bold text-slate-900 dark:text-white md:text-3xl"
+            style={{ fontFamily: AVAILABLE_FONTS.find(f => f.slug === selectedFont)?.name || 'Inter' }}
+          >
+            {store.name}
+          </p>
+          <p
+            className="mt-1 text-lg text-slate-500 dark:text-slate-400"
+            style={{ fontFamily: AVAILABLE_FONTS.find(f => f.slug === selectedFont)?.name || 'Inter' }}
+          >
+            {store.category} em {store.city}
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          {(['sans-serif', 'serif', 'display'] as const).map((category) => {
+            const fontsInCategory = AVAILABLE_FONTS.filter(f => f.category === category)
+            if (fontsInCategory.length === 0) return null
+
+            const categoryLabel = category === 'sans-serif' ? 'Sans-serif' : category === 'serif' ? 'Serif' : 'Display'
+
+            return (
+              <div key={category}>
+                <p className="mb-2 text-xs font-medium uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                  {categoryLabel}
+                </p>
+                <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {fontsInCategory.map((font) => (
+                    <button
+                      key={font.slug}
+                      type="button"
+                      disabled={isSavingFont}
+                      onClick={() => handleSaveFont(font.slug)}
+                      className={cn(
+                        'group relative rounded-xl border-2 px-4 py-3 text-left transition-all',
+                        selectedFont === font.slug
+                          ? 'border-primary bg-primary/5 shadow-md'
+                          : 'border-slate-200/60 bg-white hover:border-primary/30 hover:shadow-sm dark:border-slate-700/60 dark:bg-slate-800/30 dark:hover:border-primary/30',
+                        isSavingFont && 'opacity-50'
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'block text-lg font-semibold transition-colors',
+                          selectedFont === font.slug
+                            ? 'text-primary'
+                            : 'text-slate-700 group-hover:text-slate-900 dark:text-slate-300 dark:group-hover:text-white'
+                        )}
+                        style={{ fontFamily: fontsLoaded ? font.name : undefined }}
+                      >
+                        {font.name}
+                      </span>
+                      <span className="mt-0.5 block text-xs text-slate-400 dark:text-slate-500">
+                        {font.category}
+                      </span>
+                      {selectedFont === font.slug && (
+                        <div className="absolute right-2 top-2">
+                          <IconCheck className="h-4 w-4 text-primary" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </motion.div>
     </div>
   )
 }

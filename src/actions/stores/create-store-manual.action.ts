@@ -249,6 +249,7 @@ export const createStoreManualAction = authActionClient
           seoTitle: svc.seoTitle ? svc.seoTitle.substring(0, 70) : null,
           seoDescription: svc.seoDescription ? svc.seoDescription.substring(0, 160) : null,
           longDescription: svc.longDescription || null,
+          iconName: svc.iconName || null,
           position: i + 1,
           isActive: true,
         })

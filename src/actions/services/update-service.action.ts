@@ -107,6 +107,7 @@ export const updateServiceAction = authActionClient
               seoTitle: seo.seoTitle,
               seoDescription: seo.seoDescription,
               longDescription: seo.longDescription,
+              iconName: seo.iconName || null,
               updatedAt: new Date(),
             })
             .where(eq(service.id, id))

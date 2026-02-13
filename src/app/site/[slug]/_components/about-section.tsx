@@ -171,8 +171,8 @@ export function AboutSection({
                       <IconMapPin className="h-8 w-8 text-white" />
                     </div>
                     <div>
-                      <div className="text-4xl font-black text-white md:text-5xl">
-                        {neighborhoods.length}+
+                      <div className="text-2xl font-black text-white md:text-3xl">
+                        Áreas de cobertura
                       </div>
                       <p className="text-sm font-medium text-white/80">
                         Bairros e regiões atendidas por {category.toLowerCase()} em {city}

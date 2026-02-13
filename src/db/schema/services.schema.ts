@@ -13,6 +13,7 @@ export const service = pgTable('service', {
   priceInCents: integer('price_in_cents'),
   imageUrl: text('image_url'),
   heroImageUrl: text('hero_image_url'),
+  iconName: varchar('icon_name', { length: 50 }),
   position: integer('position').default(0).notNull(),
   isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),

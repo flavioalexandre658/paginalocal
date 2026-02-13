@@ -48,6 +48,13 @@ const updateStoreSchema = z.object({
   instagramUrl: z.string().url().optional().nullable(),
   facebookUrl: z.string().url().optional().nullable(),
   googleBusinessUrl: z.string().url().optional().nullable(),
+  stats: z.array(z.object({
+    label: z.string().min(1),
+    value: z.string().min(1),
+    prefix: z.string().optional(),
+    suffix: z.string().optional(),
+  })).optional().nullable(),
+  fontFamily: z.string().max(50).optional().nullable(),
   highlightBadge: z.string().max(50).optional().nullable(),
   highlightText: z.string().max(500).optional().nullable(),
 })

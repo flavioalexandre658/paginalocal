@@ -169,6 +169,7 @@ export const createStoreFromGoogleAction = authActionClient
           seoTitle: truncate(svc.seoTitle, 70) || null,
           seoDescription: truncate(svc.seoDescription, 160) || null,
           longDescription: svc.longDescription || null,
+          iconName: svc.iconName || null,
           position: i + 1,
           isActive: true,
         })

@@ -9,6 +9,7 @@ export interface ServiceItem {
   seoTitle?: string
   seoDescription?: string
   longDescription?: string
+  iconName?: string
 }
 
 export interface MarketingCopy {

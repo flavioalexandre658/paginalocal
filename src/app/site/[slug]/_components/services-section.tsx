@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { IconSparkles, IconArrowRight } from '@tabler/icons-react'
+import { IconArrowRight } from '@tabler/icons-react'
 import { getServicePageUrl } from '@/lib/utils'
+import { getServiceIcon } from '@/lib/service-icons'
 
 interface Service {
   id: string
@@ -9,6 +10,7 @@ interface Service {
   description?: string | null
   priceInCents?: number | null
   imageUrl?: string | null
+  iconName?: string | null
 }
 
 interface ServicesSectionProps {
@@ -40,11 +42,12 @@ export function ServicesSection({ services, storeName, storeSlug, category, city
           {/* Services grid */}
           <div className="grid gap-8 md:grid-cols-2 stagger-children">
             {services.map((svc) => {
+              const ServiceIcon = getServiceIcon(svc.iconName)
               const cardContent = (
                 <div className="relative flex h-full flex-col p-8">
                   {/* Icon */}
                   <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/25">
-                    <IconSparkles className="h-8 w-8" />
+                    <ServiceIcon className="h-8 w-8" />
                   </div>
 
                   {/* Service name */}
