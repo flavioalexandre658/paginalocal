@@ -56,6 +56,7 @@ export const getAdminStoresAction = adminActionClient
           name: store.name,
           slug: store.slug,
           category: store.category,
+          categoryId: store.categoryId,
           city: store.city,
           state: store.state,
           isActive: store.isActive,

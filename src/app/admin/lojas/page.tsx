@@ -76,6 +76,7 @@ import {
 } from '@/components/ui/filter-blocks'
 import { TransferStoreModal } from '../_components/transfer-store-modal'
 import { RegenerateStoreModal } from '../_components/regenerate-store-modal'
+import { ChangeCategoryModal } from '../_components/change-category-modal'
 
 type StoreStatus = 'all' | 'active' | 'inactive'
 
@@ -84,6 +85,7 @@ interface AdminStore {
   name: string
   slug: string
   category: string
+  categoryId: string | null
   city: string
   state: string
   isActive: boolean
@@ -112,6 +114,7 @@ function StoreActionsDropdown({
   onPurgeCache,
   onReindex,
   onTransfer,
+  onChangeCategory,
   onDelete,
 }: {
   store: AdminStore
@@ -120,6 +123,7 @@ function StoreActionsDropdown({
   onPurgeCache: () => void
   onReindex: () => void
   onTransfer: () => void
+  onChangeCategory: () => void
   onDelete: () => void
 }) {
   return (
@@ -182,6 +186,10 @@ function StoreActionsDropdown({
 
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Administração</DropdownMenuLabel>
+        <DropdownMenuItem onClick={onChangeCategory}>
+          <IconCategory className="h-4 w-4 text-amber-500" />
+          Alterar categoria
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={onTransfer}>
           <IconArrowsExchange className="h-4 w-4 text-blue-500" />
           Transferir
@@ -212,6 +220,12 @@ export default function AdminStoresPage() {
   const [pageSize, setPageSize] = useState(20)
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
   const [regenerateTarget, setRegenerateTarget] = useState<{ id: string; name: string } | null>(null)
+  const [changeCategoryTarget, setChangeCategoryTarget] = useState<{
+    id: string
+    name: string
+    category: string
+    categoryId: string | null
+  } | null>(null)
   const [transferTarget, setTransferTarget] = useState<{
     id: string
     name: string
@@ -381,6 +395,14 @@ export default function AdminStoresPage() {
                   ownerEmail: s.ownerEmail,
                 })
               }
+              onChangeCategory={() =>
+                setChangeCategoryTarget({
+                  id: s.id,
+                  name: s.name,
+                  category: s.category,
+                  categoryId: s.categoryId,
+                })
+              }
               onDelete={() => setDeleteTarget({ id: s.id, name: s.name })}
             />
           </div>
@@ -494,6 +516,14 @@ export default function AdminStoresPage() {
                               ownerEmail: storeItem.ownerEmail,
                             })
                           }
+                          onChangeCategory={() =>
+                            setChangeCategoryTarget({
+                              id: storeItem.id,
+                              name: storeItem.name,
+                              category: storeItem.category,
+                              categoryId: storeItem.categoryId,
+                            })
+                          }
                           onDelete={() => setDeleteTarget({ id: storeItem.id, name: storeItem.name })}
                         />
                       }
@@ -596,6 +626,15 @@ export default function AdminStoresPage() {
           open={!!regenerateTarget}
           onOpenChange={() => setRegenerateTarget(null)}
           store={regenerateTarget}
+          onSuccess={loadStores}
+        />
+      )}
+
+      {changeCategoryTarget && (
+        <ChangeCategoryModal
+          open={!!changeCategoryTarget}
+          onOpenChange={() => setChangeCategoryTarget(null)}
+          store={changeCategoryTarget}
           onSuccess={loadStores}
         />
       )}

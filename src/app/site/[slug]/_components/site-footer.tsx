@@ -117,9 +117,9 @@ export function SiteFooter({
             </div>
 
             <div>
-              <h4 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
+              <p className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
                 Navegação
-              </h4>
+              </p>
               <ul className="space-y-2.5">
                 {navLinks.map((link) => (
                   <li key={link.href}>
@@ -136,9 +136,9 @@ export function SiteFooter({
 
             {hasServiceLinks && (
               <div>
-                <h4 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
+                <p className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
                   Serviços
-                </h4>
+                </p>
                 <ul className="space-y-2.5">
                   {services!.slice(0, 6).map((svc) => (
                     <li key={svc.slug}>
@@ -162,9 +162,9 @@ export function SiteFooter({
 
             {hasInstitutionalPages && (
               <div>
-                <h4 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
+                <p className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
                   Páginas
-                </h4>
+                </p>
                 <ul className="space-y-2.5">
                   {institutionalPages!.map((page) => (
                     <li key={page.slug}>
