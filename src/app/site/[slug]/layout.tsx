@@ -20,6 +20,7 @@ async function getStoreLayoutData(slug: string) {
       heroBackgroundColor: store.heroBackgroundColor,
       buttonColor: store.buttonColor,
       logoUrl: store.logoUrl,
+      coverUrl: store.coverUrl,
       whatsapp: store.whatsapp,
       whatsappDefaultMessage: store.whatsappDefaultMessage,
       showWhatsappButton: store.showWhatsappButton,
@@ -52,28 +53,41 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
   const showHeader = !!data?.logoUrl
 
   return (
-    <div
-      className={`relative w-full max-w-full min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 ${siteFont.variable}`}
-      style={{
-        ...cssVars as React.CSSProperties,
-        fontFamily: 'var(--font-site), system-ui, sans-serif',
-      }}
-    >
-      <TrackingScripts storeSlug={slug} />
-      <div className="relative z-10 flex min-h-screen flex-col">
-        {showHeader && data && (
-          <SiteHeader
-            storeName={data.name}
-            slug={data.slug}
-            logoUrl={data.logoUrl!}
-            whatsapp={data.whatsapp}
-            whatsappDefaultMessage={data.whatsappDefaultMessage}
-            buttonColor={data.buttonColor}
-            showWhatsappButton={data.showWhatsappButton}
-          />
-        )}
-        {children}
+    <>
+      <link rel="preconnect" href="https://stagingfy-images.s3.amazonaws.com" />
+      <link rel="dns-prefetch" href="https://stagingfy-images.s3.amazonaws.com" />
+      {data?.coverUrl && (
+        <link
+          rel="preload"
+          as="image"
+          href={data.coverUrl}
+          fetchPriority="high"
+        />
+      )}
+
+      <div
+        className={`relative w-full max-w-full min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 ${siteFont.variable}`}
+        style={{
+          ...cssVars as React.CSSProperties,
+          fontFamily: 'var(--font-site), system-ui, sans-serif',
+        }}
+      >
+        <TrackingScripts storeSlug={slug} />
+        <div className="relative z-10 flex min-h-screen flex-col">
+          {showHeader && data && (
+            <SiteHeader
+              storeName={data.name}
+              slug={data.slug}
+              logoUrl={data.logoUrl!}
+              whatsapp={data.whatsapp}
+              whatsappDefaultMessage={data.whatsappDefaultMessage}
+              buttonColor={data.buttonColor}
+              showWhatsappButton={data.showWhatsappButton}
+            />
+          )}
+          {children}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
