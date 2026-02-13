@@ -11,6 +11,13 @@ const MAIN_DOMAINS = [
 
 const RESERVED_SUBDOMAINS = ['www', 'app', 'admin', 'api', 'painel']
 
+const STORE_REWRITABLE_PATHS = [
+  '/sitemap.xml',
+  '/robots.txt',
+  '/manifest.webmanifest',
+  '/favicon.ico',
+]
+
 interface DomainCacheEntry {
   slug: string | null
   timestamp: number
@@ -90,8 +97,7 @@ export async function middleware(request: NextRequest) {
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
-    pathname.includes('.') ||
-    pathname === '/favicon.ico'
+    (pathname.includes('.') && !STORE_REWRITABLE_PATHS.includes(pathname))
   ) {
     return NextResponse.next()
   }
@@ -144,5 +150,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next|.*\\..*).*)'],
+  matcher: [
+    '/((?!api|_next).*)',
+  ],
 }
