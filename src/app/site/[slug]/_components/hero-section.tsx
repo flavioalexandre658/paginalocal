@@ -59,32 +59,7 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
 
   return (
     <section className="relative overflow-hidden" aria-label={`${store.name} - ${store.category} em ${store.city}, ${store.state}`}>
-      {hasCover ? (
-        <div className="absolute inset-0 z-0">
-          <Image
-            src={store.coverUrl!}
-            alt={heroImageAlt || `Fachada da ${store.name} em ${store.city}`}
-            fill
-            priority
-            fetchPriority="high"
-            sizes="100vw"
-            className="object-cover"
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `linear-gradient(160deg, ${heroBg}cc, ${heroBg}90, ${heroBg}f0)`,
-            }}
-          />
-        </div>
-      ) : (
-        <div className="absolute inset-0" style={{ backgroundColor: heroBg }} />
-      )}
-
-      {/* Decorative blur elements */}
-      <div className="absolute -top-24 -right-24 z-0 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-      <div className="absolute -bottom-16 -left-16 z-0 h-56 w-56 rounded-full bg-white/5 blur-2xl" />
-
+      {/* ===== CONTEÚDO PRIMEIRO NO DOM (renderiza antes da imagem) ===== */}
       <div className={`relative z-10 ${compact ? 'py-16 md:py-24' : 'py-20 md:py-36'} ${textClass}`}>
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl text-center">
@@ -145,7 +120,32 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
         </div>
       </div>
 
-      {/* Bottom fade removed for cleaner transition */}
+      {/* ===== BACKGROUND DEPOIS NO DOM (carrega após o conteúdo) ===== */}
+      {hasCover ? (
+        <div className="absolute inset-0 z-0">
+          <Image
+            src={store.coverUrl!}
+            alt={heroImageAlt || `Fachada da ${store.name} em ${store.city}`}
+            fill
+            priority
+            fetchPriority="high"
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(160deg, ${heroBg}cc, ${heroBg}90, ${heroBg}f0)`,
+            }}
+          />
+        </div>
+      ) : (
+        <div className="absolute inset-0 z-0" style={{ backgroundColor: heroBg }} />
+      )}
+
+      {/* Decorative blur elements */}
+      <div className="absolute -top-24 -right-24 z-0 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+      <div className="absolute -bottom-16 -left-16 z-0 h-56 w-56 rounded-full bg-white/5 blur-2xl" />
     </section>
   )
 }
