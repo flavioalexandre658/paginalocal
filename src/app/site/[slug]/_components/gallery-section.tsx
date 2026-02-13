@@ -102,7 +102,7 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
     setIsDragging(true)
     dragStart.current = { x: e.clientX, y: e.clientY }
     panStart.current = { ...pan }
-    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+      ; (e.target as HTMLElement).setPointerCapture(e.pointerId)
   }, [zoom, pan])
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
@@ -168,7 +168,7 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                 Conheça a <span className="text-primary">{storeName}</span>
               </h2>
               <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-                {images.length} fotos reais da {storeName} em {city} — estrutura completa para {category.toLowerCase()}.
+                {images.length} fotos reais da {storeName} em {city}, estrutura completa para {category.toLowerCase()}.
               </p>
             </div>
 

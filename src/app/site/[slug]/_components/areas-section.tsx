@@ -23,13 +23,13 @@ export function AreasSection({ neighborhoods, city, state, category }: AreasSect
               Áreas <span className="text-primary">Atendidas</span>
             </h2>
             <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-              {category} em {city} — atendemos sua região com qualidade e agilidade
+              {category} em {city}, {state} atendemos sua região com qualidade e agilidade
             </p>
           </div>
 
           {/* Bento grid: hero card + neighborhood cards */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 stagger-children">
-            {/* Hero card — spans 2 cols, 2 rows */}
+            {/* Hero card spans 2 cols, 2 rows */}
             <div className="col-span-2 row-span-2 flex flex-col justify-between overflow-hidden rounded-2xl bg-primary p-8 shadow-lg animate-fade-in-up">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
                 <IconMapPin className="h-6 w-6 text-white" />

@@ -55,13 +55,13 @@ export function TestimonialsSection({ testimonials, storeName }: TestimonialsSec
         <div className="mx-auto max-w-4xl">
           {/* Section header — white text on primary bg */}
           <div className="mb-14 animate-fade-in-up">
-            <span className="text-sm font-bold uppercase tracking-widest text-white/70">
+            <span className="text-sm font-bold uppercase tracking-widest text-white/90">
               Avaliações
             </span>
             <h2 className="mt-3 text-3xl tracking-tight text-white md:text-4xl lg:text-5xl">
               O que nossos <span className="text-white font-extrabold">clientes dizem</span>
             </h2>
-            <p className="mt-4 text-lg text-white/70">
+            <p className="mt-4 text-lg text-white/90">
               {testimonials.length > 0
                 ? `${testimonials.length} avaliações de clientes satisfeitos${storeName ? ` da ${storeName}` : ''}`
                 : 'Feedback de quem já conhece nosso trabalho'}

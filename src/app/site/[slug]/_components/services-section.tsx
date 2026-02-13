@@ -26,13 +26,13 @@ export function ServicesSection({ services, storeName, storeSlug, category, city
         <div className="mx-auto max-w-4xl">
           {/* Section header */}
           <div className="mb-14 animate-fade-in-up">
-            <span className="text-sm font-bold uppercase tracking-widest text-white">
+            <span className="text-sm font-bold uppercase tracking-widest text-white/90">
               Nossos Serviços
             </span>
             <h2 className="mt-3 text-3xl tracking-tight text-white dark:text-slate-900 md:text-4xl lg:text-5xl">
               Serviços de {storeName} <span className="text-white  font-extrabold"> em {city}</span>
             </h2>
-            <p className="mt-4 text-lg text-white dark:text-slate-400">
+            <p className="mt-4 text-lg text-white/90 dark:text-slate-400">
               Conheça os serviços relacionados a {category} oferecidos por {storeName} em {city}.
             </p>
           </div>

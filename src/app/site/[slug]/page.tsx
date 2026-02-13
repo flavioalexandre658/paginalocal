@@ -482,6 +482,7 @@ export default async function StorePage({ params }: PageProps) {
         storeSlug={storeData.slug}
         services={services.map(s => ({ name: s.name, slug: s.slug || '' }))}
         institutionalPages={institutionalPages}
+        logoUrl={storeData.logoUrl}
       />
 
       <FloatingContact

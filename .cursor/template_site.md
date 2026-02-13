@@ -1050,37 +1050,76 @@ Seção final antes do footer com apelo forte para contato.
 
 **Arquivo:** `src/app/site/[slug]/_components/site-footer.tsx`
 
-**Inspiração:** Imagens 7 (footer gradiente azul), 14 (footer dark)
+**Inspiração:** Imagem de referência "GreatPages footer" — footer limpo, claro, profissional
 
-**Mudanças principais:**
+**Fundo:** Branco/claro (`bg-white` ou `bg-[#f3f5f7]`) — NÃO usar fundo dark/primary. O footer deve ser leve e profissional.
 
-1. **Fundo com gradiente da cor primária (em vez de branco):**
+**Estrutura do layout:**
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  Colunas de Links (grid 4 colunas no desktop)            │
+│                                                          │
+│  Navegação    │  Serviços     │  Páginas      │  Social  │
+│  - Sobre      │  - Serviço 1  │  - Página 1   │  Icons   │
+│  - Serviços   │  - Serviço 2  │  - Página 2   │  + texto │
+│  - Avaliações │  - ...        │  - ...        │          │
+│  - FAQ        │               │               │          │
+│  - Contato    │               │               │          │
+├──────────────────────────────────────────────────────────┤
+│  Logo da empresa                                         │
+├──────────────────────────────────────────────────────────┤
+│  Copyright  │  Termos  │  Badges de segurança            │
+└──────────────────────────────────────────────────────────┘
+```
+
+**Design detalhado:**
+
+1. **Fundo claro e limpo:**
    ```tsx
-   <footer className="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 pt-16 pb-8 text-white">
+   <footer className="border-t border-slate-200 bg-white pt-16 pb-8 dark:border-slate-800 dark:bg-slate-950">
    ```
-   Ou usando a cor primária da loja:
+
+2. **Grid de colunas com títulos bold em primary:**
    ```tsx
-   <footer style={{ background: `linear-gradient(to bottom, ${primaryColor}ee, ${primaryColor})` }}
-     className="pt-16 pb-8 text-white">
+   <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+     <div>
+       <h4 className="mb-4 text-sm font-bold text-primary">Navegação</h4>
+       <ul className="space-y-2.5">
+         <li>
+           <a className="text-sm text-slate-500 transition-colors hover:text-primary">
+             Sobre
+           </a>
+         </li>
+       </ul>
+     </div>
+     {/* ... mais colunas */}
+   </div>
    ```
 
-2. **Textos brancos com opacidade:**
-   - Títulos de coluna: `text-white font-bold`
-   - Links: `text-white/60 hover:text-white transition-colors`
-   - Copyright: `text-white/40`
+3. **Títulos de coluna:** `text-sm font-bold text-primary` (cor primária, não slate)
+4. **Links:** `text-sm text-slate-500 hover:text-primary` (cinza com hover em primary)
+5. **Ícones sociais:** `text-slate-400 hover:text-primary transition-colors` — sem círculos/bordas, apenas ícones limpos
 
-3. **Ícones sociais em círculos com borda:**
+6. **Separador antes do copyright:**
    ```tsx
-   <a className="flex h-10 w-10 items-center justify-center rounded-full
-     border border-white/20 text-white/60 transition-all
-     hover:bg-white/10 hover:text-white hover:border-white/40">
+   <div className="mt-12 border-t border-slate-200 pt-8 dark:border-slate-800">
    ```
 
-4. **Separador com borda branca transparente:**
-   `border-t border-white/10`
+7. **Área do copyright:**
+   - Logo da empresa à esquerda
+   - Copyright + links legais (Termos, Privacidade) ao centro/esquerda
+   - Badges de confiança à direita (ex: "Criado por Página Local")
+   - Tudo em `text-xs text-slate-400`
 
-5. **Logo da empresa (se disponível) centralizado:**
-   - Área de logo centralizada entre colunas e copyright
+8. **Sem gradientes ou fundos coloridos:** O footer é a área mais "institucional" e deve ser sóbrio
+
+**Regras:**
+- `max-w-4xl` para consistência (regra fundamental)
+- Sem glassmorphism
+- Cores: `primary` para títulos e hovers, `slate-500` para links, `slate-400` para copyright
+- Ícones sociais limpos (sem bordas/círculos) em `text-slate-400 hover:text-primary`
+- Padding generoso: `pt-16 pb-8`
 
 ### 3.10 FloatingContact
 
