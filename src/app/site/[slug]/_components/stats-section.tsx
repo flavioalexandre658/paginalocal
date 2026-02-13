@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import type { StoreStat } from '@/db/schema/stores.schema'
 
 const CATEGORY_STATS: Record<string, StoreStat[]> = {
@@ -134,32 +134,20 @@ function getDefaultStats(category?: string): StoreStat[] {
   return DEFAULT_STATS
 }
 
-interface StatItemProps {
-  stat: StoreStat
-  shouldAnimate: boolean
+function parseNumericValue(value: string): number {
+  return parseInt(value.replace(/\D/g, ''), 10) || 0
 }
 
-function StatItem({ stat, shouldAnimate }: StatItemProps) {
-  return (
-    <div className="flex flex-col items-center justify-center py-6 md:py-8">
-      <div
-        className={`text-3xl font-black text-white md:text-4xl lg:text-5xl ${
-          shouldAnimate ? 'animate-fade-in-up' : 'opacity-0'
-        }`}
-      >
-        {stat.prefix && <span>{stat.prefix}</span>}
-        <span>{stat.value}</span>
-        {stat.suffix && <span>{stat.suffix}</span>}
-      </div>
-      <p
-        className={`mt-2 text-sm font-medium text-white/80 md:text-base ${
-          shouldAnimate ? 'animate-fade-in-up animation-delay-200' : 'opacity-0'
-        }`}
-      >
-        {stat.label}
-      </p>
-    </div>
-  )
+function formatNumber(num: number): string {
+  if (num >= 1000) {
+    return num.toLocaleString('pt-BR')
+  }
+  return num.toString()
+}
+
+interface CounterState {
+  targets: number[]
+  current: number[]
 }
 
 interface StatsSectionProps {
@@ -170,10 +158,17 @@ interface StatsSectionProps {
 export function StatsSection({ stats, category }: StatsSectionProps) {
   const sectionRef = useRef<HTMLElement>(null)
   const [isVisible, setIsVisible] = useState(false)
+  const [counters, setCounters] = useState<number[]>([0, 0, 0, 0])
 
-  const displayStats = stats && stats.length > 0
-    ? stats
-    : getDefaultStats(category)
+  const displayStats = useMemo(
+    () => (stats && stats.length > 0 ? stats : getDefaultStats(category)),
+    [stats, category]
+  )
+
+  const targets = useMemo(
+    () => displayStats.map(s => parseNumericValue(s.value)),
+    [displayStats]
+  )
 
   useEffect(() => {
     const element = sectionRef.current
@@ -186,12 +181,39 @@ export function StatsSection({ stats, category }: StatsSectionProps) {
           observer.disconnect()
         }
       },
-      { threshold: 0.2 }
+      { threshold: 0.2, rootMargin: '50px' }
     )
 
     observer.observe(element)
     return () => observer.disconnect()
   }, [])
+
+  useEffect(() => {
+    if (!isVisible) return
+
+    const duration = 1500
+    let startTime: number | null = null
+    let frame: number
+
+    function animate(timestamp: number) {
+      if (!startTime) startTime = timestamp
+      const elapsed = timestamp - startTime
+      const progress = Math.min(elapsed / duration, 1)
+
+      const eased = progress < 0.5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2
+
+      setCounters(targets.map(target => Math.floor(eased * target)))
+
+      if (progress < 1) {
+        frame = requestAnimationFrame(animate)
+      }
+    }
+
+    frame = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(frame)
+  }, [isVisible, targets])
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden bg-primary">
@@ -202,11 +224,16 @@ export function StatsSection({ stats, category }: StatsSectionProps) {
         <div className="mx-auto max-w-4xl">
           <div className="grid grid-cols-2 divide-white/10 md:grid-cols-4 md:divide-x">
             {displayStats.map((stat, index) => (
-              <StatItem
-                key={`${stat.label}-${index}`}
-                stat={stat}
-                shouldAnimate={isVisible}
-              />
+              <div key={`${stat.label}-${index}`} className="flex flex-col items-center justify-center py-6 md:py-8">
+                <div className="text-3xl font-black text-white md:text-4xl lg:text-5xl">
+                  {stat.prefix && <span>{stat.prefix}</span>}
+                  <span>{formatNumber(counters[index])}</span>
+                  {stat.suffix && <span>{stat.suffix}</span>}
+                </div>
+                <p className="mt-2 text-sm font-medium text-white/80 md:text-base">
+                  {stat.label}
+                </p>
+              </div>
             ))}
           </div>
         </div>
