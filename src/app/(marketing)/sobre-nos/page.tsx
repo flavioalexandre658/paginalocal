@@ -7,8 +7,8 @@ import { eq, and, or } from 'drizzle-orm'
 import { SobreNosPageClient } from './sobre-nos-page-client'
 
 export const metadata: Metadata = {
-  title: 'Sobre Nós',
-  description: 'Conheça a missão, visão e valores do Página Local. Colocando negócios locais no mapa digital.',
+  title: 'Sobre a Página Local | Sites Profissionais para Negócios Locais',
+  description: 'Conheça a Página Local: nós ajudamos negócios locais a ter sites otimizados para aparecer no topo do Google e converter clientes pelo WhatsApp.',
 }
 
 async function getUserHasSubscription(userId: string): Promise<boolean> {

@@ -9,16 +9,16 @@ import { GoogleTagManager, GoogleTagManagerNoScript } from '@/components/shared/
 
 export const metadata: Metadata = {
   title: {
-    default: 'Presença Digital para Negócios Locais | Página Local',
+    default: 'Site para Negócio Local | Apareça no Topo do Google | Página Local',
     template: '%s | Página Local',
   },
-  description: 'Crie a landing page do seu negócio local em minutos. SEO otimizado para aparecer no Google e converter visitantes em clientes via WhatsApp.',
+  description: 'Tenha um site profissional para seu negócio local com SEO nativo para aparecer no topo do Google. Nós fazemos tudo por você. Receba clientes pelo WhatsApp em até 24 horas.',
   alternates: {
     canonical: 'https://paginalocal.com.br',
   },
   openGraph: {
-    title: 'Presença Digital para Negócios Locais | Página Local',
-    description: 'Landing pages de alta conversão para negócios locais. Apareça no Google e receba contatos via WhatsApp.',
+    title: 'Site para Negócio Local | Apareça no Topo do Google | Página Local',
+    description: 'Sites otimizados para SEO local. Coloque sua empresa no topo do Google e receba clientes pelo WhatsApp. Nós cuidamos de tudo.',
     url: 'https://paginalocal.com.br',
     siteName: 'Página Local',
     locale: 'pt_BR',
@@ -28,15 +28,15 @@ export const metadata: Metadata = {
         url: 'https://paginalocal.com.br/assets/images/seo/previa_social.jpg',
         width: 1200,
         height: 630,
-        alt: 'Página Local - Sua empresa no Google nas primeiras posições',
+        alt: 'Página Local - Seu negócio no topo do Google',
         type: 'image/jpeg',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Presença Digital para Negócios Locais | Página Local',
-    description: 'Landing pages de alta conversão para negócios locais.',
+    title: 'Site para Negócio Local | Apareça no Topo do Google | Página Local',
+    description: 'Sites otimizados para SEO local. Coloque sua empresa no topo do Google e receba clientes pelo WhatsApp.',
     images: ['https://paginalocal.com.br/assets/images/seo/previa_social.jpg'],
   },
   robots: {

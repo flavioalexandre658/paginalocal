@@ -7,18 +7,19 @@ import { auth } from '@/lib/auth'
 import { PricingPageClient } from './_components/pricing-page-client'
 
 export const metadata: Metadata = {
-  title: 'Planos e Preços',
-  description: 'Escolha o plano ideal para criar o site do seu negócio local. A partir de R$29/mês com domínio próprio, SEO otimizado e suporte. Cancele quando quiser.',
+  title: 'Planos e Preços | Site para Negócio Local',
+  description: 'Escolha o plano ideal para ter o site do seu negócio local no topo do Google. SEO nativo, domínio próprio, WhatsApp integrado. A partir de R$29/mês.',
   keywords: [
     'planos página local',
     'preços site negócio local',
     'quanto custa site para empresa',
     'site para negócio local preço',
-    'landing page preço',
+    'site profissional negócio local',
+    'site otimizado SEO preço',
   ],
   openGraph: {
-    title: 'Planos e Preços | Página Local',
-    description: 'Crie o site do seu negócio local a partir de R$29/mês. SEO otimizado para aparecer no Google.',
+    title: 'Planos e Preços | Site para Negócio Local | Página Local',
+    description: 'Tenha o site do seu negócio local a partir de R$29/mês. SEO otimizado para aparecer no topo do Google.',
     type: 'website',
     url: 'https://www.paginalocal.com.br/planos',
     images: [
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
         url: 'https://paginalocal.com.br/assets/images/seo/previa_social.jpg',
         width: 1200,
         height: 630,
-        alt: 'Página Local - Sua empresa no Google nas primeiras posições',
+        alt: 'Página Local - Seu negócio no topo do Google',
         type: 'image/jpeg',
       },
     ],

@@ -135,7 +135,7 @@ function ContactSection() {
       title: 'WhatsApp',
       description: 'Atendimento rápido pelo WhatsApp',
       action: 'Iniciar conversa',
-      href: 'https://wa.me/5511999999999',
+      href: `https://wa.me/55${process.env.NEXT_PUBLIC_SUPPORT_NUMBER || '73981269904'}?text=${encodeURIComponent('Olá! Gostaria de tirar uma dúvida.')}`,
       color: 'from-emerald-500/20 to-emerald-500/5',
       iconColor: 'text-emerald-500',
     },

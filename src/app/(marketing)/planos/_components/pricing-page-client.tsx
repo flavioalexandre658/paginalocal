@@ -225,7 +225,7 @@ export function PricingPageClient({ plans, isLoggedIn = false }: PricingPageClie
               <div className="flex flex-col items-center gap-4 sm:flex-row">
                 <EnhancedButton asChild size="lg" className="gap-2 shadow-lg shadow-primary/20">
                   <a
-                    href="https://wa.me/5511999999999?text=Olá! Tenho dúvidas sobre os planos do Página Local."
+                    href={`https://wa.me/55${process.env.NEXT_PUBLIC_SUPPORT_NUMBER || '73981269904'}?text=${encodeURIComponent('Olá! Tenho dúvidas sobre os planos do Página Local.')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

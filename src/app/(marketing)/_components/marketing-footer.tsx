@@ -9,7 +9,7 @@ export function MarketingFooter() {
           <div className="md:col-span-1">
             <Logo size="sm" href="/" />
             <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-              A plataforma que coloca seu negócio local no topo do Google.
+              Sites profissionais otimizados para aparecer no Google. Feitos para negócios locais.
             </p>
           </div>
 

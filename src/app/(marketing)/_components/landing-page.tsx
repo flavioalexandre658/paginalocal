@@ -112,13 +112,16 @@ export function LandingPage({ isLoggedIn = false, hasSubscription = false }: Lan
       <NichesSection />
       <CTASection />
       <MarketingFooter />
+      <FloatingWhatsAppButton />
     </main>
   )
 }
 
+const WHATSAPP_URL = `https://wa.me/55${process.env.NEXT_PUBLIC_SUPPORT_NUMBER || '73981269904'}?text=${encodeURIComponent('Olá! Quero saber mais sobre o site para meu negócio.')}`
+
 function HeroSection() {
   return (
-    <section className="relative py-20 md:py-32">
+    <section id="hero" className="relative py-20 md:py-32">
       <div className="container mx-auto px-4 text-center">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -127,7 +130,7 @@ function HeroSection() {
           className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary"
         >
           <IconSparkles className="h-4 w-4" />
-          Presença digital em 5 minutos
+          Seu site pronto em até 24 horas
         </motion.div>
 
         <motion.h1
@@ -149,8 +152,9 @@ function HeroSection() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mx-auto mt-6 max-w-2xl text-lg text-slate-500 dark:text-slate-400"
         >
-          Crie uma landing page profissional em minutos. SEO otimizado para sua cidade,
-          integração com Google Meu Negócio e conversão direta via WhatsApp.
+          Tenha um site profissional com SEO nativo, otimizado para sua cidade
+          e feito para converter visitantes em contatos pelo WhatsApp.
+          Nós fazemos tudo por você.
         </motion.p>
 
         <motion.div
@@ -159,13 +163,15 @@ function HeroSection() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
-          <Link
-            href="/cadastro"
+          <a
+            href={WHATSAPP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
           >
-            <IconRocket className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
-            Criar minha página agora
-          </Link>
+            <IconBrandWhatsapp className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
+            Quero meu site agora
+          </a>
           <Link
             href="#como-funciona"
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200/60 bg-white/50 px-8 py-4 text-base font-semibold text-slate-700 backdrop-blur-sm transition-all hover:bg-white hover:shadow-lg dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-slate-200 dark:hover:bg-slate-800"
@@ -232,25 +238,25 @@ function StepsSection() {
   const steps = [
     {
       number: '01',
-      icon: IconSearch,
-      title: 'Conecte',
-      description: 'Informe o nome do seu negócio. Importamos avaliações, fotos e dados automaticamente.',
+      icon: IconBrandWhatsapp,
+      title: 'Fale conosco',
+      description: 'Entre em contato pelo WhatsApp e conte sobre seu negócio. Sem burocracia.',
       color: 'from-blue-500/20 to-blue-500/5',
       iconColor: 'text-blue-500',
     },
     {
       number: '02',
       icon: IconSparkles,
-      title: 'Gere',
-      description: 'Nossa IA cria sua página. Tudo pensado para SEO local e conversão.',
+      title: 'Nós montamos',
+      description: 'Nossa equipe monta seu site com SEO otimizado para sua cidade e seu nicho.',
       color: 'from-amber-500/20 to-amber-500/5',
       iconColor: 'text-amber-500',
     },
     {
       number: '03',
       icon: IconRocket,
-      title: 'Venda',
-      description: 'Seu site vai ao ar instantaneamente. Leads começam a chegar direto no seu WhatsApp.',
+      title: 'Receba clientes',
+      description: 'Seu site vai ao ar e leads começam a chegar direto no seu WhatsApp.',
       color: 'from-emerald-500/20 to-emerald-500/5',
       iconColor: 'text-emerald-500',
     },
@@ -268,10 +274,10 @@ function StepsSection() {
             Simples assim
           </span>
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl lg:text-4xl">
-            Pronto para vender em 5 minutos
+            Você fala, nós fazemos
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
-            Sem código, sem designer, sem espera. Conecte, gere e comece a receber clientes.
+            Sem código, sem designer, sem complicação. Conte sobre seu negócio e receba seu site pronto em até 24 horas.
           </p>
         </ScrollReveal>
 
@@ -332,10 +338,10 @@ function BeforeAfterSection() {
             Transformação real
           </span>
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl lg:text-4xl">
-            Saia do anonimato digital
+            Sem site, sem clientes
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
-            Transforme uma busca perdida em um cliente no seu WhatsApp
+            Veja a diferença entre quem tem um site profissional e quem ainda não aparece no Google
           </p>
         </ScrollReveal>
 
@@ -459,10 +465,10 @@ function PageSpeedSection() {
             Ultra-rápido
           </span>
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl lg:text-4xl">
-            Seu site mais rápido que 90% da internet
+            Sites ultra-rápidos que o Google adora
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
-            Google ama velocidade. Seus clientes também. Sites lentos perdem clientes.
+            Google prioriza sites rápidos no ranking. Os nossos são mais rápidos que 90% da internet.
           </p>
         </ScrollReveal>
 
@@ -927,8 +933,8 @@ function MiniChart({ isInView }: { isInView: boolean }) {
 
 function ComparisonSection() {
   const features = [
-    { name: 'Tempo para ficar pronto', local: '5 minutos', agency: '30+ dias', alone: 'Semanas' },
-    { name: 'Custo inicial', local: 'A partir de R$ 59', agency: 'R$ 2.500+', alone: 'R$ 0' },
+    { name: 'Tempo para ficar pronto', local: 'Até 24 horas', agency: '30+ dias', alone: 'Semanas' },
+    { name: 'Custo mensal', local: 'A partir de R$ 59', agency: 'R$ 2.500+', alone: 'R$ 0' },
     { name: 'Manutenção mensal', local: 'Inclusa', agency: 'R$ 500+', alone: 'Você mesmo' },
     { name: 'SEO otimizado', local: true, agency: 'Talvez', alone: false },
     { name: 'Integração Google', local: true, agency: false, alone: false },
@@ -947,7 +953,7 @@ function ComparisonSection() {
             Compare e escolha
           </span>
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl lg:text-4xl">
-            Por que pagar caro por algo que você pode ter agora?
+            Por que pagar caro se você pode ter melhor?
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
             Veja como o Página Local se compara a outras opções do mercado
@@ -1122,10 +1128,10 @@ function NichesSection() {
             Feito para você
           </span>
           <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl lg:text-4xl">
-            Feito para quem faz a cidade girar
+            Sites para todos os tipos de negócio local
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
-            Não importa se você troca pneus ou corta cabelos. Se seu cliente está no Google, você precisa estar aqui.
+            Oficinas, salões, pet shops, restaurantes... Se seu cliente pesquisa no Google, nós colocamos você lá.
           </p>
         </ScrollReveal>
 
@@ -1177,30 +1183,71 @@ function CTASection() {
                 Enquanto você lê isso...
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-lg text-slate-600 dark:text-slate-300">
-                seu concorrente pode estar recebendo o cliente que era seu.
+                seu concorrente já está aparecendo no Google e recebendo os clientes que poderiam ser seus.
               </p>
               <p className="mx-auto mt-2 text-slate-500 dark:text-slate-400">
-                Crie sua página agora e comece a converter.
+                Fale conosco e tenha seu site profissional pronto em até 24 horas.
               </p>
 
               <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Link
-                  href="/cadastro"
+                <a
+                  href={WHATSAPP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-10 py-5 text-lg font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
                 >
-                  <IconRocket className="h-6 w-6 transition-transform group-hover:-translate-y-0.5" />
-                  Criar minha página
-                </Link>
+                  <IconBrandWhatsapp className="h-6 w-6 transition-transform group-hover:-translate-y-0.5" />
+                  Falar no WhatsApp
+                </a>
               </div>
 
               <p className="mt-6 text-sm text-slate-400">
-                Sem cartão de crédito • Pronto em 5 minutos
+                Sem complicação • Nós cuidamos de tudo
               </p>
             </div>
           </div>
         </ScrollReveal>
       </div>
     </section>
+  )
+}
+
+function FloatingWhatsAppButton() {
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroSection = document.getElementById('hero')
+      if (!heroSection) return
+
+      const heroBottom = heroSection.getBoundingClientRect().bottom
+      setIsVisible(heroBottom < 0)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  if (!isVisible) return null
+
+  return (
+    <motion.div
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: 100, opacity: 0 }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
+      className="fixed bottom-0 left-0 right-0 z-50 p-3 md:hidden"
+    >
+      <a
+        href={WHATSAPP_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-4 text-base font-semibold text-white shadow-lg shadow-[#25D366]/30 transition-all active:scale-[0.98]"
+      >
+        <IconBrandWhatsapp className="h-5 w-5" />
+        Falar no WhatsApp
+      </a>
+    </motion.div>
   )
 }
 

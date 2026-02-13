@@ -33,7 +33,7 @@ export default async function HomePage() {
     '@type': 'WebSite',
     name: 'Página Local',
     url: 'https://paginalocal.com.br',
-    description: 'Crie a landing page do seu negócio local em minutos. SEO otimizado para aparecer no Google e converter visitantes em clientes via WhatsApp.',
+    description: 'Plataforma de sites profissionais para negócios locais com SEO nativo. Coloque sua empresa no topo do Google e receba clientes pelo WhatsApp.',
     inLanguage: 'pt-BR',
   }
 
@@ -43,7 +43,7 @@ export default async function HomePage() {
     name: 'Página Local',
     url: 'https://paginalocal.com.br',
     logo: 'https://paginalocal.com.br/assets/images/icon/favicon.ico',
-    description: 'Plataforma de criação de sites otimizados para SEO local. Ajudamos negócios locais a aparecerem no topo do Google.',
+    description: 'Sites profissionais otimizados para SEO local. Ajudamos negócios locais a aparecerem no topo do Google e converterem visitantes em clientes pelo WhatsApp.',
     sameAs: [],
     contactPoint: {
       '@type': 'ContactPoint',
@@ -62,9 +62,9 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
-      <LandingPage 
-        isLoggedIn={isLoggedIn} 
-        hasSubscription={hasSubscription} 
+      <LandingPage
+        isLoggedIn={isLoggedIn}
+        hasSubscription={hasSubscription}
       />
     </>
   )

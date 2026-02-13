@@ -7,8 +7,8 @@ import { eq, and, or } from 'drizzle-orm'
 import { ContatoPageClient } from './contato-page-client'
 
 export const metadata: Metadata = {
-  title: 'Contato',
-  description: 'Entre em contato com a equipe Página Local. Estamos aqui para ajudar seu negócio a crescer.',
+  title: 'Contato | Fale com a Página Local',
+  description: 'Entre em contato com a Página Local pelo WhatsApp ou email. Tire suas dúvidas sobre como ter o site do seu negócio local no topo do Google.',
 }
 
 async function getUserHasSubscription(userId: string): Promise<boolean> {

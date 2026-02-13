@@ -12,6 +12,7 @@ import {
   IconTrendingUp,
   IconBuildingStore,
   IconMapPin,
+  IconBrandWhatsapp,
 } from '@tabler/icons-react'
 import { MarketingHeader } from '../_components/marketing-header'
 import { MarketingFooter } from '../_components/marketing-footer'
@@ -97,15 +98,15 @@ function HeroSection() {
           </div>
 
           <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-            Colocando negócios locais
+            Colocamos negócios locais
             <br />
             <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              no mapa digital
+              no topo do Google
             </span>
           </h1>
 
           <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-500 dark:text-slate-400">
-            Acreditamos que todo negócio local merece ser encontrado. Nossa missão é democratizar o acesso ao marketing digital para empreendedores de todo o Brasil.
+            Acreditamos que todo negócio local merece ser encontrado online. Nossa missão é entregar sites profissionais com SEO de alto nível para empreendedores de todo o Brasil, sem que eles precisem se preocupar com nada técnico.
           </p>
         </motion.div>
       </div>
@@ -128,7 +129,7 @@ function MissionSection() {
                   Nossa Missão
                 </h2>
                 <p className="text-slate-600 dark:text-slate-300">
-                  Empoderar negócios locais com tecnologia de ponta, permitindo que qualquer empreendedor tenha uma presença digital profissional sem precisar de conhecimento técnico ou grandes investimentos.
+                  Entregar sites profissionais com SEO de alto nível para negócios locais, sem que o empreendedor precise de conhecimento técnico ou grandes investimentos. Nós fazemos tudo por você.
                 </p>
               </div>
 
@@ -140,7 +141,7 @@ function MissionSection() {
                   Nossa Visão
                 </h2>
                 <p className="text-slate-600 dark:text-slate-300">
-                  Ser a plataforma número um para negócios locais no Brasil, criando um ecossistema onde pequenos empreendedores competem de igual para igual no mundo digital.
+                  Ser a referência em sites para negócios locais no Brasil, onde cada empreendedor tem um site profissional que aparece no Google e converte visitantes em clientes pelo WhatsApp.
                 </p>
               </div>
             </div>
@@ -276,6 +277,8 @@ function StatsSection() {
   )
 }
 
+const WHATSAPP_URL = `https://wa.me/55${process.env.NEXT_PUBLIC_SUPPORT_NUMBER || '73981269904'}?text=${encodeURIComponent('Olá! Quero saber mais sobre o site para meu negócio.')}`
+
 function CTASection() {
   return (
     <section className="relative py-16">
@@ -286,21 +289,23 @@ function CTASection() {
               Faça parte dessa história
             </h2>
             <p className="mx-auto mt-4 text-slate-500 dark:text-slate-400">
-              Junte-se a milhares de empreendedores que já estão crescendo com o Página Local.
+              Junte-se a milhares de empreendedores que já estão no topo do Google com o Página Local.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link
-                href="/cadastro"
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
               >
-                <IconRocket className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
-                Começar agora
-              </Link>
+                <IconBrandWhatsapp className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
+                Falar no WhatsApp
+              </a>
               <Link
                 href="/contato"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200/60 bg-white/50 px-8 py-4 text-base font-semibold text-slate-700 backdrop-blur-sm transition-all hover:bg-white hover:shadow-lg dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-slate-200 dark:hover:bg-slate-800"
               >
-                Falar conosco
+                Enviar email
               </Link>
             </div>
           </div>
