@@ -11,6 +11,7 @@ import { HeroSection } from '../_components/hero-section'
 import { SiteFooter } from '../_components/site-footer'
 
 const FloatingContact = dynamic(() => import('../_components/floating-contact').then(m => m.FloatingContact))
+const FAQSection = dynamic(() => import('../_components/faq-section').then(m => m.FAQSection))
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -216,62 +217,85 @@ export default async function ContatoPage({ params }: PageProps) {
         showBackLink
       />
 
-      <main className="container mx-auto px-4 py-12 md:py-16">
-        <div className="mx-auto max-w-3xl">
-          <div className="prose prose-slate dark:prose-invert max-w-none">
-            {page.content?.split('\n').filter(Boolean).map((paragraph, i) => (
-              <p key={i} className="text-base leading-relaxed text-slate-600 dark:text-slate-400">{paragraph}</p>
-            ))}
-          </div>
+      <main className="relative py-20 md:py-28 overflow-hidden bg-[#f3f5f7] dark:bg-slate-950/50">
+        <div className="container mx-auto px-4">
+          <div className="mx-auto max-w-4xl">
+            {/* Section header */}
+            <div className="mb-14 animate-fade-in-up">
+              <span className="text-sm font-bold uppercase tracking-widest text-primary">
+                Contato
+              </span>
+              <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
+                Fale com a <span className="text-primary">{storeData.name}</span>
+              </h2>
+              <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
+                {storeData.category} em {storeData.city}, {storeData.state}
+              </p>
+            </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-4 rounded-2xl border border-slate-200/60 bg-white p-6 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl dark:border-slate-700/60 dark:bg-slate-900/50"
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
-                <IconBrandWhatsapp className="h-6 w-6 text-emerald-600" />
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900 dark:text-white">WhatsApp</p>
-                <p className="text-sm text-slate-500">{formatPhone(storeData.whatsapp)}</p>
-              </div>
-            </a>
-
-            {storeData.phone && (
-              <a
-                href={`tel:+55${storeData.phone.replace(/\D/g, '')}`}
-                className="flex items-center gap-4 rounded-2xl border border-slate-200/60 bg-white p-6 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl dark:border-slate-700/60 dark:bg-slate-900/50"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30">
-                  <IconPhone className="h-6 w-6 text-blue-600" />
+            {page.content && (
+              <div className="mb-10 animate-fade-in-up animation-delay-200 rounded-2xl border-2 border-slate-100 border-l-4 border-l-primary bg-white p-8 shadow-lg dark:border-slate-800 dark:border-l-primary dark:bg-slate-900">
+                <div className="space-y-4">
+                  {page.content.split('\n').filter(Boolean).map((paragraph, i) => (
+                    <p key={i} className="text-lg leading-relaxed text-slate-600 dark:text-slate-300">{paragraph}</p>
+                  ))}
                 </div>
-                <div>
-                  <p className="font-semibold text-slate-900 dark:text-white">Telefone</p>
-                  <p className="text-sm text-slate-500">{formatPhone(storeData.phone)}</p>
-                </div>
-              </a>
+              </div>
             )}
 
-            <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(storeData.address + ', ' + storeData.city + ' - ' + storeData.state)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-4 rounded-2xl border border-slate-200/60 bg-white p-6 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl dark:border-slate-700/60 dark:bg-slate-900/50 md:col-span-2"
-            >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-rose-100 dark:bg-rose-900/30">
-                <IconMapPin className="h-6 w-6 text-rose-600" />
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900 dark:text-white">Endereço</p>
-                <p className="text-sm text-slate-500">{storeData.address}, {storeData.city} - {storeData.state}</p>
-              </div>
-            </a>
+            <div className="grid gap-4 md:grid-cols-2 animate-fade-in-up animation-delay-300">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-4 rounded-2xl border-2 border-slate-100 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary/30"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                  <IconBrandWhatsapp className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">WhatsApp</p>
+                  <p className="mt-0.5 font-semibold text-slate-800 dark:text-slate-200">{formatPhone(storeData.whatsapp)}</p>
+                </div>
+              </a>
+
+              {storeData.phone && (
+                <a
+                  href={`tel:+55${storeData.phone.replace(/\D/g, '')}`}
+                  className="group flex items-center gap-4 rounded-2xl border-2 border-slate-100 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary/30"
+                >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                    <IconPhone className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Telefone</p>
+                    <p className="mt-0.5 font-semibold text-slate-800 dark:text-slate-200">{formatPhone(storeData.phone)}</p>
+                  </div>
+                </a>
+              )}
+
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(storeData.address + ', ' + storeData.city + ' - ' + storeData.state)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-4 rounded-2xl border-2 border-slate-100 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30 md:col-span-2 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary/30"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                  <IconMapPin className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Endereço</p>
+                  <p className="mt-0.5 font-semibold text-slate-800 dark:text-slate-200">{storeData.address}, {storeData.city} - {storeData.state}</p>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
       </main>
+
+      {Array.isArray(storeData.faq) && (storeData.faq as { question: string; answer: string }[]).length > 0 && (
+        <FAQSection faq={storeData.faq as { question: string; answer: string }[]} storeName={storeData.name} />
+      )}
 
       <SiteFooter
         storeName={storeData.name}
@@ -286,6 +310,7 @@ export default async function ContatoPage({ params }: PageProps) {
         googleBusinessUrl={storeData.googleBusinessUrl}
         services={services.map(s => ({ name: s.name, slug: s.slug || '' }))}
         institutionalPages={activePages.map(p => ({ title: p.title, slug: p.slug }))}
+        logoUrl={storeData.logoUrl}
       />
 
       <FloatingContact

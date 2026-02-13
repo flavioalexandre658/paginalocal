@@ -186,7 +186,7 @@ export function TestimonialsSection({ testimonials, storeName }: TestimonialsSec
                     </button>
                   </div>
 
-                  <p className="text-sm text-slate-400 dark:text-slate-500">
+                  <p className="text-sm text-white/80 dark:text-slate-500">
                     Mostrando {startIndex + 1}–{Math.min(endIndex, testimonials.length)} de {testimonials.length} avaliações
                   </p>
                 </div>

@@ -69,7 +69,7 @@ export function SiteFooter({
   const hasInstitutionalPages = institutionalPages && institutionalPages.length > 0
 
   return (
-    <footer className="bg-[#f3f5f7] pb-24 pt-16 md:pb-10 dark:bg-slate-950">
+    <footer className="bg-white pb-24 pt-16 md:pb-10 dark:bg-slate-950">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-4xl">
           {/* Columns grid */}

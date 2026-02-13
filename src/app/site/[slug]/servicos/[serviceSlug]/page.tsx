@@ -297,6 +297,7 @@ export default async function ServicePage({ params }: PageProps) {
         }}
         otherServices={otherServices}
         testimonials={testimonials}
+        faq={Array.isArray(storeData.faq) ? (storeData.faq as { question: string; answer: string }[]) : []}
       />
 
       <SiteFooter
@@ -311,6 +312,7 @@ export default async function ServicePage({ params }: PageProps) {
         storeSlug={storeData.slug}
         services={otherServices.map(s => ({ name: s.name, slug: s.slug || '' }))}
         institutionalPages={institutionalPages}
+        logoUrl={storeData.logoUrl}
       />
 
       <FloatingContact

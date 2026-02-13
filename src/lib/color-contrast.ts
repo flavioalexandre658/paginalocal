@@ -29,7 +29,7 @@ export function getContrastTextClass(hex: string): string {
 }
 
 export function getContrastMutedClass(hex: string): string {
-  return isLightColor(hex) ? 'text-black/70' : 'text-white/70'
+  return isLightColor(hex) ? 'text-black/80' : 'text-white/90'
 }
 
 export function getContrastBorderClass(hex: string): string {

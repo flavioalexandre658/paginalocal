@@ -73,13 +73,17 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
           <div
             className="absolute inset-0"
             style={{
-              background: `linear-gradient(to bottom, ${heroBg}b3, ${heroBg}80, ${heroBg}f2)`,
+              background: `linear-gradient(160deg, ${heroBg}cc, ${heroBg}90, ${heroBg}f0)`,
             }}
           />
         </div>
       ) : (
         <div className="absolute inset-0" style={{ backgroundColor: heroBg }} />
       )}
+
+      {/* Decorative blur elements */}
+      <div className="absolute -top-24 -right-24 z-0 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+      <div className="absolute -bottom-16 -left-16 z-0 h-56 w-56 rounded-full bg-white/5 blur-2xl" />
 
       <div className={`relative z-10 ${compact ? 'py-16 md:py-24' : 'py-20 md:py-36'} ${textClass}`}>
         <div className="container mx-auto px-4">
@@ -99,7 +103,7 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
               <span>{store.city}, {store.state}</span>
             </div>
 
-            <h1 className="mb-4 text-3xl font-semibold tracking-tight md:text-4xl lg:text-5xl">
+            <h1 className="mb-4 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl">
               {h1Title}
             </h1>
 
@@ -131,7 +135,7 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
             )}
 
             {subtitle && (
-              <p className={`mx-auto ${compact ? 'mb-0' : 'mb-10'} max-w-2xl text-lg font-medium ${mutedClass}`}>
+              <p className={`mx-auto ${compact ? 'mb-0' : 'mb-10'} max-w-2xl text-lg leading-relaxed ${mutedClass}`}>
                 {subtitle}
               </p>
             )}
@@ -141,7 +145,7 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-slate-50 to-transparent dark:from-slate-950" />
+      {/* Bottom fade removed for cleaner transition */}
     </section>
   )
 }

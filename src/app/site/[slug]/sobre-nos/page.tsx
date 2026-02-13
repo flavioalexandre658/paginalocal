@@ -9,6 +9,7 @@ import { HeroSection } from '../_components/hero-section'
 import { SiteFooter } from '../_components/site-footer'
 
 const FloatingContact = dynamic(() => import('../_components/floating-contact').then(m => m.FloatingContact))
+const FAQSection = dynamic(() => import('../_components/faq-section').then(m => m.FAQSection))
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -202,15 +203,48 @@ export default async function SobreNosPage({ params }: PageProps) {
         showBackLink
       />
 
-      <main className="container mx-auto px-4 py-12 md:py-16">
-        <div className="mx-auto max-w-3xl">
-          <div className="prose prose-slate dark:prose-invert max-w-none">
-            {page.content?.split('\n').filter(Boolean).map((paragraph, i) => (
-              <p key={i} className="text-base leading-relaxed text-slate-600 dark:text-slate-400">{paragraph}</p>
-            ))}
+      <main className="relative py-20 md:py-28 overflow-hidden bg-[#f3f5f7] dark:bg-slate-950/50">
+        <div className="container mx-auto px-4">
+          <div className="mx-auto max-w-4xl">
+            {/* Section header */}
+            <div className="mb-14 animate-fade-in-up">
+              <span className="text-sm font-bold uppercase tracking-widest text-primary">
+                Sobre nós
+              </span>
+              <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
+                Conheça a <span className="text-primary">{storeData.name}</span>
+              </h2>
+              <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
+                {storeData.category} em {storeData.city}, {storeData.state}
+              </p>
+            </div>
+
+            {page.content && (
+              <div className="animate-fade-in-up animation-delay-200 rounded-2xl border-2 border-slate-100 border-l-4 border-l-primary bg-white p-8 md:p-10 shadow-lg dark:border-slate-800 dark:border-l-primary dark:bg-slate-900">
+                <div className="space-y-4">
+                  {page.content.split('\n').filter(Boolean).map((paragraph, i) => (
+                    <p key={i} className="text-lg leading-relaxed text-slate-600 dark:text-slate-300 md:text-xl">{paragraph}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* CTA block */}
+            <div className="mt-8 animate-fade-in-up animation-delay-300 overflow-hidden rounded-2xl bg-primary p-8 shadow-lg md:p-10">
+              <h3 className="mb-2 text-xl font-extrabold text-white">
+                Gostou? Entre em contato!
+              </h3>
+              <p className="text-white/70">
+                Fale conosco pelo WhatsApp ou visite a {storeData.name} em {storeData.city}.
+              </p>
+            </div>
           </div>
         </div>
       </main>
+
+      {Array.isArray(storeData.faq) && (storeData.faq as { question: string; answer: string }[]).length > 0 && (
+        <FAQSection faq={storeData.faq as { question: string; answer: string }[]} storeName={storeData.name} />
+      )}
 
       <SiteFooter
         storeName={storeData.name}
@@ -225,6 +259,7 @@ export default async function SobreNosPage({ params }: PageProps) {
         googleBusinessUrl={storeData.googleBusinessUrl}
         services={services.map(s => ({ name: s.name, slug: s.slug || '' }))}
         institutionalPages={activePages.map(p => ({ title: p.title, slug: p.slug }))}
+        logoUrl={storeData.logoUrl}
       />
 
       <FloatingContact

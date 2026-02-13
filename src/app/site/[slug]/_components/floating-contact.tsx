@@ -74,10 +74,10 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
           <a
             href={phoneLink}
             onClick={(e) => handleClick(e, 'phone')}
-            className="group flex items-center justify-center"
+            className="group relative flex items-center justify-center"
             aria-label="Ligar agora"
           >
-            <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-xl shadow-blue-600/30 transition-all duration-300 hover:scale-110 hover:shadow-blue-600/40">
+            <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-xl transition-all duration-300 hover:scale-110" style={{ boxShadow: `0 10px 25px -5px var(--primary, #3b82f6)40` }}>
               <IconPhone className="h-6 w-6" />
             </span>
           </a>
@@ -89,7 +89,7 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => handleClick(e, 'whatsapp')}
-            className="group flex items-center justify-center"
+            className="group relative flex items-center justify-center"
             aria-label="Conversar no WhatsApp"
           >
             <span
@@ -101,7 +101,7 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
               style={{
                 backgroundColor: btnColor,
                 color: btnTextColor,
-                boxShadow: `0 25px 50px -12px ${btnColor}30`,
+                boxShadow: `0 15px 30px -5px ${btnColor}40`,
               }}
             >
               <WhatsAppIcon className="h-8 w-8" />
@@ -112,7 +112,7 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
 
       {/* Mobile Sticky Bar */}
       <div
-        className={`fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 px-4 py-3 shadow-2xl transition-transform duration-300 md:hidden ${
+        className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur-lg transition-transform duration-300 md:hidden dark:border-slate-800 dark:bg-slate-900/95 ${
           showMobileBar ? 'translate-y-0' : 'translate-y-full'
         }`}
       >
@@ -121,7 +121,7 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
             <a
               href={phoneLink}
               onClick={(e) => handleClick(e, 'phone')}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-700 py-3.5 font-semibold text-white transition-all active:scale-98 active:bg-blue-800"
+              className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-slate-200 bg-white py-3 font-bold text-slate-800 transition-all active:scale-[0.98] dark:border-slate-700 dark:bg-slate-800 dark:text-white"
             >
               <IconPhone className="h-5 w-5" />
               <span>Ligar</span>
@@ -134,10 +134,10 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => handleClick(e, 'whatsapp')}
-              className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold transition-all active:scale-98"
+              className="flex w-full items-center justify-center gap-2 rounded-full py-3 font-bold text-white shadow-md transition-all active:scale-[0.98]"
               style={{
                 backgroundColor: btnColor,
-                color: btnTextColor,
+                boxShadow: `0 4px 12px ${btnColor}30`,
               }}
             >
               <WhatsAppIcon className="h-5 w-5" />

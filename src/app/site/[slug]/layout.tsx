@@ -3,18 +3,25 @@ import { TrackingScripts } from '@/components/site/tracking-scripts'
 import { db } from '@/db'
 import { store } from '@/db/schema'
 import { eq } from 'drizzle-orm'
+import { SiteHeader } from './_components/site-header'
 
 interface LayoutProps {
   children: ReactNode
   params: Promise<{ slug: string }>
 }
 
-async function getStoreColors(slug: string) {
+async function getStoreLayoutData(slug: string) {
   const [storeData] = await db
     .select({
+      name: store.name,
+      slug: store.slug,
       primaryColor: store.primaryColor,
       heroBackgroundColor: store.heroBackgroundColor,
       buttonColor: store.buttonColor,
+      logoUrl: store.logoUrl,
+      whatsapp: store.whatsapp,
+      whatsappDefaultMessage: store.whatsappDefaultMessage,
+      showWhatsappButton: store.showWhatsappButton,
     })
     .from(store)
     .where(eq(store.slug, slug))
@@ -25,18 +32,20 @@ async function getStoreColors(slug: string) {
 
 export default async function SiteLayout({ children, params }: LayoutProps) {
   const { slug } = await params
-  const colors = await getStoreColors(slug)
+  const data = await getStoreLayoutData(slug)
 
   const cssVars: Record<string, string> = {}
-  if (colors?.primaryColor) {
-    cssVars['--primary'] = colors.primaryColor
+  if (data?.primaryColor) {
+    cssVars['--primary'] = data.primaryColor
   }
-  if (colors?.heroBackgroundColor) {
-    cssVars['--store-hero-bg'] = colors.heroBackgroundColor
+  if (data?.heroBackgroundColor) {
+    cssVars['--store-hero-bg'] = data.heroBackgroundColor
   }
-  if (colors?.buttonColor) {
-    cssVars['--store-button-color'] = colors.buttonColor
+  if (data?.buttonColor) {
+    cssVars['--store-button-color'] = data.buttonColor
   }
+
+  const showHeader = !!data?.logoUrl
 
   return (
     <div
@@ -45,6 +54,17 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
     >
       <TrackingScripts storeSlug={slug} />
       <div className="relative z-10 flex min-h-screen flex-col">
+        {showHeader && data && (
+          <SiteHeader
+            storeName={data.name}
+            slug={data.slug}
+            logoUrl={data.logoUrl!}
+            whatsapp={data.whatsapp}
+            whatsappDefaultMessage={data.whatsappDefaultMessage}
+            buttonColor={data.buttonColor}
+            showWhatsappButton={data.showWhatsappButton}
+          />
+        )}
         {children}
       </div>
     </div>

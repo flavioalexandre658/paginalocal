@@ -21,19 +21,19 @@ interface ServicesSectionProps {
 
 export function ServicesSection({ services, storeName, storeSlug, category, city }: ServicesSectionProps) {
   return (
-    <section id="servicos" className="relative py-20 md:py-28 overflow-hidden bg-primary dark:bg-slate-950/50">
+    <section id="servicos" className="relative py-20 md:py-28 overflow-hidden bg-[#f3f5f7] dark:bg-slate-950/50">
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-4xl">
           {/* Section header */}
           <div className="mb-14 animate-fade-in-up">
-            <span className="text-sm font-bold uppercase tracking-widest text-white/90">
+            <span className="text-sm font-bold uppercase tracking-widest text-primary">
               Nossos Serviços
             </span>
-            <h2 className="mt-3 text-3xl tracking-tight text-white dark:text-slate-900 md:text-4xl lg:text-5xl">
-              Serviços de {storeName} <span className="text-white  font-extrabold"> em {city}</span>
+            <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
+              Serviços de {category} em <span className="text-primary">{city}</span>
             </h2>
-            <p className="mt-4 text-lg text-white/90 dark:text-slate-400">
-              Conheça os serviços relacionados a {category} oferecidos por {storeName} em {city}.
+            <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
+              Conheça os serviços oferecidos pela {storeName}
             </p>
           </div>
 
