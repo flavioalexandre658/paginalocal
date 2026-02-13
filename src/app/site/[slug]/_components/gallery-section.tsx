@@ -4,12 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import { IconX, IconChevronLeft, IconChevronRight, IconZoomIn, IconZoomOut, IconZoomReset, IconMaximize } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  type CarouselApi,
-} from '@/components/ui/carousel'
 
 interface GalleryImage {
   id: string
@@ -35,30 +29,6 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
   const dragStart = useRef({ x: 0, y: 0 })
   const panStart = useRef({ x: 0, y: 0 })
   const imageContainerRef = useRef<HTMLDivElement>(null)
-
-  // Mobile carousel state
-  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
-  const [currentSlide, setCurrentSlide] = useState(0)
-
-  // Sync carousel API with current slide
-  useEffect(() => {
-    if (!carouselApi) return
-
-    const onSelect = () => {
-      setCurrentSlide(carouselApi.selectedScrollSnap())
-    }
-
-    carouselApi.on('select', onSelect)
-    onSelect()
-
-    return () => {
-      carouselApi.off('select', onSelect)
-    }
-  }, [carouselApi])
-
-  const goToSlide = useCallback((index: number) => {
-    carouselApi?.scrollTo(index)
-  }, [carouselApi])
 
   // Lightbox handlers
   const openLightbox = (index: number) => {
@@ -172,7 +142,7 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
               </p>
             </div>
 
-            {/* ====== MOBILE: Embla Carousel + Thumbnails ====== */}
+            {/* ====== MOBILE: Embla Carousel + Thumbnails ====== 
             <div className="md:hidden animate-fade-in-up">
               <Carousel
                 setApi={setCarouselApi}
@@ -194,7 +164,7 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                             sizes="100vw"
                           />
 
-                          {/* Fullscreen button */}
+          
                           <button
                             onClick={() => openLightbox(index)}
                             className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-xl bg-black/40 text-white backdrop-blur-sm border border-white/20 transition-all active:scale-95"
@@ -203,7 +173,7 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                             <IconMaximize className="h-5 w-5" />
                           </button>
 
-                          {/* Caption overlay */}
+       
                           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-4 pb-3 pt-8">
                             <p className="truncate text-sm font-medium text-white">
                               {image.alt}
@@ -218,7 +188,7 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                   ))}
                 </CarouselContent>
 
-                {/* Nav arrows overlaid on image */}
+   
                 {images.length > 1 && (
                   <>
                     <button
@@ -241,7 +211,7 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                 )}
               </Carousel>
 
-              {/* Thumbnail strip */}
+          
               {images.length > 1 && (
                 <div className="mt-3 overflow-hidden">
                   <Carousel
@@ -282,10 +252,10 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                   </Carousel>
                 </div>
               )}
-            </div>
+            </div>*/}
 
             {/* ====== DESKTOP: Mosaic grid ====== */}
-            <div className="hidden md:grid gap-3 md:grid-cols-3 auto-rows-[180px] [grid-auto-flow:dense] stagger-children">
+            <div className="grid gap-3 md:grid-cols-3 auto-rows-[180px] [grid-auto-flow:dense] stagger-children">
               {images.map((image, index) => {
                 const groupIndex = Math.floor(index / 3);
                 const posInGroup = index % 3;
