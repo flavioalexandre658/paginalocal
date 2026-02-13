@@ -1,7 +1,6 @@
 import Link from 'next/link'
-import { IconCheck, IconSparkles, IconChevronRight } from '@tabler/icons-react'
+import { IconSparkles, IconArrowRight } from '@tabler/icons-react'
 import { getServicePageUrl } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 
 interface Service {
   id: string
@@ -22,78 +21,79 @@ interface ServicesSectionProps {
 
 export function ServicesSection({ services, storeName, storeSlug, category, city }: ServicesSectionProps) {
   return (
-    <section id="servicos" className="relative py-16 md:py-20 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/[0.03] to-transparent" />
-
+    <section id="servicos" className="relative py-20 md:py-28 overflow-hidden bg-primary dark:bg-slate-950/50">
       <div className="container relative mx-auto px-4">
-        <div className="mb-12 text-center animate-fade-in-up">
-          <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-600 mb-4">
-            <IconSparkles className="h-4 w-4" />
-            Nossos Serviços
-          </span>
-          <h2 className="mb-4 text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl lg:text-4xl">
-            Serviços de {category} em {city}
-          </h2>
-          <p className="mx-auto max-w-2xl text-lg text-slate-500 dark:text-slate-400">
-            Conheça os serviços oferecidos pela {storeName}
-          </p>
-        </div>
+        <div className="mx-auto max-w-4xl">
+          {/* Section header */}
+          <div className="mb-14 animate-fade-in-up">
+            <span className="text-sm font-bold uppercase tracking-widest text-white">
+              Nossos Serviços
+            </span>
+            <h2 className="mt-3 text-3xl tracking-tight text-white dark:text-slate-900 md:text-4xl lg:text-5xl">
+              Serviços de {storeName} <span className="text-white  font-extrabold"> em {city}</span>
+            </h2>
+            <p className="mt-4 text-lg text-white dark:text-slate-400">
+              Conheça os serviços relacionados a {category} oferecidos por {storeName} em {city}.
+            </p>
+          </div>
 
-        <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2 stagger-children">
-          {services.map((svc) => {
-            const content = (
-              <>
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 via-transparent to-emerald-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:from-emerald-500/5 group-hover:to-emerald-500/5" />
-
-                <div className="relative flex items-start gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-600 shadow-sm ring-1 ring-emerald-200/50 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md group-hover:ring-emerald-300/50 dark:from-emerald-900/40 dark:to-emerald-800/30 dark:text-emerald-400 dark:ring-emerald-700/50">
-                    <IconCheck className="h-7 w-7" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="mb-2 text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                      {svc.name}
-                    </h3>
-                    {svc.description && (
-                      <p className="text-slate-500 leading-relaxed dark:text-slate-400">
-                        {svc.description}
-                      </p>
-                    )}
-                    {svc.priceInCents && (
-                      <p className="mt-4 text-xl font-semibold text-emerald-600 dark:text-emerald-400">
-                        {new Intl.NumberFormat('pt-BR', {
-                          style: 'currency',
-                          currency: 'BRL',
-                        }).format(svc.priceInCents / 100)}
-                      </p>
-                    )}
+          {/* Services grid */}
+          <div className="grid gap-8 md:grid-cols-2 stagger-children">
+            {services.map((svc) => {
+              const cardContent = (
+                <div className="relative flex h-full flex-col p-8">
+                  {/* Icon */}
+                  <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/25">
+                    <IconSparkles className="h-8 w-8" />
                   </div>
 
-                </div>
-                <div className="block w-full items-center gap-2 mt-2">
-                  <Button variant="outline" className="w-full" size="sm">
-                    Ver detalhes
-                    <IconChevronRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-0.5" />
-                  </Button>
-                </div>
-              </>
-            )
+                  {/* Service name */}
+                  <h3 className="mb-3 text-xl font-bold text-slate-900 dark:text-white">
+                    {svc.name}
+                  </h3>
 
-            const cardClasses = "group relative overflow-hidden rounded-2xl border border-slate-200/60 bg-white/70 p-6 shadow-lg shadow-slate-200/20 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-emerald-200/50 dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/30 dark:hover:border-emerald-800/50 animate-fade-in-up"
+                  {/* Description */}
+                  {svc.description && (
+                    <p className="mb-4 flex-1 text-slate-500 leading-relaxed dark:text-slate-400">
+                      {svc.description}
+                    </p>
+                  )}
 
-            if (svc.slug) {
-              return (
-                <Link key={svc.id} href={getServicePageUrl(storeSlug, svc.slug)} className={`block ${cardClasses}`}>
-                  {content}
-                </Link>
+                  {/* Price */}
+                  {svc.priceInCents != null && svc.priceInCents > 0 && (
+                    <p className="mb-5 text-2xl font-extrabold text-primary">
+                      {new Intl.NumberFormat('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      }).format(svc.priceInCents / 100)}
+                    </p>
+                  )}
+
+                  {/* Link */}
+                  <span className="mt-auto inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-all group-hover:gap-3">
+                    Saiba mais
+                    <IconArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                  </span>
+                </div>
               )
-            }
 
-            return (
-              <div key={svc.id} className={cardClasses}>
-                {content}
-              </div>
-            )
-          })}
+              const cardClasses = "group relative overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-primary/30 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-900/30 dark:hover:border-primary/30 animate-fade-in-up"
+
+              if (svc.slug) {
+                return (
+                  <Link key={svc.id} href={getServicePageUrl(storeSlug, svc.slug)} className={`block ${cardClasses}`}>
+                    {cardContent}
+                  </Link>
+                )
+              }
+
+              return (
+                <div key={svc.id} className={cardClasses}>
+                  {cardContent}
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
     </section>

@@ -2,8 +2,14 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
-import { IconX, IconChevronLeft, IconChevronRight, IconPhoto, IconZoomIn, IconZoomOut, IconZoomReset } from '@tabler/icons-react'
+import { IconX, IconChevronLeft, IconChevronRight, IconZoomIn, IconZoomOut, IconZoomReset, IconMaximize } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from '@/components/ui/carousel'
 
 interface GalleryImage {
   id: string
@@ -21,6 +27,7 @@ interface GallerySectionProps {
 }
 
 export function GallerySection({ images, storeName, city, category }: GallerySectionProps) {
+  // Lightbox state
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
@@ -29,6 +36,31 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
   const panStart = useRef({ x: 0, y: 0 })
   const imageContainerRef = useRef<HTMLDivElement>(null)
 
+  // Mobile carousel state
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
+  const [currentSlide, setCurrentSlide] = useState(0)
+
+  // Sync carousel API with current slide
+  useEffect(() => {
+    if (!carouselApi) return
+
+    const onSelect = () => {
+      setCurrentSlide(carouselApi.selectedScrollSnap())
+    }
+
+    carouselApi.on('select', onSelect)
+    onSelect()
+
+    return () => {
+      carouselApi.off('select', onSelect)
+    }
+  }, [carouselApi])
+
+  const goToSlide = useCallback((index: number) => {
+    carouselApi?.scrollTo(index)
+  }, [carouselApi])
+
+  // Lightbox handlers
   const openLightbox = (index: number) => {
     setSelectedIndex(index)
     setZoom(1)
@@ -65,7 +97,6 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
     setPan({ x: 0, y: 0 })
   }, [])
 
-  // Drag to pan when zoomed
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     if (zoom <= 1) return
     setIsDragging(true)
@@ -117,57 +148,226 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
     return null
   }
 
+  const hasFeatured = images.length >= 3
+
   return (
     <>
-      <section id="galeria" className="relative py-16 md:py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-amber-500/[0.03] to-slate-50 dark:from-slate-900 dark:via-amber-500/[0.02] dark:to-slate-950" />
+      <section id="galeria" className="relative py-20 md:py-28 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950" />
+        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
 
-        <div className="relative mx-auto max-w-6xl px-4">
-          <div className="mb-12 text-center animate-fade-in-up">
-            <span className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-600 mb-4">
-              <IconPhoto className="h-4 w-4" />
-              Fotos reais
-            </span>
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
-              Conheça a {storeName} em {city}
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-500 dark:text-slate-400">
-              Fotos reais da {storeName}, localizada em {city}, com atendimento de qualidade e estrutura completa para {category.toLowerCase()}.
-            </p>
-          </div>
+        <div className="container relative mx-auto px-4">
+          <div className="mx-auto max-w-4xl">
+            {/* Section header */}
+            <div className="mb-14 animate-fade-in-up">
+              <span className="text-sm font-bold uppercase tracking-widest text-primary">
+                Galeria de Fotos
+              </span>
+              <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
+                Conheça a <span className="text-primary">{storeName}</span>
+              </h2>
+              <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
+                {images.length} fotos reais da {storeName} em {city} — estrutura completa para {category.toLowerCase()}.
+              </p>
+            </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {images.map((image, index) => (
-              <button
-                key={image.id}
-                onClick={() => openLightbox(index)}
-                className={cn(
-                  'group relative aspect-[4/3] overflow-hidden rounded-2xl animate-fade-in-up',
-                  'bg-white/70 backdrop-blur-sm shadow-lg shadow-slate-200/20',
-                  'ring-1 ring-slate-200/60 transition-all duration-300',
-                  'hover:-translate-y-1 hover:ring-2 hover:ring-amber-400/50 hover:shadow-xl hover:shadow-amber-500/10',
-                  'dark:bg-slate-900/70 dark:ring-slate-700/40 dark:shadow-slate-900/30 dark:hover:ring-amber-500/50'
-                )}
-                style={{ animationDelay: `${index * 100}ms` }}
+            {/* ====== MOBILE: Embla Carousel + Thumbnails ====== */}
+            <div className="md:hidden animate-fade-in-up">
+              <Carousel
+                setApi={setCarouselApi}
+                opts={{ loop: false }}
+                className="w-full"
               >
-                <Image
-                  src={image.url}
-                  alt={image.alt}
-                  fill
-                  loading="lazy"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                  <div className="rounded-xl bg-white/10 backdrop-blur-md px-3 py-2 border border-white/20">
-                    <p className="truncate text-sm font-medium text-white">
-                      {image.alt}
-                    </p>
-                  </div>
+                <CarouselContent className="-ml-0">
+                  {images.map((image, index) => (
+                    <CarouselItem key={image.id} className="pl-0">
+                      <div className="relative overflow-hidden rounded-2xl border-2 border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900">
+                        <div className="relative aspect-[4/3]">
+                          <Image
+                            src={image.url}
+                            alt={image.alt}
+                            fill
+                            priority={index === 0}
+                            loading={index === 0 ? 'eager' : 'lazy'}
+                            className="object-cover"
+                            sizes="100vw"
+                          />
+
+                          {/* Fullscreen button */}
+                          <button
+                            onClick={() => openLightbox(index)}
+                            className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-xl bg-black/40 text-white backdrop-blur-sm border border-white/20 transition-all active:scale-95"
+                            aria-label="Ver em tela cheia"
+                          >
+                            <IconMaximize className="h-5 w-5" />
+                          </button>
+
+                          {/* Caption overlay */}
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-4 pb-3 pt-8">
+                            <p className="truncate text-sm font-medium text-white">
+                              {image.alt}
+                              <span className="ml-2 text-white/50 text-xs">
+                                {index + 1}/{images.length}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+
+                {/* Nav arrows overlaid on image */}
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => carouselApi?.scrollPrev()}
+                      className="absolute left-2 top-1/2 z-10 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm border border-white/20 transition-all active:scale-95 disabled:opacity-30"
+                      disabled={currentSlide === 0}
+                      aria-label="Foto anterior"
+                    >
+                      <IconChevronLeft className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={() => carouselApi?.scrollNext()}
+                      className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-sm border border-white/20 transition-all active:scale-95 disabled:opacity-30"
+                      disabled={currentSlide === images.length - 1}
+                      aria-label="Próxima foto"
+                    >
+                      <IconChevronRight className="h-5 w-5" />
+                    </button>
+                  </>
+                )}
+              </Carousel>
+
+              {/* Thumbnail strip */}
+              {images.length > 1 && (
+                <div className="mt-3 overflow-hidden">
+                  <Carousel
+                    opts={{
+                      align: 'start',
+                      dragFree: true,
+                      containScroll: 'trimSnaps',
+                    }}
+                    className="w-full"
+                  >
+                    <CarouselContent className="-ml-2">
+                      {images.map((image, index) => (
+                        <CarouselItem
+                          key={image.id}
+                          className="basis-1/4 pl-2"
+                        >
+                          <button
+                            onClick={() => goToSlide(index)}
+                            className={cn(
+                              'relative w-full aspect-square overflow-hidden rounded-lg border-2 transition-all duration-200',
+                              currentSlide === index
+                                ? 'border-primary opacity-100'
+                                : 'border-transparent opacity-40'
+                            )}
+                          >
+                            <Image
+                              src={image.url}
+                              alt={image.alt}
+                              fill
+                              loading="lazy"
+                              className="object-cover"
+                              sizes="25vw"
+                            />
+                          </button>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                  </Carousel>
                 </div>
-              </button>
-            ))}
+              )}
+            </div>
+
+            {/* ====== DESKTOP: Featured grid ====== */}
+            {hasFeatured ? (
+              <div className="hidden md:grid gap-4 md:grid-cols-3 md:grid-rows-2 stagger-children">
+                {/* Featured image — spans 2 cols + 2 rows */}
+                <button
+                  onClick={() => openLightbox(0)}
+                  className="group relative overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/30 md:col-span-2 md:row-span-2 animate-fade-in-up dark:border-slate-800 dark:bg-slate-900"
+                >
+                  <div className="relative h-full">
+                    <Image
+                      src={images[0].url}
+                      alt={images[0].alt}
+                      fill
+                      loading="lazy"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="66vw"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
+                        <IconZoomIn className="h-7 w-7 text-white" />
+                      </div>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      <p className="truncate text-sm font-medium text-white">{images[0].alt}</p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Remaining images */}
+                {images.slice(1).map((image, i) => (
+                  <button
+                    key={image.id}
+                    onClick={() => openLightbox(i + 1)}
+                    className="group relative aspect-square overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/30 animate-fade-in-up dark:border-slate-800 dark:bg-slate-900"
+                    style={{ animationDelay: `${(i + 1) * 80}ms` }}
+                  >
+                    <Image
+                      src={image.url}
+                      alt={image.alt}
+                      fill
+                      loading="lazy"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="33vw"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
+                        <IconZoomIn className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      <p className="truncate text-sm font-medium text-white">{image.alt}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="hidden md:grid gap-4 md:grid-cols-2 stagger-children">
+                {images.map((image, index) => (
+                  <button
+                    key={image.id}
+                    onClick={() => openLightbox(index)}
+                    className="group relative aspect-[4/3] overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/30 animate-fade-in-up dark:border-slate-800 dark:bg-slate-900"
+                    style={{ animationDelay: `${index * 80}ms` }}
+                  >
+                    <Image
+                      src={image.url}
+                      alt={image.alt}
+                      fill
+                      loading="lazy"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="50vw"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
+                        <IconZoomIn className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      <p className="truncate text-sm font-medium text-white">{image.alt}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -178,7 +378,6 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
           className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-xl animate-fade-in"
           onClick={closeLightbox}
         >
-          {/* Close button */}
           <button
             onClick={closeLightbox}
             className="absolute right-3 top-3 z-20 rounded-full bg-white/10 p-2 text-white backdrop-blur-sm border border-white/10 transition-all hover:bg-white/20 hover:scale-110"
@@ -187,12 +386,8 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
             <IconX className="h-5 w-5" />
           </button>
 
-          {/* Navigation arrows */}
           <button
-            onClick={(e) => {
-              e.stopPropagation()
-              goToPrevious()
-            }}
+            onClick={(e) => { e.stopPropagation(); goToPrevious() }}
             className="absolute left-3 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-2.5 text-white backdrop-blur-sm border border-white/10 transition-all hover:bg-white/20 hover:scale-110"
             aria-label="Anterior"
           >
@@ -200,17 +395,13 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
           </button>
 
           <button
-            onClick={(e) => {
-              e.stopPropagation()
-              goToNext()
-            }}
+            onClick={(e) => { e.stopPropagation(); goToNext() }}
             className="absolute right-3 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/10 p-2.5 text-white backdrop-blur-sm border border-white/10 transition-all hover:bg-white/20 hover:scale-110"
             aria-label="Próxima"
           >
             <IconChevronRight className="h-5 w-5" />
           </button>
 
-          {/* Image area */}
           <div
             className="flex flex-1 items-center justify-center overflow-hidden px-12 pt-14 pb-2"
             onClick={(e) => e.stopPropagation()}
@@ -245,12 +436,7 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
             </div>
           </div>
 
-          {/* Caption + Zoom controls (below image) */}
-          <div
-            className="shrink-0 px-4 pb-4 pt-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Caption */}
+          <div className="shrink-0 px-4 pb-4 pt-2" onClick={(e) => e.stopPropagation()}>
             <p className="mb-3 text-center text-sm font-medium text-white/90">
               {images[selectedIndex].alt}
               <span className="ml-2 text-white/40">
@@ -258,7 +444,6 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
               </span>
             </p>
 
-            {/* Zoom slider */}
             <div className="mx-auto flex max-w-xs items-center gap-3">
               <button
                 onClick={() => handleZoomChange(Math.max(1, zoom - 0.5))}
