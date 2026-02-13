@@ -284,68 +284,29 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
               )}
             </div>
 
-            {/* ====== DESKTOP: Featured grid ====== */}
-            {hasFeatured ? (
-              <div className="hidden md:grid gap-4 md:grid-cols-3 md:grid-rows-2 stagger-children">
-                {/* Featured image — spans 2 cols + 2 rows */}
-                <button
-                  onClick={() => openLightbox(0)}
-                  className="group relative overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/30 md:col-span-2 md:row-span-2 animate-fade-in-up dark:border-slate-800 dark:bg-slate-900"
-                >
-                  <div className="relative h-full">
-                    <Image
-                      src={images[0].url}
-                      alt={images[0].alt}
-                      fill
-                      loading="lazy"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="66vw"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-all duration-300 group-hover:opacity-100">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
-                        <IconZoomIn className="h-7 w-7 text-white" />
-                      </div>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                      <p className="truncate text-sm font-medium text-white">{images[0].alt}</p>
-                    </div>
-                  </div>
-                </button>
+            {/* ====== DESKTOP: Mosaic grid ====== */}
+            <div className="hidden md:grid gap-3 md:grid-cols-3 auto-rows-[180px] [grid-auto-flow:dense] stagger-children">
+              {images.map((image, index) => {
+                const groupIndex = Math.floor(index / 3);
+                const posInGroup = index % 3;
+                const pattern = groupIndex % 3;
 
-                {/* Remaining images */}
-                {images.slice(1).map((image, i) => (
-                  <button
-                    key={image.id}
-                    onClick={() => openLightbox(i + 1)}
-                    className="group relative aspect-square overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/30 animate-fade-in-up dark:border-slate-800 dark:bg-slate-900"
-                    style={{ animationDelay: `${(i + 1) * 80}ms` }}
-                  >
-                    <Image
-                      src={image.url}
-                      alt={image.alt}
-                      fill
-                      loading="lazy"
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="33vw"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-all duration-300 group-hover:opacity-100">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
-                        <IconZoomIn className="h-6 w-6 text-white" />
-                      </div>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                      <p className="truncate text-sm font-medium text-white">{image.alt}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="hidden md:grid gap-4 md:grid-cols-2 stagger-children">
-                {images.map((image, index) => (
+                let spanClass = "";
+
+                if (pattern === 0) {
+                  if (posInGroup === 0) spanClass = "md:col-span-2 md:row-span-2";
+                } else if (pattern === 1) {
+                  if (posInGroup === 2) spanClass = "md:col-span-2 md:row-span-2";
+                } else {
+                  if (posInGroup === 0) spanClass = "md:row-span-2";
+                  else if (posInGroup === 1) spanClass = "md:col-span-2";
+                }
+
+                return (
                   <button
                     key={image.id}
                     onClick={() => openLightbox(index)}
-                    className="group relative aspect-[4/3] overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/30 animate-fade-in-up dark:border-slate-800 dark:bg-slate-900"
+                    className={`group relative overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/30 animate-fade-in-up dark:border-slate-800 dark:bg-slate-900 ${spanClass}`}
                     style={{ animationDelay: `${index * 80}ms` }}
                   >
                     <Image
@@ -354,7 +315,7 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                       fill
                       loading="lazy"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="50vw"
+                      sizes={spanClass.includes("col-span-2") ? "66vw" : "33vw"}
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-all duration-300 group-hover:opacity-100">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
@@ -365,9 +326,9 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                       <p className="truncate text-sm font-medium text-white">{image.alt}</p>
                     </div>
                   </button>
-                ))}
-              </div>
-            )}
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>

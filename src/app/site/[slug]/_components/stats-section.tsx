@@ -134,71 +134,28 @@ function getDefaultStats(category?: string): StoreStat[] {
   return DEFAULT_STATS
 }
 
-function parseNumericValue(value: string): number {
-  return parseInt(value.replace(/\D/g, ''), 10) || 0
-}
-
-function formatNumber(num: number): string {
-  if (num >= 1000) {
-    return num.toLocaleString('pt-BR')
-  }
-  return num.toString()
-}
-
-function useCountUp(target: number, duration: number, shouldStart: boolean): number {
-  const [current, setCurrent] = useState(0)
-
-  useEffect(() => {
-    if (!shouldStart) return
-
-    let startTime: number | null = null
-    let animationFrame: number
-
-    function animate(timestamp: number) {
-      if (!startTime) startTime = timestamp
-      const elapsed = timestamp - startTime
-      const progress = Math.min(elapsed / duration, 1)
-
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setCurrent(Math.floor(eased * target))
-
-      if (progress < 1) {
-        animationFrame = requestAnimationFrame(animate)
-      }
-    }
-
-    animationFrame = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(animationFrame)
-  }, [target, duration, shouldStart])
-
-  return current
-}
-
 interface StatItemProps {
   stat: StoreStat
   shouldAnimate: boolean
-  delay: number
 }
 
-function StatItem({ stat, shouldAnimate, delay }: StatItemProps) {
-  const [started, setStarted] = useState(false)
-  const numericValue = parseNumericValue(stat.value)
-  const count = useCountUp(numericValue, 2000, started)
-
-  useEffect(() => {
-    if (!shouldAnimate) return
-    const timer = setTimeout(() => setStarted(true), delay)
-    return () => clearTimeout(timer)
-  }, [shouldAnimate, delay])
-
+function StatItem({ stat, shouldAnimate }: StatItemProps) {
   return (
     <div className="flex flex-col items-center justify-center py-6 md:py-8">
-      <div className="text-3xl font-black text-white md:text-4xl lg:text-5xl">
+      <div
+        className={`text-3xl font-black text-white md:text-4xl lg:text-5xl ${
+          shouldAnimate ? 'animate-fade-in-up' : 'opacity-0'
+        }`}
+      >
         {stat.prefix && <span>{stat.prefix}</span>}
-        <span>{started ? formatNumber(count) : '0'}</span>
+        <span>{stat.value}</span>
         {stat.suffix && <span>{stat.suffix}</span>}
       </div>
-      <p className="mt-2 text-sm font-medium text-white/80 md:text-base">
+      <p
+        className={`mt-2 text-sm font-medium text-white/80 md:text-base ${
+          shouldAnimate ? 'animate-fade-in-up animation-delay-200' : 'opacity-0'
+        }`}
+      >
         {stat.label}
       </p>
     </div>
@@ -249,7 +206,6 @@ export function StatsSection({ stats, category }: StatsSectionProps) {
                 key={`${stat.label}-${index}`}
                 stat={stat}
                 shouldAnimate={isVisible}
-                delay={index * 150}
               />
             ))}
           </div>
