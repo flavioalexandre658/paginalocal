@@ -1,6 +1,18 @@
 import type { NextConfig } from 'next'
-
+import path from 'path'
 const nextConfig: NextConfig = {
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      const emptyModule = path.resolve(__dirname, 'src/empty-module.js')
+
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        // Remove polyfills injetados pelo Next.js
+        'next/dist/client/components/app-router-polyfills': emptyModule,
+      }
+    }
+    return config
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '2mb',
