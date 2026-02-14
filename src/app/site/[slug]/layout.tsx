@@ -66,10 +66,12 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
         <link
           rel="preload"
           as="image"
-          href={data.coverUrl.replace(
-            'https://stagingfy-images.s3.amazonaws.com/',
-            '/img/'
-          )}
+          href={`/_next/image?url=${encodeURIComponent(
+            data.coverUrl.replace(
+              'https://stagingfy-images.s3.amazonaws.com/',
+              '/img/'
+            )
+          )}&w=1920&q=50`}
           fetchPriority="high"
         />
       )}
