@@ -50,6 +50,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/img/:path*',
+        destination: 'https://stagingfy-images.s3.amazonaws.com/:path*',
+      },
+    ]
+  },
 }
 
 export default withBundleAnalyzer({

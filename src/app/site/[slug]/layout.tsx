@@ -63,7 +63,15 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
 
       <link rel="preconnect" href="https://stagingfy-images.s3.amazonaws.com" />
       {data?.coverUrl && (
-        <link rel="preload" as="image" href={data.coverUrl} fetchPriority="high" />
+        <link
+          rel="preload"
+          as="image"
+          href={data.coverUrl.replace(
+            'https://stagingfy-images.s3.amazonaws.com/',
+            '/img/'
+          )}
+          fetchPriority="high"
+        />
       )}
 
       <div
