@@ -20,7 +20,9 @@ export default async function PainelLayout({ children }: LayoutProps) {
       <Suspense fallback={null}>
         <PurchaseTracker />
       </Suspense>
-      {children}
+      <div style={{ fontFamily: 'var(--font-inter), system-ui, sans-serif' }}>
+        {children}
+      </div>
     </>
   )
 }

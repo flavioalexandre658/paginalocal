@@ -18,7 +18,7 @@ export default function AuthLayout({
         <div className="mb-8 flex justify-center">
           <Logo size="lg" href="/" />
         </div>
-        {children}
+        <div style={{ fontFamily: 'var(--font-inter), system-ui, sans-serif' }}>{children}</div>
       </div>
 
 

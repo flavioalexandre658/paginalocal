@@ -65,9 +65,10 @@ export const viewport: Viewport = {
 
 const inter = Inter({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  weight: ['400', '500', '600', '700', '800'],
   variable: '--font-inter',
   display: 'swap',
+  preload: false, // ← não faz preload automático
 })
 
 export default function RootLayout({
@@ -76,13 +77,11 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang="pt-BR" className={inter.variable} suppressHydrationWarning>
       <head>
-        {/*<link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />*/}
         <GoogleTagManagerNoScript />
       </head>
-      <body className={`bg-background antialiased ${inter.variable}`} suppressHydrationWarning>
+      <body className="bg-background antialiased" suppressHydrationWarning>
         <GoogleTagManager />
         <QueryProvider>
           <Toaster

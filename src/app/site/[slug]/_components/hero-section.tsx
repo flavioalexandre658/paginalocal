@@ -57,11 +57,6 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
   const mutedClass = getContrastMutedClass(heroBg)
   const badgeClasses = getContrastBadgeClasses(heroBg)
 
-  const coverUrl = store.coverUrl?.replace(
-    'https://stagingfy-images.s3.amazonaws.com/',
-    '/img/'
-  )
-
   return (
     <section className="relative overflow-hidden" aria-label={`${store.name} - ${store.category} em ${store.city}, ${store.state}`}>
       {/* ===== CONTEÚDO PRIMEIRO NO DOM (renderiza antes da imagem) ===== */}
@@ -129,7 +124,7 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
       {hasCover ? (
         <div className="absolute inset-0 z-0">
           <Image
-            src={coverUrl!}
+            src={store.coverUrl!}
             alt={heroImageAlt || `Fachada da ${store.name} em ${store.city}`}
             fill
             priority
