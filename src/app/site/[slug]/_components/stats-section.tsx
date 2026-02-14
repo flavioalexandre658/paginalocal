@@ -145,10 +145,6 @@ function formatNumber(num: number): string {
   return num.toString()
 }
 
-interface CounterState {
-  targets: number[]
-  current: number[]
-}
 
 interface StatsSectionProps {
   stats?: StoreStat[] | null
@@ -158,7 +154,8 @@ interface StatsSectionProps {
 export function StatsSection({ stats, category }: StatsSectionProps) {
   const sectionRef = useRef<HTMLElement>(null)
   const [isVisible, setIsVisible] = useState(false)
-  const [counters, setCounters] = useState<number[]>([0, 0, 0, 0])
+  const [hasAnimated, setHasAnimated] = useState(false)
+  const [counters, setCounters] = useState<number[] | null>(null) // null = mostra valor final
 
   const displayStats = useMemo(
     () => (stats && stats.length > 0 ? stats : getDefaultStats(category)),
@@ -176,8 +173,9 @@ export function StatsSection({ stats, category }: StatsSectionProps) {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && !hasAnimated) {
           setIsVisible(true)
+          setCounters(targets.map(() => 0)) // inicia animação
           observer.disconnect()
         }
       },
@@ -186,10 +184,10 @@ export function StatsSection({ stats, category }: StatsSectionProps) {
 
     observer.observe(element)
     return () => observer.disconnect()
-  }, [])
+  }, [hasAnimated, targets])
 
   useEffect(() => {
-    if (!isVisible) return
+    if (!isVisible || hasAnimated) return
 
     const duration = 1500
     let startTime: number | null = null
@@ -208,12 +206,15 @@ export function StatsSection({ stats, category }: StatsSectionProps) {
 
       if (progress < 1) {
         frame = requestAnimationFrame(animate)
+      } else {
+        setHasAnimated(true)
+        setCounters(null) // volta a mostrar valor final
       }
     }
 
     frame = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(frame)
-  }, [isVisible, targets])
+  }, [isVisible, targets, hasAnimated])
 
   return (
     <section ref={sectionRef} className="relative overflow-hidden bg-primary">
@@ -223,18 +224,26 @@ export function StatsSection({ stats, category }: StatsSectionProps) {
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-4xl">
           <div className="grid grid-cols-2 divide-white/10 md:grid-cols-4 md:divide-x">
-            {displayStats.map((stat, index) => (
-              <div key={`${stat.label}-${index}`} className="flex flex-col items-center justify-center py-6 md:py-8">
-                <div className="text-3xl font-black text-white md:text-4xl lg:text-5xl">
-                  {stat.prefix && <span>{stat.prefix}</span>}
-                  <span>{formatNumber(counters[index])}</span>
-                  {stat.suffix && <span>{stat.suffix}</span>}
+            {displayStats.map((stat, index) => {
+              // Usa valor animado se existir, senão mostra o valor final
+              const displayValue = counters !== null
+                ? counters[index]
+                : targets[index]
+
+              return (
+                <div key={`${stat.label}-${index}`} className="flex flex-col items-center justify-center py-6 md:py-8">
+                  {/* Altura fixa para evitar CLS */}
+                  <div className="flex h-[3rem] items-center text-3xl font-black text-white md:h-[3.5rem] md:text-4xl lg:text-5xl">
+                    {stat.prefix && <span>{stat.prefix}</span>}
+                    <span>{formatNumber(displayValue)}</span>
+                    {stat.suffix && <span>{stat.suffix}</span>}
+                  </div>
+                  <p className="mt-2 text-sm font-medium text-white/80 md:text-base">
+                    {stat.label}
+                  </p>
                 </div>
-                <p className="mt-2 text-sm font-medium text-white/80 md:text-base">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </div>

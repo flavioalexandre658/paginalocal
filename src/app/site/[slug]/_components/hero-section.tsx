@@ -60,7 +60,7 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
   return (
     <section className="relative overflow-hidden" aria-label={`${store.name} - ${store.category} em ${store.city}, ${store.state}`}>
       {/* ===== CONTEÚDO PRIMEIRO NO DOM (renderiza antes da imagem) ===== */}
-      <div className={`relative z-10 ${compact ? 'py-16 md:py-24' : 'py-20 md:py-36'} ${textClass}`}>
+      <div className={`relative z-10 ${compact ? 'min-h-[280px] py-16 md:min-h-[320px] md:py-24' : 'min-h-[400px] py-20 md:min-h-[500px] md:py-36'} flex items-center ${textClass}`}>
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl text-center">
             {showBackLink && (
@@ -78,7 +78,7 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
               <span>{store.category} em {store.city}, {store.state}</span>
             </div>
 
-            <h1 className="mb-4 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+            <h1 className="mb-4 min-h-[2.5em] text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl">
               {h1Title}
             </h1>
 
@@ -128,6 +128,7 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
             alt={heroImageAlt || `Fachada da ${store.name} em ${store.city}`}
             fill
             priority
+            quality={60}
             fetchPriority="high"
             sizes="100vw"
             className="object-cover"
