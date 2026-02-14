@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
 
       config.plugins.push(
         new webpack.NormalModuleReplacementPlugin(
-          /\/polyfills?\/(polyfill-module|process)\.js$/,
+          /\/polyfills?\/(polyfill-module)\.js$/,
           emptyModule
         )
       )
