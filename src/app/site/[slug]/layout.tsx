@@ -70,6 +70,19 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
           fetchPriority="high"
         />
       )}
+      {data?.coverUrl && (
+        <link
+          rel="preload"
+          as="image"
+          imageSrcSet={`
+      /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=640&q=50 640w,
+      /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1080&q=50 1080w,
+      /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1920&q=50 1920w
+    `}
+          imageSizes="100vw"
+          fetchPriority="high"
+        />
+      )}
 
       <div
         className="relative w-full max-w-full min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
