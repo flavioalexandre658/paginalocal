@@ -93,12 +93,12 @@ export function EditStoreContent({ storeSlug, initialTab }: EditStoreContentProp
               className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200/60 bg-white/70 px-3 py-2.5 text-sm font-medium text-slate-600 shadow-sm backdrop-blur-sm transition-all data-[state=active]:border-primary/30 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 dark:border-slate-700/60 dark:bg-slate-800/70 dark:text-slate-300 sm:px-4 sm:py-3"
             >
               <tab.icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="text-xs inline">{tab.label}</span>
             </TabsTrigger>
           ))}
         </TabsList>
 
-        <div className="rounded-2xl border border-slate-200/40 bg-white/70 p-4 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50 sm:p-6">
+        <div className="mt-5 rounded-2xl border border-slate-200/40 bg-white/70 p-4 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50 sm:p-6">
           <TabsContent value="geral" className="mt-0">
             <GeneralTab store={data.store} />
           </TabsContent>

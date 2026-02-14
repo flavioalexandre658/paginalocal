@@ -30,14 +30,14 @@ export function DraftBanner({ isOwner }: DraftBannerProps) {
             {isOwner ? (
               <span>
                 <strong className="block sm:inline">Prévia:</strong>{' '}
-                <span className="hidden sm:inline">Seu site está em modo rascunho. Publique para ativar os contatos.</span>
+                <span className="hidden sm:inline">Seu site está em modo rascunho. Ative por R$59,90.</span>
                 <span className="sm:hidden">Site em rascunho</span>
               </span>
             ) : (
               <span>
                 <strong className="block sm:inline">Prévia:</strong>{' '}
-                <span className="hidden sm:inline">Este perfil ainda não foi publicado.</span>
-                <span className="sm:hidden">Perfil não publicado</span>
+                <span className="hidden sm:inline">Este site ainda não foi ativado. Ative por R$59,90.</span>
+                <span className="sm:hidden">Site não ativado</span>
               </span>
             )}
           </div>
@@ -48,8 +48,8 @@ export function DraftBanner({ isOwner }: DraftBannerProps) {
           className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-amber-600 shadow-sm transition-all hover:bg-amber-50 hover:shadow-md sm:gap-2 sm:px-4 sm:text-sm"
         >
           <IconRocket className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-          <span className="hidden sm:inline">Publicar Site</span>
-          <span className="sm:hidden">Publicar</span>
+          <span className="hidden sm:inline">Ativar por R$59,90</span>
+          <span className="sm:hidden">Ativar por R$59,90</span>
         </a>
       </div>
     </div>

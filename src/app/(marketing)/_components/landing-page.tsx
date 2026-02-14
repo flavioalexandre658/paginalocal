@@ -131,7 +131,7 @@ function HeroSection() {
           className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary"
         >
           <IconSparkles className="h-4 w-4" />
-          Seu site pronto em até 24 horas
+          Seu site pronto em poucos minutos
         </motion.div>
 
         <motion.h1
@@ -165,14 +165,14 @@ function HeroSection() {
           className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <a
-            href={WHATSAPP_URL}
-            target="_blank"
+            href={`${process.env.NEXT_PUBLIC_APP_URL}/cadastro`}
+            //target="_blank"
             rel="noopener noreferrer"
-            onClick={() => trackWhatsAppClick('hero')}
+            // onClick={() => trackWhatsAppClick('hero')}
             className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
           >
-            <IconBrandWhatsapp className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
-            Quero meu site agora
+            <IconRocket className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
+            Quero meu site
           </a>
           <Link
             href="#como-funciona"
@@ -189,7 +189,7 @@ function HeroSection() {
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-8 text-sm text-slate-400"
         >
-          <span className="font-semibold text-primary">+2.000 negócios</span> já faturam mais com Página Local
+          <span className="font-semibold text-primary">+200 negócios</span> já faturam mais com Página Local
         </motion.p>
       </div>
     </section>
@@ -240,25 +240,25 @@ function StepsSection() {
   const steps = [
     {
       number: '01',
-      icon: IconBrandWhatsapp,
-      title: 'Fale conosco',
-      description: 'Entre em contato pelo WhatsApp e conte sobre seu negócio. Sem burocracia.',
+      icon: IconBrandGoogle,
+      title: 'Busque seu negócio',
+      description: 'Digite o nome da sua empresa e nós encontramos suas fotos, avaliações e endereço no Google.',
       color: 'from-blue-500/20 to-blue-500/5',
       iconColor: 'text-blue-500',
     },
     {
       number: '02',
       icon: IconSparkles,
-      title: 'Nós montamos',
-      description: 'Nossa equipe monta seu site com SEO otimizado para sua cidade e seu nicho.',
+      title: 'Nossa IA cria seu site',
+      description: 'Seu site será criado com SEO otimizado para sua cidade e seu nicho.',
       color: 'from-amber-500/20 to-amber-500/5',
       iconColor: 'text-amber-500',
     },
     {
       number: '03',
       icon: IconRocket,
-      title: 'Receba clientes',
-      description: 'Seu site vai ao ar e leads começam a chegar direto no seu WhatsApp.',
+      title: 'Ative seu site',
+      description: 'Escolha um plano e coloque seu site no ar para começar a receber clientes.',
       color: 'from-emerald-500/20 to-emerald-500/5',
       iconColor: 'text-emerald-500',
     },
@@ -279,7 +279,7 @@ function StepsSection() {
             Você fala, nós fazemos
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
-            Sem código, sem designer, sem complicação. Conte sobre seu negócio e receba seu site pronto em até 24 horas.
+            Sem código, sem designer, sem complicação. Conte sobre seu negócio e receba seu site pronto em poucos minutos.
           </p>
         </ScrollReveal>
 
@@ -935,7 +935,7 @@ function MiniChart({ isInView }: { isInView: boolean }) {
 
 function ComparisonSection() {
   const features = [
-    { name: 'Tempo para ficar pronto', local: 'Até 24 horas', agency: '30+ dias', alone: 'Semanas' },
+    { name: 'Tempo para ficar pronto', local: 'Em poucos minutos', agency: '30+ dias', alone: 'Semanas' },
     { name: 'Custo mensal', local: 'A partir de R$ 59', agency: 'R$ 2.500+', alone: 'R$ 0' },
     { name: 'Manutenção mensal', local: 'Inclusa', agency: 'R$ 500+', alone: 'Você mesmo' },
     { name: 'SEO otimizado', local: true, agency: 'Talvez', alone: false },
@@ -1188,7 +1188,7 @@ function CTASection() {
                 seu concorrente já está aparecendo no Google e recebendo os clientes que poderiam ser seus.
               </p>
               <p className="mx-auto mt-2 text-slate-500 dark:text-slate-400">
-                Fale conosco e tenha seu site profissional pronto em até 24 horas.
+                Fale conosco e tenha seu site profissional pronto em poucos minutos.
               </p>
 
               <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">

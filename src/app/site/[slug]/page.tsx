@@ -360,7 +360,7 @@ export default async function StorePage({ params }: PageProps) {
       {isDraft && (
         <>
           <DraftBanner isOwner={isOwner} />
-          <DraftModal storeName={storeData.name} isOwner={isOwner} />
+          {/*<DraftModal storeName={storeData.name} isOwner={isOwner} />*/}
         </>
       )}
 

@@ -101,7 +101,7 @@ export function DashboardContent({ storeSlug }: DashboardContentProps) {
             className="inline-flex items-center gap-2 rounded-xl border border-slate-200/60 bg-white/70 px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/70 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             <IconEdit className="h-4 w-4" />
-            <span className="hidden sm:inline">Editar site</span>
+            <span className="text-sm inline">Editar</span>
           </Link>
           <ShareModal
             url={siteUrl}
@@ -112,7 +112,7 @@ export function DashboardContent({ storeSlug }: DashboardContentProps) {
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200/60 bg-white/70 px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/70 dark:text-slate-200 dark:hover:bg-slate-800"
               >
                 <IconShare className="h-4 w-4" />
-                <span className="hidden sm:inline">Compartilhar</span>
+                <span className="text-sm  inline">Compartilhar</span>
               </button>
             }
           />
@@ -122,7 +122,7 @@ export function DashboardContent({ storeSlug }: DashboardContentProps) {
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
           >
             <IconExternalLink className="h-4 w-4" />
-            <span className="hidden sm:inline">Ver site</span>
+            <span className="text-sm inline">Ver site</span>
           </Link>
         </div>
       </div>

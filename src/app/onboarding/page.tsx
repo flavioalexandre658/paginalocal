@@ -24,6 +24,9 @@ import {
   IconBrandWhatsapp,
   IconAlertCircle,
   IconClock,
+  IconBrandGoogle,
+  IconForms,
+  IconEye,
 } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
@@ -50,7 +53,7 @@ interface PlaceResult {
   category: string | null
 }
 
-type OnboardingStep = 'search' | 'confirm' | 'creating' | 'complete'
+type OnboardingStep = 'choose' | 'search' | 'confirm' | 'creating' | 'complete'
 
 const HUMANIZED_LOGS = [
   { icon: IconMapPin, text: 'Conectando com o Google Maps...', shortText: 'Google Maps' },
@@ -63,7 +66,7 @@ const HUMANIZED_LOGS = [
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const [step, setStep] = useState<OnboardingStep>('search')
+  const [step, setStep] = useState<OnboardingStep>('choose')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<PlaceResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -181,6 +184,18 @@ export default function OnboardingPage() {
     }
   }
 
+  function handleBackToChoose() {
+    setStep('choose')
+    setQuery('')
+    setResults([])
+    setHasSearched(false)
+    setSelectedPlace(null)
+    setPlacePreview(null)
+    setSelectedCoverIndex(0)
+    setEditedWhatsapp('')
+    setEditedPhone('')
+  }
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
@@ -189,6 +204,14 @@ export default function OnboardingPage() {
 
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12">
         <AnimatePresence mode="wait">
+          {step === 'choose' && (
+            <ChoosePathStep
+              key="choose"
+              hasStores={hasStores}
+              onChooseAutomatic={() => setStep('search')}
+            />
+          )}
+
           {step === 'search' && (
             <SearchStep
               key="search"
@@ -200,6 +223,7 @@ export default function OnboardingPage() {
               hasStores={hasStores}
               onSearch={handleSearch}
               onSelectPlace={handleSelectPlace}
+              onBackToChoose={handleBackToChoose}
             />
           )}
 
@@ -244,24 +268,12 @@ export default function OnboardingPage() {
   )
 }
 
-function SearchStep({
-  query,
-  setQuery,
-  results,
-  isSearching,
-  hasSearched,
+function ChoosePathStep({
   hasStores,
-  onSearch,
-  onSelectPlace,
+  onChooseAutomatic,
 }: {
-  query: string
-  setQuery: (q: string) => void
-  results: PlaceResult[]
-  isSearching: boolean
-  hasSearched: boolean
   hasStores: boolean
-  onSearch: () => void
-  onSelectPlace: (place: PlaceResult) => void
+  onChooseAutomatic: () => void
 }) {
   return (
     <motion.div
@@ -280,6 +292,217 @@ function SearchStep({
           Voltar para meus sites
         </Link>
       )}
+
+      {/* Header */}
+      <div className="mb-6 text-center md:mb-8">
+        <motion.div
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
+        >
+          <IconRocket className="h-6 w-6 text-primary" />
+        </motion.div>
+        <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
+          Como você quer criar seu site?
+        </h1>
+        <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+          Escolha a melhor opção para o seu negócio
+        </p>
+      </div>
+
+      {/* Path Cards */}
+      <div className="grid gap-3 md:grid-cols-2 md:gap-4">
+        {/* Automatic Path */}
+        <motion.button
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.35 }}
+          onClick={onChooseAutomatic}
+          className={cn(
+            'group relative cursor-pointer overflow-hidden rounded-2xl border-2 border-primary/20 bg-white/70 p-5 text-left backdrop-blur-sm transition-all duration-300 md:p-6',
+            'hover:-translate-y-1 hover:border-primary/40 hover:bg-white hover:shadow-xl hover:shadow-primary/10',
+            'dark:border-primary/20 dark:bg-slate-800/70 dark:hover:border-primary/40 dark:hover:bg-slate-800'
+          )}
+        >
+          {/* Recommended badge */}
+          <div className="absolute right-3 top-3 md:right-4 md:top-4">
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary md:text-xs">
+              <IconSparkles className="h-3 w-3" />
+              Recomendado
+            </span>
+          </div>
+
+          {/* Gradient overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/0 transition-all duration-300 group-hover:from-primary/5 group-hover:via-primary/3 group-hover:to-transparent" />
+
+          <div className="relative">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-md shadow-primary/10 transition-transform duration-300 group-hover:scale-110 md:h-12 md:w-12">
+              <IconBrandGoogle className="h-5 w-5 text-primary md:h-6 md:w-6" />
+            </div>
+
+            <h2 className="mb-1.5 pr-16 text-base font-semibold text-slate-900 dark:text-white md:pr-20 md:text-lg">
+              Importar do Google
+            </h2>
+            <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 md:text-sm">
+              Importamos fotos, avaliações e dados do seu Google Meu Negócio automaticamente.
+            </p>
+
+            <div className="mt-4 flex flex-wrap gap-1.5 md:gap-2">
+              {['Fotos', 'Avaliações', 'Endereço', 'IA'].map((tag, i) => (
+                <span
+                  key={tag}
+                  className="inline-flex items-center gap-1 rounded-md bg-slate-100/80 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-700/60 dark:text-slate-300 md:text-xs"
+                >
+                  {i === 3 && <IconSparkles className="h-2.5 w-2.5 text-primary" />}
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-primary transition-all group-hover:gap-2.5 md:text-sm">
+              Começar
+              <IconArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </div>
+          </div>
+        </motion.button>
+
+        {/* Manual Path */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.35 }}
+        >
+          <Link href="/onboarding/manual" className="block h-full">
+            <div
+              className={cn(
+                'group relative h-full cursor-pointer overflow-hidden rounded-2xl border border-slate-200/60 bg-white/70 p-5 text-left backdrop-blur-sm transition-all duration-300 md:p-6',
+                'hover:-translate-y-1 hover:border-slate-300/80 hover:bg-white hover:shadow-lg hover:shadow-slate-200/30',
+                'dark:border-slate-700/60 dark:bg-slate-800/70 dark:hover:border-slate-600/80 dark:hover:bg-slate-800 dark:hover:shadow-slate-900/30'
+              )}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-100/0 via-slate-100/0 to-slate-100/0 transition-all duration-300 group-hover:from-slate-50/50 group-hover:via-slate-50/30 group-hover:to-transparent dark:group-hover:from-slate-800/50 dark:group-hover:via-slate-800/30" />
+
+              <div className="relative">
+                <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 shadow-sm transition-transform duration-300 group-hover:scale-110 dark:bg-slate-700/60 md:h-12 md:w-12">
+                  <IconForms className="h-5 w-5 text-slate-500 dark:text-slate-400 md:h-6 md:w-6" />
+                </div>
+
+                <h2 className="mb-1.5 text-base font-semibold text-slate-900 dark:text-white md:text-lg">
+                  Criar manualmente
+                </h2>
+                <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 md:text-sm">
+                  Preencha as informações do seu negócio e monte seu site do zero.
+                </p>
+
+                <div className="mt-4 flex flex-wrap gap-1.5 md:gap-2">
+                  {['Personalizado', 'Sem Google'].map((tag) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-700/60 dark:text-slate-400 md:text-xs"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-slate-500 transition-all group-hover:gap-2.5 group-hover:text-slate-700 dark:text-slate-400 dark:group-hover:text-slate-200 md:text-sm">
+                  Começar
+                  <IconArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </div>
+            </div>
+          </Link>
+        </motion.div>
+      </div>
+
+
+
+      {/* Support CTA */}
+      {process.env.NEXT_PUBLIC_SUPPORT_NUMBER && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.65 }}
+          className="mt-4"
+        >
+          <a
+            href={`https://wa.me/${process.env.NEXT_PUBLIC_SUPPORT_NUMBER}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(
+              'group flex items-center justify-center gap-2.5 rounded-xl border border-slate-200/60 bg-white/70 px-4 py-3 backdrop-blur-sm transition-all duration-300',
+              'hover:border-emerald-300/60 hover:bg-emerald-50/50 hover:shadow-md hover:shadow-emerald-500/5',
+              'dark:border-slate-700/60 dark:bg-slate-800/70 dark:hover:border-emerald-700/60 dark:hover:bg-emerald-950/20'
+            )}
+          >
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 transition-colors group-hover:bg-emerald-500/20">
+              <IconBrandWhatsapp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div className="text-left">
+              <p className="text-xs font-medium text-slate-700 dark:text-slate-200">
+                Precisa de ajuda?
+              </p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Nossa equipe pode criar seu site.{' '}
+                <span className="font-medium text-emerald-600 group-hover:underline dark:text-emerald-400">
+                  Chame no WhatsApp
+                </span>
+              </p>
+            </div>
+            <IconArrowRight className="h-4 w-4 shrink-0 text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:text-emerald-500 dark:text-slate-600" />
+          </a>
+        </motion.div>
+      )}
+
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="mt-6 text-center text-sm text-slate-400"
+      >
+        Mais de <span className="font-semibold text-primary">200 negócios</span> já criaram sua presença digital
+      </motion.p>
+    </motion.div>
+  )
+}
+
+function SearchStep({
+  query,
+  setQuery,
+  results,
+  isSearching,
+  hasSearched,
+  hasStores,
+  onSearch,
+  onSelectPlace,
+  onBackToChoose,
+}: {
+  query: string
+  setQuery: (q: string) => void
+  results: PlaceResult[]
+  isSearching: boolean
+  hasSearched: boolean
+  hasStores: boolean
+  onSearch: () => void
+  onSelectPlace: (place: PlaceResult) => void
+  onBackToChoose: () => void
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="w-full max-w-2xl"
+    >
+      <button
+        onClick={onBackToChoose}
+        className="mb-4 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+      >
+        <IconArrowLeft className="h-4 w-4" />
+        Voltar para opções
+      </button>
 
       <div className="mb-5 flex items-center gap-3">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-md shadow-primary/10">
@@ -388,7 +611,7 @@ function SearchStep({
         transition={{ delay: 0.5 }}
         className="mt-6 text-center text-sm text-slate-400"
       >
-        Mais de <span className="font-semibold text-primary">2.000 negócios</span> já criaram sua presença digital
+        Mais de <span className="font-semibold text-primary">200 negócios</span> já criaram sua presença digital
       </motion.p>
     </motion.div>
   )
@@ -970,39 +1193,49 @@ function CompleteStep({ place, storeSlug }: { place: PlaceResult; storeSlug: str
       >
         <IconCheck className="h-8 w-8 text-white md:h-10 md:w-10" />
       </motion.div>
+
       <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
-        Site criado!
+        Seu site está pronto!
       </h1>
+
       <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 md:mt-3 md:text-base">
-        {place.name} está online
+        Falta só um passo para {place.name} ficar visível para seus clientes
       </p>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="mt-6 flex flex-col gap-2 md:mt-8 md:gap-3"
+        className="mt-6 flex flex-col gap-3 md:mt-8"
       >
-        <Link href={getStoreUrl(storeSlug)} target="_blank">
+        {/* CTA Principal - Ativar */}
+        <Link href={`/planos?plan=essencial&store=${storeSlug}`}>
           <Button
             size="lg"
-            className="h-11 w-full gap-2 cursor-pointer text-sm shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 md:h-12 md:gap-3 md:text-base"
+            className="h-12 w-full gap-2 cursor-pointer text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 md:h-14 md:gap-3 md:text-lg"
           >
-            <IconRocket className="h-5 w-5" />
-            Ver página
+            <IconRocket className="h-5 w-5 md:h-6 md:w-6" />
+            Ativar meu site por R$59,90
           </Button>
         </Link>
-        <Link href={`/painel/${storeSlug}`}>
+
+        {/* CTA Secundário - Preview */}
+        <Link href={getStoreUrl(storeSlug)} target="_blank">
           <Button
-            variant="outline"
+            variant="ghost"
             size="lg"
-            className="h-10 w-full gap-2 cursor-pointer border-slate-200/60 text-sm text-slate-600 transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary dark:border-slate-700/60 dark:text-slate-300 dark:hover:border-primary/30 dark:hover:text-primary md:h-11"
+            className="h-10 w-full gap-2 cursor-pointer text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 md:h-11"
           >
-            <IconArrowRight className="h-4 w-4 md:h-5 md:w-5" />
-            Ir para o painel
+            <IconEye className="h-4 w-4 md:h-5 md:w-5" />
+            Ver prévia do site
           </Button>
         </Link>
       </motion.div>
+
+      {/* Micro-copy opcional para reduzir ansiedade */}
+      <p className="mt-4 text-xs text-slate-400 dark:text-slate-500 md:mt-5">
+        Você poderá editar tudo depois de ativar
+      </p>
     </motion.div>
   )
 }
