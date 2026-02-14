@@ -20,6 +20,31 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '2mb',
     },
+
+    forceSwcTransforms: true,
+    optimizeCss: true,
+    inlineCss: true,
+    cssChunking: 'strict',
+    // 🔹 Turbo melhora a velocidade do build e cache incremental
+    turbo: {
+      rules: {
+        // evita polyfills desnecessários no build turbo
+        '*.js': {
+          loaders: ['swc-loader'],
+        },
+      },
+    },
+    esmExternals: true, // força dependências modernas
+
+    // 🔹 Otimiza importações de bibliotecas grandes automaticamente
+    optimizePackageImports: [
+      "framer-motion",
+      "lucide-react",
+      "lodash",
+      'date-fns', '@heroicons/react',
+      "@tabler/icons-react",
+    ],
+
   },
   images: {
     formats: ['image/avif', 'image/webp'],
