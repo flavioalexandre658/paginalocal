@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { IconPhone } from '@tabler/icons-react'
 import { getWhatsAppUrl, getPhoneUrl, getWhatsAppDefaultMessage } from '@/lib/utils'
-import { DraftContactModal } from '@/components/site/draft-contact-modal'
 import { useTrackClick } from '@/hooks/use-track-click'
 import { getContrastColor } from '@/lib/color-contrast'
 
@@ -25,8 +24,6 @@ interface FloatingContactProps {
 
 export function FloatingContact({ store, isOwner = false }: FloatingContactProps) {
   const [showMobileBar, setShowMobileBar] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [modalContactType, setModalContactType] = useState<'whatsapp' | 'phone'>('whatsapp')
   const { trackClick } = useTrackClick()
 
   const whatsappLink = getWhatsAppUrl(store.whatsapp, getWhatsAppDefaultMessage(store.name, store.whatsappDefaultMessage))
@@ -52,8 +49,6 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
   function handleClick(e: React.MouseEvent, type: 'whatsapp' | 'phone') {
     if (!store.isActive) {
       e.preventDefault()
-      setModalContactType(type)
-      setIsModalOpen(true)
       return
     }
 
@@ -112,9 +107,8 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
 
       {/* Mobile Sticky Bar */}
       <div
-        className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur-lg transition-transform duration-300 md:hidden dark:border-slate-800 dark:bg-slate-900/95 ${
-          showMobileBar ? 'translate-y-0' : 'translate-y-full'
-        }`}
+        className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur-lg transition-transform duration-300 md:hidden dark:border-slate-800 dark:bg-slate-900/95 ${showMobileBar ? 'translate-y-0' : 'translate-y-full'
+          }`}
       >
         <div className={`flex gap-3 ${showWhatsapp && showCall ? 'grid grid-cols-2' : ''}`}>
           {showCall && (
@@ -147,15 +141,6 @@ export function FloatingContact({ store, isOwner = false }: FloatingContactProps
         </div>
       </div>
 
-      <DraftContactModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        storeName={store.name}
-        storeSlug={store.slug}
-        storeId={store.id}
-        isOwner={isOwner}
-        contactType={modalContactType}
-      />
     </>
   )
 }

@@ -45,7 +45,7 @@ const DAYS_MAP: Record<string, string> = {
   dom: 'Domingo',
 }
 
-export function ContactSection({ store, isOwner = false }: ContactSectionProps) {
+export function ContactSection({ store }: ContactSectionProps) {
   const fullAddress = `${store.address}, ${store.city} - ${store.state}${store.zipCode ? `, ${store.zipCode}` : ''}`
   const mapsUrl = store.latitude && store.longitude
     ? `https://www.google.com/maps?q=${store.latitude},${store.longitude}`
@@ -142,7 +142,6 @@ export function ContactSection({ store, isOwner = false }: ContactSectionProps) 
                       <div className="mt-1 font-semibold text-slate-800 dark:text-slate-200">
                         <PhoneContactLink
                           store={store}
-                          isOwner={isOwner}
                           formattedPhone={formatPhone(store.phone)}
                         />
                       </div>

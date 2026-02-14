@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { IconPhone } from '@tabler/icons-react'
 import { getWhatsAppUrl, getPhoneUrl, getWhatsAppDefaultMessage, cn } from '@/lib/utils'
-import { DraftContactModal } from './draft-contact-modal'
 import { useTrackClick } from '@/hooks/use-track-click'
 import { getContrastColor, isLightColor } from '@/lib/color-contrast'
 
@@ -78,10 +77,10 @@ export function ContactButton({
 
   const inlineStyle = (type === 'whatsapp' && variant !== 'outline')
     ? {
-        backgroundColor: btnColor,
-        color: '#ffffff',
-        boxShadow: `0 10px 15px -3px ${btnColor}40`,
-      }
+      backgroundColor: btnColor,
+      color: '#ffffff',
+      boxShadow: `0 10px 15px -3px ${btnColor}40`,
+    }
     : undefined
 
   const href = type === 'whatsapp' ? whatsappLink : phoneLink
@@ -113,15 +112,6 @@ export function ContactButton({
         )}
       </a>
 
-      <DraftContactModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        storeName={store.name}
-        storeSlug={store.slug}
-        storeId={store.id}
-        isOwner={isOwner}
-        contactType={type}
-      />
     </>
   )
 }

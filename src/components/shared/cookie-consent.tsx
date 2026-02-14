@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
 import { IconCookie, IconSettings, IconChevronUp } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -62,13 +61,9 @@ export function CookieConsent() {
   }
 
   return (
-    <AnimatePresence>
+    <>
       {isVisible && (
-        <motion.div
-          initial={{ y: isStorePage ? -100 : 100, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: isStorePage ? -100 : 100, opacity: 0 }}
-          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        <div
           className={cn(
             'fixed left-0 right-0 z-50 p-2 sm:p-4',
             isStorePage ? 'top-0' : 'bottom-0'
@@ -80,7 +75,7 @@ export function CookieConsent() {
               {!isExpanded ? (
                 <div className="flex items-center gap-3 p-3 sm:p-4">
                   <IconCookie className="h-5 w-5 shrink-0 text-amber-500" />
-                  
+
                   <p className="flex-1 text-xs text-slate-600 sm:text-sm dark:text-slate-300">
                     <span className="hidden sm:inline">
                       Usamos cookies para melhorar sua experiência.{' '}
@@ -175,9 +170,9 @@ export function CookieConsent() {
               )}
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   )
 }
 

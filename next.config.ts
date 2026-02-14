@@ -1,16 +1,18 @@
 import type { NextConfig } from 'next'
 import path from 'path'
 import withBundleAnalyzer from '@next/bundle-analyzer'
+import { webpack } from 'next/dist/compiled/webpack/webpack'
 const nextConfig: NextConfig = {
   webpack: (config, { isServer }) => {
     if (!isServer) {
       const emptyModule = path.resolve(__dirname, 'src/empty-module.js')
 
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        // Caminho correto conforme o bundle analyzer mostrou
-        'next/dist/build/polyfills/polyfill-module': emptyModule,
-      }
+      config.plugins.push(
+        new webpack.NormalModuleReplacementPlugin(
+          /\/polyfills?\/(polyfill-module|process)\.js$/,
+          emptyModule
+        )
+      )
     }
     return config
   },

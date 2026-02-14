@@ -27,7 +27,6 @@ interface DraftContactModalProps {
   isOpen: boolean
   onClose: () => void
   storeName: string
-  storeSlug: string
   storeId: string
   isOwner: boolean
   contactType: 'whatsapp' | 'phone'
@@ -44,7 +43,6 @@ export function DraftContactModal({
   isOpen,
   onClose,
   storeName,
-  storeSlug,
   storeId,
   isOwner,
   contactType,

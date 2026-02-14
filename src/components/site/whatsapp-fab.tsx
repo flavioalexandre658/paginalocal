@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { IconBrandWhatsapp } from '@tabler/icons-react'
 import { getWhatsAppUrl, getWhatsAppDefaultMessage } from '@/lib/utils'
-import { DraftContactModal } from './draft-contact-modal'
 import { useTrackClick } from '@/hooks/use-track-click'
 
 interface WhatsAppFabProps {
@@ -47,15 +46,6 @@ export function WhatsAppFab({ store, isOwner = false }: WhatsAppFabProps) {
         <IconBrandWhatsapp size={32} />
       </button>
 
-      <DraftContactModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        storeName={store.name}
-        storeSlug={store.slug}
-        storeId={store.id}
-        isOwner={isOwner}
-        contactType="whatsapp"
-      />
     </>
   )
 }
