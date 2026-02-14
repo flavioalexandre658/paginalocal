@@ -68,6 +68,7 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
             fill
             priority
             quality={50}
+            decoding="sync"
             fetchPriority="high"
             sizes="100vw"
             className="object-cover"
