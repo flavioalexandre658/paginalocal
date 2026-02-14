@@ -1,61 +1,53 @@
-import {
-  Inter,
-  Poppins,
-  Open_Sans,
-  Roboto,
-  Montserrat,
-  Nunito,
-  Raleway,
-  DM_Sans,
-  Plus_Jakarta_Sans,
-  Work_Sans,
-  Outfit,
-  Playfair_Display,
-  Lora,
-  Merriweather,
-  Crimson_Text,
-  Bebas_Neue,
-  Oswald,
-} from 'next/font/google'
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const poppins = Poppins({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const openSans = Open_Sans({ subsets: ['latin'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const roboto = Roboto({ subsets: ['latin'], weight: ['400', '500', '700', '900'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const nunito = Nunito({ subsets: ['latin'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const raleway = Raleway({ subsets: ['latin'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const plusJakartaSans = Plus_Jakarta_Sans({ subsets: ['latin'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const workSans = Work_Sans({ subsets: ['latin'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const outfit = Outfit({ subsets: ['latin'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const playfairDisplay = Playfair_Display({ subsets: ['latin'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const lora = Lora({ subsets: ['latin'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const merriweather = Merriweather({ subsets: ['latin'], weight: ['400', '700'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const crimsonText = Crimson_Text({ subsets: ['latin'], weight: ['400', '600', '700'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const bebasNeue = Bebas_Neue({ subsets: ['latin'], weight: ['400'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-const oswald = Oswald({ subsets: ['latin'], variable: '--font-site', display: 'swap', adjustFontFallback: true })
-
-export function getSiteFont(fontFamily?: string | null): { variable: string; className: string } {
+// lib/font-loader.ts
+export function getSiteFontUrl(fontFamily?: string | null): string | null {
   const slug = fontFamily || 'inter'
 
-  switch (slug) {
-    case 'poppins': return poppins
-    case 'open-sans': return openSans
-    case 'roboto': return roboto
-    case 'montserrat': return montserrat
-    case 'nunito': return nunito
-    case 'raleway': return raleway
-    case 'dm-sans': return dmSans
-    case 'plus-jakarta-sans': return plusJakartaSans
-    case 'work-sans': return workSans
-    case 'outfit': return outfit
-    case 'playfair-display': return playfairDisplay
-    case 'lora': return lora
-    case 'merriweather': return merriweather
-    case 'crimson-text': return crimsonText
-    case 'bebas-neue': return bebasNeue
-    case 'oswald': return oswald
-    default: return inter
+  const fonts: Record<string, string> = {
+    'inter': 'Inter:wght@400;500;600;700;800',
+    'poppins': 'Poppins:wght@400;500;600;700;800',
+    'open-sans': 'Open+Sans:wght@400;500;600;700;800',
+    'roboto': 'Roboto:wght@400;500;700;900',
+    'montserrat': 'Montserrat:wght@400;500;600;700;800',
+    'nunito': 'Nunito:wght@400;500;600;700;800',
+    'raleway': 'Raleway:wght@400;500;600;700;800',
+    'dm-sans': 'DM+Sans:wght@400;500;600;700;800',
+    'plus-jakarta-sans': 'Plus+Jakarta+Sans:wght@400;500;600;700;800',
+    'work-sans': 'Work+Sans:wght@400;500;600;700;800',
+    'outfit': 'Outfit:wght@400;500;600;700;800',
+    'playfair-display': 'Playfair+Display:wght@400;500;600;700;800',
+    'lora': 'Lora:wght@400;500;600;700',
+    'merriweather': 'Merriweather:wght@400;700',
+    'crimson-text': 'Crimson+Text:wght@400;600;700',
+    'bebas-neue': 'Bebas+Neue:wght@400',
+    'oswald': 'Oswald:wght@400;500;600;700',
   }
+
+  const fontQuery = fonts[slug] || fonts['inter']
+  return `https://fonts.googleapis.com/css2?family=${fontQuery}&display=swap`
+}
+
+export function getSiteFontFamily(fontFamily?: string | null): string {
+  const slug = fontFamily || 'inter'
+
+  const families: Record<string, string> = {
+    'inter': 'Inter',
+    'poppins': 'Poppins',
+    'open-sans': 'Open Sans',
+    'roboto': 'Roboto',
+    'montserrat': 'Montserrat',
+    'nunito': 'Nunito',
+    'raleway': 'Raleway',
+    'dm-sans': 'DM Sans',
+    'plus-jakarta-sans': 'Plus Jakarta Sans',
+    'work-sans': 'Work Sans',
+    'outfit': 'Outfit',
+    'playfair-display': 'Playfair Display',
+    'lora': 'Lora',
+    'merriweather': 'Merriweather',
+    'crimson-text': 'Crimson Text',
+    'bebas-neue': 'Bebas Neue',
+    'oswald': 'Oswald',
+  }
+
+  return families[slug] || 'Inter'
 }

@@ -4,7 +4,7 @@ import { db } from '@/db'
 import { store } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import { SiteHeader } from './_components/site-header'
-import { getSiteFont } from '@/lib/font-loader'
+import { getSiteFontUrl, getSiteFontFamily } from '@/lib/font-loader'
 
 interface LayoutProps {
   children: ReactNode
@@ -48,28 +48,29 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
     cssVars['--store-button-color'] = data.buttonColor
   }
 
-  const siteFont = getSiteFont(data?.fontFamily)
+  const fontUrl = getSiteFontUrl(data?.fontFamily)
+  const fontFamily = getSiteFontFamily(data?.fontFamily)
 
   const showHeader = !!data?.logoUrl
 
   return (
     <>
+      {/* Preconnect + preload só da fonte usada */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link rel="preload" as="style" href={fontUrl!} />
+      <link rel="stylesheet" href={fontUrl!} />
+
       <link rel="preconnect" href="https://stagingfy-images.s3.amazonaws.com" />
-      <link rel="dns-prefetch" href="https://stagingfy-images.s3.amazonaws.com" />
       {data?.coverUrl && (
-        <link
-          rel="preload"
-          as="image"
-          href={data.coverUrl}
-          fetchPriority="high"
-        />
+        <link rel="preload" as="image" href={data.coverUrl} fetchPriority="high" />
       )}
 
       <div
-        className={`relative w-full max-w-full min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 ${siteFont.variable}`}
+        className="relative w-full max-w-full min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
         style={{
           ...cssVars as React.CSSProperties,
-          fontFamily: 'var(--font-site), system-ui, sans-serif',
+          fontFamily: `'${fontFamily}', system-ui, sans-serif`,
         }}
       >
         <TrackingScripts storeSlug={slug} />
