@@ -128,7 +128,7 @@ export function HeroSection({ store, heroImageAlt, isOwner = false, pageTitle, p
             alt={heroImageAlt || `Fachada da ${store.name} em ${store.city}`}
             fill
             priority
-            quality={60}
+            unoptimized
             fetchPriority="high"
             sizes="100vw"
             className="object-cover"
