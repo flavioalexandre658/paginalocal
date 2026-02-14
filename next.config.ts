@@ -1,5 +1,6 @@
 import type { NextConfig } from 'next'
 import path from 'path'
+import withBundleAnalyzer from '@next/bundle-analyzer'
 const nextConfig: NextConfig = {
   webpack: (config, { isServer }) => {
     if (!isServer) {
@@ -7,8 +8,8 @@ const nextConfig: NextConfig = {
 
       config.resolve.alias = {
         ...config.resolve.alias,
-        // Remove polyfills injetados pelo Next.js
-        'next/dist/client/components/app-router-polyfills': emptyModule,
+        // Caminho correto conforme o bundle analyzer mostrou
+        'next/dist/build/polyfills/polyfill-module': emptyModule,
       }
     }
     return config
@@ -47,4 +48,6 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})(nextConfig)
