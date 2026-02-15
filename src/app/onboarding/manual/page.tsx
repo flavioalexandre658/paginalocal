@@ -19,6 +19,7 @@ import {
   IconFileText,
   IconStar,
   IconSearch,
+  IconEye,
 } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
@@ -688,68 +689,81 @@ function CompleteStep({
   storeSlug: string
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="w-full max-w-lg text-center"
-    >
+    <>
       <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-        className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-xl shadow-emerald-500/30"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="w-full max-w-md px-4 text-center"
       >
-        <IconCheck className="h-12 w-12 text-white" />
-      </motion.div>
-      <h1 className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">
-        Site criado!
-      </h1>
-      <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-        {storeName} está online
-      </p>
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+          className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-xl shadow-emerald-500/30 md:mb-5 md:h-20 md:w-20"
+        >
+          <IconCheck className="h-8 w-8 text-white md:h-10 md:w-10" />
+        </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="mt-10 flex flex-col gap-3"
-      >
-        <Link href={getStoreUrl(storeSlug)} target="_blank">
-          <Button
-            size="lg"
-            className="w-full h-14 gap-3 cursor-pointer text-base shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
-          >
-            <IconRocket className="h-5 w-5" />
-            Ver página
-          </Button>
-        </Link>
-        <Link href={`/painel/${storeSlug}`}>
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full h-12 gap-2 cursor-pointer border-slate-200/60 text-slate-600 transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary dark:border-slate-700/60 dark:text-slate-300 dark:hover:border-primary/30 dark:hover:text-primary"
-          >
-            <IconArrowRight className="h-5 w-5" />
-            Ir para o painel
-          </Button>
-        </Link>
-      </motion.div>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
+          Seu site está pronto!
+        </h1>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="mt-8 rounded-xl border border-amber-200/60 bg-amber-50/50 p-4 text-left dark:border-amber-900/40 dark:bg-amber-950/20"
-      >
-        <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-          Dica: Adicione fotos do seu negócio
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 md:mt-3 md:text-base">
+          Falta só um passo para {storeName} ficar visível para seus clientes
         </p>
-        <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
-          No painel, você pode fazer upload de fotos para deixar seu site mais atrativo.
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mt-6 flex flex-col gap-3 md:mt-8"
+        >
+          {/* CTA Principal - Ativar */}
+          <Link href={`/planos?plan=essencial&store=${storeSlug}`}>
+            <Button
+              size="lg"
+              className="h-12 w-full gap-2 cursor-pointer text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 md:h-14 md:gap-3 md:text-lg"
+            >
+              <IconRocket className="h-5 w-5 md:h-6 md:w-6" />
+              Ativar meu site por R$59,90
+            </Button>
+          </Link>
+
+          {/* CTA Secundário - Preview */}
+          <Link href={getStoreUrl(storeSlug)} target="_blank">
+            <Button
+              variant="ghost"
+              size="lg"
+              className="h-10 w-full gap-2 cursor-pointer text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 md:h-11"
+            >
+              <IconEye className="h-4 w-4 md:h-5 md:w-5" />
+              Ver prévia do site
+            </Button>
+          </Link>
+        </motion.div>
+
+        {/* Micro-copy opcional para reduzir ansiedade */}
+        <p className="mt-4 text-xs text-slate-400 dark:text-slate-500 md:mt-5">
+          Você poderá editar tudo depois de ativar
         </p>
+
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="mt-8 rounded-xl border border-amber-200/60 bg-amber-50/50 p-4 text-left dark:border-amber-900/40 dark:bg-amber-950/20"
+        >
+          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+            Dica: Adicione fotos do seu negócio
+          </p>
+          <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+            No painel, você pode fazer upload de fotos para deixar seu site mais atrativo.
+          </p>
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </>
   )
 }
 
