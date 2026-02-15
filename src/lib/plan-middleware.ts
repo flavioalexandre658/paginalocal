@@ -1,5 +1,5 @@
 import { db } from '@/db'
-import { subscription, plan, store } from '@/db/schema'
+import { subscription, plan, store, user } from '@/db/schema'
 import { eq, and, or, count } from 'drizzle-orm'
 import type { PlanFeatures } from '@/db/schema'
 
@@ -64,7 +64,10 @@ export async function getUserPlanContext(userId: string): Promise<UserPlanContex
 
 export async function checkCanCreateStore(userId: string): Promise<{ allowed: boolean; reason?: string; requiresSubscription?: boolean }> {
   const planContext = await getUserPlanContext(userId)
-
+  const [userData] = await db.select().from(user).where(eq(user.id, userId)).limit(1);
+  if (userData?.role === 'admin') {
+    return { allowed: true }
+  }
   const [storeCount] = await db
     .select({ count: count() })
     .from(store)
@@ -111,7 +114,10 @@ export async function checkCanActivateStore(userId: string): Promise<{ allowed: 
 
 export async function checkCanUseAiRewrite(userId: string): Promise<{ allowed: boolean; reason?: string; remaining?: number; requiresSubscription?: boolean }> {
   const planContext = await getUserPlanContext(userId)
-
+  const [userData] = await db.select().from(user).where(eq(user.id, userId)).limit(1);
+  if (userData?.role === 'admin') {
+    return { allowed: true, remaining: undefined }
+  }
   if (!planContext.hasActiveSubscription) {
     return {
       allowed: false,
