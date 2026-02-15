@@ -1,11 +1,11 @@
 'use client'
 
 import { useRef, useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { motion, useInView } from 'framer-motion'
 import {
   IconRocket,
-  IconSearch,
   IconSparkles,
   IconBrandWhatsapp,
   IconCheck,
@@ -35,11 +35,9 @@ import {
   IconPercentage,
   IconWorld,
   IconTag,
-  IconDeviceMobile,
-  IconUsers,
+
   IconBrandGoogle,
   IconBrandInstagram,
-  IconBrandFacebook,
   IconPhone,
   IconMessageCircle,
   IconTrendingUp,
@@ -97,13 +95,18 @@ function ScrollReveal({ children, className }: { children: React.ReactNode; clas
   )
 }
 
+const WHATSAPP_URL = `https://wa.me/55${process.env.NEXT_PUBLIC_SUPPORT_NUMBER || '73981269904'}?text=${encodeURIComponent('Olá! Quero saber mais sobre o site para meu negócio.')}`
+
 export function LandingPage({ isLoggedIn = false, hasSubscription = false }: LandingPageProps) {
+  const searchParams = useSearchParams()
+  const shouldRedirectToWhatsApp = searchParams.get('wpp') === 'true'
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
       <MarketingHeader isLoggedIn={isLoggedIn} hasSubscription={hasSubscription} />
-      <HeroSection />
+      <HeroSection shouldRedirectToWhatsApp={shouldRedirectToWhatsApp} />
       <SocialProofBar />
       <StepsSection />
       <BeforeAfterSection />
@@ -111,16 +114,21 @@ export function LandingPage({ isLoggedIn = false, hasSubscription = false }: Lan
       <AnalyticsSection />
       <ComparisonSection />
       <NichesSection />
-      <CTASection />
+      <CTASection shouldRedirectToWhatsApp={shouldRedirectToWhatsApp} />
       <MarketingFooter />
-      <FloatingWhatsAppButton />
+      <FloatingWhatsAppButton shouldRedirectToWhatsApp={shouldRedirectToWhatsApp} />
     </main>
   )
 }
 
-const WHATSAPP_URL = `https://wa.me/55${process.env.NEXT_PUBLIC_SUPPORT_NUMBER || '73981269904'}?text=${encodeURIComponent('Olá! Quero saber mais sobre o site para meu negócio.')}`
+function HeroSection({ shouldRedirectToWhatsApp }: { shouldRedirectToWhatsApp: boolean }) {
+  const primaryCTAUrl = shouldRedirectToWhatsApp
+    ? WHATSAPP_URL
+    : `${process.env.NEXT_PUBLIC_APP_URL}/cadastro`
 
-function HeroSection() {
+  const primaryCTATarget = shouldRedirectToWhatsApp ? '_blank' : undefined
+  const primaryCTARel = shouldRedirectToWhatsApp ? 'noopener noreferrer' : undefined
+
   return (
     <section id="hero" className="relative py-20 md:py-32">
       <div className="container mx-auto px-4 text-center">
@@ -165,14 +173,23 @@ function HeroSection() {
           className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <a
-            href={`${process.env.NEXT_PUBLIC_APP_URL}/cadastro`}
-            //target="_blank"
-            rel="noopener noreferrer"
-            // onClick={() => trackWhatsAppClick('hero')}
+            href={primaryCTAUrl}
+            target={primaryCTATarget}
+            rel={primaryCTARel}
+            onClick={() => shouldRedirectToWhatsApp && trackWhatsAppClick('hero')}
             className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
           >
-            <IconRocket className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
-            Quero meu site
+            {shouldRedirectToWhatsApp ? (
+              <>
+                <IconBrandWhatsapp className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
+                Falar no WhatsApp
+              </>
+            ) : (
+              <>
+                <IconRocket className="h-5 w-5 transition-transform group-hover:-translate-y-0.5" />
+                Quero meu site
+              </>
+            )}
           </a>
           <Link
             href="#como-funciona"
@@ -1164,7 +1181,7 @@ function NichesSection() {
   )
 }
 
-function CTASection() {
+function CTASection({ shouldRedirectToWhatsApp }: { shouldRedirectToWhatsApp: boolean }) {
   return (
     <section className="relative py-24">
       <div className="container mx-auto px-4">
@@ -1188,19 +1205,30 @@ function CTASection() {
                 seu concorrente já está aparecendo no Google e recebendo os clientes que poderiam ser seus.
               </p>
               <p className="mx-auto mt-2 text-slate-500 dark:text-slate-400">
-                Fale conosco e tenha seu site profissional pronto em poucos minutos.
+                {shouldRedirectToWhatsApp
+                  ? 'Fale conosco e tenha seu site profissional pronto em poucos minutos.'
+                  : 'Crie seu site profissional agora e comece a receber mais clientes.'}
               </p>
 
               <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <a
-                  href={WHATSAPP_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackWhatsAppClick('cta_section')}
+                  href={shouldRedirectToWhatsApp ? WHATSAPP_URL : `${process.env.NEXT_PUBLIC_APP_URL}/cadastro`}
+                  target={shouldRedirectToWhatsApp ? '_blank' : undefined}
+                  rel={shouldRedirectToWhatsApp ? 'noopener noreferrer' : undefined}
+                  onClick={() => shouldRedirectToWhatsApp && trackWhatsAppClick('cta_section')}
                   className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-10 py-5 text-lg font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
                 >
-                  <IconBrandWhatsapp className="h-6 w-6 transition-transform group-hover:-translate-y-0.5" />
-                  Falar no WhatsApp
+                  {shouldRedirectToWhatsApp ? (
+                    <>
+                      <IconBrandWhatsapp className="h-6 w-6 transition-transform group-hover:-translate-y-0.5" />
+                      Falar no WhatsApp
+                    </>
+                  ) : (
+                    <>
+                      <IconRocket className="h-6 w-6 transition-transform group-hover:-translate-y-0.5" />
+                      Criar meu site
+                    </>
+                  )}
                 </a>
               </div>
 
@@ -1215,7 +1243,7 @@ function CTASection() {
   )
 }
 
-function FloatingWhatsAppButton() {
+function FloatingWhatsAppButton({ shouldRedirectToWhatsApp }: { shouldRedirectToWhatsApp: boolean }) {
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
@@ -1242,16 +1270,19 @@ function FloatingWhatsAppButton() {
       className="fixed bottom-0 left-0 right-0 z-50 p-3 md:hidden"
     >
       <a
-        href={WHATSAPP_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={() => trackWhatsAppClick('floating_mobile')}
+        href={shouldRedirectToWhatsApp ? WHATSAPP_URL : `${process.env.NEXT_PUBLIC_APP_URL}/cadastro`}
+        target={shouldRedirectToWhatsApp ? '_blank' : undefined}
+        rel={shouldRedirectToWhatsApp ? 'noopener noreferrer' : undefined}
+        onClick={() => shouldRedirectToWhatsApp && trackWhatsAppClick('floating_mobile')}
         className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-4 text-base font-semibold text-white shadow-lg shadow-[#25D366]/30 transition-all active:scale-[0.98]"
       >
-        <IconBrandWhatsapp className="h-5 w-5" />
-        Falar no WhatsApp
+        {shouldRedirectToWhatsApp ? (
+          <IconBrandWhatsapp className="h-5 w-5" />
+        ) : (
+          <IconRocket className="h-5 w-5" />
+        )}
+        {shouldRedirectToWhatsApp ? 'Falar no WhatsApp' : 'Criar meu site'}
       </a>
     </motion.div>
   )
 }
-
