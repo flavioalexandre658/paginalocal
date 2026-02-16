@@ -182,14 +182,7 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                           </button>
 
 
-                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-4 pb-3 pt-8">
-                            <p className="truncate text-sm font-medium text-white">
-                              {image.alt}
-                              <span className="ml-2 text-white/50 text-xs">
-                                {index + 1}/{images.length}
-                              </span>
-                            </p>
-                          </div>
+
                         </div>
                       </div>
                     </CarouselItem>
@@ -299,9 +292,6 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
                         <IconZoomIn className="h-6 w-6 text-white" />
                       </div>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3 translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-                      <p className="truncate text-sm font-medium text-white">{image.alt}</p>
                     </div>
                   </button>
                 );

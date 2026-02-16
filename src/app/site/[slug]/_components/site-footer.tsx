@@ -85,7 +85,7 @@ export function SiteFooter({
                   className="h-10 w-auto object-contain"
                 />
               )}
-              <h4 className="text-xl font-bold text-primary">{storeName}</h4>
+              <h3 className="text-xl font-bold text-primary">{storeName}</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400">
                 {category ? `${category} em ${city}, ${state}. Atendimento profissional e de qualidade.` : `${city}, ${state}.`}
               </p>
