@@ -8,6 +8,9 @@ import { CookieConsent } from '@/components/shared/cookie-consent'
 import { GoogleTagManager, GoogleTagManagerNoScript } from '@/components/shared/google-tag-manager'
 
 export const metadata: Metadata = {
+  other: {
+    'X-DNS-Prefetch-Control': 'on',
+  },
   title: {
     default: 'Site para Negócio Local | Apareça no Topo do Google | Página Local',
     template: '%s | Página Local',

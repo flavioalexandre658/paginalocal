@@ -59,27 +59,37 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link rel="preload" as="style" href={fontUrl!} />
-      <link rel="stylesheet" href={fontUrl!} />
+      <link rel="stylesheet" href={fontUrl!} media="print" onLoad={() => { (document.querySelector('link[rel="stylesheet"]') as HTMLLinkElement).media = 'all' }} />
+      <noscript><link rel="stylesheet" href={fontUrl!} /></noscript>
 
+      {/* Preconnect para imagens */}
       <link rel="preconnect" href="https://stagingfy-images.s3.amazonaws.com" />
+      <link rel="dns-prefetch" href="https://stagingfy-images.s3.amazonaws.com" />
+
+      {/* Preload cover image com prioridade */}
       {data?.coverUrl && (
-        <link
-          rel="preload"
-          as="image"
-          href={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1920&q=50`}
-          fetchPriority="high"
-        />
+        <>
+          <link
+            rel="preload"
+            as="image"
+            href={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1080&q=75`}
+            imageSrcSet={`
+        /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=640&q=75 640w,
+        /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1080&q=75 1080w,
+        /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1920&q=75 1920w
+      `}
+            imageSizes="100vw"
+            fetchPriority="high"
+          />
+        </>
       )}
-      {data?.coverUrl && (
+
+      {/* Preload logo se existir */}
+      {data?.logoUrl && (
         <link
           rel="preload"
           as="image"
-          imageSrcSet={`
-      /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=640&q=50 640w,
-      /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1080&q=50 1080w,
-      /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1920&q=50 1920w
-    `}
-          imageSizes="100vw"
+          href={`/_next/image?url=${encodeURIComponent(data.logoUrl)}&w=256&q=90`}
           fetchPriority="high"
         />
       )}

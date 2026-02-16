@@ -27,26 +27,30 @@ export function SiteHeader({
   return (
     <header className="relative z-20 w-full">
       <div className="container mx-auto px-4">
-        <div className="mx-auto flex max-w-4xl items-center py-4 md:py-5 justify-center md:justify-between">
-          {/* Logo */}
-          <a href={getStoreHomeUrl(slug)} className="block shrink-0">
+        <div className="mx-auto flex h-[72px] max-w-4xl items-center justify-center md:h-[80px] md:justify-between">
+          {/* Logo com dimensões fixas para evitar CLS */}
+          <a
+            href={getStoreHomeUrl(slug)}
+            className="relative block h-10 w-[140px] shrink-0 md:h-12 md:w-[140px]"
+          >
             <Image
               src={logoUrl}
               alt={`Logo ${storeName}`}
-              width={140}
-              height={48}
-              className="h-10 w-auto object-contain md:h-12"
+              fill
+              sizes="140px"
+              className="object-contain"
               priority
+              quality={90}
             />
           </a>
 
           {/* WhatsApp button — desktop only */}
           {showWhatsappButton && (
-            <a
-              href={whatsappUrl}
+
+            <a href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden items-center gap-2 rounded-full px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all duration-200 hover:scale-105 hover:shadow-lg md:inline-flex"
+              className="hidden h-10 items-center gap-2 rounded-full px-6 text-sm font-bold text-white shadow-md transition-all duration-200 hover:scale-105 hover:shadow-lg md:inline-flex"
               style={{
                 backgroundColor: btnColor,
                 boxShadow: `0 4px 12px ${btnColor}30`,
