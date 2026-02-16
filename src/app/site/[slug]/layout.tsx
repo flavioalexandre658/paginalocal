@@ -72,14 +72,14 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
         __html: `@font-face{font-display:swap;}`
       }} />
 
-      {/* Preload cover image com prioridade */}
+      {/* Preload cover image com prioridade 
       {data?.coverUrl && (
         <link
           rel="preload"
           as="image"
           href={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1080&q=60`}
         />
-      )}
+      )}*/}
 
       {/* Preload logo se existir */}
       {data?.logoUrl && (
