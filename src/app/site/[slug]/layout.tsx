@@ -76,7 +76,7 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
         <link
           rel="preload"
           as="image"
-          href={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1080&q=75`}
+          href={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1080&q=60`}
         />
       )}
 

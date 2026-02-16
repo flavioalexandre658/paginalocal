@@ -78,7 +78,7 @@ export function HeroSection({
             alt={heroImageAlt || `Fachada da ${store.name} em ${store.city}`}
             fill
             priority
-            quality={75}
+            quality={60}
             sizes="100vw"
             className="object-cover"
             decoding="sync"        // ← TROCAR de "async" para "sync"

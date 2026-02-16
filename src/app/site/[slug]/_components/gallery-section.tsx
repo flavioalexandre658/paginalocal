@@ -170,6 +170,9 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                             loading={index === 0 ? 'eager' : 'lazy'}
                             className="object-cover"
                             sizes="100vw"
+                            decoding="sync"        // ← TROCAR de "async" para "sync"
+
+                            quality={75}
                           />
 
 
@@ -245,6 +248,8 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                               loading="lazy"
                               className="object-cover"
                               sizes="25vw"
+                              decoding="sync"        // ← TROCAR de "async" para "sync"
+                              quality={75}
                             />
                           </button>
                         </CarouselItem>
@@ -287,6 +292,8 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                       loading="lazy"
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                       sizes={spanClass.includes("col-span-2") ? "66vw" : "33vw"}
+                      decoding="sync"        // ← TROCAR de "async" para "sync"
+                      quality={75}
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-all duration-300 group-hover:opacity-100">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
@@ -361,6 +368,8 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                   transition: isDragging ? 'none' : 'transform 0.2s ease-out',
                 }}
                 draggable={false}
+                decoding="sync"        // ← TROCAR de "async" para "sync"
+                quality={75}
               />
             </div>
           </div>
