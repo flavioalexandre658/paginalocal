@@ -81,10 +81,10 @@ export function HeroSection({
             quality={60}
             sizes="100vw"
             className="object-cover"
-            // decoding="sync"        // ← TROCAR de "async" para "sync"
-            // placeholder="blur"
+            decoding="sync"        // ← TROCAR de "async" para "sync"
+            placeholder="blur"
             fetchPriority="high"
-          // blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMxZTI5M2IiLz48L3N2Zz4="
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMxZTI5M2IiLz48L3N2Zz4="
           />
           <div
             className="absolute inset-0"
