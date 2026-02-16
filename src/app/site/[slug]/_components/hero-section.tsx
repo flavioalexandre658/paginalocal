@@ -79,7 +79,7 @@ export function HeroSection({
             fill
             priority
             quality={40}
-            sizes="100vw"
+            sizes="(max-width: 768px) 100vw, 1200px"
             className="object-cover"
             decoding="sync"        // ← TROCAR de "async" para "sync"
             placeholder="blur"
