@@ -126,14 +126,10 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
     return null
   }
 
-
-
   return (
     <>
       <section id="galeria" className="relative py-20 md:py-28 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950" />
-        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-primary/5 blur-3xl" />
 
         <div className="container relative mx-auto px-4">
           <div className="mx-auto max-w-4xl">
@@ -166,15 +162,11 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                             src={image.url}
                             alt={image.alt}
                             fill
-                            priority={index === 0}
                             loading={index === 0 ? 'eager' : 'lazy'}
                             className="object-cover"
-                            sizes="100vw"
-                            decoding="sync"        // ← TROCAR de "async" para "sync"
-
-                            quality={75}
+                            sizes="(max-width: 768px) 100vw, 600px"
+                            quality={60}
                           />
-
 
                           <button
                             onClick={() => openLightbox(index)}
@@ -183,15 +175,11 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                           >
                             <IconMaximize className="h-5 w-5" />
                           </button>
-
-
-
                         </div>
                       </div>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-
 
                 {images.length > 1 && (
                   <>
@@ -214,7 +202,6 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                   </>
                 )}
               </Carousel>
-
 
               {images.length > 1 && (
                 <div className="mt-3 overflow-hidden">
@@ -247,9 +234,8 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                               fill
                               loading="lazy"
                               className="object-cover"
-                              sizes="25vw"
-                              decoding="sync"        // ← TROCAR de "async" para "sync"
-                              quality={75}
+                              sizes="80px"
+                              quality={40}
                             />
                           </button>
                         </CarouselItem>
@@ -263,19 +249,19 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
             {/* ====== DESKTOP: Mosaic grid ====== */}
             <div className="hidden md:grid gap-3 md:grid-cols-3 auto-rows-[180px] [grid-auto-flow:dense] stagger-children">
               {images.map((image, index) => {
-                const groupIndex = Math.floor(index / 3);
-                const posInGroup = index % 3;
-                const pattern = groupIndex % 3;
+                const groupIndex = Math.floor(index / 3)
+                const posInGroup = index % 3
+                const pattern = groupIndex % 3
 
-                let spanClass = "";
+                let spanClass = ''
 
                 if (pattern === 0) {
-                  if (posInGroup === 0) spanClass = "md:col-span-2 md:row-span-2";
+                  if (posInGroup === 0) spanClass = 'md:col-span-2 md:row-span-2'
                 } else if (pattern === 1) {
-                  if (posInGroup === 2) spanClass = "md:col-span-2 md:row-span-2";
+                  if (posInGroup === 2) spanClass = 'md:col-span-2 md:row-span-2'
                 } else {
-                  if (posInGroup === 0) spanClass = "md:row-span-2";
-                  else if (posInGroup === 1) spanClass = "md:col-span-2";
+                  if (posInGroup === 0) spanClass = 'md:row-span-2'
+                  else if (posInGroup === 1) spanClass = 'md:col-span-2'
                 }
 
                 return (
@@ -289,11 +275,10 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                       src={image.url}
                       alt={image.alt}
                       fill
-                      loading="lazy"
+                      loading={index < 2 ? 'eager' : 'lazy'}
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes={spanClass.includes("col-span-2") ? "66vw" : "33vw"}
-                      decoding="sync"        // ← TROCAR de "async" para "sync"
-                      quality={75}
+                      sizes={spanClass.includes('col-span-2') ? '600px' : '300px'}
+                      quality={50}
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-all duration-300 group-hover:opacity-100">
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm border border-white/30">
@@ -301,7 +286,7 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                       </div>
                     </div>
                   </button>
-                );
+                )
               })}
             </div>
           </div>
@@ -368,7 +353,6 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                   transition: isDragging ? 'none' : 'transform 0.2s ease-out',
                 }}
                 draggable={false}
-                decoding="sync"        // ← TROCAR de "async" para "sync"
                 quality={75}
               />
             </div>
