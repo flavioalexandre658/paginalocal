@@ -118,7 +118,7 @@ export function HeroSection({
             </div>
 
             {/* H1 com altura mínima reservada */}
-            <h1 className={`mb-4 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl ${compact ? 'min-h-[120px]' : 'min-h-[120px]'}`}>
+            <h1 className={`mb-4 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl ${compact ? 'h-[140px] md:h-[160px] lg:h-[180px]' : 'h-[140px] md:h-[160px] lg:h-[180px]'}`}>
               {h1Title}
             </h1>
 
