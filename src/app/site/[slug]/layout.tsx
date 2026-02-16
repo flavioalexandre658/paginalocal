@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+import Script from 'next/script'
 import { TrackingScripts } from '@/components/site/tracking-scripts'
 import { db } from '@/db'
 import { store } from '@/db/schema'
@@ -55,33 +56,32 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
 
   return (
     <>
-      {/* Preconnect + preload só da fonte usada */}
+      {/* Preconnect + DNS prefetch */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link rel="preload" as="style" href={fontUrl!} />
-      <link rel="stylesheet" href={fontUrl!} media="print" onLoad={() => { (document.querySelector('link[rel="stylesheet"]') as HTMLLinkElement).media = 'all' }} />
-      <noscript><link rel="stylesheet" href={fontUrl!} /></noscript>
-
-      {/* Preconnect para imagens */}
       <link rel="preconnect" href="https://stagingfy-images.s3.amazonaws.com" />
       <link rel="dns-prefetch" href="https://stagingfy-images.s3.amazonaws.com" />
 
+      {/* Font loading assíncrono com CSS inline */}
+      <link rel="preload" as="style" href={fontUrl!} />
+      <link rel="stylesheet" href={fontUrl!} />
+
+      {/* Fallback para font-display via inline style */}
+      <style dangerouslySetInnerHTML={{
+        __html: `@font-face{font-display:swap;}`
+      }} />
+
       {/* Preload cover image com prioridade */}
       {data?.coverUrl && (
-        <>
-          <link
-            rel="preload"
-            as="image"
-            href={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1080&q=75`}
-            imageSrcSet={`
-        /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=640&q=75 640w,
-        /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1080&q=75 1080w,
-        /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1920&q=75 1920w
-      `}
-            imageSizes="100vw"
-            fetchPriority="high"
-          />
-        </>
+        <link
+          rel="preload"
+          as="image"
+          href={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1080&q=75`}
+          imageSrcSet={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=640&q=75 640w, /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1080&q=75 1080w, /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1920&q=75 1920w`}
+
+          imageSizes="100vw"
+          fetchPriority="high"
+        />
       )}
 
       {/* Preload logo se existir */}
