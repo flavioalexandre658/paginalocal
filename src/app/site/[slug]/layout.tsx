@@ -1,5 +1,4 @@
 import { ReactNode } from 'react'
-import Script from 'next/script'
 import { TrackingScripts } from '@/components/site/tracking-scripts'
 import { db } from '@/db'
 import { store } from '@/db/schema'
@@ -56,11 +55,13 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
 
   return (
     <>
+
       {/* Preconnect + DNS prefetch */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link rel="preconnect" href="https://stagingfy-images.s3.amazonaws.com" />
       <link rel="dns-prefetch" href="https://stagingfy-images.s3.amazonaws.com" />
+
 
       {/* Font loading assíncrono com CSS inline */}
       <link rel="preload" as="style" href={fontUrl!} />

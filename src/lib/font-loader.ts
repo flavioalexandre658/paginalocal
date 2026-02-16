@@ -23,7 +23,7 @@ export function getSiteFontUrl(fontFamily?: string | null): string | null {
   }
 
   const fontQuery = fonts[slug] || fonts['inter']
-  return `https://fonts.googleapis.com/css2?family=${fontQuery}&display=swap`
+  return `https://fonts.googleapis.com/css2?family=${fontQuery}&display=optional`
 }
 
 export function getSiteFontFamily(fontFamily?: string | null): string {
