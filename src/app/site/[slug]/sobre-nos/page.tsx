@@ -234,7 +234,7 @@ export default async function SobreNosPage({ params }: PageProps) {
               <h3 className="mb-2 text-xl font-extrabold text-white">
                 Entre em contato com a {storeData.name}
               </h3>
-              <p className="text-white/70">
+              <p className="text-white/90">
                 Fale conosco pelo WhatsApp, ligue ou visite a {storeData.name} em {storeData.city}, {storeData.state}. Estamos prontos para atender você com qualidade e dedicação.
               </p>
             </div>

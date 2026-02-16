@@ -81,6 +81,7 @@ export function HeroSection({
             quality={75}
             sizes="100vw"
             className="object-cover"
+            decoding="sync"        // ← TROCAR de "async" para "sync"
             placeholder="blur"
             fetchPriority="high"
             blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiMxZTI5M2IiLz48L3N2Zz4="
@@ -117,7 +118,7 @@ export function HeroSection({
             </div>
 
             {/* H1 com altura mínima reservada */}
-            <h1 className={`mb-4 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl ${compact ? 'min-h-[2.5em]' : 'min-h-[3em]'}`}>
+            <h1 className={`mb-4 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl ${compact ? 'min-h-[120px]' : 'min-h-[120px]'}`}>
               {h1Title}
             </h1>
 

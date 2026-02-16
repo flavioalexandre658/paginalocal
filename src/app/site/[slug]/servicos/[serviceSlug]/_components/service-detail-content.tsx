@@ -201,7 +201,7 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
               <h3 className="mb-2 text-xl font-extrabold text-white">
                 Solicite {service.name} em {store.city}
               </h3>
-              <p className="mb-6 text-white/70">
+              <p className="mb-6 text-white/90">
                 Fale agora com a {store.name} e solicite o serviço de {service.name.toLowerCase()}. Atendemos em {store.city} e região com qualidade e profissionalismo.
               </p>
               <div className="flex flex-col gap-3 sm:flex-row">

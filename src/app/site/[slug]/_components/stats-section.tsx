@@ -238,7 +238,7 @@ export function StatsSection({ stats, category }: StatsSectionProps) {
                     <span>{formatNumber(displayValue)}</span>
                     {stat.suffix && <span>{stat.suffix}</span>}
                   </div>
-                  <p className="mt-2 text-sm font-medium text-white/80 md:text-base">
+                  <p className="mt-2 text-sm font-medium text-white/95 md:text-base">
                     {stat.label}
                   </p>
                 </div>

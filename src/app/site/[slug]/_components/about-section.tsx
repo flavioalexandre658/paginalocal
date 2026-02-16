@@ -174,7 +174,7 @@ export function AboutSection({
                       <div className="text-2xl font-black text-white md:text-3xl">
                         Áreas de cobertura
                       </div>
-                      <p className="text-sm font-medium text-white/80">
+                      <p className="text-sm font-medium text-white/95">
                         Bairros e regiões atendidas por {category.toLowerCase()} em {city}
                       </p>
                     </div>

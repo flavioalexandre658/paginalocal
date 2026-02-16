@@ -39,7 +39,7 @@ export function AreasSection({ neighborhoods, city, state, category, storeName }
                 <h3 className="text-2xl font-extrabold text-white md:text-3xl">
                   {category} em {city}
                 </h3>
-                <p className="mt-3 text-sm text-white/70 leading-relaxed">
+                <p className="mt-3 text-sm text-white/90 leading-relaxed">
                   Somos {category.toLowerCase()} em {city}, {state}, atendendo toda a região com qualidade, profissionalismo e compromisso. Nossa equipe está preparada para atender você com agilidade.
                 </p>
               </div>
