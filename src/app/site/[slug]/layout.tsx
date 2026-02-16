@@ -77,10 +77,6 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
           rel="preload"
           as="image"
           href={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1080&q=75`}
-          imageSrcSet={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=640&q=75 640w, /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1080&q=75 1080w, /_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1920&q=75 1920w`}
-
-          imageSizes="100vw"
-          fetchPriority="high"
         />
       )}
 

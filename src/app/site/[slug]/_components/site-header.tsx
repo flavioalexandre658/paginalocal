@@ -40,7 +40,8 @@ export function SiteHeader({
               sizes="140px"
               className="object-contain"
               priority
-              quality={90}
+              fetchPriority="high"
+              quality={75}
             />
           </a>
 
