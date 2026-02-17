@@ -22,6 +22,11 @@ const createProductSchema = z.object({
   ctaExternalUrl: z.string().url().optional(),
   status: z.enum(['ACTIVE', 'DRAFT', 'OUT_OF_STOCK']).default('ACTIVE'),
   isFeatured: z.boolean().default(false),
+  images: z.array(z.object({
+    url: z.string().optional(),
+    alt: z.string(),
+    order: z.number().int().min(0),
+  })).optional(),
 })
 
 async function generateUniqueProductSlug(storeId: string, name: string): Promise<string> {
@@ -75,6 +80,10 @@ export const createProductAction = authActionClient
         ...parsedInput,
         slug,
         position: (maxPosition?.max || 0) + 1,
+        images: parsedInput.images?.map(image => ({
+          ...image,
+          url: image.url || '',
+        })),
       })
       .returning()
 

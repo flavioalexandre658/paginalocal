@@ -14,7 +14,7 @@ const createCollectionSchema = z.object({
   storeId: z.string().uuid(),
   name: z.string().min(1, 'Nome é obrigatório').max(100),
   description: z.string().optional(),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().optional(),
   isActive: z.boolean().default(true),
 })
 

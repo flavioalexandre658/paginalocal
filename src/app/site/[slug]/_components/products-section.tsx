@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import Image from 'next/image'
-import { IconShoppingCart, IconArrowRight, IconTag } from '@tabler/icons-react'
+import { IconArrowRight } from '@tabler/icons-react'
+import { ProductCard } from '@/components/site/product-card'
 import type { ProductImage } from '@/db/schema'
 
 interface Product {
@@ -12,6 +12,7 @@ interface Product {
   originalPriceInCents: number | null
   images: ProductImage[] | null
   isFeatured: boolean
+  collectionName?: string | null
 }
 
 interface ProductsSectionProps {
@@ -24,9 +25,7 @@ interface ProductsSectionProps {
 
 export function ProductsSection({
   products,
-  storeName,
   storeSlug,
-  category,
   city,
 }: ProductsSectionProps) {
   if (products.length === 0) return null
@@ -51,68 +50,20 @@ export function ProductsSection({
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {displayProducts.map((product, index) => (
-              <Link
+            {displayProducts.map((product) => (
+              <ProductCard
                 key={product.id}
-                href={`/site/${storeSlug}/produto/${product.slug}`}
-                className="group"
-              >
-                <div className="overflow-hidden rounded-2xl border-2 border-slate-100 bg-white p-0 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/30 hover:shadow-xl">
-                  {product.images && product.images.length > 0 ? (
-                    <div className="relative aspect-square overflow-hidden bg-slate-50">
-                      <Image
-                        src={product.images[0].url}
-                        alt={product.images[0].alt}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      />
-                      {product.originalPriceInCents && (
-                        <div className="absolute left-3 top-3">
-                          <span className="inline-flex items-center gap-1 rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                            <IconTag className="h-3 w-3" />
-                            Promoção
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex aspect-square items-center justify-center bg-slate-100">
-                      <IconShoppingCart className="h-16 w-16 text-slate-300" />
-                    </div>
-                  )}
-
-                  <div className="p-6">
-                    <h3 className="mb-2 text-xl font-bold text-slate-900 line-clamp-2">
-                      {product.name}
-                    </h3>
-
-                    {product.description && (
-                      <p className="mb-4 text-sm text-slate-500 line-clamp-2">
-                        {product.description}
-                      </p>
-                    )}
-
-                    <div className="flex items-end justify-between gap-3">
-                      <div>
-                        {product.originalPriceInCents && (
-                          <p className="text-xs text-slate-400 line-through">
-                            R$ {(product.originalPriceInCents / 100).toFixed(2)}
-                          </p>
-                        )}
-                        <p className="text-2xl font-black text-primary">
-                          R$ {(product.priceInCents / 100).toFixed(2)}
-                        </p>
-                      </div>
-
-                      <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary transition-all group-hover:gap-2">
-                        Ver detalhes
-                        <IconArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
+                id={product.id}
+                name={product.name}
+                slug={product.slug}
+                description={product.description}
+                priceInCents={product.priceInCents}
+                originalPriceInCents={product.originalPriceInCents}
+                images={product.images}
+                collectionName={product.collectionName}
+                storeSlug={storeSlug}
+                variant="link"
+              />
             ))}
           </div>
 

@@ -1,77 +1,42 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { db } from '@/db'
-import { store, storeProductCollection, storeProduct } from '@/db/schema'
-import { eq, and, asc } from 'drizzle-orm'
-import { IconArrowRight, IconShoppingCart, IconTag, IconBrandWhatsapp, IconExternalLink } from '@tabler/icons-react'
-import type { ProductImage, ProductCtaMode } from '@/db/schema'
+import { store, storeProductCollection, storeProduct, testimonial, storePage, service } from '@/db/schema'
+import { eq, and, asc, desc } from 'drizzle-orm'
+import {
+  IconArrowLeft,
+  IconMapPin,
+  IconStar,
+  IconShoppingCart,
+} from '@tabler/icons-react'
+import {
+  getContrastTextClass,
+  getContrastMutedClass,
+  getContrastBadgeClasses,
+  isLightColor,
+} from '@/lib/color-contrast'
+import { ProductCard } from '@/components/site/product-card'
+import { TestimonialsSection } from '../../_components/testimonials-section'
+import { FAQSection } from '../../_components/faq-section'
+import { SiteFooter } from '../../_components/site-footer'
+import { FloatingContact } from '../../_components/floating-contact'
+import type { ProductImage } from '@/db/schema'
 
 interface PageProps {
   params: Promise<{ slug: string; collectionSlug: string }>
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug, collectionSlug } = await params
-
-  const storeData = await db
-    .select({
-      storeName: store.name,
-      storeCity: store.city,
-    })
-    .from(store)
-    .where(eq(store.slug, slug))
-    .limit(1)
-
-  if (!storeData[0]) {
-    return { title: 'Página não encontrada' }
-  }
-
-  const collection = await db
-    .select()
-    .from(storeProductCollection)
-    .innerJoin(store, eq(storeProductCollection.storeId, store.id))
-    .where(and(
-      eq(store.slug, slug),
-      eq(storeProductCollection.slug, collectionSlug)
-    ))
-    .limit(1)
-
-  if (!collection[0]) {
-    return { title: 'Coleção não encontrada' }
-  }
-
-  const collectionData = collection[0].store_product_collection
-
-  const title = collectionData.seoTitle || `${collectionData.name} | ${storeData[0].storeName}`
-  const description = collectionData.seoDescription || `${collectionData.description || collectionData.name} - ${storeData[0].storeName} em ${storeData[0].storeCity}`
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      images: collectionData.imageUrl ? [collectionData.imageUrl] : [],
-    },
-  }
-}
-
-export default async function CollectionPage({ params }: PageProps) {
-  const { slug, collectionSlug } = await params
-
+async function getCollectionData(storeSlug: string, collectionSlug: string) {
   const storeData = await db
     .select()
     .from(store)
-    .where(eq(store.slug, slug))
+    .where(eq(store.slug, storeSlug))
     .limit(1)
 
-  if (!storeData[0]) {
-    notFound()
-  }
+  if (!storeData[0]) return null
 
-  const collection = await db
+  const collectionData = await db
     .select()
     .from(storeProductCollection)
     .where(and(
@@ -81,165 +46,273 @@ export default async function CollectionPage({ params }: PageProps) {
     ))
     .limit(1)
 
-  if (!collection[0]) {
+  if (!collectionData[0]) return null
+
+  const [products, storeTestimonials, institutionalPages, services] = await Promise.all([
+    db
+      .select()
+      .from(storeProduct)
+      .where(and(
+        eq(storeProduct.storeId, storeData[0].id),
+        eq(storeProduct.collectionId, collectionData[0].id),
+        eq(storeProduct.status, 'ACTIVE')
+      ))
+      .orderBy(asc(storeProduct.position)),
+
+    db
+      .select()
+      .from(testimonial)
+      .where(eq(testimonial.storeId, storeData[0].id))
+      .orderBy(desc(testimonial.rating))
+      .limit(6),
+
+    db
+      .select({ title: storePage.title, slug: storePage.slug })
+      .from(storePage)
+      .where(and(eq(storePage.storeId, storeData[0].id), eq(storePage.isActive, true))),
+
+    db
+      .select({ id: service.id, name: service.name, slug: service.slug, description: service.description, priceInCents: service.priceInCents })
+      .from(service)
+      .where(and(eq(service.storeId, storeData[0].id), eq(service.isActive, true)))
+      .orderBy(asc(service.position)),
+  ])
+
+  return {
+    store: storeData[0],
+    collection: collectionData[0],
+    products,
+    testimonials: storeTestimonials,
+    institutionalPages,
+    services,
+  }
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug, collectionSlug } = await params
+  const data = await getCollectionData(slug, collectionSlug)
+
+  if (!data) {
+    return { title: 'Coleção não encontrada' }
+  }
+
+  const { store: storeData, collection } = data
+
+  const title = collection.seoTitle || `${collection.name} | ${storeData.name}`
+  const description = collection.seoDescription || `${collection.description || collection.name} - ${storeData.name} em ${storeData.city}`
+
+  const baseUrl = storeData.customDomain
+    ? `https://${storeData.customDomain}`
+    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'}`
+
+  const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
+
+  return {
+    title: { absolute: title },
+    description,
+    icons: { icon: faviconUrl, apple: faviconUrl },
+    robots: {
+      index: storeData.isActive,
+      follow: storeData.isActive,
+      googleBot: { index: storeData.isActive, follow: storeData.isActive, 'max-image-preview': 'large' as const },
+    },
+    alternates: { canonical: `${baseUrl}/catalogo/${collectionSlug}` },
+    openGraph: {
+      type: 'website',
+      locale: 'pt_BR',
+      url: `${baseUrl}/catalogo/${collectionSlug}`,
+      siteName: storeData.name,
+      title,
+      description,
+      images: collection.imageUrl ? [{ url: collection.imageUrl, width: 1200, height: 630 }] : [],
+    },
+  }
+}
+
+export default async function CollectionPage({ params }: PageProps) {
+  const { slug, collectionSlug } = await params
+  const data = await getCollectionData(slug, collectionSlug)
+
+  if (!data) {
     notFound()
   }
 
-  const products = await db
-    .select()
-    .from(storeProduct)
-    .where(and(
-      eq(storeProduct.storeId, storeData[0].id),
-      eq(storeProduct.collectionId, collection[0].id),
-      eq(storeProduct.status, 'ACTIVE')
-    ))
-    .orderBy(asc(storeProduct.position))
+  const { store: storeData, collection, products, testimonials, institutionalPages, services } = data
+
+  const heroBg = storeData.heroBackgroundColor || '#1e293b'
+  const textClass = getContrastTextClass(heroBg)
+  const mutedClass = getContrastMutedClass(heroBg)
+  const badgeClasses = getContrastBadgeClasses(heroBg)
+  const isLight = isLightColor(heroBg)
+
+  const rating = storeData.googleRating ? parseFloat(storeData.googleRating) : 0
+  const showRating = rating >= 4.0 && storeData.googleReviewsCount && storeData.googleReviewsCount > 0
+
+  const baseUrl = storeData.customDomain
+    ? `https://${storeData.customDomain}`
+    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'}`
 
   function getProductCtaUrl(product: typeof products[0]): string {
     if (product.ctaMode === 'EXTERNAL_LINK' && product.ctaExternalUrl) {
       return product.ctaExternalUrl
     }
-
     const message = product.ctaWhatsappMessage
       || `Olá! Tenho interesse no produto *${product.name}* (R$ ${(product.priceInCents / 100).toFixed(2)})`
-
-    return `https://wa.me/55${storeData[0].whatsapp}?text=${encodeURIComponent(message)}`
+    return `https://wa.me/55${storeData.whatsapp}?text=${encodeURIComponent(message)}`
   }
 
   const collectionJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: collection[0].name,
-    description: collection[0].description,
-    url: `https://${slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN}/catalogo/${collectionSlug}`,
+    name: collection.name,
+    description: collection.description,
+    url: `${baseUrl}/catalogo/${collectionSlug}`,
+  }
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: storeData.name, item: baseUrl },
+      { '@type': 'ListItem', position: 2, name: 'Catálogo', item: `${baseUrl}/catalogo` },
+      { '@type': 'ListItem', position: 3, name: collection.name, item: `${baseUrl}/catalogo/${collectionSlug}` },
+    ],
   }
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
-      <main>
-        <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 py-20 md:py-28">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+      <main className="w-full max-w-full overflow-x-clip">
+        {/* Hero */}
+        <section className="relative overflow-hidden py-20 md:py-28">
+          <div className="absolute inset-0" style={{ backgroundColor: heroBg }} />
+          <div className="absolute -top-24 -right-24 z-0 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute -bottom-16 -left-16 z-0 h-56 w-56 rounded-full bg-white/5 blur-2xl" />
 
-          <div className="container relative z-10 mx-auto px-4">
+          <div className={`container relative z-10 mx-auto px-4 ${textClass}`}>
             <div className="mx-auto max-w-4xl">
               <Link
                 href={`/site/${slug}/catalogo`}
-                className="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-primary"
+                className={`mb-8 mr-4 inline-flex max-w-full items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-md transition-all ${badgeClasses} ${isLight ? 'hover:bg-black/10' : 'hover:bg-white/20'}`}
               >
-                <IconArrowRight className="h-4 w-4 rotate-180" />
-                Voltar para catálogo
+                <IconArrowLeft className="h-4 w-4 shrink-0" />
+                <span className="truncate">Voltar para catálogo</span>
               </Link>
 
-              <div className="mb-12">
-                <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
-                  {collection[0].name}
-                </h1>
-                {collection[0].description && (
-                  <p className="mt-4 text-lg text-slate-600">
-                    {collection[0].description}
-                  </p>
-                )}
+              <div className={`mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-md ${badgeClasses}`}>
+                <IconMapPin className="h-4 w-4" />
+                {storeData.city}, {storeData.state}
               </div>
 
-              {products.length > 0 ? (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {products.map((product) => {
-                    const images = product.images as ProductImage[] | null
-                    const firstImage = images && images.length > 0 ? images[0] : null
+              <h1 className="mb-4 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+                {collection.name}
+              </h1>
 
-                    return (
-                      <div
-                        key={product.id}
-                        className="group overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/30 hover:shadow-xl"
-                      >
-                        {firstImage ? (
-                          <div className="relative aspect-square overflow-hidden bg-slate-50">
-                            <Image
-                              src={firstImage.url}
-                              alt={firstImage.alt}
-                              fill
-                              className="object-cover transition-transform duration-300 group-hover:scale-105"
-                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            />
-                            {product.originalPriceInCents && (
-                              <div className="absolute left-3 top-3">
-                                <span className="inline-flex items-center gap-1 rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
-                                  <IconTag className="h-3 w-3" />
-                                  Promoção
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="flex aspect-square items-center justify-center bg-slate-100">
-                            <IconShoppingCart className="h-16 w-16 text-slate-300" />
-                          </div>
-                        )}
+              <p className={`mb-6 text-lg leading-relaxed ${mutedClass}`}>
+                {collection.description || `${storeData.name} · ${storeData.category} em ${storeData.city}, ${storeData.state}`}
+              </p>
 
-                        <div className="p-6">
-                          <h3 className="mb-2 text-xl font-bold text-slate-900 line-clamp-2">
-                            {product.name}
-                          </h3>
-
-                          {product.description && (
-                            <p className="mb-4 text-sm text-slate-500 line-clamp-2">
-                              {product.description}
-                            </p>
-                          )}
-
-                          <div className="mb-4 flex items-end justify-between gap-3">
-                            <div>
-                              {product.originalPriceInCents && (
-                                <p className="text-xs text-slate-400 line-through">
-                                  R$ {(product.originalPriceInCents / 100).toFixed(2)}
-                                </p>
-                              )}
-                              <p className="text-2xl font-black text-primary">
-                                R$ {(product.priceInCents / 100).toFixed(2)}
-                              </p>
-                            </div>
-                          </div>
-
-                          <a
-                            href={getProductCtaUrl(product)}
-                            target={product.ctaMode === 'EXTERNAL_LINK' ? '_blank' : undefined}
-                            rel={product.ctaMode === 'EXTERNAL_LINK' ? 'noopener noreferrer' : undefined}
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-white shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
-                          >
-                            {product.ctaMode === 'WHATSAPP' ? (
-                              <IconBrandWhatsapp className="h-5 w-5" />
-                            ) : (
-                              <IconExternalLink className="h-5 w-5" />
-                            )}
-                            {product.ctaLabel || 'Comprar'}
-                          </a>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="py-16 text-center">
-                  <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
-                    <IconShoppingCart className="h-10 w-10 text-slate-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-slate-900">
-                    Nenhum produto nesta coleção
-                  </h3>
-                  <p className="mt-2 text-sm text-slate-500">
-                    Em breve teremos produtos disponíveis
-                  </p>
+              {showRating && (
+                <div className={`inline-flex items-center gap-2 rounded-full px-4 py-2 backdrop-blur-md ${isLight ? 'bg-black/5' : 'bg-white/10'}`}>
+                  <IconStar className="h-5 w-5 fill-amber-400 text-amber-400" />
+                  <span className="font-semibold">{storeData.googleRating}</span>
+                  <span className={mutedClass}>({storeData.googleReviewsCount} avaliações)</span>
                 </div>
               )}
             </div>
           </div>
         </section>
+
+        {/* Products grid */}
+        <section className="bg-[#f3f5f7] py-20 md:py-28 dark:bg-slate-950/50">
+          <div className="container mx-auto px-4">
+            <div className="mx-auto max-w-4xl">
+              {products.length > 0 ? (
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {products.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      id={product.id}
+                      name={product.name}
+                      slug={product.slug}
+                      description={product.description}
+                      priceInCents={product.priceInCents}
+                      originalPriceInCents={product.originalPriceInCents}
+                      images={product.images as ProductImage[] | null}
+                      collectionName={collection.name}
+                      storeSlug={slug}
+                      variant="cta"
+                      ctaMode={product.ctaMode as 'WHATSAPP' | 'EXTERNAL_LINK'}
+                      ctaLabel={product.ctaLabel}
+                      ctaUrl={getProductCtaUrl(product)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="py-16 text-center">
+                  <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-slate-200">
+                    <IconShoppingCart className="h-10 w-10 text-slate-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-slate-900">Nenhum produto nesta coleção</h3>
+                  <p className="mt-2 text-sm text-slate-500">Em breve teremos produtos disponíveis</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Testimonials */}
+        {testimonials.length > 0 && (
+          <TestimonialsSection
+            testimonials={testimonials}
+            storeName={storeData.name}
+            city={storeData.city}
+            category={storeData.category}
+          />
+        )}
+
+        {/* FAQ */}
+        {Array.isArray(storeData.faq) && (storeData.faq as { question: string; answer: string }[]).length > 0 && (
+          <FAQSection
+            faq={storeData.faq as { question: string; answer: string }[]}
+            storeName={storeData.name}
+            city={storeData.city}
+            category={storeData.category}
+          />
+        )}
       </main>
+
+      <SiteFooter
+        storeName={storeData.name}
+        city={storeData.city}
+        state={storeData.state}
+        category={storeData.category}
+        instagramUrl={storeData.instagramUrl}
+        facebookUrl={storeData.facebookUrl}
+        googleBusinessUrl={storeData.googleBusinessUrl}
+        highlightText={storeData.highlightText}
+        storeSlug={storeData.slug}
+        services={services.map(s => ({ name: s.name, slug: s.slug || '' }))}
+        institutionalPages={institutionalPages}
+        logoUrl={storeData.logoUrl}
+      />
+
+      <FloatingContact
+        store={{
+          id: storeData.id,
+          name: storeData.name,
+          slug: storeData.slug,
+          whatsapp: storeData.whatsapp,
+          phone: storeData.phone,
+          whatsappDefaultMessage: storeData.whatsappDefaultMessage,
+          isActive: storeData.isActive,
+          showWhatsappButton: storeData.showWhatsappButton,
+          showCallButton: storeData.showCallButton,
+          buttonColor: storeData.buttonColor,
+        }}
+      />
     </>
   )
 }

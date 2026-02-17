@@ -1,68 +1,30 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { db } from '@/db'
-import { store, storeProduct } from '@/db/schema'
-import { eq, and } from 'drizzle-orm'
-import { IconArrowRight, IconBrandWhatsapp, IconExternalLink, IconTag, IconShoppingCart } from '@tabler/icons-react'
+import { store, storeProduct, testimonial, storePage, service } from '@/db/schema'
+import { eq, and, asc, desc } from 'drizzle-orm'
+import { IconArrowRight, IconBrandWhatsapp, IconExternalLink } from '@tabler/icons-react'
+import { ProductImageGallery } from '@/components/site/product-image-gallery'
+import { TestimonialsSection } from '../../_components/testimonials-section'
+import { FAQSection } from '../../_components/faq-section'
+import { ProductsSection } from '../../_components/products-section'
+import { SiteHeader } from '../../_components/site-header'
+import { SiteFooter } from '../../_components/site-footer'
 import type { ProductImage } from '@/db/schema'
 
 interface PageProps {
   params: Promise<{ slug: string; productSlug: string }>
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug, productSlug } = await params
-
-  const productData = await db
-    .select({
-      product: storeProduct,
-      storeName: store.name,
-      storeCity: store.city,
-    })
-    .from(storeProduct)
-    .innerJoin(store, eq(storeProduct.storeId, store.id))
-    .where(and(
-      eq(store.slug, slug),
-      eq(storeProduct.slug, productSlug)
-    ))
-    .limit(1)
-
-  if (!productData[0]) {
-    return { title: 'Produto não encontrado' }
-  }
-
-  const product = productData[0].product
-  const images = product.images as ProductImage[] | null
-  const firstImage = images && images.length > 0 ? images[0] : null
-
-  const title = product.seoTitle || `${product.name} | ${productData[0].storeName}`
-  const description = product.seoDescription || product.description || `${product.name} - R$ ${(product.priceInCents / 100).toFixed(2)}`
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      images: firstImage ? [firstImage.url] : [],
-    },
-  }
-}
-
-export default async function ProductPage({ params }: PageProps) {
-  const { slug, productSlug } = await params
-
+async function getProductData(storeSlug: string, productSlug: string) {
   const storeData = await db
     .select()
     .from(store)
-    .where(eq(store.slug, slug))
+    .where(eq(store.slug, storeSlug))
     .limit(1)
 
-  if (!storeData[0]) {
-    notFound()
-  }
+  if (!storeData[0]) return null
 
   const productData = await db
     .select()
@@ -74,22 +36,115 @@ export default async function ProductPage({ params }: PageProps) {
     ))
     .limit(1)
 
-  if (!productData[0]) {
+  if (!productData[0]) return null
+
+  const [otherProducts, storeTestimonials, institutionalPages, services] = await Promise.all([
+    db
+      .select()
+      .from(storeProduct)
+      .where(and(
+        eq(storeProduct.storeId, storeData[0].id),
+        eq(storeProduct.status, 'ACTIVE')
+      ))
+      .orderBy(asc(storeProduct.position))
+      .limit(7),
+
+    db
+      .select()
+      .from(testimonial)
+      .where(eq(testimonial.storeId, storeData[0].id))
+      .orderBy(desc(testimonial.rating))
+      .limit(6),
+
+    db
+      .select({ title: storePage.title, slug: storePage.slug })
+      .from(storePage)
+      .where(and(eq(storePage.storeId, storeData[0].id), eq(storePage.isActive, true))),
+
+    db
+      .select({ id: service.id, name: service.name, slug: service.slug, description: service.description, priceInCents: service.priceInCents })
+      .from(service)
+      .where(and(eq(service.storeId, storeData[0].id), eq(service.isActive, true)))
+      .orderBy(asc(service.position)),
+  ])
+
+  return {
+    store: storeData[0],
+    product: productData[0],
+    otherProducts: otherProducts.filter(p => p.id !== productData[0].id).slice(0, 6),
+    testimonials: storeTestimonials,
+    institutionalPages,
+    services,
+  }
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug, productSlug } = await params
+  const data = await getProductData(slug, productSlug)
+
+  if (!data) {
+    return { title: 'Produto não encontrado' }
+  }
+
+  const { store: storeData, product } = data
+  const images = product.images as ProductImage[] | null
+  const firstImage = images && images.length > 0 ? images[0] : null
+
+  const title = product.seoTitle || `${product.name} | ${storeData.name}`
+  const description = product.seoDescription || product.description || `${product.name} - R$ ${(product.priceInCents / 100).toFixed(2)}`
+
+  const baseUrl = storeData.customDomain
+    ? `https://${storeData.customDomain}`
+    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'}`
+
+  const pageUrl = `${baseUrl}/produto/${productSlug}`
+  const ogImage = firstImage?.url || storeData.coverUrl || storeData.logoUrl
+  const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
+
+  return {
+    title: { absolute: title },
+    description,
+    icons: { icon: faviconUrl, apple: faviconUrl },
+    robots: {
+      index: storeData.isActive,
+      follow: storeData.isActive,
+      googleBot: { index: storeData.isActive, follow: storeData.isActive, 'max-image-preview': 'large' as const },
+    },
+    alternates: { canonical: pageUrl },
+    openGraph: {
+      type: 'website',
+      locale: 'pt_BR',
+      url: pageUrl,
+      siteName: storeData.name,
+      title,
+      description,
+      images: ogImage ? [{ url: ogImage, width: 1200, height: 630, alt: `${product.name} - ${storeData.name}` }] : [],
+    },
+  }
+}
+
+export default async function ProductPage({ params }: PageProps) {
+  const { slug, productSlug } = await params
+  const data = await getProductData(slug, productSlug)
+
+  if (!data) {
     notFound()
   }
 
-  const product = productData[0]
+  const { store: storeData, product, otherProducts, testimonials, institutionalPages, services } = data
   const images = (product.images as ProductImage[] | null) || []
+
+  const baseUrl = storeData.customDomain
+    ? `https://${storeData.customDomain}`
+    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'}`
 
   function getProductCtaUrl(): string {
     if (product.ctaMode === 'EXTERNAL_LINK' && product.ctaExternalUrl) {
       return product.ctaExternalUrl
     }
-
     const message = product.ctaWhatsappMessage
       || `Olá! Tenho interesse no produto *${product.name}* (R$ ${(product.priceInCents / 100).toFixed(2)})`
-
-    return `https://wa.me/55${storeData[0].whatsapp}?text=${encodeURIComponent(message)}`
+    return `https://wa.me/55${storeData.whatsapp}?text=${encodeURIComponent(message)}`
   }
 
   const productJsonLd = {
@@ -103,16 +158,23 @@ export default async function ProductPage({ params }: PageProps) {
       price: (product.priceInCents / 100).toFixed(2),
       priceCurrency: 'BRL',
       availability: 'https://schema.org/InStock',
-      url: `https://${slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN}/produto/${productSlug}`,
+      url: `${baseUrl}/produto/${productSlug}`,
     },
   }
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: storeData.name, item: baseUrl },
+      { '@type': 'ListItem', position: 2, name: 'Catálogo', item: `${baseUrl}/catalogo` },
+      { '@type': 'ListItem', position: 3, name: product.name, item: `${baseUrl}/produto/${productSlug}` },
+    ],
+  }
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
-      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
       <main>
         <section className="relative overflow-hidden bg-white py-12 md:py-20">
@@ -127,53 +189,11 @@ export default async function ProductPage({ params }: PageProps) {
               </Link>
 
               <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-                <div className="space-y-4">
-                  {images.length > 0 ? (
-                    <>
-                      <div className="relative aspect-square overflow-hidden rounded-2xl border-2 border-slate-100 bg-slate-50 shadow-lg">
-                        <Image
-                          src={images[0].url}
-                          alt={images[0].alt}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 1024px) 100vw, 50vw"
-                          priority
-                        />
-                        {product.originalPriceInCents && (
-                          <div className="absolute left-4 top-4">
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500 px-4 py-2 text-sm font-bold text-white shadow-xl">
-                              <IconTag className="h-4 w-4" />
-                              Promoção
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {images.length > 1 && (
-                        <div className="grid grid-cols-4 gap-3">
-                          {images.slice(1, 5).map((img, index) => (
-                            <div
-                              key={index}
-                              className="relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
-                            >
-                              <Image
-                                src={img.url}
-                                alt={img.alt}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 1024px) 25vw, 12vw"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="flex aspect-square items-center justify-center rounded-2xl border-2 border-slate-100 bg-slate-50">
-                      <IconShoppingCart className="h-32 w-32 text-slate-200" />
-                    </div>
-                  )}
-                </div>
+                <ProductImageGallery
+                  images={images}
+                  productName={product.name}
+                  hasPromotion={!!product.originalPriceInCents}
+                />
 
                 <div className="flex flex-col justify-center">
                   <div className="mb-6">
@@ -247,7 +267,54 @@ export default async function ProductPage({ params }: PageProps) {
             </div>
           </div>
         </section>
+
+        {/* Testimonials */}
+        {testimonials.length > 0 && (
+          <TestimonialsSection
+            testimonials={testimonials}
+            storeName={storeData.name}
+            city={storeData.city}
+            category={storeData.category}
+          />
+        )}
+
+        {/* Other products */}
+        {otherProducts.length > 0 && (
+          <ProductsSection
+            products={otherProducts}
+            storeName={storeData.name}
+            storeSlug={storeData.slug}
+            category={storeData.category}
+            city={storeData.city}
+          />
+        )}
+
+        {/* FAQ */}
+        {Array.isArray(storeData.faq) && (storeData.faq as { question: string; answer: string }[]).length > 0 && (
+          <FAQSection
+            faq={storeData.faq as { question: string; answer: string }[]}
+            storeName={storeData.name}
+            city={storeData.city}
+            category={storeData.category}
+          />
+        )}
       </main>
+
+      <SiteFooter
+        storeName={storeData.name}
+        city={storeData.city}
+        state={storeData.state}
+        category={storeData.category}
+        instagramUrl={storeData.instagramUrl}
+        facebookUrl={storeData.facebookUrl}
+        googleBusinessUrl={storeData.googleBusinessUrl}
+        highlightText={storeData.highlightText}
+        storeSlug={storeData.slug}
+        services={services.map(s => ({ name: s.name, slug: s.slug || '' }))}
+        institutionalPages={institutionalPages}
+        logoUrl={storeData.logoUrl}
+      />
+
     </>
   )
 }

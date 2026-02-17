@@ -306,7 +306,8 @@ export function ProductFormModal({
                         ? data.ctaWhatsappMessage || null
                         : null,
                 status: data.status,
-                isFeatured: data.isFeatured
+                isFeatured: data.isFeatured,
+                images: images.length > 0 ? images : undefined,
             })
 
             if (result?.data) {
@@ -336,7 +337,8 @@ export function ProductFormModal({
                         ? data.ctaExternalUrl || undefined
                         : undefined,
                 status: data.status,
-                isFeatured: data.isFeatured
+                isFeatured: data.isFeatured,
+                images: images.length > 0 ? images : undefined,
             })
 
             if (result?.data) {

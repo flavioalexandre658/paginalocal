@@ -27,6 +27,11 @@ const updateProductSchema = z.object({
   status: z.enum(['ACTIVE', 'DRAFT', 'OUT_OF_STOCK']).optional(),
   isFeatured: z.boolean().optional(),
   position: z.number().int().min(0).optional(),
+  images: z.array(z.object({
+    url: z.string().optional(),
+    alt: z.string(),
+    order: z.number().int().min(0),
+  })).optional(),
 })
 
 async function generateUniqueProductSlug(storeId: string, name: string, excludeId: string): Promise<string> {
@@ -75,6 +80,10 @@ export const updateProductAction = authActionClient
     const updateData: Record<string, unknown> = {
       ...data,
       updatedAt: new Date(),
+      images: data.images?.map(image => ({
+        ...image,
+        url: image.url || '',
+      })),
     }
 
     if (data.name) {
