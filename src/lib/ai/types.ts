@@ -23,6 +23,8 @@ export interface MarketingCopy {
   services: ServiceItem[]
   faq: FAQItem[]
   neighborhoods: string[]
+  termGender: 'MASCULINE' | 'FEMININE'
+  termNumber: 'SINGULAR' | 'PLURAL'
 }
 
 export interface MarketingCopyInput {

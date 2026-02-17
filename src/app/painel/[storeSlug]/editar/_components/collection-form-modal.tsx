@@ -137,6 +137,7 @@ export function CollectionFormModal({
         collectionId: collection.id,
         name: data.name,
         description: data.description || null,
+        imageUrl: imagePreview || undefined,
       })
 
       if (result?.data) {
@@ -155,6 +156,7 @@ export function CollectionFormModal({
         storeId,
         name: data.name,
         description: data.description || undefined,
+        imageUrl: imagePreview || undefined,
       })
 
       if (result?.data) {

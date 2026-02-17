@@ -27,6 +27,7 @@ import { FAQSection } from '../_components/faq-section'
 import { SiteFooter } from '../_components/site-footer'
 import { FloatingContact } from '../_components/floating-contact'
 import type { PricingInterval } from '@/db/schema'
+import { getStoreGrammar } from '@/lib/store-terms'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -97,14 +98,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const sections = getStoreSections(storeData)
   const pricingConfig = getSectionConfig(sections, 'PRICING_PLANS')
 
-  const title = pricingConfig?.seoTitle as string | undefined || `Planos e Preços | ${storeData.name}`
-  const description = pricingConfig?.seoDescription as string | undefined || `Conheça nossos planos e escolha o ideal para você. ${storeData.name} em ${storeData.city}.`
+  const title = pricingConfig?.seoTitle as string | undefined
+    || `Planos e Preços — ${storeData.category} em ${storeData.city} | ${storeData.name}`
+  const description = pricingConfig?.seoDescription as string | undefined
+    || `Conheça os planos de ${storeData.category.toLowerCase()} ${getStoreGrammar(storeData.termGender, storeData.termNumber).da} ${storeData.name} em ${storeData.city}, ${storeData.state}. Escolha o plano ideal e entre em contato pelo WhatsApp.`
 
   const baseUrl = storeData.customDomain
     ? `https://${storeData.customDomain}`
     : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'}`
 
   const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
+  const ogImage = storeData.coverUrl || storeData.logoUrl
 
   return {
     title: { absolute: title },
@@ -123,6 +127,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       siteName: storeData.name,
       title,
       description,
+      images: ogImage ? [{ url: ogImage, width: 1200, height: 630, alt: `Planos e Preços — ${storeData.name} em ${storeData.city}` }] : [],
+    },
+    twitter: {
+      card: 'summary_large_image' as const,
+      title,
+      description,
+      images: ogImage ? [ogImage] : [],
+    },
+    other: {
+      'geo.region': `BR-${storeData.state}`,
+      'geo.placename': storeData.city,
+      ...(storeData.latitude && storeData.longitude && {
+        'geo.position': `${storeData.latitude};${storeData.longitude}`,
+        'ICBM': `${storeData.latitude}, ${storeData.longitude}`,
+      }),
     },
   }
 }
@@ -136,6 +155,7 @@ export default async function PlanosPage({ params }: PageProps) {
   }
 
   const { store: storeData, plans, testimonials, institutionalPages, services } = data
+  const g = getStoreGrammar(storeData.termGender, storeData.termNumber)
 
   const sections = getStoreSections(storeData)
   const pricingConfig = getSectionConfig(sections, 'PRICING_PLANS')
@@ -164,15 +184,55 @@ export default async function PlanosPage({ params }: PageProps) {
 
   const pricingJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: `Planos ${storeData.name}`,
+    '@type': 'ItemList',
+    name: `Planos e Preços — ${storeData.name} em ${storeData.city}`,
+    description: `${plans.length} planos de ${storeData.category.toLowerCase()} disponíveis ${g.na} ${storeData.name} em ${storeData.city}, ${storeData.state}`,
     url: `${baseUrl}/planos`,
-    offers: plans.map(plan => ({
-      '@type': 'Offer',
-      name: plan.name,
-      price: (plan.priceInCents / 100).toFixed(2),
-      priceCurrency: 'BRL',
+    numberOfItems: plans.length,
+    itemListElement: plans.map((plan, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'Offer',
+        name: plan.name,
+        description: plan.description || plan.name,
+        price: (plan.priceInCents / 100).toFixed(2),
+        priceCurrency: 'BRL',
+        url: `${baseUrl}/planos`,
+        seller: {
+          '@type': 'LocalBusiness',
+          '@id': `${baseUrl}/#business`,
+          name: storeData.name,
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: storeData.city,
+            addressRegion: storeData.state,
+            addressCountry: 'BR',
+          },
+        },
+      },
     })),
+  }
+
+  const localBusinessJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    '@id': `${baseUrl}/#business`,
+    name: storeData.name,
+    url: baseUrl,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: storeData.city,
+      addressRegion: storeData.state,
+      addressCountry: 'BR',
+    },
+    ...(storeData.googleRating && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: storeData.googleRating,
+        reviewCount: storeData.googleReviewsCount,
+      },
+    }),
   }
 
   const breadcrumbJsonLd = {
@@ -187,6 +247,7 @@ export default async function PlanosPage({ params }: PageProps) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
 
       <main className="w-full max-w-full overflow-x-clip">
@@ -216,7 +277,7 @@ export default async function PlanosPage({ params }: PageProps) {
               </h1>
 
               <p className={`mb-6 text-lg leading-relaxed ${mutedClass}`}>
-                Escolha o plano ideal para suas necessidades · {storeData.name}
+                {storeData.category} em {storeData.city}, {storeData.state} · {plans.length} {plans.length === 1 ? 'plano disponível' : 'planos disponíveis'}
               </p>
 
               {showRating && (
@@ -340,6 +401,62 @@ export default async function PlanosPage({ params }: PageProps) {
           </div>
         </section>
 
+        {/* SEO descriptive content */}
+        {plans.length > 0 && (
+          <section className="bg-white py-16 md:py-20 dark:bg-slate-900">
+            <div className="container mx-auto px-4">
+              <div className="mx-auto max-w-5xl space-y-8">
+                <div className="rounded-2xl border-2 border-slate-100 border-l-4 border-l-primary bg-white p-8 shadow-lg dark:border-slate-800 dark:border-l-primary dark:bg-slate-900">
+                  <h2 className="mb-4 text-2xl font-extrabold text-slate-900 dark:text-white">
+                    Planos e Preços de {storeData.category} em{' '}
+                    <span className="text-primary">{storeData.city}, {storeData.state}</span>
+                  </h2>
+                  <div className="space-y-4 text-base leading-relaxed text-slate-600 dark:text-slate-300">
+                    <p>
+                      A <strong>{storeData.name}</strong>, {storeData.category.toLowerCase()} em {storeData.city}, {storeData.state},
+                      oferece {plans.length} {plans.length === 1 ? 'plano' : 'planos'} para atender suas necessidades:{' '}
+                      {plans.map(p => p.name).join(', ')}.
+                    </p>
+                    {plans.map((plan) => {
+                      const features = (plan.features as string[] | null) || []
+                      return (
+                        <p key={plan.id}>
+                          <strong>{plan.name}</strong>
+                          {plan.description ? ` — ${plan.description}` : ''}.
+                          {features.length > 0 && ` Inclui: ${features.slice(0, 3).join(', ')}${features.length > 3 ? ' e mais' : ''}.`}
+                        </p>
+                      )
+                    })}
+                    <p>
+                      Para contratar {storeData.category.toLowerCase()} em {storeData.city} perto de mim,{' '}
+                      entre em contato com a {storeData.name} pelo WhatsApp. Atendemos {storeData.city} e região.
+                    </p>
+                  </div>
+                </div>
+
+                {/* CTA card */}
+                <div className="overflow-hidden rounded-2xl bg-primary p-8 shadow-lg md:p-10">
+                  <h3 className="mb-2 text-xl font-extrabold text-white">
+                    Escolha seu plano {g.na} {storeData.name}
+                  </h3>
+                  <p className="mb-6 text-white/90">
+                    Fale agora com {g.art} {storeData.name} em {storeData.city} e tire suas dúvidas sobre {g.nossa}s planos de {storeData.category.toLowerCase()}.
+                  </p>
+                  <a
+                    href={`https://wa.me/55${storeData.whatsapp}?text=${encodeURIComponent(`Olá! Quero saber mais sobre os planos ${g.da} ${storeData.name}.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 font-bold text-slate-900 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+                  >
+                    <IconBrandWhatsapp className="h-5 w-5" />
+                    Falar no WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Testimonials */}
         {testimonials.length > 0 && (
           <TestimonialsSection
@@ -347,6 +464,8 @@ export default async function PlanosPage({ params }: PageProps) {
             storeName={storeData.name}
             city={storeData.city}
             category={storeData.category}
+            termGender={storeData.termGender}
+            termNumber={storeData.termNumber}
           />
         )}
 
@@ -357,6 +476,8 @@ export default async function PlanosPage({ params }: PageProps) {
             storeName={storeData.name}
             city={storeData.city}
             category={storeData.category}
+            termGender={storeData.termGender}
+            termNumber={storeData.termNumber}
           />
         )}
       </main>

@@ -47,10 +47,13 @@ ${additionalContext}`
 
 export function getAntiAiRules(): string {
   return `### REGRAS DE ESCRITA (OBRIGATÓRIO):
-- PROIBIDO frases genéricas de IA: "destaca-se", "excelência", "inovador", "comprometimento com a qualidade", "referência no mercado", "diferenciado", "ampla gama", "soluções", "vasta experiência", "profissionais altamente qualificados", "atendimento de primeira", "compromisso com"
+- PROIBIDO frases genéricas de IA: "destaca-se", "excelência", "inovador", "comprometimento com a qualidade", "referência no mercado", "diferenciado", "ampla gama", "soluções", "vasta experiência", "profissionais altamente qualificados", "atendimento de primeira", "compromisso com", "qualidade e dedicação", "robustez", "abrangente"
+- PROIBIDO verbos de IA: "alavancar", "otimizar" (no sentido genérico), "facilitar", "fomentar", "impulsionar", "delinear", "evidenciar", "nortear"
+- PROIBIDO adjetivos de IA: "robusto", "abrangente", "holístico", "sinérgico", "transformador", "inovador", "cutting-edge"
+- PROIBIDO conectores de IA: "no cenário atual", "nesse sentido", "vale ressaltar que", "cabe destacar que", "é importante notar que", "não apenas X, mas também Y"
 - PROIBIDO usar travessão longo (—) para enfatizar. Use vírgulas, pontos ou "com".
-- PROIBIDO começar com: "No cenário atual", "Quando se trata de", "Se você está procurando", "Em um mundo onde"
-- PROIBIDO palavras vazias: "robusto", "abrangente", "inovador", "transformador", "holístico", "sinérgico"
+- PROIBIDO começar com: "No cenário atual", "Quando se trata de", "Se você está procurando", "Em um mundo onde", "Em um cenário", "No contexto de"
+- PROIBIDO frases de conclusão: "Em conclusão", "Em resumo", "Em suma", "Por fim, podemos dizer"
 - Escreva como o DONO do negócio falaria: direto, simples, com detalhes reais
 - Use linguagem coloquial brasileira natural (como se falasse com um cliente no balcão)
 - Frases curtas (máx 25 palavras), parágrafos curtos (2-3 frases)
@@ -62,11 +65,12 @@ export function getAntiAiRules(): string {
 }
 
 export function getStoreContentPrompt(data: MarketingCopyInput): string {
-  return `Você é redator de conteúdo para negócios locais brasileiros.
+  return `Você é especialista em SEO e AEO (Answer Engine Optimization) para negócios locais brasileiros.
 Objetivo: esta página precisa aparecer no Google quando alguém pesquisa:
 - "${data.category} perto de mim"
 - "${data.category} em ${data.city}"
 - "melhor ${data.category.toLowerCase()} em ${data.city}"
+E aparecer citada em respostas de IA (Google AI Overview, ChatGPT, Gemini, Perplexity).
 
 ${buildBusinessContext(data)}
 
@@ -97,12 +101,14 @@ ${getAntiAiRules()}
    Use a descrição do Google e avaliações dos clientes para identificar os serviços REAIS.
 
 4. **aboutSection** (4-6 frases, 300-500 chars):
-   - Comece: "A ${data.businessName} é ${data.category.toLowerCase()} em ${data.city}, ${data.state}."
+   - Comece com o artigo correto conforme termGender: "A [Nome] é..." (FEMININE) ou "O [Nome] é..." (MASCULINE)
+   - Esta primeira frase DEVE ser um Self-Contained Answer (citável por IA): inclua o nome, categoria e cidade.
    - Descreva os serviços principais que o negócio oferece (use dados do Google e reviews)
    - Explique o que torna esse negócio diferente (especialidade, tipo de público, método de trabalho)
    - NÃO mencione nota do Google, número de avaliações, bairros ou horários (isso já é exibido visualmente na página)
    - NÃO invente preços ou dados que não estejam no contexto fornecido
    - Termine com CTA prático: "Mande um WhatsApp para orçamento" ou "Ligue para agendar"
+   - PROIBIDO: "referência em", "qualidade e dedicação", "compromisso com"
 
 5. **seoTitle** (máx 60 chars): "${data.category} em ${data.city} | ${data.businessName}"
 
@@ -111,6 +117,18 @@ ${getAntiAiRules()}
    BOM: "Troca de pneus, alinhamento e balanceamento em Guarulhos. Borracharia Salmo 23 com atendimento 24h. Ligue agora!"
    RUIM: "Sua borracharia de confiança em Guarulhos com atendimento diferenciado."
 
+7. **termGender** ("MASCULINE" ou "FEMININE"):
+   Gênero gramatical do TIPO de negócio — pense: usamos "a [categoria]" ou "o [categoria]"?
+   - FEMININE: barbearia, academia, pizzaria, padaria, farmácia, loja, clínica, escola, borracharia, oficina, sorveteria, lavanderia, confeitaria, joalheria, livraria, imobiliária, hamburgueria, lanchonete, papelaria, sapataria, empresa, agência, ótica
+   - MASCULINE: restaurante, pet shop, hotel, bar, mercado, supermercado, salão, escritório, consultório, hospital, banco, posto, açougue, spa, atelier, clube, condomínio, serviço, teatro, cinema, cartório
+   Categoria deste negócio: "${data.category}"
+
+8. **termNumber** ("SINGULAR" ou "PLURAL"):
+   Singular ou plural — analise o NOME do negócio.
+   - SINGULAR: "a academia", "o restaurante" (padrão para 99% dos negócios)
+   - PLURAL: apenas se o próprio nome do negócio for claramente plural (ex: "Clínicas Médicas", "Farmácias Central", "Serviços e Soluções")
+   Nome do negócio: "${data.businessName}"
+
 ### RETORNE APENAS JSON:
 {
   "brandName": "${data.businessName}",
@@ -118,27 +136,30 @@ ${getAntiAiRules()}
   "heroSubtitle": "...",
   "aboutSection": "...",
   "seoTitle": "...",
-  "seoDescription": "..."
+  "seoDescription": "...",
+  "termGender": "FEMININE",
+  "termNumber": "SINGULAR"
 }
 
 RETORNE APENAS O JSON, SEM MARKDOWN.`
 }
 
 export function getFaqPrompt(data: MarketingCopyInput): string {
-  return `Você é redator de conteúdo para negócios locais brasileiros.
-Objetivo: FAQs que apareçam como featured snippets no Google e em respostas de IA (ChatGPT, Gemini, Google AI Overview).
+  return `Você é especialista em SEO e AEO (Answer Engine Optimization) para negócios locais brasileiros.
+Objetivo: FAQs otimizadas para aparecer como featured snippets no Google, Google AI Overviews, e respostas de IA (ChatGPT, Gemini, Perplexity).
 
 ${buildBusinessContext(data)}
 
 ${getAntiAiRules()}
 
-### REGRAS PARA FEATURED SNIPPETS:
-- Primeira frase RESPONDE a pergunta de forma DIRETA (sem enrolação, sem "é importante notar que")
-- A resposta deve funcionar sozinha, sem precisar ler mais nada
-- Use nome do negócio e cidade nas respostas
-- Use APENAS dados que existem no contexto fornecido. NUNCA invente preços, horários ou endereços
-- Respostas entre 50-80 palavras (tamanho ideal para snippet)
-- Perguntas escritas EXATAMENTE como o usuário pesquisa no Google (linguagem natural)
+### REGRAS PARA FEATURED SNIPPETS E AEO (OBRIGATÓRIO):
+- Padrão Self-Contained Answer: a resposta deve ser completa e fazer sentido sozinha, sem precisar de contexto adicional
+- PRIMEIRA FRASE sempre responde a pergunta DIRETAMENTE (ex: "A ${data.businessName} fica em ${data.city}...")
+- NUNCA comece a resposta com "Quando se trata de", "No contexto de", "É importante notar", "Vale ressaltar"
+- Cada resposta: 50-80 palavras (tamanho ideal para snippet — nem mais, nem menos)
+- Inclua nome do negócio + cidade em pelo menos 60% das respostas
+- Perguntas escritas como o usuário pesquisa: linguagem natural, direta, com palavras-chave
+- NUNCA use gerúndio para começar: "Sendo", "Tratando-se", "Considerando"
 
 ### GERE 8 PERGUNTAS FAQ:
 As 5 primeiras são obrigatórias (adapte o texto para o negócio):
@@ -148,22 +169,22 @@ As 5 primeiras são obrigatórias (adapte o texto para o negócio):
 4. "A ${data.businessName} abre aos sábados?"
 5. "Como entrar em contato com a ${data.businessName}?"
 
-Mais 3 perguntas baseadas nas avaliações dos clientes e nos serviços do negócio.
+Mais 3 perguntas baseadas nos serviços reais do negócio (use os dados fornecidos).
 
 REGRAS CRÍTICAS:
-- Escreva TODAS as perguntas COMPLETAS. NUNCA use colchetes ou placeholders como [serviço], [horário], [cidade].
-- TODA resposta DEVE ser afirmativa e útil. NUNCA escreva "não tenho informações", "recomendo verificar", "entre em contato para saber". Se não souber a resposta exata, dê uma resposta genérica positiva sobre o serviço.
+- Escreva TODAS as perguntas COMPLETAS. NUNCA use colchetes como [serviço] ou [horário].
+- TODA resposta DEVE ser afirmativa e útil. NUNCA escreva "não tenho informações", "recomendo verificar".
+- Se não souber a resposta exata, use dados genéricos positivos sobre o serviço.
 - Se tiver horários de funcionamento nos dados, USE nas respostas.
-- Só gere perguntas que você CONSEGUE responder com os dados disponíveis.
 
-Cada resposta: 2-4 frases. Comece SEMPRE respondendo direto.
-BOM: "A ${data.businessName} fica em ${data.city}. O local é de fácil acesso..."
-RUIM: "Quando se trata de localização, é importante destacar que..."
+EXEMPLO DE RESPOSTA IDEAL (Self-Contained Answer):
+Pergunta: "Onde fica a ${data.businessName} em ${data.city}?"
+Resposta: "A ${data.businessName} fica em ${data.city}, ${data.state}. Para saber o endereço exato e como chegar, entre em contato pelo WhatsApp. Atendemos clientes de ${data.city} e região com atendimento rápido."
 
 ### RETORNE APENAS JSON:
 [
-  {"question": "Pergunta?", "answer": "Resposta direta com dados."},
-  {"question": "Pergunta?", "answer": "Resposta direta com dados."}
+  {"question": "Pergunta?", "answer": "Resposta direta e completa com 50-80 palavras."},
+  {"question": "Pergunta?", "answer": "Resposta direta e completa com 50-80 palavras."}
 ]
 
 RETORNE APENAS O JSON ARRAY, SEM MARKDOWN.`
@@ -308,12 +329,13 @@ Retorne APENAS JSON array:
 }
 
 export function getInstitutionalPagesPrompt(data: MarketingCopyInput): string {
-  return `Você é redator de conteúdo para negócios locais brasileiros.
+  return `Você é especialista em SEO e AEO (Answer Engine Optimization) para negócios locais brasileiros.
 Objetivo: gerar conteúdo para as páginas institucionais "Sobre Nós" e "Contato" do site.
 Essas páginas precisam ranquear para:
 - "sobre ${data.businessName.toLowerCase()}"
 - "contato ${data.businessName.toLowerCase()} ${data.city}"
 - "${data.category.toLowerCase()} em ${data.city} contato"
+E aparecer como respostas em AI Overviews quando alguém pesquisar pelo negócio.
 
 ${buildBusinessContext(data)}
 
@@ -325,33 +347,34 @@ ${getAntiAiRules()}
 
 - "title": "Sobre a ${data.businessName}" ou "Conheça a ${data.businessName}" (máx 60 chars)
 
-- "content" (500-800 chars, 3-4 parágrafos separados por \\n):
-  * Parágrafo 1: Apresente o negócio. O que é, onde fica, o que faz. Comece direto: "A ${data.businessName} é ${data.category.toLowerCase()} em ${data.city}, ${data.state}."
-  * Parágrafo 2: O que o negócio oferece. Liste os serviços/produtos principais. Use dados do Google e reviews.
-  * Parágrafo 3: Diferencial do negócio. O que o torna único na região. Se tiver reviews positivos, use como base.
-  * Parágrafo 4: CTA claro. "Entre em contato pelo WhatsApp para conhecer nossos serviços" ou similar.
-  
-  OBRIGATÓRIO no texto: "${data.businessName}" (pelo menos 2x), "${data.city}" (pelo menos 1x)
+- "content" (600-900 chars, 4 parágrafos separados por \\n):
+  * Parágrafo 1 (Self-Contained Answer para AEO): Responda direto quem é o negócio. Comece: "A ${data.businessName} é ${data.category.toLowerCase()} em ${data.city}, ${data.state}." Continue com o que oferece. Esta frase deve ser citável por IAs.
+  * Parágrafo 2: Liste os serviços/produtos principais. Use dados reais (Google, reviews). Seja específico: nomes de serviços reais, não genéricos.
+  * Parágrafo 3: O que diferencia a ${data.businessName} das outras opções em ${data.city}. Use dados reais dos reviews ou atributos do negócio. PROIBIDO dizer "referência" ou "destaque". Seja concreto.
+  * Parágrafo 4: CTA específico. "Para ${data.category.toLowerCase()} em ${data.city}, fale com a ${data.businessName} pelo WhatsApp."
+
+  OBRIGATÓRIO: "${data.businessName}" (pelo menos 2x), "${data.city}" (pelo menos 2x)
+  PROIBIDO: "referência em", "qualidade e dedicação", "compromisso com a qualidade", "excelência"
 
 - "seoTitle": "Sobre a ${data.businessName} | ${data.category} em ${data.city}" (máx 60 chars)
 
-- "seoDescription": Resumo do negócio + cidade + CTA (máx 155 chars)
-  BOM: "Conheça a ${data.businessName}, ${data.category.toLowerCase()} em ${data.city}. Saiba mais sobre nossos serviços e diferenciais."
+- "seoDescription": Resumo citável do negócio + cidade + CTA (máx 155 chars)
+  BOM: "A ${data.businessName} é ${data.category.toLowerCase()} em ${data.city}. Saiba mais sobre nossos serviços. Ligue ou mande um WhatsApp."
+  RUIM: "Conheça nossa empresa referência com excelência no atendimento."
 
 **2. PÁGINA CONTATO (contact)**
 
 - "title": "Contato | ${data.businessName}" ou "Fale com a ${data.businessName}" (máx 60 chars)
 
-- "content" (200-400 chars, 2 parágrafos separados por \\n):
-  * Parágrafo 1: Convite para contato. "Precisa de ${data.category.toLowerCase()} em ${data.city}? Fale com a ${data.businessName}."
-  * Parágrafo 2: Como entrar em contato. Mencione WhatsApp e telefone como canais disponíveis. CTA direto.
-  
-  NÃO inclua dados como número de telefone ou endereço no texto (eles são exibidos dinamicamente na página).
+- "content" (250-400 chars, 2 parágrafos separados por \\n):
+  * Parágrafo 1: Convite direto. "Precisa de ${data.category.toLowerCase()} em ${data.city}? Fale com a ${data.businessName}." Seja específico sobre o que o cliente vai resolver.
+  * Parágrafo 2: Como entrar em contato. Mencione WhatsApp e telefone. CTA direto.
+  NÃO inclua número de telefone ou endereço (exibidos dinamicamente).
 
 - "seoTitle": "Contato ${data.businessName} | ${data.category} em ${data.city}" (máx 60 chars)
 
-- "seoDescription": Convite + cidade + canais de contato (máx 155 chars)
-  BOM: "Entre em contato com a ${data.businessName} em ${data.city}. Atendemos por WhatsApp e telefone. Solicite um orçamento!"
+- "seoDescription": Convite + cidade + canais (máx 155 chars)
+  BOM: "Fale com a ${data.businessName} em ${data.city}. WhatsApp, telefone e endereço. Solicite um orçamento agora."
 
 ### RETORNE APENAS JSON:
 {

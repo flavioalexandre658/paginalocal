@@ -1,4 +1,6 @@
 import { IconMapPin } from '@tabler/icons-react'
+import { getStoreGrammar } from '@/lib/store-terms'
+import type { TermGender, TermNumber } from '@/lib/store-terms'
 
 interface AreasSectionProps {
   neighborhoods: string[]
@@ -6,9 +8,12 @@ interface AreasSectionProps {
   state: string
   category: string
   storeName?: string
+  termGender?: TermGender
+  termNumber?: TermNumber
 }
 
-export function AreasSection({ neighborhoods, city, state, category, storeName }: AreasSectionProps) {
+export function AreasSection({ neighborhoods, city, state, category, storeName, termGender, termNumber }: AreasSectionProps) {
+  const g = getStoreGrammar(termGender, termNumber)
   if (!neighborhoods || neighborhoods.length === 0) return null
 
   return (
@@ -24,7 +29,7 @@ export function AreasSection({ neighborhoods, city, state, category, storeName }
               Bairros e Regiões Atendidas por {category} em <span className="text-primary">{city}</span>, {state}
             </h2>
             <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-              {storeName ? `A ${storeName} atende` : 'Atendemos'} diversos bairros de {city} com serviços de {category.toLowerCase()} de qualidade. Confira abaixo as regiões onde atuamos.
+              {storeName ? `${g.Art} ${storeName} atende` : 'Atendemos'} diversos bairros de {city} com serviços de {category.toLowerCase()} de qualidade. Confira abaixo as regiões onde atuamos.
             </p>
           </div>
 

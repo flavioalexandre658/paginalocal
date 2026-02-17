@@ -14,7 +14,7 @@ const updateCollectionSchema = z.object({
   collectionId: z.string().uuid(),
   name: z.string().min(1).max(100).optional(),
   description: z.string().nullable().optional(),
-  imageUrl: z.string().url().nullable().optional(),
+  imageUrl: z.string().nullable().optional(),
   seoTitle: z.string().nullable().optional(),
   seoDescription: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
@@ -104,6 +104,7 @@ export const updateCollectionAction = authActionClient
               seoTitle: seo.seoTitle,
               seoDescription: seo.seoDescription,
               updatedAt: new Date(),
+              imageUrl: data.imageUrl || null,
             })
             .where(eq(storeProductCollection.id, collectionId))
             .returning()

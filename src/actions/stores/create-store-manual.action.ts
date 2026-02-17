@@ -237,6 +237,8 @@ export const createStoreManualAction = authActionClient
         sections: null,
         templateId: 'default',
         templateConfig: null,
+        termGender: marketingCopy?.termGender ?? 'FEMININE',
+        termNumber: marketingCopy?.termNumber ?? 'SINGULAR',
         isActive: shouldActivateStore,
       })
       .returning()

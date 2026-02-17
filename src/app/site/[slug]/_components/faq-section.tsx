@@ -8,14 +8,20 @@ interface FAQItem {
   answer: string
 }
 
+import { getStoreGrammar } from '@/lib/store-terms'
+import type { TermGender, TermNumber } from '@/lib/store-terms'
+
 interface FAQSectionProps {
   faq: FAQItem[]
   storeName: string
   city?: string
   category?: string
+  termGender?: TermGender
+  termNumber?: TermNumber
 }
 
-export function FAQSection({ faq, storeName, city, category }: FAQSectionProps) {
+export function FAQSection({ faq, storeName, city, category, termGender, termNumber }: FAQSectionProps) {
+  const g = getStoreGrammar(termGender, termNumber)
   const [openIndex, setOpenIndex] = useState<number | null>(0)
 
   if (!faq || faq.length === 0) return null
@@ -33,7 +39,7 @@ export function FAQSection({ faq, storeName, city, category }: FAQSectionProps) 
               Perguntas Frequentes sobre <span className="text-primary">{storeName}</span>{city ? ` em ${city}` : ''}
             </h2>
             <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-              Encontre respostas para as dúvidas mais comuns sobre {storeName}{category && city ? `, ${category.toLowerCase()} em ${city}` : ''}. Se precisar de mais informações, entre em contato pelo WhatsApp.
+              Encontre respostas para as dúvidas mais comuns sobre {g.art} {storeName}{category && city ? `, ${category.toLowerCase()} em ${city}` : ''}. Se precisar de mais informações, entre em contato pelo WhatsApp.
             </p>
           </div>
 

@@ -18,6 +18,8 @@ import {
 import { ServicesSection } from '../../../_components/services-section'
 import { TestimonialsSection } from '../../../_components/testimonials-section'
 import { FAQSection } from '../../../_components/faq-section'
+import { getStoreGrammar } from '@/lib/store-terms'
+import type { TermGender, TermNumber } from '@/lib/store-terms'
 
 interface ServiceDetailContentProps {
   store: {
@@ -39,6 +41,8 @@ interface ServiceDetailContentProps {
     showCallButton: boolean
     googleRating: string | null
     googleReviewsCount: number | null
+    termGender?: TermGender | null
+    termNumber?: TermNumber | null
   }
   service: {
     name: string
@@ -68,8 +72,9 @@ interface ServiceDetailContentProps {
 }
 
 export function ServiceDetailContent({ store, service, otherServices, testimonials, faq }: ServiceDetailContentProps) {
+  const g = getStoreGrammar(store.termGender ?? undefined, store.termNumber ?? undefined)
   const whatsappMessage = store.whatsappDefaultMessage?.trim()
-    || `Olá! Gostaria de saber mais sobre o serviço de ${service.name} na ${store.name}.`
+    || `Olá! Gostaria de saber mais sobre o serviço de ${service.name} ${g.na} ${store.name}.`
   const rating = store.googleRating ? parseFloat(store.googleRating) : 0
   const showRating = rating >= 4.0 && store.googleReviewsCount && store.googleReviewsCount > 0
 
@@ -238,10 +243,11 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
           storeName={store.name}
           city={store.city}
           category={store.category}
+          termGender={store.termGender ?? undefined}
+          termNumber={store.termNumber ?? undefined}
         />
       )}
 
-      {/* Reuse real ServicesSection from main site for "other services" */}
       {otherServices.length > 0 && (
         <ServicesSection
           services={otherServices}
@@ -249,19 +255,20 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
           storeSlug={store.slug}
           category={store.category}
           city={store.city}
+          termGender={store.termGender ?? undefined}
+          termNumber={store.termNumber ?? undefined}
         />
       )}
 
-      {/* FAQ */}
       {faq.length > 0 && (
-        <FAQSection faq={faq} storeName={store.name} city={store.city} category={store.category} />
+        <FAQSection faq={faq} storeName={store.name} city={store.city} category={store.category} termGender={store.termGender ?? undefined} termNumber={store.termNumber ?? undefined} />
       )}
 
       <section className="sr-only" aria-hidden="false">
         <h2>{service.name} perto de mim em {store.city}, {store.state}</h2>
         <p>
           Procurando por {service.name.toLowerCase()} perto de você em {store.city}, {store.state}?
-          A {store.name} é {store.category.toLowerCase()} em {store.city} que oferece {service.name.toLowerCase()} com atendimento profissional e personalizado.
+          {g.Art} {store.name} é {store.category.toLowerCase()} em {store.city} que oferece {service.name.toLowerCase()} com atendimento profissional e personalizado.
           {store.googleRating && parseFloat(store.googleRating) >= 4.0 && ` Com nota ${store.googleRating} no Google e ${store.googleReviewsCount} avaliações de clientes satisfeitos.`}
           {` Nosso serviço de ${service.name.toLowerCase()} está disponível para clientes de ${store.city} e toda a região.`}
           {` Agende pelo WhatsApp e garanta atendimento de qualidade em ${store.category.toLowerCase()} em ${store.city}, ${store.state}.`}

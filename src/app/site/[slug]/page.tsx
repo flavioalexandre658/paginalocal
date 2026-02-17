@@ -273,7 +273,7 @@ export default async function StorePage({ params }: PageProps) {
       itemOffered: {
         '@type': 'Service',
         name: svc.name,
-        description: svc.description || `${svc.name} na ${storeData.name}`,
+        description: svc.description || `${svc.name} ${storeData.termGender === 'MASCULINE' ? 'no' : 'na'} ${storeData.name}`,
         provider: {
           '@type': 'LocalBusiness',
           '@id': `${baseUrl}/#business`,
@@ -426,6 +426,8 @@ export default async function StorePage({ params }: PageProps) {
                   openingHours={storeData.openingHours as Record<string, string> | null}
                   servicesCount={services.length}
                   serviceNames={services.map(s => s.name)}
+                  termGender={storeData.termGender}
+                  termNumber={storeData.termNumber}
                 />
               )
 
@@ -438,6 +440,8 @@ export default async function StorePage({ params }: PageProps) {
                   storeSlug={storeData.slug}
                   category={storeData.category}
                   city={storeData.city}
+                  termGender={storeData.termGender}
+                  termNumber={storeData.termNumber}
                 />
               ) : null
 
@@ -450,6 +454,8 @@ export default async function StorePage({ params }: PageProps) {
                   storeSlug={storeData.slug}
                   category={storeData.category}
                   city={storeData.city}
+                  termGender={storeData.termGender}
+                  termNumber={storeData.termNumber}
                 />
               ) : null
 
@@ -463,6 +469,8 @@ export default async function StorePage({ params }: PageProps) {
                   storeWhatsapp={storeData.whatsapp}
                   category={storeData.category}
                   city={storeData.city}
+                  termGender={storeData.termGender}
+                  termNumber={storeData.termNumber}
                 />
               ) : null
 
@@ -486,6 +494,8 @@ export default async function StorePage({ params }: PageProps) {
                   state={storeData.state}
                   category={storeData.category}
                   storeName={storeData.name}
+                  termGender={storeData.termGender}
+                  termNumber={storeData.termNumber}
                 />
               ) : null
 
@@ -497,6 +507,8 @@ export default async function StorePage({ params }: PageProps) {
                   storeName={storeData.name}
                   city={storeData.city}
                   category={storeData.category}
+                  termGender={storeData.termGender}
+                  termNumber={storeData.termNumber}
                 />
               ) : null
 
@@ -508,6 +520,8 @@ export default async function StorePage({ params }: PageProps) {
                   storeName={storeData.name}
                   city={storeData.city}
                   category={storeData.category}
+                  termGender={storeData.termGender}
+                  termNumber={storeData.termNumber}
                 />
               ) : null
 
@@ -533,7 +547,7 @@ export default async function StorePage({ params }: PageProps) {
           <h2>{storeData.category} perto de mim em {storeData.city}</h2>
           <p>
             Procurando por {storeData.category.toLowerCase()} perto de você em {storeData.city}, {storeData.state}?
-            A {storeData.name} é {storeData.category.toLowerCase()} em {storeData.city} que oferece
+            {storeData.termGender === 'MASCULINE' ? 'O' : 'A'} {storeData.name} é {storeData.category.toLowerCase()} em {storeData.city} que oferece
             {services.length > 0
               ? ` ${services.slice(0, 4).map(s => s.name.toLowerCase()).join(', ')}`
               : ` serviços profissionais`

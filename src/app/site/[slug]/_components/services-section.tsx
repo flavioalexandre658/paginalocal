@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { IconArrowRight } from '@tabler/icons-react'
 import { getServicePageUrl } from '@/lib/utils'
 import { getServiceIcon } from '@/lib/service-icons'
+import { getStoreGrammar } from '@/lib/store-terms'
+import type { TermGender, TermNumber } from '@/lib/store-terms'
 
 interface Service {
   id: string
@@ -19,9 +21,12 @@ interface ServicesSectionProps {
   storeSlug: string
   category: string
   city: string
+  termGender?: TermGender
+  termNumber?: TermNumber
 }
 
-export function ServicesSection({ services, storeName, storeSlug, category, city }: ServicesSectionProps) {
+export function ServicesSection({ services, storeName, storeSlug, category, city, termGender, termNumber }: ServicesSectionProps) {
+  const g = getStoreGrammar(termGender, termNumber)
   return (
     <section id="servicos" className="relative py-20 md:py-28 overflow-hidden bg-[#f3f5f7] dark:bg-slate-950/50">
       <div className="container relative mx-auto px-4">
@@ -35,7 +40,7 @@ export function ServicesSection({ services, storeName, storeSlug, category, city
               Serviços de {category} em <span className="text-primary">{city}</span> — {storeName}
             </h2>
             <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-              Confira os serviços de {category.toLowerCase()} oferecidos pela {storeName} em {city}. Atendimento profissional e de qualidade para você e sua família.
+              Confira os serviços de {category.toLowerCase()} oferecidos {g.pela} {storeName} em {city}. Atendimento profissional e de qualidade para você e sua família.
             </p>
           </div>
 

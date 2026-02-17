@@ -7,6 +7,7 @@ import { eq, and, asc } from 'drizzle-orm'
 import { buildStoreUrl } from '@/lib/google-indexing'
 import { HeroSection } from '../_components/hero-section'
 import { SiteFooter } from '../_components/site-footer'
+import { getStoreGrammar } from '@/lib/store-terms'
 
 const FloatingContact = dynamic(() => import('../_components/floating-contact').then(m => m.FloatingContact))
 const FAQSection = dynamic(() => import('../_components/faq-section').then(m => m.FAQSection))
@@ -73,7 +74,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { store: storeData, page } = data
 
   const title = page.seoTitle || `Sobre | ${storeData.name}`
-  const description = page.seoDescription || `Conheça a ${storeData.name} - ${storeData.category} em ${storeData.city}, ${storeData.state}. Nossa história, serviços e compromisso com a qualidade. Visite-nos!`
+  const _g0 = getStoreGrammar(storeData.termGender, storeData.termNumber)
+  const description = page.seoDescription || `Conheça ${_g0.art} ${storeData.name} - ${storeData.category} em ${storeData.city}, ${storeData.state}. Nossa história, serviços e compromisso com a qualidade. Visite-nos!`
   const pageUrl = buildStoreUrl(storeData.slug, storeData.customDomain) + '/sobre-nos'
   const ogImage = storeData.coverUrl || storeData.logoUrl
   const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
@@ -140,9 +142,16 @@ export default async function SobreNosPage({ params }: PageProps) {
   }
 
   const { store: storeData, page, services, institutionalPages: activePages } = data
+  const g = getStoreGrammar(storeData.termGender, storeData.termNumber)
 
   const baseUrl = buildStoreUrl(storeData.slug, storeData.customDomain)
   const pageUrl = `${baseUrl}/sobre-nos`
+
+  const sameAsLinks = [
+    storeData.instagramUrl,
+    storeData.facebookUrl,
+    storeData.googleBusinessUrl,
+  ].filter(Boolean) as string[]
 
   const aboutJsonLd = {
     '@context': 'https://schema.org',
@@ -155,6 +164,7 @@ export default async function SobreNosPage({ params }: PageProps) {
       '@id': `${baseUrl}/#business`,
       name: storeData.name,
       description: storeData.description,
+      url: baseUrl,
       address: {
         '@type': 'PostalAddress',
         streetAddress: storeData.address,
@@ -162,6 +172,31 @@ export default async function SobreNosPage({ params }: PageProps) {
         addressRegion: storeData.state,
         addressCountry: 'BR',
       },
+      ...(storeData.phone && {
+        telephone: `+55${storeData.phone.replace(/\D/g, '')}`,
+      }),
+      ...(storeData.googleRating && {
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: storeData.googleRating,
+          reviewCount: storeData.googleReviewsCount,
+        },
+      }),
+      ...(sameAsLinks.length > 0 && { sameAs: sameAsLinks }),
+      ...(services.length > 0 && {
+        hasOfferCatalog: {
+          '@type': 'OfferCatalog',
+          name: `Serviços ${g.da} ${storeData.name}`,
+          itemListElement: services.slice(0, 10).map(s => ({
+            '@type': 'Offer',
+            itemOffered: {
+              '@type': 'Service',
+              name: s.name,
+              description: s.description,
+            },
+          })),
+        },
+      }),
     },
   }
 
@@ -212,10 +247,13 @@ export default async function SobreNosPage({ params }: PageProps) {
                 Quem Somos
               </span>
               <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-                Conheça a <span className="text-primary">{storeData.name}</span> — {storeData.category} em {storeData.city}
+                Conheça {g.art} <span className="text-primary">{storeData.name}</span> — {storeData.category} em {storeData.city}
               </h2>
               <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-                Saiba mais sobre a história e os serviços da {storeData.name}, {storeData.category.toLowerCase()} referência em {storeData.city}, {storeData.state}. Profissionalismo, qualidade e compromisso com nossos clientes.
+                {page.content
+                  ? page.content.split('\n').filter(Boolean)[0]
+                  : `${g.Art} ${storeData.name} é ${storeData.category.toLowerCase()} em ${storeData.city}, ${storeData.state}. Atendemos com foco nos resultados do cliente.`
+                }
               </p>
             </div>
 
@@ -229,21 +267,49 @@ export default async function SobreNosPage({ params }: PageProps) {
               </div>
             )}
 
+            {/* Services section — internal linking */}
+            {services.length > 0 && (
+              <div className="mt-8 animate-fade-in-up animation-delay-250">
+                <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">
+                  O que {g.art} {storeData.name} oferece em {storeData.city}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {services.map(s => (
+                    <a
+                      key={s.id}
+                      href={s.slug ? `/site/${storeData.slug}/servicos/${s.slug}` : `#`}
+                      className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:border-primary/30 hover:text-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                    >
+                      {s.name}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* CTA block */}
             <div className="mt-8 animate-fade-in-up animation-delay-300 overflow-hidden rounded-2xl bg-primary p-8 shadow-lg md:p-10">
               <h3 className="mb-2 text-xl font-extrabold text-white">
-                Entre em contato com a {storeData.name}
+                Fale com {g.art} {storeData.name} em {storeData.city}
               </h3>
-              <p className="text-white/90">
-                Fale conosco pelo WhatsApp, ligue ou visite a {storeData.name} em {storeData.city}, {storeData.state}. Estamos prontos para atender você com qualidade e dedicação.
+              <p className="mb-6 text-white/90">
+                Entre em contato pelo WhatsApp ou telefone. Atendemos {storeData.city} e região com foco no que o cliente precisa.
               </p>
+              <a
+                href={`https://wa.me/55${storeData.whatsapp}?text=${encodeURIComponent(`Olá! Vi o site ${g.da} ${storeData.name} e gostaria de saber mais sobre seus serviços.`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 font-bold text-slate-900 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+              >
+                Falar no WhatsApp
+              </a>
             </div>
           </div>
         </div>
       </main>
 
       {Array.isArray(storeData.faq) && (storeData.faq as { question: string; answer: string }[]).length > 0 && (
-        <FAQSection faq={storeData.faq as { question: string; answer: string }[]} storeName={storeData.name} city={storeData.city} category={storeData.category} />
+        <FAQSection faq={storeData.faq as { question: string; answer: string }[]} storeName={storeData.name} city={storeData.city} category={storeData.category} termGender={storeData.termGender} termNumber={storeData.termNumber} />
       )}
 
       <SiteFooter

@@ -122,6 +122,8 @@ export const createStoreFromGoogleAction = authActionClient
         sections: null,
         templateId: 'default',
         templateConfig: null,
+        termGender: result.termGender,
+        termNumber: result.termNumber,
         isActive: shouldActivateStore,
       })
       .returning()

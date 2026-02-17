@@ -14,11 +14,16 @@ interface Testimonial {
   isGoogleReview: boolean
 }
 
+import { getStoreGrammar } from '@/lib/store-terms'
+import type { TermGender, TermNumber } from '@/lib/store-terms'
+
 interface TestimonialsSectionProps {
   testimonials: Testimonial[]
   storeName?: string
   city?: string
   category?: string
+  termGender?: TermGender
+  termNumber?: TermNumber
 }
 
 const ITEMS_PER_PAGE = 6
@@ -41,7 +46,8 @@ function Stars({ rating }: { rating: number }) {
   )
 }
 
-export function TestimonialsSection({ testimonials, storeName, city, category }: TestimonialsSectionProps) {
+export function TestimonialsSection({ testimonials, storeName, city, category, termGender, termNumber }: TestimonialsSectionProps) {
+  const g = getStoreGrammar(termGender, termNumber)
   const [currentPage, setCurrentPage] = useState(0)
 
   const totalPages = Math.ceil(testimonials.length / ITEMS_PER_PAGE)
@@ -65,8 +71,8 @@ export function TestimonialsSection({ testimonials, storeName, city, category }:
             </h2>
             <p className="mt-4 text-lg text-white/90">
               {testimonials.length > 0
-                ? `Veja o que ${testimonials.length} clientes satisfeitos dizem sobre a ${storeName || 'nossa empresa'}${category && city ? `, ${category.toLowerCase()} em ${city}` : ''}. Avaliações reais de quem já conhece nosso trabalho.`
-                : `Avaliações de clientes${storeName ? ` da ${storeName}` : ''}${category && city ? `, ${category.toLowerCase()} em ${city}` : ''}`}
+                ? `Veja o que ${testimonials.length} clientes satisfeitos dizem sobre ${g.art} ${storeName || 'nossa empresa'}${category && city ? `, ${category.toLowerCase()} em ${city}` : ''}. Avaliações reais de quem já conhece ${g.nossa} trabalho.`
+                : `Avaliações de clientes${storeName ? ` ${g.da} ${storeName}` : ''}${category && city ? `, ${category.toLowerCase()} em ${city}` : ''}`}
             </p>
           </div>
 

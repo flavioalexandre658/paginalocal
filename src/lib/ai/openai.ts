@@ -118,7 +118,7 @@ function repairTruncatedJson(text: string): string | null {
 }
 
 export async function generateMarketingCopyWithOpenAI(data: MarketingCopyInput): Promise<MarketingCopy> {
-  const systemPrompt = 'Você é um especialista em Marketing Local e SEO brasileiro. Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
+  const systemPrompt = 'Você é especialista em SEO local e AEO brasileiro. Gere textos que ranqueiam no Google e são citados por IAs (Google AI Overview, ChatGPT, Gemini). Evite frases de IA (excelência, robusto, comprometimento, holístico, inovador). Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
 
   console.log('[AI OpenAI] Etapa 1/4: Gerando conteúdo da loja...')
   const storeContent = await callOpenAIWithRetry<Record<string, unknown>>(
@@ -156,6 +156,9 @@ export async function generateMarketingCopyWithOpenAI(data: MarketingCopyInput):
     }
   }
 
+  const rawGender = storeContent.termGender as string
+  const rawNumber = storeContent.termNumber as string
+
   const result: MarketingCopy = {
     brandName: (storeContent.brandName as string) || '',
     slug: '',
@@ -167,6 +170,8 @@ export async function generateMarketingCopyWithOpenAI(data: MarketingCopyInput):
     services: services.length > 0 ? services : generateFallbackServices(data.category),
     faq: faq.length > 0 ? faq : generateFallbackFAQ(data.businessName, data.city, data.category),
     neighborhoods: (storeContent.neighborhoods as string[]) || [],
+    termGender: (rawGender === 'MASCULINE' || rawGender === 'FEMININE') ? rawGender : 'FEMININE',
+    termNumber: (rawNumber === 'PLURAL') ? 'PLURAL' : 'SINGULAR',
   }
 
   console.log('[AI OpenAI] Geração concluída! Serviços:', result.services.length, 'FAQs:', result.faq.length)
@@ -191,7 +196,7 @@ export async function generateServiceSeoWithOpenAI(
   serviceNames: string[],
   serviceDescriptions?: (string | undefined)[],
 ): Promise<ServiceItem[]> {
-  const systemPrompt = 'Você é um especialista em Marketing Local e SEO brasileiro. Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
+  const systemPrompt = 'Você é especialista em SEO local e AEO brasileiro. Gere textos que ranqueiam no Google ("[serviço] em [cidade]") e são citados por IAs. Evite frases de IA (excelência, robusto, comprometimento, holístico). Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
 
   console.log(`[AI OpenAI] Gerando SEO para ${serviceNames.length} serviço(s): ${serviceNames.join(', ')}`)
 
@@ -222,7 +227,7 @@ export async function classifyBusinessCategoryWithOpenAI(data: BusinessClassific
 }
 
 export async function generateInstitutionalPagesWithOpenAI(data: MarketingCopyInput): Promise<InstitutionalPages> {
-  const systemPrompt = 'Você é um especialista em Marketing Local e SEO brasileiro. Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
+  const systemPrompt = 'Você é especialista em SEO local e AEO brasileiro. Gere textos institucionais que ranqueiam no Google e são citados por IAs. Evite frases de IA (referência em, qualidade e dedicação, excelência, comprometimento). Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
 
   console.log(`[AI OpenAI] Gerando páginas institucionais para "${data.businessName}"`)
 
@@ -272,10 +277,12 @@ export interface CollectionSeoResult {
   description: string
   seoTitle: string
   seoDescription: string
+  longDescription: string
 }
 
 export interface PricingPlanSeoResult {
   description: string
+  longDescription: string
 }
 
 export async function generateProductSeoWithOpenAI(
@@ -284,7 +291,7 @@ export async function generateProductSeoWithOpenAI(
   productDescription?: string,
   priceInCents?: number,
 ): Promise<ProductSeoResult> {
-  const systemPrompt = 'Você é um especialista em SEO para e-commerce brasileiro. Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
+  const systemPrompt = 'Você é especialista em SEO e AEO para e-commerce local brasileiro. Gere textos que ranqueiam no Google ("[produto] em [cidade]") e são citados por IAs. Evite frases genéricas de IA (excelência, comprometimento, robusto, holístico). Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
 
   console.log(`[AI OpenAI] Gerando SEO para produto "${productName}"`)
 
@@ -312,24 +319,26 @@ export async function generateCollectionSeoWithOpenAI(
   collectionName: string,
   collectionDescription?: string,
 ): Promise<CollectionSeoResult> {
-  const systemPrompt = 'Você é um especialista em SEO para e-commerce brasileiro. Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
+  const systemPrompt = 'Você é especialista em SEO e AEO para e-commerce local brasileiro. Gere textos que ranqueiam no Google e são citados por IAs (ChatGPT, Gemini, Perplexity). Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
 
   console.log(`[AI OpenAI] Gerando SEO para coleção "${collectionName}"`)
 
   const fallback: CollectionSeoResult = {
     description: collectionDescription || collectionName,
-    seoTitle: `${collectionName} | ${data.businessName}`.substring(0, 60),
-    seoDescription: `${collectionName} em ${data.city}. Confira no catálogo da ${data.businessName}!`.substring(0, 155),
+    seoTitle: `${collectionName} em ${data.city} | ${data.businessName}`.substring(0, 60),
+    seoDescription: `${collectionName} em ${data.city}. Confira no catálogo da ${data.businessName}! Peça pelo WhatsApp.`.substring(0, 155),
+    longDescription: `${collectionName} disponível na ${data.businessName} em ${data.city}, ${data.state}.\nA ${data.businessName} oferece ${collectionName.toLowerCase()} para clientes de ${data.city} e região.\nEntre em contato pelo WhatsApp para ver os produtos disponíveis.`,
   }
 
   const result = await callOpenAIWithRetry<CollectionSeoResult>(
-    systemPrompt, getCollectionSeoPrompt(data, collectionName, collectionDescription), fallback, 1000,
+    systemPrompt, getCollectionSeoPrompt(data, collectionName, collectionDescription), fallback, 2000,
   )
 
   return {
     description: (result.description || fallback.description).substring(0, 255),
     seoTitle: (result.seoTitle || fallback.seoTitle).substring(0, 70),
     seoDescription: (result.seoDescription || fallback.seoDescription).substring(0, 160),
+    longDescription: result.longDescription || fallback.longDescription,
   }
 }
 
@@ -340,19 +349,21 @@ export async function generatePricingPlanSeoWithOpenAI(
   priceInCents?: number,
   interval?: 'MONTHLY' | 'YEARLY' | 'ONE_TIME',
 ): Promise<PricingPlanSeoResult> {
-  const systemPrompt = 'Você é um redator de conteúdo para negócios locais brasileiros. Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
+  const systemPrompt = 'Você é especialista em SEO e copywriting para negócios locais brasileiros. Gere textos que ranqueiam no Google e convertem visitantes em clientes. Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
 
-  console.log(`[AI OpenAI] Gerando descrição para plano "${planName}"`)
+  console.log(`[AI OpenAI] Gerando SEO para plano "${planName}"`)
 
   const fallback: PricingPlanSeoResult = {
     description: planDescription || `${planName} - ${data.businessName}`,
+    longDescription: `${planName} disponível na ${data.businessName} em ${data.city}, ${data.state}.\nEntre em contato pelo WhatsApp para saber mais sobre este plano e condições disponíveis.`,
   }
 
   const result = await callOpenAIWithRetry<PricingPlanSeoResult>(
-    systemPrompt, getPricingPlanSeoPrompt(data, planName, planDescription, priceInCents, interval), fallback, 500,
+    systemPrompt, getPricingPlanSeoPrompt(data, planName, planDescription, priceInCents, interval), fallback, 1500,
   )
 
   return {
     description: (result.description || fallback.description).substring(0, 500),
+    longDescription: result.longDescription || fallback.longDescription,
   }
 }

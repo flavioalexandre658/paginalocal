@@ -45,6 +45,8 @@ export interface StoreBuilderResult {
   neighborhoods: string[]
   placeDetails: GooglePlaceDetails
   marketingGenerated: boolean
+  termGender: 'MASCULINE' | 'FEMININE'
+  termNumber: 'SINGULAR' | 'PLURAL'
   /** The Place ID actually used (may differ from input if corrected via text search) */
   resolvedPlaceId: string
 }
@@ -803,6 +805,8 @@ export async function buildStoreFromGoogle(
     neighborhoods: finalNeighborhoods,
     placeDetails,
     marketingGenerated,
+    termGender: marketingCopy?.termGender ?? 'FEMININE',
+    termNumber: marketingCopy?.termNumber ?? 'SINGULAR',
     resolvedPlaceId,
   }
 }

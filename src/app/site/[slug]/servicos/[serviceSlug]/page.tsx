@@ -6,6 +6,7 @@ import { eq, and, asc, desc } from 'drizzle-orm'
 import { ServiceDetailContent } from './_components/service-detail-content'
 import { SiteFooter } from '../../_components/site-footer'
 import { FloatingContact } from '../../_components/floating-contact'
+import { getStoreGrammar } from '@/lib/store-terms'
 
 interface PageProps {
   params: Promise<{ slug: string; serviceSlug: string }>
@@ -86,7 +87,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     || `${serviceData.name} em ${storeData.city} | ${storeData.name}`
   const description = serviceData.seoDescription
     || serviceData.description
-    || `${serviceData.name} na ${storeData.name}, ${storeData.category.toLowerCase()} em ${storeData.city}, ${storeData.state}. Entre em contato pelo WhatsApp!`
+    || `${serviceData.name} ${getStoreGrammar(storeData.termGender, storeData.termNumber).na} ${storeData.name}, ${storeData.category.toLowerCase()} em ${storeData.city}, ${storeData.state}. Entre em contato pelo WhatsApp!`
 
   const baseUrl = storeData.customDomain
     ? `https://${storeData.customDomain}`
@@ -158,6 +159,7 @@ export default async function ServicePage({ params }: PageProps) {
   }
 
   const { store: storeData, service: serviceData, otherServices, testimonials, institutionalPages } = data
+  const g = getStoreGrammar(storeData.termGender, storeData.termNumber)
 
   const baseUrl = storeData.customDomain
     ? `https://${storeData.customDomain}`
@@ -169,7 +171,7 @@ export default async function ServicePage({ params }: PageProps) {
     '@context': 'https://schema.org',
     '@type': 'Service',
     name: serviceData.name,
-    description: serviceData.longDescription || serviceData.description || `${serviceData.name} na ${storeData.name}`,
+    description: serviceData.longDescription || serviceData.description || `${serviceData.name} ${g.na} ${storeData.name}`,
     provider: {
       '@type': 'LocalBusiness',
       '@id': `${baseUrl}/#business`,
@@ -285,6 +287,8 @@ export default async function ServicePage({ params }: PageProps) {
           showCallButton: storeData.showCallButton,
           googleRating: storeData.googleRating,
           googleReviewsCount: storeData.googleReviewsCount,
+          termGender: storeData.termGender,
+          termNumber: storeData.termNumber,
         }}
         service={{
           name: serviceData.name,

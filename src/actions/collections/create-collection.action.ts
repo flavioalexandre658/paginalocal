@@ -97,6 +97,7 @@ export const createCollectionAction = authActionClient
             seoTitle: seo.seoTitle,
             seoDescription: seo.seoDescription,
             updatedAt: new Date(),
+            imageUrl: parsedInput.imageUrl || null,
           })
           .where(eq(storeProductCollection.id, result.id))
           .returning()

@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { IconArrowRight } from '@tabler/icons-react'
 import { ProductCard } from '@/components/site/product-card'
 import type { ProductImage } from '@/db/schema'
+import { getStoreGrammar } from '@/lib/store-terms'
+import type { TermGender, TermNumber } from '@/lib/store-terms'
 
 interface Product {
   id: string
@@ -21,13 +23,20 @@ interface ProductsSectionProps {
   storeSlug: string
   category: string
   city: string
+  termGender?: TermGender
+  termNumber?: TermNumber
 }
 
 export function ProductsSection({
   products,
+  storeName,
   storeSlug,
+  category,
   city,
+  termGender,
+  termNumber,
 }: ProductsSectionProps) {
+  const g = getStoreGrammar(termGender, termNumber)
   if (products.length === 0) return null
 
   const featuredProducts = products.filter(p => p.isFeatured).slice(0, 6)
@@ -39,13 +48,13 @@ export function ProductsSection({
         <div className="mx-auto max-w-4xl">
           <div className="mb-12 text-center">
             <span className="text-sm font-bold uppercase tracking-widest text-primary">
-              Nossos Produtos
+              Produtos
             </span>
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl lg:text-5xl">
-              Conheça nosso <span className="text-primary">catálogo</span>
+              Produtos de <span className="text-primary">{category}</span> em {city} — {storeName}
             </h2>
             <p className="mt-4 text-lg text-slate-600">
-              Produtos de qualidade em {city}
+              {displayProducts.length} {displayProducts.length === 1 ? 'produto disponível' : 'produtos disponíveis'} {g.da} {storeName} · Peça pelo WhatsApp
             </p>
           </div>
 

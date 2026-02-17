@@ -9,6 +9,7 @@ import { buildStoreUrl } from '@/lib/google-indexing'
 import { getWhatsAppUrl } from '@/lib/utils'
 import { HeroSection } from '../_components/hero-section'
 import { SiteFooter } from '../_components/site-footer'
+import { getStoreGrammar } from '@/lib/store-terms'
 
 const FloatingContact = dynamic(() => import('../_components/floating-contact').then(m => m.FloatingContact))
 const FAQSection = dynamic(() => import('../_components/faq-section').then(m => m.FAQSection))
@@ -85,8 +86,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { store: storeData, page } = data
 
+  const _g0 = getStoreGrammar(storeData.termGender, storeData.termNumber)
   const title = page.seoTitle || `Contato | ${storeData.name}`
-  const description = page.seoDescription || `Entre em contato com a ${storeData.name} - ${storeData.category} em ${storeData.city}, ${storeData.state}. WhatsApp, telefone e endereço. Atendimento profissional.`
+  const description = page.seoDescription || `Entre em contato com ${_g0.art} ${storeData.name} - ${storeData.category} em ${storeData.city}, ${storeData.state}. WhatsApp, telefone e endereço. Atendimento profissional.`
   const pageUrl = buildStoreUrl(storeData.slug, storeData.customDomain) + '/contato'
   const ogImage = storeData.coverUrl || storeData.logoUrl
   const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
@@ -153,10 +155,17 @@ export default async function ContatoPage({ params }: PageProps) {
   }
 
   const { store: storeData, page, services, institutionalPages: activePages } = data
+  const g = getStoreGrammar(storeData.termGender, storeData.termNumber)
 
   const baseUrl = buildStoreUrl(storeData.slug, storeData.customDomain)
   const pageUrl = `${baseUrl}/contato`
   const whatsappUrl = getWhatsAppUrl(storeData.whatsapp)
+
+  const sameAsLinks = [
+    storeData.instagramUrl,
+    storeData.facebookUrl,
+    storeData.googleBusinessUrl,
+  ].filter(Boolean) as string[]
 
   const contactJsonLd = {
     '@context': 'https://schema.org',
@@ -176,6 +185,14 @@ export default async function ContatoPage({ params }: PageProps) {
         addressRegion: storeData.state,
         addressCountry: 'BR',
       },
+      ...(storeData.googleRating && {
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: storeData.googleRating,
+          reviewCount: storeData.googleReviewsCount,
+        },
+      }),
+      ...(sameAsLinks.length > 0 && { sameAs: sameAsLinks }),
     },
   }
 
@@ -226,10 +243,13 @@ export default async function ContatoPage({ params }: PageProps) {
                 Entre em Contato
               </span>
               <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-                Fale com a <span className="text-primary">{storeData.name}</span> — {storeData.category} em {storeData.city}
+                Fale com {g.art} <span className="text-primary">{storeData.name}</span> em {storeData.city}
               </h2>
               <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-                Entre em contato com a {storeData.name}, sua {storeData.category.toLowerCase()} de confiança em {storeData.city}, {storeData.state}. Atendemos pelo WhatsApp, telefone ou presencialmente. Tire suas dúvidas, solicite orçamentos e agende sua visita.
+                {page.content
+                  ? page.content.split('\n').filter(Boolean)[0]
+                  : `Precisa de ${storeData.category.toLowerCase()} em ${storeData.city}? Fale com ${g.art} ${storeData.name} pelo WhatsApp ou telefone. Atendemos ${storeData.city} e região.`
+                }
               </p>
             </div>
 
@@ -294,7 +314,7 @@ export default async function ContatoPage({ params }: PageProps) {
       </main>
 
       {Array.isArray(storeData.faq) && (storeData.faq as { question: string; answer: string }[]).length > 0 && (
-        <FAQSection faq={storeData.faq as { question: string; answer: string }[]} storeName={storeData.name} city={storeData.city} category={storeData.category} />
+        <FAQSection faq={storeData.faq as { question: string; answer: string }[]} storeName={storeData.name} city={storeData.city} category={storeData.category} termGender={storeData.termGender} termNumber={storeData.termNumber} />
       )}
 
       <SiteFooter

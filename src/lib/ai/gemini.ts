@@ -141,6 +141,9 @@ export async function generateMarketingCopyWithGemini(data: MarketingCopyInput):
     }
   }
 
+  const rawGender = storeContent.termGender as string
+  const rawNumber = storeContent.termNumber as string
+
   const result: MarketingCopy = {
     brandName: (storeContent.brandName as string) || '',
     slug: '',
@@ -152,6 +155,8 @@ export async function generateMarketingCopyWithGemini(data: MarketingCopyInput):
     services: services.length > 0 ? services : generateFallbackServices(data.category),
     faq: faq.length > 0 ? faq : generateFallbackFAQ(data.businessName, data.city, data.category),
     neighborhoods: (storeContent.neighborhoods as string[]) || [],
+    termGender: (rawGender === 'MASCULINE' || rawGender === 'FEMININE') ? rawGender : 'FEMININE',
+    termNumber: (rawNumber === 'PLURAL') ? 'PLURAL' : 'SINGULAR',
   }
 
   console.log('[AI Gemini] Geração concluída! Serviços:', result.services.length, 'FAQs:', result.faq.length)

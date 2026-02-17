@@ -1,5 +1,7 @@
 import { IconMapPin, IconClock, IconCheck, IconCircleCheck, IconCircleX } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
+import { getStoreGrammar } from '@/lib/store-terms'
+import type { TermGender, TermNumber } from '@/lib/store-terms'
 
 const DAY_LABELS: Record<string, string> = {
   monday: 'Segunda',
@@ -46,6 +48,8 @@ interface AboutSectionProps {
   openingHours?: Record<string, string> | null
   servicesCount?: number
   serviceNames?: string[]
+  termGender?: TermGender
+  termNumber?: TermNumber
 }
 
 export function AboutSection({
@@ -58,7 +62,10 @@ export function AboutSection({
   openingHours,
   servicesCount,
   serviceNames,
+  termGender,
+  termNumber,
 }: AboutSectionProps) {
+  const g = getStoreGrammar(termGender, termNumber)
   const hasHours = openingHours && Object.keys(openingHours).length > 0
 
   return (
@@ -73,10 +80,10 @@ export function AboutSection({
           {/* Section header */}
           <div className="mb-12 animate-fade-in-up">
             <span className="text-sm font-bold uppercase tracking-widest text-primary">
-              Sobre a {name}
+              Sobre {g.art} {name}
             </span>
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-              Sobre a {name} — {category} em <span className="text-primary">{city}</span>, {state}
+              Sobre {g.art} {name} — {category} em <span className="text-primary">{city}</span>, {state}
             </h2>
           </div>
 
@@ -84,7 +91,7 @@ export function AboutSection({
             {/* Main description card */}
             <div className="animate-fade-in-up animation-delay-200 rounded-2xl border-2 border-slate-100 border-l-4 border-l-primary bg-white p-8 md:p-10 shadow-lg dark:border-slate-800 dark:border-l-primary dark:bg-slate-900 dark:shadow-slate-900/30">
               <p className="text-lg leading-relaxed text-slate-600 dark:text-slate-300 md:text-xl">
-                {description || `A ${name} é referência em ${category.toLowerCase()} em ${city}, ${state}. Com atendimento profissional e personalizado, oferecemos${servicesCount ? ` ${servicesCount} serviços especializados` : ' atendimento de qualidade'} para clientes de ${city} e toda a região. Nossa equipe está pronta para atender você com qualidade e dedicação. Entre em contato pelo WhatsApp e agende sua visita.`}
+                {description || `${g.Art} ${name} é ${category.toLowerCase()} em ${city}, ${state}. Com atendimento profissional e personalizado, oferecemos${servicesCount ? ` ${servicesCount} serviços especializados` : ' atendimento de qualidade'} para clientes de ${city} e toda a região. Nossa equipe está pronta para atender você com qualidade e dedicação. Entre em contato pelo WhatsApp e agende sua visita.`}
               </p>
 
               {serviceNames && serviceNames.length > 0 && (
@@ -184,7 +191,7 @@ export function AboutSection({
                 {/* Content area */}
                 <div className="px-8 py-8 md:px-10">
                   <p className="mb-6 text-slate-500 leading-relaxed dark:text-slate-400">
-                    A {name} atende diversas regiões de {city}, {state} e proximidades com a mesma qualidade, dedicação e profissionalismo. Confira abaixo os bairros e áreas de cobertura dos nossos serviços de {category.toLowerCase()}.
+                    {g.Art} {name} atende diversas regiões de {city}, {state} e proximidades. Confira abaixo os bairros e áreas de cobertura dos {g.nossa}s serviços de {category.toLowerCase()}.
                   </p>
                   <div className="flex flex-wrap gap-2.5">
                     {neighborhoods.map((n) => (

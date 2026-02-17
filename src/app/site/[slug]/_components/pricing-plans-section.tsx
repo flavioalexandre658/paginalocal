@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { IconCheck, IconSparkles, IconBrandWhatsapp, IconExternalLink, IconArrowRight } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import type { PricingInterval, PricingCtaMode } from '@/db/schema'
+import { getStoreGrammar } from '@/lib/store-terms'
+import type { TermGender, TermNumber } from '@/lib/store-terms'
 
 interface PricingPlan {
   id: string
@@ -24,6 +26,8 @@ interface PricingPlansSectionProps {
   storeWhatsapp: string
   category: string
   city: string
+  termGender?: TermGender
+  termNumber?: TermNumber
 }
 
 export function PricingPlansSection({
@@ -33,7 +37,10 @@ export function PricingPlansSection({
   storeWhatsapp,
   category,
   city,
+  termGender,
+  termNumber,
 }: PricingPlansSectionProps) {
+  const g = getStoreGrammar(termGender, termNumber)
   if (plans.length === 0) return null
 
   function getPlanCtaUrl(plan: PricingPlan): string {
@@ -61,13 +68,13 @@ export function PricingPlansSection({
         <div className="mx-auto max-w-4xl">
           <div className="mb-12 text-center">
             <span className="text-sm font-bold uppercase tracking-widest text-primary">
-              Nossos Planos
+              Planos e Preços
             </span>
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl lg:text-5xl">
-              Escolha o <span className="text-primary">plano ideal</span> para você
+              Planos de <span className="text-primary">{category}</span> {g.da} {storeName} em {city}
             </h2>
             <p className="mt-4 text-lg text-slate-600">
-              Transparência e qualidade em {city}
+              {plans.length} {plans.length === 1 ? 'opção disponível' : 'opções disponíveis'} para você em {city}
             </p>
           </div>
 

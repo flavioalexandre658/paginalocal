@@ -4,6 +4,9 @@ import { category } from './categories.schema'
 
 export type CreationSource = 'GOOGLE_IMPORT' | 'MANUAL_CREATION'
 
+export type TermGender = 'MASCULINE' | 'FEMININE'
+export type TermNumber = 'SINGULAR' | 'PLURAL'
+
 export type StoreMode = 
   | 'LOCAL_BUSINESS'    // Negócio local tradicional (default atual)
   | 'PRODUCT_CATALOG'   // Foco em catálogo de produtos
@@ -108,6 +111,17 @@ export const store = pgTable('store', {
     .default('default'),
 
   templateConfig: jsonb('template_config'),
+
+  // Grammar fields for correct Portuguese articles in static content
+  termGender: varchar('term_gender', { length: 10 })
+    .notNull()
+    .default('FEMININE')
+    .$type<TermGender>(),
+
+  termNumber: varchar('term_number', { length: 10 })
+    .notNull()
+    .default('SINGULAR')
+    .$type<TermNumber>(),
 
   isActive: boolean('is_active').default(false).notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
