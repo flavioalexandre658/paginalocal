@@ -214,7 +214,7 @@ export function ServiceFormModal({
         </ModalHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1 flex-col min-h-0">
             <ModalBody className="space-y-4">
               <FormField
                 control={form.control}

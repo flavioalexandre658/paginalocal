@@ -20,6 +20,8 @@ import {
   IconStar,
   IconSearch,
   IconEye,
+  IconShoppingCart,
+  IconCreditCard,
 } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
@@ -92,7 +94,8 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
-type ManualStep = 'form' | 'creating' | 'complete'
+type ManualStep = 'mode-selection' | 'form' | 'creating' | 'complete'
+type StoreMode = 'LOCAL_BUSINESS' | 'PRODUCT_CATALOG' | 'SERVICE_PRICING' | 'HYBRID'
 
 const HUMANIZED_LOGS = [
   { icon: IconSparkles, text: 'Analisando seu negócio...' },
@@ -103,7 +106,8 @@ const HUMANIZED_LOGS = [
 ]
 
 export default function ManualOnboardingPage() {
-  const [step, setStep] = useState<ManualStep>('form')
+  const [step, setStep] = useState<ManualStep>('mode-selection')
+  const [selectedMode, setSelectedMode] = useState<StoreMode>('LOCAL_BUSINESS')
   const [currentLogIndex, setCurrentLogIndex] = useState(0)
   const [showConfetti, setShowConfetti] = useState(false)
   const [createdStore, setCreatedStore] = useState<{ slug: string; name: string } | null>(null)
@@ -233,6 +237,7 @@ export default function ManualOnboardingPage() {
       neighborhoods: neighborhoods.length > 0 ? neighborhoods : undefined,
       differential: data.differential,
       whatsapp: whatsappClean,
+      mode: selectedMode,
     })
 
     if (result?.serverError) {
@@ -273,6 +278,19 @@ export default function ManualOnboardingPage() {
 
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12">
         <AnimatePresence mode="wait">
+          {step === 'mode-selection' && (
+            <ModeSelectionStep
+              key="mode-selection"
+              onSelectMode={(mode) => {
+                setSelectedMode(mode)
+                setStep('form')
+              }}
+              onBack={() => {
+                window.location.href = '/onboarding'
+              }}
+            />
+          )}
+
           {step === 'form' && (
             <FormStep
               key="form"
@@ -312,6 +330,175 @@ export default function ManualOnboardingPage() {
   )
 }
 
+function ModeSelectionStep({
+  onSelectMode,
+  onBack,
+}: {
+  onSelectMode: (mode: StoreMode) => void
+  onBack: () => void
+}) {
+  const modes: Array<{
+    mode: StoreMode
+    title: string
+    description: string
+    examples: string[]
+    icon: typeof IconMapPin
+    isRecommended?: boolean
+  }> = [
+    {
+      mode: 'LOCAL_BUSINESS',
+      title: 'Negócio Local',
+      description: 'Serviços profissionais com foco em localização',
+      examples: ['Oficina', 'Barbearia', 'Consultório'],
+      icon: IconMapPin,
+      isRecommended: true,
+    },
+    {
+      mode: 'PRODUCT_CATALOG',
+      title: 'Loja / Catálogo',
+      description: 'Venda produtos com catálogo e coleções',
+      examples: ['Loja de Roupas', 'Pet Shop', 'Floricultura'],
+      icon: IconShoppingCart,
+    },
+    {
+      mode: 'SERVICE_PRICING',
+      title: 'Planos e Preços',
+      description: 'Ofereça planos com tabela de preços',
+      examples: ['Academia', 'SaaS', 'Consultoria'],
+      icon: IconCreditCard,
+    },
+    {
+      mode: 'HYBRID',
+      title: 'Híbrido',
+      description: 'Serviços + Produtos + Planos',
+      examples: ['Pet Shop completo', 'Academia com loja'],
+      icon: IconSparkles,
+    },
+  ]
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="w-full max-w-2xl"
+    >
+      <button
+        onClick={onBack}
+        className="mb-4 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+      >
+        <IconArrowLeft className="h-4 w-4" />
+        Voltar
+      </button>
+
+      <div className="mb-6 text-center md:mb-8">
+        <motion.div
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
+        >
+          <IconBuildingStore className="h-6 w-6 text-primary" />
+        </motion.div>
+        <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
+          Que tipo de site você quer criar?
+        </h1>
+        <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+          Escolha o formato ideal para o seu negócio
+        </p>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2 md:gap-4">
+        {modes.map((modeConfig, index) => (
+          <motion.button
+            key={modeConfig.mode}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 + index * 0.1, duration: 0.35 }}
+            onClick={() => onSelectMode(modeConfig.mode)}
+            className={cn(
+              'group relative cursor-pointer overflow-hidden rounded-2xl border-2 bg-white/70 p-5 text-left backdrop-blur-sm transition-all duration-300 md:p-6',
+              modeConfig.isRecommended
+                ? 'border-primary/20 hover:-translate-y-1 hover:border-primary/40 hover:bg-white hover:shadow-xl hover:shadow-primary/10'
+                : 'border-slate-200/60 hover:-translate-y-1 hover:border-slate-300/80 hover:bg-white hover:shadow-lg hover:shadow-slate-200/30',
+              'dark:border-slate-700/60 dark:bg-slate-800/70 dark:hover:bg-slate-800'
+            )}
+          >
+            {modeConfig.isRecommended && (
+              <div className="absolute right-3 top-3 md:right-4 md:top-4">
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary md:text-xs">
+                  <IconSparkles className="h-3 w-3" />
+                  Recomendado
+                </span>
+              </div>
+            )}
+
+            <div className={cn(
+              'absolute inset-0 bg-gradient-to-br transition-all duration-300',
+              modeConfig.isRecommended
+                ? 'from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/3 group-hover:to-transparent'
+                : 'from-transparent via-transparent to-transparent'
+            )} />
+
+            <div className="relative">
+              <div className={cn(
+                'mb-3 flex h-11 w-11 items-center justify-center rounded-xl shadow-md transition-transform duration-300 group-hover:scale-110 md:h-12 md:w-12',
+                modeConfig.isRecommended
+                  ? 'bg-gradient-to-br from-primary/20 to-primary/5 shadow-primary/10'
+                  : 'bg-slate-100 dark:bg-slate-700/60'
+              )}>
+                <modeConfig.icon className={cn(
+                  'h-5 w-5 md:h-6 md:w-6',
+                  modeConfig.isRecommended ? 'text-primary' : 'text-slate-500 dark:text-slate-400'
+                )} />
+              </div>
+
+              <h2 className={cn(
+                'mb-1.5 text-base font-semibold dark:text-white md:text-lg',
+                modeConfig.isRecommended ? 'pr-16 md:pr-20' : ''
+              )}>
+                {modeConfig.title}
+              </h2>
+              <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 md:text-sm">
+                {modeConfig.description}
+              </p>
+
+              <div className="mt-4 flex flex-wrap gap-1.5 md:gap-2">
+                {modeConfig.examples.map((example) => (
+                  <span
+                    key={example}
+                    className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-700/60 dark:text-slate-300 md:text-xs"
+                  >
+                    {example}
+                  </span>
+                ))}
+              </div>
+
+              <div className={cn(
+                'mt-4 flex items-center gap-1.5 text-xs font-medium transition-all group-hover:gap-2.5 md:text-sm',
+                modeConfig.isRecommended ? 'text-primary' : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-400 dark:group-hover:text-slate-200'
+              )}>
+                Selecionar
+                <IconArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </div>
+            </div>
+          </motion.button>
+        ))}
+      </div>
+
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="mt-6 text-center text-sm text-slate-400"
+      >
+        Você poderá alterar depois
+      </motion.p>
+    </motion.div>
+  )
+}
+
 function FormStep({
   form,
   onSubmit,
@@ -347,13 +534,13 @@ function FormStep({
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="w-full max-w-lg"
     >
-      <Link
-        href="/onboarding"
+      <button
+        onClick={() => window.history.back()}
         className="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
       >
         <IconArrowLeft className="h-4 w-4" />
-        Voltar para busca no Google
-      </Link>
+        Voltar
+      </button>
 
       <div className="mb-8 text-center">
         <motion.div

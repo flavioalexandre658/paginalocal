@@ -4,15 +4,18 @@ import { headers } from 'next/headers'
 import { unstable_cache } from 'next/cache'
 import dynamic from 'next/dynamic'
 import { db } from '@/db'
-import { store, service, testimonial, storeImage, storePage } from '@/db/schema'
+import { store, service, testimonial, storeImage, storePage, storeProduct, storePricingPlan } from '@/db/schema'
 import { eq, asc, desc, and } from 'drizzle-orm'
 import { generateLocalBusinessJsonLd, generateBreadcrumbJsonLd } from '@/lib/local-seo'
 import { auth } from '@/lib/auth'
+import { getStoreSections, getActiveSections } from '@/lib/store-sections'
 import { HeroSection } from './_components/hero-section'
 import { AboutSection } from './_components/about-section'
 import { ServicesSection } from './_components/services-section'
 import { ContactSection } from './_components/contact-section'
 import { SiteFooter } from './_components/site-footer'
+import { ProductsSection } from './_components/products-section'
+import { PricingPlansSection } from './_components/pricing-plans-section'
 import { generateFAQJsonLd } from '@/lib/faq-json-ld'
 
 const StatsSection = dynamic(() => import('./_components/stats-section').then(m => m.StatsSection))
@@ -43,7 +46,7 @@ async function fetchStoreData(slug: string) {
 
   if (!storeData[0]) return null
 
-  const [services, testimonials, galleryImages, heroImage] = await Promise.all([
+  const [services, testimonials, galleryImages, heroImage, products, pricingPlans] = await Promise.all([
     db
       .select()
       .from(service)
@@ -74,6 +77,17 @@ async function fetchStoreData(slug: string) {
       .from(storeImage)
       .where(and(eq(storeImage.storeId, storeData[0].id), eq(storeImage.role, 'hero')))
       .limit(1),
+    db
+      .select()
+      .from(storeProduct)
+      .where(and(eq(storeProduct.storeId, storeData[0].id), eq(storeProduct.status, 'ACTIVE')))
+      .orderBy(asc(storeProduct.position))
+      .limit(12),
+    db
+      .select()
+      .from(storePricingPlan)
+      .where(and(eq(storePricingPlan.storeId, storeData[0].id), eq(storePricingPlan.isActive, true)))
+      .orderBy(asc(storePricingPlan.position)),
   ])
 
   const institutionalPages = await db
@@ -88,6 +102,8 @@ async function fetchStoreData(slug: string) {
     galleryImages,
     heroImage: heroImage[0] || null,
     institutionalPages,
+    products,
+    pricingPlans,
   }
 }
 
@@ -189,7 +205,7 @@ export default async function StorePage({ params }: PageProps) {
     notFound()
   }
 
-  const { store: storeData, services, testimonials, galleryImages, heroImage, institutionalPages } = data
+  const { store: storeData, services, testimonials, galleryImages, heroImage, institutionalPages, products, pricingPlans } = data
 
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -199,6 +215,10 @@ export default async function StorePage({ params }: PageProps) {
 
   const faq = (storeData.faq as FAQItem[] | null) || []
   const neighborhoods = (storeData.neighborhoods as string[] | null) || []
+
+  // V3: Get sections (usa fallback para lojas antigas)
+  const sections = getStoreSections(storeData)
+  const activeSections = getActiveSections(sections)
 
   const baseUrl = storeData.customDomain
     ? `https://${storeData.customDomain}`
@@ -365,83 +385,148 @@ export default async function StorePage({ params }: PageProps) {
       )}
 
       <main className={isDraft ? 'pt-12' : ''}>
-        <HeroSection
-          store={{
-            ...storeData,
-            heroTitle: storeData.heroTitle || undefined,
-            heroSubtitle: storeData.heroSubtitle || undefined,
-            coverUrl: heroImage?.url || storeData.coverUrl,
-            showWhatsappButton: storeData.showWhatsappButton,
-            showCallButton: storeData.showCallButton,
-          }}
-          heroImageAlt={heroImage?.alt}
-          isOwner={isOwner}
-        />
+        {activeSections.map((section) => {
+          switch (section.type) {
+            case 'HERO':
+              return (
+                <HeroSection
+                  key="hero"
+                  store={{
+                    ...storeData,
+                    heroTitle: storeData.heroTitle || undefined,
+                    heroSubtitle: storeData.heroSubtitle || undefined,
+                    coverUrl: heroImage?.url || storeData.coverUrl,
+                    showWhatsappButton: storeData.showWhatsappButton,
+                    showCallButton: storeData.showCallButton,
+                  }}
+                  heroImageAlt={heroImage?.alt}
+                  isOwner={isOwner}
+                />
+              )
 
-        <StatsSection
-          stats={storeData.stats as import('@/db/schema/stores.schema').StoreStat[] | null}
-          category={storeData.category}
-        />
+            case 'STATS':
+              return (
+                <StatsSection
+                  key="stats"
+                  stats={storeData.stats as import('@/db/schema/stores.schema').StoreStat[] | null}
+                  category={storeData.category}
+                />
+              )
 
-        <AboutSection
-          name={storeData.name}
-          category={storeData.category}
-          city={storeData.city}
-          state={storeData.state}
-          description={storeData.description}
-          neighborhoods={neighborhoods}
-          openingHours={storeData.openingHours as Record<string, string> | null}
-          servicesCount={services.length}
-          serviceNames={services.map(s => s.name)}
-        />
+            case 'ABOUT':
+              return (
+                <AboutSection
+                  key="about"
+                  name={storeData.name}
+                  category={storeData.category}
+                  city={storeData.city}
+                  state={storeData.state}
+                  description={storeData.description}
+                  neighborhoods={neighborhoods}
+                  openingHours={storeData.openingHours as Record<string, string> | null}
+                  servicesCount={services.length}
+                  serviceNames={services.map(s => s.name)}
+                />
+              )
 
-        {services.length > 0 && (
-          <ServicesSection
-            services={services}
-            storeName={storeData.name}
-            storeSlug={storeData.slug}
-            category={storeData.category}
-            city={storeData.city}
-          />
-        )}
+            case 'SERVICES':
+              return services.length > 0 ? (
+                <ServicesSection
+                  key="services"
+                  services={services}
+                  storeName={storeData.name}
+                  storeSlug={storeData.slug}
+                  category={storeData.category}
+                  city={storeData.city}
+                />
+              ) : null
 
-        {galleryImages.length > 0 && (
-          <GallerySection
-            images={galleryImages}
-            storeName={storeData.name}
-            city={storeData.city}
-            category={storeData.category}
-          />
-        )}
+            case 'PRODUCTS':
+              return products.length > 0 ? (
+                <ProductsSection
+                  key="products"
+                  products={products}
+                  storeName={storeData.name}
+                  storeSlug={storeData.slug}
+                  category={storeData.category}
+                  city={storeData.city}
+                />
+              ) : null
 
-        {neighborhoods.length > 0 && (
-          <AreasSection
-            neighborhoods={neighborhoods}
-            city={storeData.city}
-            state={storeData.state}
-            category={storeData.category}
-            storeName={storeData.name}
-          />
-        )}
+            case 'PRICING_PLANS':
+              return pricingPlans.length > 0 ? (
+                <PricingPlansSection
+                  key="pricing-plans"
+                  plans={pricingPlans}
+                  storeName={storeData.name}
+                  storeSlug={storeData.slug}
+                  storeWhatsapp={storeData.whatsapp}
+                  category={storeData.category}
+                  city={storeData.city}
+                />
+              ) : null
 
-        {testimonials.length > 0 && (
-          <TestimonialsSection
-            testimonials={testimonials}
-            storeName={storeData.name}
-            city={storeData.city}
-            category={storeData.category}
-          />
-        )}
+            case 'GALLERY':
+              return galleryImages.length > 0 ? (
+                <GallerySection
+                  key="gallery"
+                  images={galleryImages}
+                  storeName={storeData.name}
+                  city={storeData.city}
+                  category={storeData.category}
+                />
+              ) : null
 
-        {faq.length > 0 && <FAQSection faq={faq} storeName={storeData.name} city={storeData.city} category={storeData.category} />}
+            case 'AREAS':
+              return neighborhoods.length > 0 ? (
+                <AreasSection
+                  key="areas"
+                  neighborhoods={neighborhoods}
+                  city={storeData.city}
+                  state={storeData.state}
+                  category={storeData.category}
+                  storeName={storeData.name}
+                />
+              ) : null
 
-        <ContactSection
-          store={{
-            ...storeData,
-            openingHours: storeData.openingHours as Record<string, string> | null,
-          }}
-          isOwner={isOwner}
-        />
+            case 'TESTIMONIALS':
+              return testimonials.length > 0 ? (
+                <TestimonialsSection
+                  key="testimonials"
+                  testimonials={testimonials}
+                  storeName={storeData.name}
+                  city={storeData.city}
+                  category={storeData.category}
+                />
+              ) : null
+
+            case 'FAQ':
+              return faq.length > 0 ? (
+                <FAQSection
+                  key="faq"
+                  faq={faq}
+                  storeName={storeData.name}
+                  city={storeData.city}
+                  category={storeData.category}
+                />
+              ) : null
+
+            case 'CONTACT':
+              return (
+                <ContactSection
+                  key="contact"
+                  store={{
+                    ...storeData,
+                    openingHours: storeData.openingHours as Record<string, string> | null,
+                  }}
+                  isOwner={isOwner}
+                />
+              )
+
+            default:
+              return null
+          }
+        })}
 
         {/* AEO: Conteúdo otimizado para respostas de IA e "perto de mim" */}
         <section className="sr-only" aria-hidden="false">

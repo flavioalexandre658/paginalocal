@@ -4,6 +4,33 @@ import { category } from './categories.schema'
 
 export type CreationSource = 'GOOGLE_IMPORT' | 'MANUAL_CREATION'
 
+export type StoreMode = 
+  | 'LOCAL_BUSINESS'    // Negócio local tradicional (default atual)
+  | 'PRODUCT_CATALOG'   // Foco em catálogo de produtos
+  | 'SERVICE_PRICING'   // Foco em planos/pricing
+  | 'HYBRID'            // Mix de serviços + produtos + planos
+
+export type SectionType = 
+  | 'HERO' | 'ABOUT' | 'SERVICES' | 'PRODUCTS' | 'PRICING_PLANS' 
+  | 'GALLERY' | 'TESTIMONIALS' | 'FAQ' | 'AREAS' | 'STATS' | 'CONTACT'
+
+export interface SectionConfig {
+  // SEO para páginas de listagem
+  pageTitle?: string
+  seoTitle?: string
+  seoDescription?: string
+  
+  // Configs visuais específicas por seção
+  [key: string]: unknown
+}
+
+export interface StoreSection {
+  type: SectionType
+  isActive: boolean
+  order: number
+  config?: SectionConfig
+}
+
 export interface StoreStat {
   label: string
   value: string
@@ -67,6 +94,20 @@ export const store = pgTable('store', {
 
   highlightBadge: varchar('highlight_badge', { length: 50 }),
   highlightText: text('highlight_text'),
+
+  // Novos campos para v3
+  mode: varchar('mode', { length: 20 })
+    .notNull()
+    .default('LOCAL_BUSINESS')
+    .$type<StoreMode>(),
+
+  sections: jsonb('sections').$type<StoreSection[]>(),
+
+  templateId: varchar('template_id', { length: 50 })
+    .notNull()
+    .default('default'),
+
+  templateConfig: jsonb('template_config'),
 
   isActive: boolean('is_active').default(false).notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),

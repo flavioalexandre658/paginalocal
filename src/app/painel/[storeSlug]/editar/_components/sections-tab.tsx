@@ -20,6 +20,9 @@ import {
   IconEdit,
   IconChartBar,
   IconRefresh,
+  IconShoppingCart,
+  IconFolders,
+  IconCreditCard,
 } from '@tabler/icons-react'
 import type { StoreStat } from '@/db/schema/stores.schema'
 
@@ -40,6 +43,9 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 import { ServiceFormModal } from './service-form-modal'
+import { ProductsManager } from './products-manager'
+import { CollectionsManager } from './collections-manager'
+import { PricingPlansManager } from './pricing-plans-manager'
 
 const sectionsFormSchema = z.object({
   faq: z.array(
@@ -73,6 +79,7 @@ interface SectionsTabProps {
     faq: Array<{ question: string; answer: string }> | null
     neighborhoods: string[] | null
     stats: StoreStat[] | null
+    mode: string | null
   }
   services: Service[]
   storeSlug: string
@@ -741,6 +748,50 @@ export function SectionsTab({ store, services: initialServices, storeSlug }: Sec
             </div>
           </form>
         </Form>
+
+        <SectionCard
+          title="Coleções de Produtos"
+          subtitle="Organize produtos em coleções"
+          icon={<IconFolders className="h-6 w-6 text-violet-500" />}
+          iconBg="bg-gradient-to-br from-violet-500/20 to-violet-500/5 shadow-violet-500/10"
+          count={0}
+          isOpen={openSections.includes('collections')}
+          onToggle={() => toggleSection('collections')}
+        >
+          <CollectionsManager storeId={store.id} />
+        </SectionCard>
+
+        <SectionCard
+          title="Produtos"
+          subtitle="Catálogo de produtos para venda"
+          icon={<IconShoppingCart className="h-6 w-6 text-blue-500" />}
+          iconBg="bg-gradient-to-br from-blue-500/20 to-blue-500/5 shadow-blue-500/10"
+          count={0}
+          isOpen={openSections.includes('products')}
+          onToggle={() => toggleSection('products')}
+        >
+          <ProductsManager 
+            storeId={store.id}
+            onNeedCollection={() => {
+              setOpenSections((prev) =>
+                prev.includes('collections') ? prev : [...prev, 'collections']
+              )
+              toast('Abra a seção "Coleções" acima para criar uma coleção primeiro', { icon: '👆' })
+            }}
+          />
+        </SectionCard>
+
+        <SectionCard
+          title="Planos de Preços"
+          subtitle="Tabela de preços e assinaturas"
+          icon={<IconCreditCard className="h-6 w-6 text-indigo-500" />}
+          iconBg="bg-gradient-to-br from-indigo-500/20 to-indigo-500/5 shadow-indigo-500/10"
+          count={0}
+          isOpen={openSections.includes('pricing')}
+          onToggle={() => toggleSection('pricing')}
+        >
+          <PricingPlansManager storeId={store.id} />
+        </SectionCard>
       </div>
 
       <div className="rounded-xl border border-amber-200/60 bg-amber-50/50 p-4 dark:border-amber-900/40 dark:bg-amber-950/20">

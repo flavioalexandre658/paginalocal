@@ -29,17 +29,17 @@ import { EnhancedButton } from '@/components/ui/enhanced-button'
 const socialFormSchema = z.object({
   instagramUrl: z
     .string()
-    .url('URL inválida')
+
     .optional()
     .or(z.literal('')),
   facebookUrl: z
     .string()
-    .url('URL inválida')
+
     .optional()
     .or(z.literal('')),
   googleBusinessUrl: z
     .string()
-    .url('URL inválida')
+
     .optional()
     .or(z.literal('')),
 })

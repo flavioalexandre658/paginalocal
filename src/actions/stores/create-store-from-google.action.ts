@@ -33,6 +33,7 @@ const createStoreFromGoogleSchema = z.object({
   selectedCoverIndex: z.number().int().min(0).optional(),
   whatsappOverride: z.string().optional(),
   phoneOverride: z.string().optional(),
+  mode: z.enum(['LOCAL_BUSINESS', 'PRODUCT_CATALOG', 'SERVICE_PRICING', 'HYBRID']).default('LOCAL_BUSINESS'),
 })
 
 // ===== Main Action =====
@@ -117,6 +118,10 @@ export const createStoreFromGoogleAction = authActionClient
         seoDescription: truncate(result.seoDescription, 160),
         faq: result.faq,
         neighborhoods: result.neighborhoods,
+        mode: parsedInput.mode,
+        sections: null,
+        templateId: 'default',
+        templateConfig: null,
         isActive: shouldActivateStore,
       })
       .returning()

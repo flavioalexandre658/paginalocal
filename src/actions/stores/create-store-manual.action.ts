@@ -61,6 +61,7 @@ const createStoreManualSchema = z.object({
   neighborhoods: z.array(z.string()).optional(),
   differential: z.string().min(10, 'Descreva seu diferencial (mínimo 10 caracteres)').max(300),
   whatsapp: z.string().regex(/^\d{10,11}$/, 'WhatsApp inválido (apenas números, 10 ou 11 dígitos)'),
+  mode: z.enum(['LOCAL_BUSINESS', 'PRODUCT_CATALOG', 'SERVICE_PRICING', 'HYBRID']).default('LOCAL_BUSINESS'),
 })
 
 function capitalizeWords(str: string): string {
@@ -232,6 +233,10 @@ export const createStoreManualAction = authActionClient
         seoDescription,
         faq: finalFAQ,
         neighborhoods: finalNeighborhoods,
+        mode: parsedInput.mode,
+        sections: null,
+        templateId: 'default',
+        templateConfig: null,
         isActive: shouldActivateStore,
       })
       .returning()

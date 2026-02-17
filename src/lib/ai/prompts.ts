@@ -45,7 +45,7 @@ ${data.reviewCount ? `- Total de avaliações: ${data.reviewCount}` : ''}
 ${additionalContext}`
 }
 
-function getAntiAiRules(): string {
+export function getAntiAiRules(): string {
   return `### REGRAS DE ESCRITA (OBRIGATÓRIO):
 - PROIBIDO frases genéricas de IA: "destaca-se", "excelência", "inovador", "comprometimento com a qualidade", "referência no mercado", "diferenciado", "ampla gama", "soluções", "vasta experiência", "profissionais altamente qualificados", "atendimento de primeira", "compromisso com"
 - PROIBIDO usar travessão longo (—) para enfatizar. Use vírgulas, pontos ou "com".

@@ -1,4 +1,5 @@
 import { pgTable, uuid, varchar, text, timestamp, jsonb } from 'drizzle-orm/pg-core'
+import type { StoreMode } from './stores.schema'
 
 export interface CategoryFAQ {
   question: string
@@ -24,6 +25,12 @@ export const category = pgTable('category', {
   // Google Places API primaryType values que mapeiam para esta categoria
   // Ex: ["restaurant", "brazilian_restaurant", "japanese_restaurant"]
   typeGooglePlace: jsonb('type_google_place').$type<string[]>(),
+
+  // Novos campos para v3
+  applicableModes: jsonb('applicable_modes')
+    .$type<StoreMode[]>()
+    .default(['LOCAL_BUSINESS'])
+    .notNull(),
   
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })

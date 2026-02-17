@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
 import { store, service, storeImage, storePage } from '@/db/schema'
-import type { StoreStat } from '@/db/schema/stores.schema'
+import type { StoreStat, StoreSection } from '@/db/schema/stores.schema'
 import { eq, and, asc } from 'drizzle-orm'
 
 const getStoreForEditSchema = z.object({
@@ -90,6 +90,10 @@ export const getStoreForEditAction = authActionClient
         fontFamily: storeData.fontFamily,
         highlightBadge: storeData.highlightBadge,
         highlightText: storeData.highlightText,
+        mode: storeData.mode,
+        sections: storeData.sections as StoreSection[] | null,
+        templateId: storeData.templateId,
+        templateConfig: storeData.templateConfig,
       },
       services,
       images,

@@ -9,6 +9,11 @@ import {
   getBusinessClassificationPrompt,
   getInstitutionalPagesPrompt,
 } from './prompts'
+import {
+  getProductSeoPrompt,
+  getCollectionSeoPrompt,
+  getPricingPlanSeoPrompt,
+} from './prompts-products'
 import { applyFallbacks, generateFallbackFAQ, generateFallbackServices } from './fallbacks'
 
 const openai = new OpenAI({
@@ -253,5 +258,101 @@ export async function generateInstitutionalPagesWithOpenAI(data: MarketingCopyIn
       seoTitle: (result.contact?.seoTitle || fallback.contact.seoTitle).substring(0, 70),
       seoDescription: (result.contact?.seoDescription || fallback.contact.seoDescription).substring(0, 160),
     },
+  }
+}
+
+export interface ProductSeoResult {
+  description: string
+  seoTitle: string
+  seoDescription: string
+  longDescription: string
+}
+
+export interface CollectionSeoResult {
+  description: string
+  seoTitle: string
+  seoDescription: string
+}
+
+export interface PricingPlanSeoResult {
+  description: string
+}
+
+export async function generateProductSeoWithOpenAI(
+  data: MarketingCopyInput,
+  productName: string,
+  productDescription?: string,
+  priceInCents?: number,
+): Promise<ProductSeoResult> {
+  const systemPrompt = 'Você é um especialista em SEO para e-commerce brasileiro. Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
+
+  console.log(`[AI OpenAI] Gerando SEO para produto "${productName}"`)
+
+  const fallback: ProductSeoResult = {
+    description: productDescription || productName,
+    seoTitle: `${productName} | ${data.businessName}`.substring(0, 60),
+    seoDescription: `${productName} em ${data.city}. ${data.businessName}. Peça pelo WhatsApp!`.substring(0, 155),
+    longDescription: `${productName} disponível na ${data.businessName} em ${data.city}, ${data.state}.\nEntre em contato pelo WhatsApp para mais informações.`,
+  }
+
+  const result = await callOpenAIWithRetry<ProductSeoResult>(
+    systemPrompt, getProductSeoPrompt(data, productName, productDescription, priceInCents), fallback, 2000,
+  )
+
+  return {
+    description: (result.description || fallback.description).substring(0, 255),
+    seoTitle: (result.seoTitle || fallback.seoTitle).substring(0, 70),
+    seoDescription: (result.seoDescription || fallback.seoDescription).substring(0, 160),
+    longDescription: result.longDescription || fallback.longDescription,
+  }
+}
+
+export async function generateCollectionSeoWithOpenAI(
+  data: MarketingCopyInput,
+  collectionName: string,
+  collectionDescription?: string,
+): Promise<CollectionSeoResult> {
+  const systemPrompt = 'Você é um especialista em SEO para e-commerce brasileiro. Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
+
+  console.log(`[AI OpenAI] Gerando SEO para coleção "${collectionName}"`)
+
+  const fallback: CollectionSeoResult = {
+    description: collectionDescription || collectionName,
+    seoTitle: `${collectionName} | ${data.businessName}`.substring(0, 60),
+    seoDescription: `${collectionName} em ${data.city}. Confira no catálogo da ${data.businessName}!`.substring(0, 155),
+  }
+
+  const result = await callOpenAIWithRetry<CollectionSeoResult>(
+    systemPrompt, getCollectionSeoPrompt(data, collectionName, collectionDescription), fallback, 1000,
+  )
+
+  return {
+    description: (result.description || fallback.description).substring(0, 255),
+    seoTitle: (result.seoTitle || fallback.seoTitle).substring(0, 70),
+    seoDescription: (result.seoDescription || fallback.seoDescription).substring(0, 160),
+  }
+}
+
+export async function generatePricingPlanSeoWithOpenAI(
+  data: MarketingCopyInput,
+  planName: string,
+  planDescription?: string,
+  priceInCents?: number,
+  interval?: 'MONTHLY' | 'YEARLY' | 'ONE_TIME',
+): Promise<PricingPlanSeoResult> {
+  const systemPrompt = 'Você é um redator de conteúdo para negócios locais brasileiros. Sempre retorne JSON válido sem markdown. NUNCA use blocos de código (```).'
+
+  console.log(`[AI OpenAI] Gerando descrição para plano "${planName}"`)
+
+  const fallback: PricingPlanSeoResult = {
+    description: planDescription || `${planName} - ${data.businessName}`,
+  }
+
+  const result = await callOpenAIWithRetry<PricingPlanSeoResult>(
+    systemPrompt, getPricingPlanSeoPrompt(data, planName, planDescription, priceInCents, interval), fallback, 500,
+  )
+
+  return {
+    description: (result.description || fallback.description).substring(0, 500),
   }
 }

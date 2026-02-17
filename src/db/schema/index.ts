@@ -11,3 +11,8 @@ export * from './tracking.schema'
 export * from './pageviews.schema'
 export * from './store-transfers.schema'
 export * from './store-pages.schema'
+// V3 schemas
+export * from './store-product-collections.schema'
+export * from './store-products.schema'
+export * from './store-pricing-plans.schema'
+export * from './store-templates.schema'

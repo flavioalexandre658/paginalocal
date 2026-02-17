@@ -8,7 +8,7 @@ import { eq, and, or } from 'drizzle-orm'
 import { z } from 'zod'
 
 const createCustomerPortalSessionSchema = z.object({
-  returnUrl: z.string().url().optional(),
+  returnUrl: z.string().optional(),
 })
 
 export const createCustomerPortalSession = authActionClient

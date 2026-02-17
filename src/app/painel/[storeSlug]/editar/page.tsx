@@ -1,18 +1,10 @@
-import { Metadata } from 'next'
-import { EditStoreContent } from './_components/edit-store-content'
+import { redirect } from 'next/navigation'
 
 interface PageProps {
   params: Promise<{ storeSlug: string }>
-  searchParams: Promise<{ tab?: string }>
 }
 
-export const metadata: Metadata = {
-  title: 'Editar Site',
-}
-
-export default async function EditStorePage({ params, searchParams }: PageProps) {
+export default async function EditarPage({ params }: PageProps) {
   const { storeSlug } = await params
-  const { tab } = await searchParams
-
-  return <EditStoreContent storeSlug={storeSlug} initialTab={tab} />
+  redirect(`/painel/${storeSlug}/editar/geral`)
 }

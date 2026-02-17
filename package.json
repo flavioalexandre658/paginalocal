@@ -14,6 +14,8 @@
     "db:studio": "drizzle-kit studio",
     "db:seed": "npx tsx src/db/seed.ts",
     "db:seed-plans": "npx tsx src/db/seed-stripe-plans.ts",
+    "db:seed:templates": "npx tsx src/db/seed-templates.ts",
+    "migrate:v3": "npx tsx scripts/migrate-to-v3.ts",
     "index:all": "npx tsx src/scripts/index-all-stores.ts",
     "db:backfill-service-slugs": "npx tsx src/scripts/backfill-service-slugs.ts"
   },
