@@ -76,6 +76,9 @@ export function getProductPageUrl(storeSlug: string, productSlug: string): strin
 
 export function getCollectionPageUrl(storeSlug: string, collectionSlug: string): string {
   if (process.env.NODE_ENV === 'development') {
+    if (collectionSlug === 'catalogo') {
+      return `/site/${storeSlug}/catalogo`
+    }
     return `/site/${storeSlug}/catalogo/${collectionSlug}`
   }
   if (collectionSlug === 'catalogo') {

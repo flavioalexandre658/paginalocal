@@ -38,6 +38,7 @@ import { PatternFormat } from 'react-number-format'
 import { searchPlacesAction } from '@/actions/google/search-places.action'
 import { getPlacePreviewAction, type PlacePreview } from '@/actions/google/get-place-preview.action'
 import { createStoreFromGoogleAction } from '@/actions/stores/create-store-from-google.action'
+import { ContentSetupStep } from '@/app/onboarding/_components/content-setup-step'
 import { getUserStoresAction } from '@/actions/stores/get-user-stores.action'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -55,7 +56,7 @@ interface PlaceResult {
   category: string | null
 }
 
-type OnboardingStep = 'choose' | 'mode-selection' | 'search' | 'confirm' | 'creating' | 'complete'
+type OnboardingStep = 'choose' | 'mode-selection' | 'search' | 'confirm' | 'creating' | 'setup-content' | 'complete'
 type StoreMode = 'LOCAL_BUSINESS' | 'PRODUCT_CATALOG' | 'SERVICE_PRICING' | 'HYBRID'
 
 const HUMANIZED_LOGS = [
@@ -77,7 +78,7 @@ export default function OnboardingPage() {
   const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(null)
   const [currentLogIndex, setCurrentLogIndex] = useState(0)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [createdStore, setCreatedStore] = useState<{ slug: string; name: string } | null>(null)
+  const [createdStore, setCreatedStore] = useState<{ slug: string; name: string; id?: string } | null>(null)
   const [placePreview, setPlacePreview] = useState<PlacePreview | null>(null)
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
   const [selectedCoverIndex, setSelectedCoverIndex] = useState(0)
@@ -182,10 +183,18 @@ export default function OnboardingPage() {
       setCreatedStore({
         slug: result.data.slug,
         name: result.data.displayName,
+        id: result.data.store.id,
       })
-      setStep('complete')
-      setShowConfetti(true)
-      toast.success('Site criado com sucesso!')
+
+      // Modes que precisam de conteúdo vão para setup-content
+      if (selectedMode !== 'LOCAL_BUSINESS') {
+        setStep('setup-content')
+        toast.success('Site criado! Agora vamos configurar seu conteúdo.')
+      } else {
+        setStep('complete')
+        setShowConfetti(true)
+        toast.success('Site criado com sucesso!')
+      }
     }
   }
 
@@ -277,6 +286,19 @@ export default function OnboardingPage() {
             />
           )}
 
+          {step === 'setup-content' && createdStore?.id && (
+            <ContentSetupStep
+              key="setup-content"
+              storeId={createdStore.id}
+              storeName={createdStore.name}
+              mode={selectedMode}
+              onComplete={() => {
+                setStep('complete')
+                setShowConfetti(true)
+              }}
+            />
+          )}
+
           {step === 'complete' && selectedPlace && createdStore && (
             <CompleteStep key="complete" place={selectedPlace} storeSlug={createdStore.slug} />
           )}
@@ -303,36 +325,36 @@ function ModeSelectionStep({
     icon: typeof IconMapPin
     isRecommended?: boolean
   }> = [
-    {
-      mode: 'LOCAL_BUSINESS',
-      title: 'Negócio Local',
-      description: 'Serviços profissionais com foco em localização',
-      examples: ['Oficina', 'Barbearia', 'Consultório'],
-      icon: IconMapPin,
-      isRecommended: true,
-    },
-    {
-      mode: 'PRODUCT_CATALOG',
-      title: 'Loja / Catálogo',
-      description: 'Venda produtos com catálogo e coleções',
-      examples: ['Loja de Roupas', 'Pet Shop', 'Floricultura'],
-      icon: IconShoppingCart,
-    },
-    {
-      mode: 'SERVICE_PRICING',
-      title: 'Planos e Preços',
-      description: 'Ofereça planos com tabela de preços',
-      examples: ['Academia', 'SaaS', 'Consultoria'],
-      icon: IconCreditCard,
-    },
-    {
-      mode: 'HYBRID',
-      title: 'Híbrido',
-      description: 'Serviços + Produtos + Planos',
-      examples: ['Pet Shop completo', 'Academia com loja'],
-      icon: IconSparkles,
-    },
-  ]
+      {
+        mode: 'LOCAL_BUSINESS',
+        title: 'Negócio Local',
+        description: 'Serviços profissionais com foco em localização',
+        examples: ['Oficina', 'Barbearia', 'Consultório'],
+        icon: IconMapPin,
+        isRecommended: true,
+      },
+      {
+        mode: 'PRODUCT_CATALOG',
+        title: 'Loja / Catálogo',
+        description: 'Venda produtos com catálogo e coleções',
+        examples: ['Loja de Roupas', 'Pet Shop', 'Floricultura'],
+        icon: IconShoppingCart,
+      },
+      {
+        mode: 'SERVICE_PRICING',
+        title: 'Planos e Preços',
+        description: 'Ofereça planos com tabela de preços',
+        examples: ['Academia', 'SaaS', 'Consultoria'],
+        icon: IconCreditCard,
+      },
+      {
+        mode: 'HYBRID',
+        title: 'Híbrido',
+        description: 'Serviços + Produtos + Planos',
+        examples: ['Pet Shop completo', 'Academia com loja'],
+        icon: IconSparkles,
+      },
+    ]
 
   return (
     <motion.div

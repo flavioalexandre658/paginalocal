@@ -18,6 +18,7 @@ import { generateInstitutionalPages } from '@/lib/ai'
 import type { MarketingCopyInput } from '@/lib/ai'
 import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
 import { generateCitySlug } from '@/lib/utils'
+import { getDefaultSectionsForMode } from '@/lib/store-sections'
 import {
   buildStoreFromGoogle,
   generateSlugFromName,
@@ -119,7 +120,7 @@ export const createStoreFromGoogleAction = authActionClient
         faq: result.faq,
         neighborhoods: result.neighborhoods,
         mode: parsedInput.mode,
-        sections: null,
+        sections: getDefaultSectionsForMode(parsedInput.mode),
         templateId: 'default',
         templateConfig: null,
         termGender: result.termGender,

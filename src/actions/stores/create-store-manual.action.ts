@@ -22,6 +22,7 @@ import { addDomainToVercel } from '@/actions/vercel/add-domain'
 import { notifyStoreActivated } from '@/lib/google-indexing'
 import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
 import { generateCitySlug } from '@/lib/utils'
+import { getDefaultSectionsForMode } from '@/lib/store-sections'
 
 async function generateUniqueServiceSlugForStore(storeId: string, name: string): Promise<string> {
   const baseSlug = generateSlug(name)
@@ -234,7 +235,7 @@ export const createStoreManualAction = authActionClient
         faq: finalFAQ,
         neighborhoods: finalNeighborhoods,
         mode: parsedInput.mode,
-        sections: null,
+        sections: getDefaultSectionsForMode(parsedInput.mode),
         templateId: 'default',
         templateConfig: null,
         termGender: marketingCopy?.termGender ?? 'FEMININE',

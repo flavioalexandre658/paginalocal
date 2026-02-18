@@ -27,6 +27,7 @@ import toast from 'react-hot-toast'
 import Link from 'next/link'
 
 import { createStoreManualAction } from '@/actions/stores/create-store-manual.action'
+import { ContentSetupStep } from '@/app/onboarding/_components/content-setup-step'
 import { getCategoriesAction } from '@/actions/categories/get-categories.action'
 import {
   searchLocationAction,
@@ -94,7 +95,7 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
-type ManualStep = 'mode-selection' | 'form' | 'creating' | 'complete'
+type ManualStep = 'mode-selection' | 'form' | 'creating' | 'setup-content' | 'complete'
 type StoreMode = 'LOCAL_BUSINESS' | 'PRODUCT_CATALOG' | 'SERVICE_PRICING' | 'HYBRID'
 
 const HUMANIZED_LOGS = [
@@ -110,7 +111,7 @@ export default function ManualOnboardingPage() {
   const [selectedMode, setSelectedMode] = useState<StoreMode>('LOCAL_BUSINESS')
   const [currentLogIndex, setCurrentLogIndex] = useState(0)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [createdStore, setCreatedStore] = useState<{ slug: string; name: string } | null>(null)
+  const [createdStore, setCreatedStore] = useState<{ slug: string; name: string; id?: string } | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoadingCategories, setIsLoadingCategories] = useState(true)
 
@@ -260,10 +261,17 @@ export default function ManualOnboardingPage() {
       setCreatedStore({
         slug: result.data.slug,
         name: result.data.name,
+        id: result.data.store.id,
       })
-      setStep('complete')
-      setShowConfetti(true)
-      toast.success('Site criado com sucesso!')
+
+      if (selectedMode !== 'LOCAL_BUSINESS') {
+        setStep('setup-content')
+        toast.success('Site criado! Agora vamos configurar seu conteúdo.')
+      } else {
+        setStep('complete')
+        setShowConfetti(true)
+        toast.success('Site criado com sucesso!')
+      }
     } else {
       toast.error('Erro inesperado ao criar site')
       setStep('form')
@@ -317,6 +325,19 @@ export default function ManualOnboardingPage() {
             />
           )}
 
+          {step === 'setup-content' && createdStore?.id && (
+            <ContentSetupStep
+              key="setup-content"
+              storeId={createdStore.id}
+              storeName={createdStore.name}
+              mode={selectedMode}
+              onComplete={() => {
+                setStep('complete')
+                setShowConfetti(true)
+              }}
+            />
+          )}
+
           {step === 'complete' && createdStore && (
             <CompleteStep
               key="complete"
@@ -345,36 +366,36 @@ function ModeSelectionStep({
     icon: typeof IconMapPin
     isRecommended?: boolean
   }> = [
-    {
-      mode: 'LOCAL_BUSINESS',
-      title: 'Negócio Local',
-      description: 'Serviços profissionais com foco em localização',
-      examples: ['Oficina', 'Barbearia', 'Consultório'],
-      icon: IconMapPin,
-      isRecommended: true,
-    },
-    {
-      mode: 'PRODUCT_CATALOG',
-      title: 'Loja / Catálogo',
-      description: 'Venda produtos com catálogo e coleções',
-      examples: ['Loja de Roupas', 'Pet Shop', 'Floricultura'],
-      icon: IconShoppingCart,
-    },
-    {
-      mode: 'SERVICE_PRICING',
-      title: 'Planos e Preços',
-      description: 'Ofereça planos com tabela de preços',
-      examples: ['Academia', 'SaaS', 'Consultoria'],
-      icon: IconCreditCard,
-    },
-    {
-      mode: 'HYBRID',
-      title: 'Híbrido',
-      description: 'Serviços + Produtos + Planos',
-      examples: ['Pet Shop completo', 'Academia com loja'],
-      icon: IconSparkles,
-    },
-  ]
+      {
+        mode: 'LOCAL_BUSINESS',
+        title: 'Negócio Local',
+        description: 'Serviços profissionais com foco em localização',
+        examples: ['Oficina', 'Barbearia', 'Consultório'],
+        icon: IconMapPin,
+        isRecommended: true,
+      },
+      {
+        mode: 'PRODUCT_CATALOG',
+        title: 'Loja / Catálogo',
+        description: 'Venda produtos com catálogo e coleções',
+        examples: ['Loja de Roupas', 'Pet Shop', 'Floricultura'],
+        icon: IconShoppingCart,
+      },
+      {
+        mode: 'SERVICE_PRICING',
+        title: 'Planos e Preços',
+        description: 'Ofereça planos com tabela de preços',
+        examples: ['Academia', 'SaaS', 'Consultoria'],
+        icon: IconCreditCard,
+      },
+      {
+        mode: 'HYBRID',
+        title: 'Híbrido',
+        description: 'Serviços + Produtos + Planos',
+        examples: ['Pet Shop completo', 'Academia com loja'],
+        icon: IconSparkles,
+      },
+    ]
 
   return (
     <motion.div
