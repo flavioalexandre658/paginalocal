@@ -78,14 +78,14 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
           <link
             rel="preload"
             as="image"
-            href={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=828&q=40`}
+            href={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=828&q=65`}
             media="(max-width: 768px)"
             fetchPriority="high"
           />
           <link
             rel="preload"
             as="image"
-            href={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1920&q=40`}
+            href={`/_next/image?url=${encodeURIComponent(data.coverUrl)}&w=1920&q=65`}
             media="(min-width: 769px)"
             fetchPriority="high"
           />

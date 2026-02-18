@@ -199,7 +199,7 @@ export function GallerySection({ images, storeName, city, state, category, mode,
                             loading={index === 0 ? 'eager' : 'lazy'}
                             className="object-cover"
                             sizes="(max-width: 768px) 100vw, 600px"
-                            quality={60}
+                            quality={65}
                           />
 
                           <button

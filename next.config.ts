@@ -59,7 +59,7 @@ const nextConfig: NextConfig = {
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
 
-    qualities: [30, 40, 50, 60, 75],
+    qualities: [30, 40, 50, 60, 65, 75],
     remotePatterns: [
       {
         protocol: 'https',
