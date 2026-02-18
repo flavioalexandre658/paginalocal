@@ -5,6 +5,7 @@ import { store } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import { SiteHeader } from './_components/site-header'
 import { getSiteFontUrl, getSiteFontFamily } from '@/lib/font-loader'
+import { FontLoader } from './_components/font-loader'
 
 interface LayoutProps {
   children: ReactNode
@@ -57,15 +58,23 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
     <>
 
       {/* Preconnect + DNS prefetch */}
+      {/* Preconnect úteis apenas */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      <link rel="preconnect" href="https://stagingfy-images.s3.amazonaws.com" />
+
+
       <link rel="dns-prefetch" href="https://stagingfy-images.s3.amazonaws.com" />
 
 
       {/* Font loading assíncrono com CSS inline */}
-      <link rel="preload" as="style" href={fontUrl!} />
       <link rel="stylesheet" href={fontUrl!} />
+      {/* Font só carrega se tiver URL válida, e de forma não-bloqueante */}
+      {fontUrl && (
+        <>
+          <link rel="preload" as="style" href={fontUrl} />
+          <FontLoader fontUrl={fontUrl} />
+        </>
+      )}
 
       {/* Fallback para font-display via inline style */}
       <style dangerouslySetInnerHTML={{
