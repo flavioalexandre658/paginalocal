@@ -105,7 +105,7 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
         showBackLink
       />
 
-      {/* Hero image */}
+      {/* Hero image 
       {service.heroImageUrl && (
         <section className="bg-[#f3f5f7] py-8 dark:bg-slate-950/50">
           <div className="container mx-auto px-4">
@@ -121,7 +121,7 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
             </div>
           </div>
         </section>
-      )}
+      )}*/}
 
       {/* Description + CTA */}
       <section className="py-20 md:py-28 bg-[#f3f5f7] dark:bg-slate-950/50">
@@ -132,11 +132,11 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
                 {renderTokens(getCopy(ctx, "service.kicker"))}
               </span>
 
-              <h2 className="mt-3 text-3xl font-extrabold tracking-tight ...">
+              <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
                 {renderTokens(getCopy(ctx, "service.heading"))}
               </h2>
 
-              <p className="mt-4 text-lg ...">
+              <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
                 {renderTokens(getCopy(ctx, "service.intro"))}
               </p>
 
