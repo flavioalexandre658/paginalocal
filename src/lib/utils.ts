@@ -67,6 +67,27 @@ export function getStoreUrl(slug: string): string {
   return `https://${slug}.paginalocal.com.br`
 }
 
+export function getProductPageUrl(storeSlug: string, productSlug: string): string {
+  if (process.env.NODE_ENV === 'development') {
+    return `/site/${storeSlug}/produto/${productSlug}`
+  }
+  return `/produto/${productSlug}`
+}
+
+export function getCollectionPageUrl(storeSlug: string, collectionSlug: string): string {
+  if (process.env.NODE_ENV === 'development') {
+    return `/site/${storeSlug}/catalogo/${collectionSlug}`
+  }
+  return `/catalogo/${collectionSlug}`
+}
+
+export function getPlanosPageUrl(storeSlug: string): string {
+  if (process.env.NODE_ENV === 'development') {
+    return `/site/${storeSlug}/planos`
+  }
+  return `/planos`
+}
+
 export function getServicePageUrl(storeSlug: string, serviceSlug: string): string {
   if (process.env.NODE_ENV === 'development') {
     return `/site/${storeSlug}/servicos/${serviceSlug}`

@@ -25,6 +25,7 @@ import { SiteFooter } from '../../_components/site-footer'
 import { FloatingContact } from '../../_components/floating-contact'
 import type { ProductImage } from '@/db/schema'
 import { getStoreGrammar } from '@/lib/store-terms'
+import { getCollectionPageUrl } from '@/lib/utils'
 
 interface PageProps {
   params: Promise<{ slug: string; collectionSlug: string }>
@@ -283,7 +284,7 @@ export default async function CollectionPage({ params }: PageProps) {
           <div className={`container relative z-10 mx-auto px-4 ${collection.imageUrl ? 'text-white' : textClass}`}>
             <div className="mx-auto max-w-4xl">
               <Link
-                href={`/site/${slug}/catalogo`}
+                href={getCollectionPageUrl(slug, 'catalogo')}
                 className={`mb-8 mr-4 inline-flex max-w-full items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-md transition-all ${collection.imageUrl ? 'border-white/30 text-white hover:bg-white/20' : `${badgeClasses} ${isLight ? 'hover:bg-black/10' : 'hover:bg-white/20'}`}`}
               >
                 <IconArrowLeft className="h-4 w-4 shrink-0" />
@@ -442,7 +443,7 @@ export default async function CollectionPage({ params }: PageProps) {
                   {otherCollections.map((col) => (
                     <Link
                       key={col.id}
-                      href={`/site/${slug}/catalogo/${col.slug}`}
+                      href={getCollectionPageUrl(slug, col.slug)}
                       className="rounded-full border-2 border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all hover:border-primary/30 hover:bg-primary/5 hover:text-primary"
                     >
                       {col.name}

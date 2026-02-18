@@ -29,6 +29,7 @@ import { SiteFooter } from '../_components/site-footer'
 import { FloatingContact } from '../_components/floating-contact'
 import type { ProductImage } from '@/db/schema'
 import { getStoreGrammar } from '@/lib/store-terms'
+import { getCollectionPageUrl } from '@/lib/utils'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -317,7 +318,7 @@ export default async function CatalogoPage({ params }: PageProps) {
                     return (
                       <Link
                         key={collection.id}
-                        href={`/site/${slug}/catalogo/${collection.slug}`}
+                        href={getCollectionPageUrl(slug, collection.slug)}
                         className="group"
                       >
                         <article className="overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/30 hover:shadow-xl">
@@ -441,7 +442,7 @@ export default async function CatalogoPage({ params }: PageProps) {
                       col.seoDescription && (
                         <p key={col.id}>
                           <strong>
-                            <Link href={`/site/${slug}/catalogo/${col.slug}`} className="text-primary hover:underline">
+                            <Link href={getCollectionPageUrl(slug, col.slug)} className="text-primary hover:underline">
                               {col.name}
                             </Link>
                           </strong>

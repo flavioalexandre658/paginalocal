@@ -4,6 +4,7 @@ import { ProductCard } from '@/components/site/product-card'
 import type { ProductImage } from '@/db/schema'
 import { getStoreGrammar } from '@/lib/store-terms'
 import type { TermGender, TermNumber } from '@/lib/store-terms'
+import { getCollectionPageUrl } from '@/lib/utils'
 
 interface Product {
   id: string
@@ -78,7 +79,7 @@ export function ProductsSection({
 
           {products.length > 6 && (
             <div className="mt-12 text-center">
-              <Link href={`/site/${storeSlug}/catalogo`}>
+              <Link href={getCollectionPageUrl(storeSlug, 'catalogo')}>
                 <button className="inline-flex items-center gap-2 rounded-full border-2 border-primary bg-transparent px-8 py-3 font-semibold text-primary transition-all hover:bg-primary hover:text-white hover:shadow-lg hover:shadow-primary/30">
                   Ver catálogo completo
                   <IconArrowRight className="h-5 w-5" />

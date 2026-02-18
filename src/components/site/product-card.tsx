@@ -7,7 +7,7 @@ import {
     IconBrandWhatsapp,
     IconExternalLink,
 } from '@tabler/icons-react'
-import { cn } from '@/lib/utils'
+import { cn, getProductPageUrl } from '@/lib/utils'
 
 interface ProductImageItem {
     url: string
@@ -162,7 +162,7 @@ export function ProductCard(props: ProductCardProps) {
 
     if (variant === 'link') {
         return (
-            <Link href={`/site/${storeSlug}/produto/${slug}`} className="block">
+            <Link href={getProductPageUrl(storeSlug, slug)} className="block">
                 {card}
             </Link>
         )

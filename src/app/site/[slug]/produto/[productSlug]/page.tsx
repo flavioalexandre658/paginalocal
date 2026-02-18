@@ -13,6 +13,7 @@ import { SiteFooter } from '../../_components/site-footer'
 import { FloatingContact } from '../../_components/floating-contact'
 import type { ProductImage } from '@/db/schema'
 import { getStoreGrammar } from '@/lib/store-terms'
+import { getCollectionPageUrl } from '@/lib/utils'
 
 interface PageProps {
   params: Promise<{ slug: string; productSlug: string }>
@@ -292,13 +293,13 @@ export default async function ProductPage({ params }: PageProps) {
               </li>
               <li className="text-slate-300">/</li>
               <li>
-                <Link href={`/site/${slug}/catalogo`} className="hover:text-primary transition-colors">Catálogo</Link>
+                <Link href={getCollectionPageUrl(slug, 'catalogo')} className="hover:text-primary transition-colors">Catálogo</Link>
               </li>
               {collectionName && collectionSlug && (
                 <>
                   <li className="text-slate-300">/</li>
                   <li>
-                    <Link href={`/site/${slug}/catalogo/${collectionSlug}`} className="hover:text-primary transition-colors">{collectionName}</Link>
+                    <Link href={getCollectionPageUrl(slug, collectionSlug)} className="hover:text-primary transition-colors">{collectionName}</Link>
                   </li>
                 </>
               )}
@@ -313,7 +314,7 @@ export default async function ProductPage({ params }: PageProps) {
           <div className="container mx-auto px-4">
             <div className="mx-auto max-w-5xl">
               <Link
-                href={`/site/${slug}/catalogo`}
+                href={getCollectionPageUrl(slug, 'catalogo')}
                 className="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-primary"
               >
                 <IconArrowRight className="h-4 w-4 rotate-180" />
@@ -428,7 +429,7 @@ export default async function ProductPage({ params }: PageProps) {
                 {/* Internal links */}
                 <div className="mt-5 flex flex-wrap items-center gap-3">
                   <Link
-                    href={`/site/${slug}/catalogo`}
+                    href={getCollectionPageUrl(slug, 'catalogo')}
                     className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:border-primary/30 hover:text-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                   >
                     Ver catálogo completo
@@ -436,7 +437,7 @@ export default async function ProductPage({ params }: PageProps) {
                   </Link>
                   {collectionName && collectionSlug && (
                     <Link
-                      href={`/site/${slug}/catalogo/${collectionSlug}`}
+                      href={getCollectionPageUrl(slug, collectionSlug)}
                       className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:border-primary/30 hover:text-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
                     >
                       Ver {collectionName}
@@ -483,7 +484,7 @@ export default async function ProductPage({ params }: PageProps) {
 
                 <div className="mt-10 text-center">
                   <Link
-                    href={`/site/${slug}/catalogo`}
+                    href={getCollectionPageUrl(slug, 'catalogo')}
                     className="inline-flex items-center gap-2 rounded-full border-2 border-primary bg-transparent px-8 py-3 font-semibold text-primary transition-all hover:bg-primary hover:text-white hover:shadow-lg hover:shadow-primary/30"
                   >
                     Ver catálogo completo

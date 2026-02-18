@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { IconCheck, IconSparkles, IconBrandWhatsapp, IconExternalLink, IconArrowRight } from '@tabler/icons-react'
-import { cn } from '@/lib/utils'
+import { cn, getPlanosPageUrl } from '@/lib/utils'
 import type { PricingInterval, PricingCtaMode } from '@/db/schema'
 import { getStoreGrammar } from '@/lib/store-terms'
 import type { TermGender, TermNumber } from '@/lib/store-terms'
@@ -159,7 +159,7 @@ export function PricingPlansSection({
           </div>
 
           <div className="mt-12 text-center">
-            <Link href={`/site/${storeSlug}/planos`}>
+            <Link href={getPlanosPageUrl(storeSlug)}>
               <button className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition-all hover:gap-3">
                 Ver todos os planos
                 <IconArrowRight className="h-4 w-4" />
