@@ -345,5 +345,6 @@ export const createStoreManualAction = authActionClient
       faqGenerated: finalFAQ.length,
       neighborhoodsGenerated: finalNeighborhoods.length,
       subdomainCreated,
+      isActive: shouldActivateStore,
     }
   })

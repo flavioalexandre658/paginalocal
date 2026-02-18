@@ -1,8 +1,14 @@
-import { IconMapPin, IconPhone, IconExternalLink, IconClock } from '@tabler/icons-react'
-import { PhoneContactLink } from './phone-contact-link'
+import React from "react"
+import { IconMapPin, IconPhone, IconExternalLink, IconClock } from "@tabler/icons-react"
+import { PhoneContactLink } from "./phone-contact-link"
+
+// ✅ local-copy modular (igual no AreasSection)
+import { getCopy } from "@/lib/local-copy"
+import { renderTokens } from "@/lib/local-copy/render"
+import type { StoreMode, LocalPageCtx } from "@/lib/local-copy/types"
 
 function formatPhone(phone: string): string {
-  const digits = phone.replace(/\D/g, '')
+  const digits = phone.replace(/\D/g, "")
 
   if (digits.length === 11) {
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
@@ -32,27 +38,47 @@ interface ContactSectionProps {
     isActive: boolean
     category?: string
   }
-  isOwner?: boolean
+
+  // para variar por MODE (igual no AreasSection)
+  mode: StoreMode
+
+  // para seed forte/estável (igual no AreasSection)
+  id?: string | number
+  slug?: string
 }
 
 const DAYS_MAP: Record<string, string> = {
-  seg: 'Segunda',
-  ter: 'Terça',
-  qua: 'Quarta',
-  qui: 'Quinta',
-  sex: 'Sexta',
-  sab: 'Sábado',
-  dom: 'Domingo',
+  seg: "Segunda",
+  ter: "Terça",
+  qua: "Quarta",
+  qui: "Quinta",
+  sex: "Sexta",
+  sab: "Sábado",
+  dom: "Domingo",
 }
 
-export function ContactSection({ store }: ContactSectionProps) {
-  const fullAddress = `${store.address}, ${store.city} - ${store.state}${store.zipCode ? `, ${store.zipCode}` : ''}`
-  const mapsUrl = store.latitude && store.longitude
-    ? `https://www.google.com/maps?q=${store.latitude},${store.longitude}`
-    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`
+export function ContactSection({ store, mode, id, slug }: ContactSectionProps) {
+  const fullAddress = `${store.address}, ${store.city} - ${store.state}${store.zipCode ? `, ${store.zipCode}` : ""
+    }`
+
+  const mapsUrl =
+    store.latitude && store.longitude
+      ? `https://www.google.com/maps?q=${store.latitude},${store.longitude}`
+      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`
 
   const openingHours = store.openingHours as Record<string, string> | null
-  const hasMap = store.latitude && store.longitude
+  const hasMap = !!(store.latitude && store.longitude)
+
+  // ✅ ctx igual ao AreasSection
+  const ctx: LocalPageCtx = {
+    id: id ?? store.id,
+    slug: slug ?? store.slug,
+    mode,
+    name: store.name || "",
+    category: store.category || "Serviços",
+    city: store.city,
+    state: store.state,
+  }
 
   return (
     <section id="contato" className="relative py-20 md:py-28 overflow-hidden bg-primary">
@@ -61,13 +87,15 @@ export function ContactSection({ store }: ContactSectionProps) {
           {/* Section header — white on primary */}
           <div className="mb-14 animate-fade-in-up">
             <span className="text-sm font-bold uppercase tracking-widest text-white/90">
-              Contato e Localização
+              {renderTokens(getCopy(ctx, "contact.kicker"))}
             </span>
+
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-white md:text-4xl lg:text-5xl">
-              Como chegar na {store.name} em {store.city}
+              {renderTokens(getCopy(ctx, "contact.heading"))}
             </h2>
+
             <p className="mt-4 text-lg text-white/90">
-              Visite a {store.name}{store.category ? `, ${store.category.toLowerCase()}` : ''} em {store.city}, {store.state}. Estamos prontos para atender você. Confira nosso endereço, telefone e horário de funcionamento.
+              {renderTokens(getCopy(ctx, "contact.intro"))}
             </p>
           </div>
 
@@ -77,7 +105,8 @@ export function ContactSection({ store }: ContactSectionProps) {
             {hasMap && (
               <div className="relative">
                 <iframe
-                  src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || ''}&q=${store.latitude},${store.longitude}&zoom=15`}
+                  src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || ""
+                    }&q=${store.latitude},${store.longitude}&zoom=15`}
                   width="100%"
                   height="300"
                   style={{ border: 0 }}
@@ -87,6 +116,7 @@ export function ContactSection({ store }: ContactSectionProps) {
                   title={`Localização da ${store.name} em ${store.city}`}
                   className="w-full"
                 />
+
                 {/* Floating badge on map */}
                 <a
                   href={mapsUrl}
@@ -95,7 +125,7 @@ export function ContactSection({ store }: ContactSectionProps) {
                   className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-lg transition-all hover:shadow-xl hover:scale-105 dark:bg-slate-900 dark:text-white"
                 >
                   <IconExternalLink className="h-4 w-4 text-primary" />
-                  Ver no Google Maps
+                  {renderTokens(getCopy(ctx, "contact.mapCta"))}
                 </a>
               </div>
             )}
@@ -108,13 +138,16 @@ export function ContactSection({ store }: ContactSectionProps) {
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <IconMapPin className="h-6 w-6" />
                   </div>
+
                   <div>
                     <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                      Endereço
+                      {renderTokens(getCopy(ctx, "contact.addressTitle"))}
                     </h3>
+
                     <p className="mt-1 font-semibold text-slate-800 dark:text-slate-200">
                       {fullAddress}
                     </p>
+
                     {!hasMap && (
                       <a
                         href={mapsUrl}
@@ -123,22 +156,24 @@ export function ContactSection({ store }: ContactSectionProps) {
                         className="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-primary transition-colors hover:underline"
                       >
                         <IconExternalLink className="h-3.5 w-3.5" />
-                        Ver no Google Maps
+                        {renderTokens(getCopy(ctx, "contact.noMapCta"))}
                       </a>
                     )}
                   </div>
                 </div>
 
                 {/* Phone */}
-                {store.phone && store.phone.trim() !== '' && (
+                {store.phone && store.phone.trim() !== "" && (
                   <div className="flex gap-4">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                       <IconPhone className="h-6 w-6" />
                     </div>
+
                     <div>
                       <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        Telefone
+                        {renderTokens(getCopy(ctx, "contact.phoneTitle"))}
                       </h3>
+
                       <div className="mt-1 font-semibold text-slate-800 dark:text-slate-200">
                         <PhoneContactLink
                           store={store}
@@ -155,18 +190,20 @@ export function ContactSection({ store }: ContactSectionProps) {
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                       <IconClock className="h-6 w-6" />
                     </div>
+
                     <div className="flex-1">
                       <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                        Horários
+                        {renderTokens(getCopy(ctx, "contact.hoursTitle"))}
                       </h3>
+
                       <div className="mt-2 flex flex-wrap gap-2">
                         {Object.entries(openingHours).map(([day, hours]) => (
                           <span
                             key={day}
                             className={
-                              hours === 'Fechado'
-                                ? 'rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-400 dark:bg-slate-800 dark:text-slate-500'
-                                : 'rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary'
+                              hours === "Fechado"
+                                ? "rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-400 dark:bg-slate-800 dark:text-slate-500"
+                                : "rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary"
                             }
                           >
                             {DAYS_MAP[day] || day}: {hours}

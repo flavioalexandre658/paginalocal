@@ -4,10 +4,8 @@ import { IconStar, IconMapPin, IconSparkles, IconArrowLeft } from '@tabler/icons
 import { HeroContactButtons } from './hero-contact-buttons'
 import { getStoreHomeUrl } from '@/lib/utils'
 import {
-  getContrastColor,
   getContrastTextClass,
   getContrastMutedClass,
-  getContrastBorderClass,
   getContrastBadgeClasses,
   isLightColor,
 } from '@/lib/color-contrast'

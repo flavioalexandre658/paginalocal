@@ -2,8 +2,11 @@ import Link from 'next/link'
 import { IconCheck, IconSparkles, IconBrandWhatsapp, IconExternalLink, IconArrowRight } from '@tabler/icons-react'
 import { cn, getPlanosPageUrl } from '@/lib/utils'
 import type { PricingInterval, PricingCtaMode } from '@/db/schema'
-import { getStoreGrammar } from '@/lib/store-terms'
-import type { TermGender, TermNumber } from '@/lib/store-terms'
+
+// ✅ local-seo modular
+import { getCopy } from '@/lib/local-copy'
+import { renderTokens } from '@/lib/local-copy/render'
+import type { StoreMode, LocalPageCtx } from '@/lib/local-copy/types'
 
 interface PricingPlan {
   id: string
@@ -26,8 +29,14 @@ interface PricingPlansSectionProps {
   storeWhatsapp: string
   category: string
   city: string
-  termGender?: TermGender
-  termNumber?: TermNumber
+  state?: string
+
+  // ✅ variar por MODE
+  mode: StoreMode
+
+  // ✅ seed forte/estável
+  id?: string | number
+  slug?: string
 }
 
 export function PricingPlansSection({
@@ -37,19 +46,19 @@ export function PricingPlansSection({
   storeWhatsapp,
   category,
   city,
-  termGender,
-  termNumber,
+  state,
+  mode,
+  id,
+  slug,
 }: PricingPlansSectionProps) {
-  const g = getStoreGrammar(termGender, termNumber)
-  if (plans.length === 0) return null
+  if (!plans || plans.length === 0) return null
 
   function getPlanCtaUrl(plan: PricingPlan): string {
-    if (plan.ctaMode === 'EXTERNAL_LINK' && plan.ctaExternalUrl) {
-      return plan.ctaExternalUrl
-    }
+    if (plan.ctaMode === 'EXTERNAL_LINK' && plan.ctaExternalUrl) return plan.ctaExternalUrl
 
-    const message = plan.ctaWhatsappMessage
-      || `Olá! Tenho interesse no plano *${plan.name}* (R$ ${(plan.priceInCents / 100).toFixed(2)}${getIntervalText(plan.interval)})`
+    const message =
+      plan.ctaWhatsappMessage ||
+      `Olá! Tenho interesse no plano *${plan.name}* (R$ ${(plan.priceInCents / 100).toFixed(2)}${getIntervalText(plan.interval)})`
 
     return `https://wa.me/55${storeWhatsapp}?text=${encodeURIComponent(message)}`
   }
@@ -60,6 +69,17 @@ export function PricingPlansSection({
     return ''
   }
 
+  const ctx: LocalPageCtx = {
+    id,
+    slug,
+    mode,
+    name: storeName || "",
+    category: category || "Planos",
+    city: city || "",
+    state: state || "",
+    servicesCount: plans.length,
+  }
+
   return (
     <section className="relative overflow-hidden bg-white py-20 md:py-28">
       <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-white to-slate-50" />
@@ -68,22 +88,26 @@ export function PricingPlansSection({
         <div className="mx-auto max-w-4xl">
           <div className="mb-12 text-center">
             <span className="text-sm font-bold uppercase tracking-widest text-primary">
-              Planos e Preços
+              {renderTokens(getCopy(ctx, "plans.kicker"))}
             </span>
+
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl lg:text-5xl">
-              Planos de <span className="text-primary">{category}</span> {g.da} {storeName} em {city}
+              {renderTokens(getCopy(ctx, "plans.heading"))}
             </h2>
+
             <p className="mt-4 text-lg text-slate-600">
-              {plans.length} {plans.length === 1 ? 'opção disponível' : 'opções disponíveis'} para você em {city}
+              {renderTokens(getCopy(ctx, "plans.intro"))}
             </p>
           </div>
 
-          <div className={cn(
-            'grid gap-8',
-            plans.length === 1 && 'mx-auto max-w-md',
-            plans.length === 2 && 'md:grid-cols-2',
-            plans.length >= 3 && 'md:grid-cols-3'
-          )}>
+          <div
+            className={cn(
+              'grid gap-8',
+              plans.length === 1 && 'mx-auto max-w-md',
+              plans.length === 2 && 'md:grid-cols-2',
+              plans.length >= 3 && 'md:grid-cols-3'
+            )}
+          >
             {plans.map((plan) => (
               <div
                 key={plan.id}
@@ -98,16 +122,14 @@ export function PricingPlansSection({
                   <div className="absolute right-6 top-0 -translate-y-1/2">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-white shadow-lg">
                       <IconSparkles className="h-3.5 w-3.5" />
-                      Mais Popular
+                      {renderTokens(getCopy(ctx, "plans.badgePopular"))}
                     </span>
                   </div>
                 )}
 
                 <div className="mb-6">
                   <h3 className="text-2xl font-bold text-slate-900">{plan.name}</h3>
-                  {plan.description && (
-                    <p className="mt-2 text-sm text-slate-500">{plan.description}</p>
-                  )}
+                  {plan.description && <p className="mt-2 text-sm text-slate-500">{plan.description}</p>}
                 </div>
 
                 <div className="mb-8">
@@ -116,9 +138,7 @@ export function PricingPlansSection({
                       R$ {(plan.priceInCents / 100).toFixed(2).replace('.', ',')}
                     </span>
                     {plan.interval !== 'ONE_TIME' && (
-                      <span className="text-base font-medium text-slate-500">
-                        {getIntervalText(plan.interval)}
-                      </span>
+                      <span className="text-base font-medium text-slate-500">{getIntervalText(plan.interval)}</span>
                     )}
                   </div>
                 </div>
@@ -161,7 +181,7 @@ export function PricingPlansSection({
           <div className="mt-12 text-center">
             <Link href={getPlanosPageUrl(storeSlug)}>
               <button className="inline-flex items-center gap-2 text-sm font-semibold text-primary transition-all hover:gap-3">
-                Ver todos os planos
+                {renderTokens(getCopy(ctx, "plans.viewAllCta"))}
                 <IconArrowRight className="h-4 w-4" />
               </button>
             </Link>

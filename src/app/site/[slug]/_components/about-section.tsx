@@ -2,6 +2,9 @@ import { IconMapPin, IconClock, IconCheck, IconCircleCheck, IconCircleX } from '
 import { cn } from '@/lib/utils'
 import { getStoreGrammar } from '@/lib/store-terms'
 import type { TermGender, TermNumber } from '@/lib/store-terms'
+import { getCopy } from "@/lib/local-copy"
+import { renderTokens } from "@/lib/local-copy/render"
+import type { StoreMode, LocalPageCtx } from "@/lib/local-copy/types"
 
 const DAY_LABELS: Record<string, string> = {
   monday: 'Segunda',
@@ -50,6 +53,12 @@ interface AboutSectionProps {
   serviceNames?: string[]
   termGender?: TermGender
   termNumber?: TermNumber
+  // para variar por MODE:
+  mode: StoreMode
+
+  // para seed forte/estável:
+  id?: string | number
+  slug?: string
 }
 
 export function AboutSection({
@@ -60,13 +69,26 @@ export function AboutSection({
   description,
   neighborhoods,
   openingHours,
-  servicesCount,
   serviceNames,
   termGender,
   termNumber,
+  mode,
+  id,
+  slug,
 }: AboutSectionProps) {
   const g = getStoreGrammar(termGender, termNumber)
   const hasHours = openingHours && Object.keys(openingHours).length > 0
+
+
+  const ctx: LocalPageCtx = {
+    id,
+    slug,
+    mode,
+    name: name || "", // se não tiver storeName, ainda funciona (tokens não quebram)
+    category,
+    city,
+    state,
+  }
 
   return (
     <section id="sobre" className="relative py-20 md:py-28 overflow-hidden">
@@ -80,10 +102,12 @@ export function AboutSection({
           {/* Section header */}
           <div className="mb-12 animate-fade-in-up">
             <span className="text-sm font-bold uppercase tracking-widest text-primary">
-              Sobre {g.art} {name}
+              Conheça {g.art} {name}
             </span>
+
+            {/* heading dinâmico por CopyKey */}
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-              Sobre {g.art} {name} — {category} em <span className="text-primary">{city}</span>, {state}
+              {renderTokens(getCopy(ctx, "about.heading"))}
             </h2>
           </div>
 
@@ -91,14 +115,17 @@ export function AboutSection({
             {/* Main description card */}
             <div className="animate-fade-in-up animation-delay-200 rounded-2xl border-2 border-slate-100 border-l-4 border-l-primary bg-white p-8 md:p-10 shadow-lg dark:border-slate-800 dark:border-l-primary dark:bg-slate-900 dark:shadow-slate-900/30">
               <p className="text-lg leading-relaxed text-slate-600 dark:text-slate-300 md:text-xl">
-                {description || `${g.Art} ${name} é ${category.toLowerCase()} em ${city}, ${state}. Com atendimento profissional e personalizado, oferecemos${servicesCount ? ` ${servicesCount} serviços especializados` : ' atendimento de qualidade'} para clientes de ${city} e toda a região. Nossa equipe está pronta para atender você com qualidade e dedicação. Entre em contato pelo WhatsApp e agende sua visita.`}
+                {/* Se description existir, usa ela. Senão, copy dinâmica do MODE */}
+                {description ? description : renderTokens(getCopy(ctx, "about.desc"))}
               </p>
 
               {serviceNames && serviceNames.length > 0 && (
                 <div className="mt-8">
+                  {/* título dinâmico por CopyKey */}
                   <h3 className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
-                    Principais serviços de {category} em {city}
+                    {renderTokens(getCopy(ctx, "services.title"))}
                   </h3>
+
                   <div className="flex flex-wrap gap-2.5">
                     {serviceNames.map((svcName) => (
                       <span
@@ -110,46 +137,53 @@ export function AboutSection({
                       </span>
                     ))}
                   </div>
+
+                  {/* Se quiser, isso pode virar um CopyKey depois: "services.footer" */}
+                  <p className="mt-5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                    Atendimento em {city} e região. Se não achou o que precisa na lista, fale com a gente no WhatsApp,
+                    ajudamos a direcionar o melhor serviço.
+                  </p>
                 </div>
               )}
             </div>
 
-            {/* Opening Hours — bento-style day cards */}
+            {/* Opening Hours */}
             {hasHours && (
               <div className="animate-fade-in-up animation-delay-300">
-                {/* Section sub-header */}
                 <div className="mb-5 flex items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <IconClock className="h-5 w-5" />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                    Horário de Funcionamento
-                  </h3>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Horário de atendimento</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Confira os dias e horários de funcionamento em {city}, {state}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Day cards grid */}
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                   {sortDays(Object.entries(openingHours!)).map(([day, hours]) => {
-                    const isClosed = hours === 'Fechado'
+                    const isClosed = hours === "Fechado"
                     return (
                       <div
                         key={day}
                         className={cn(
-                          'relative overflow-hidden rounded-2xl border-2 p-4 transition-all duration-200',
+                          "relative overflow-hidden rounded-2xl border-2 p-4 transition-all duration-200 cursor-pointer hover:border-primary/30 hover:bg-primary/5 hover:text-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-primary/30 dark:hover:bg-primary/10",
                           isClosed
-                            ? 'border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50'
-                            : 'border-primary/20 bg-primary/5 dark:border-primary/20 dark:bg-primary/5'
+                            ? "border-slate-100 bg-slate-50/50 dark:border-slate-800 dark:bg-slate-900/50"
+                            : "border-primary/20 bg-primary/5 dark:border-primary/20 dark:bg-primary/5"
                         )}
                       >
-                        {/* Day name */}
-                        <p className={cn(
-                          'text-xs font-bold uppercase tracking-widest',
-                          isClosed ? 'text-slate-400 dark:text-slate-500' : 'text-primary'
-                        )}>
+                        <p
+                          className={cn(
+                            "text-xs font-bold uppercase tracking-widest",
+                            isClosed ? "text-slate-400 dark:text-slate-500" : "text-primary"
+                          )}
+                        >
                           {DAY_LABELS[day.toLowerCase()] || day}
                         </p>
 
-                        {/* Hours */}
                         {isClosed ? (
                           <div className="mt-2 flex items-center gap-1.5">
                             <IconCircleX className="h-4 w-4 text-red-400" />
@@ -165,45 +199,58 @@ export function AboutSection({
                     )
                   })}
                 </div>
+
+                {/* microcopy dinâmico por CopyKey */}
+                <p className="mt-5 text-sm text-slate-500 dark:text-slate-400">
+                  {renderTokens(getCopy(ctx, "hours.hint"))}
+                </p>
               </div>
             )}
 
-            {/* Neighborhoods — styled as full-width featured block */}
+            {/* Neighborhoods */}
             {neighborhoods && neighborhoods.length > 0 && (
               <div className="animate-fade-in-up animation-delay-400 overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-900/30">
-                {/* Colored header with stat */}
                 <div className="bg-primary px-8 py-8 md:px-10">
                   <div className="flex items-center gap-5">
                     <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/20 shadow-lg backdrop-blur-sm">
                       <IconMapPin className="h-8 w-8 text-white" />
                     </div>
+
                     <div>
+                      {/* header dinâmico por CopyKey */}
                       <div className="text-2xl font-black text-white md:text-3xl">
-                        Áreas de cobertura
+                        {renderTokens(getCopy(ctx, "neigh.header"))}
                       </div>
+
                       <p className="text-sm font-medium text-white/95">
-                        Bairros e regiões atendidas por {category.toLowerCase()} em {city}
+                        Veja alguns bairros e áreas onde atendemos com {category.toLowerCase()}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Content area */}
                 <div className="px-8 py-8 md:px-10">
+                  {/* intro dinâmico por CopyKey */}
                   <p className="mb-6 text-slate-500 leading-relaxed dark:text-slate-400">
-                    {g.Art} {name} atende diversas regiões de {city}, {state} e proximidades. Confira abaixo os bairros e áreas de cobertura dos {g.nossa}s serviços de {category.toLowerCase()}.
+                    {renderTokens(getCopy(ctx, "neigh.intro"))}
                   </p>
+
                   <div className="flex flex-wrap gap-2.5">
                     {neighborhoods.map((n) => (
                       <span
                         key={n}
-                        className="inline-flex items-center gap-2 rounded-full border-2 border-slate-100 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-primary/30 dark:hover:bg-primary/10"
+                        className="cursor-pointer inline-flex items-center gap-2 rounded-full border-2 border-slate-100 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-primary dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-primary/30 dark:hover:bg-primary/10"
                       >
                         <IconMapPin className="h-3.5 w-3.5 text-primary" />
                         {n}
                       </span>
                     ))}
                   </div>
+
+                  {/* footer dinâmico por CopyKey */}
+                  <p className="mt-6 text-sm text-slate-500 dark:text-slate-400">
+                    {renderTokens(getCopy(ctx, "neigh.footer"))}
+                  </p>
                 </div>
               </div>
             )}

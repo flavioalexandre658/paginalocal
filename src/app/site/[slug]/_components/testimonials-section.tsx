@@ -5,6 +5,11 @@ import { IconStar, IconQuote, IconChevronLeft, IconChevronRight } from '@tabler/
 import { cn } from '@/lib/utils'
 import { TestimonialAvatar } from './testimonial-avatar'
 
+// ✅ local-seo modular
+import { getCopy } from '@/lib/local-copy'
+import { renderTokens } from '@/lib/local-copy/render'
+import type { StoreMode, LocalPageCtx } from '@/lib/local-copy/types'
+
 interface Testimonial {
   id: string
   authorName: string
@@ -14,16 +19,19 @@ interface Testimonial {
   isGoogleReview: boolean
 }
 
-import { getStoreGrammar } from '@/lib/store-terms'
-import type { TermGender, TermNumber } from '@/lib/store-terms'
-
 interface TestimonialsSectionProps {
   testimonials: Testimonial[]
   storeName?: string
   city?: string
+  state?: string
   category?: string
-  termGender?: TermGender
-  termNumber?: TermNumber
+
+  // ✅ para variar por MODE:
+  mode: StoreMode
+
+  // ✅ seed forte/estável:
+  id?: string | number
+  slug?: string
 }
 
 const ITEMS_PER_PAGE = 6
@@ -36,9 +44,7 @@ function Stars({ rating }: { rating: number }) {
           key={i}
           className={cn(
             'h-4 w-4',
-            i < rating
-              ? 'fill-amber-400 text-amber-400'
-              : 'text-slate-200 dark:text-slate-700'
+            i < rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200 dark:text-slate-700'
           )}
         />
       ))}
@@ -46,9 +52,30 @@ function Stars({ rating }: { rating: number }) {
   )
 }
 
-export function TestimonialsSection({ testimonials, storeName, city, category, termGender, termNumber }: TestimonialsSectionProps) {
-  const g = getStoreGrammar(termGender, termNumber)
+export function TestimonialsSection({
+  testimonials,
+  storeName,
+  city,
+  state,
+  category,
+  mode,
+  id,
+  slug,
+}: TestimonialsSectionProps) {
   const [currentPage, setCurrentPage] = useState(0)
+
+  if (!testimonials || testimonials.length === 0) return null
+
+  const ctx: LocalPageCtx = {
+    id,
+    slug,
+    mode,
+    name: storeName || "",
+    category: category || "Serviços",
+    city: city || "",
+    state: state || "",
+    servicesCount: testimonials.length, // ✅ contador
+  }
 
   const totalPages = Math.ceil(testimonials.length / ITEMS_PER_PAGE)
   const startIndex = currentPage * ITEMS_PER_PAGE
@@ -61,50 +88,41 @@ export function TestimonialsSection({ testimonials, storeName, city, category, t
     <section id="avaliacoes" className="relative overflow-hidden py-20 md:py-28 bg-primary">
       <div className="container relative mx-auto px-4">
         <div className="mx-auto max-w-4xl">
-          {/* Section header — white text on primary bg */}
+          {/* Section header */}
           <div className="mb-14 animate-fade-in-up">
             <span className="text-sm font-bold uppercase tracking-widest text-white/90">
-              Avaliações de Clientes
+              {renderTokens(getCopy(ctx, "testimonials.kicker"))}
             </span>
-            <h2 className="mt-3 text-3xl tracking-tight text-white md:text-4xl lg:text-5xl">
-              Avaliações sobre <span className="text-white font-extrabold">{storeName || 'nosso trabalho'}</span>{city ? ` em ${city}` : ''}
+
+            <h2 className="mt-3 text-3xl tracking-tight text-white md:text-4xl lg:text-5xl font-extrabold">
+              {renderTokens(getCopy(ctx, "testimonials.heading"))}
             </h2>
+
             <p className="mt-4 text-lg text-white/90">
-              {testimonials.length > 0
-                ? `Veja o que ${testimonials.length} clientes satisfeitos dizem sobre ${g.art} ${storeName || 'nossa empresa'}${category && city ? `, ${category.toLowerCase()} em ${city}` : ''}. Avaliações reais de quem já conhece ${g.nossa} trabalho.`
-                : `Avaliações de clientes${storeName ? ` ${g.da} ${storeName}` : ''}${category && city ? `, ${category.toLowerCase()} em ${city}` : ''}`}
+              {renderTokens(getCopy(ctx, "testimonials.intro"))}
             </p>
           </div>
 
           {useFeaturedLayout ? (
-            /* ====== FEATURED: 1-3 testimonials — large centered cards ====== */
             <div className="space-y-8 stagger-children">
               {testimonials.map((testimonial) => (
                 <div
                   key={testimonial.id}
                   className="relative overflow-hidden rounded-2xl border-2 border-slate-100 bg-white p-8 shadow-lg animate-fade-in-up md:p-10 dark:border-slate-800 dark:bg-slate-900"
                 >
-                  {/* Decorative quote */}
                   <div className="absolute -right-4 -top-4 text-primary/10">
                     <IconQuote className="h-24 w-24" />
                   </div>
 
                   <div className="relative">
-                    {/* Quote */}
                     <blockquote className="mb-8 text-lg italic leading-relaxed text-slate-600 dark:text-slate-300 md:text-xl">
                       &ldquo;{testimonial.content}&rdquo;
                     </blockquote>
 
-                    {/* Author */}
                     <div className="flex items-center gap-4">
-                      <TestimonialAvatar
-                        imageUrl={testimonial.imageUrl}
-                        authorName={testimonial.authorName}
-                      />
+                      <TestimonialAvatar imageUrl={testimonial.imageUrl} authorName={testimonial.authorName} />
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-slate-900 dark:text-white">
-                          {testimonial.authorName}
-                        </p>
+                        <p className="font-bold text-slate-900 dark:text-white">{testimonial.authorName}</p>
                         <Stars rating={testimonial.rating} />
                       </div>
                       {testimonial.isGoogleReview && <GoogleIcon />}
@@ -114,7 +132,6 @@ export function TestimonialsSection({ testimonials, storeName, city, category, t
               ))}
             </div>
           ) : (
-            /* ====== GRID: 4+ testimonials — 2-column cards ====== */
             <>
               <div className="grid gap-6 md:grid-cols-2 stagger-children">
                 {currentTestimonials.map((testimonial) => (
@@ -122,27 +139,19 @@ export function TestimonialsSection({ testimonials, storeName, city, category, t
                     key={testimonial.id}
                     className="group relative overflow-hidden rounded-2xl border-2 border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary/30 animate-fade-in-up dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary/30"
                   >
-                    {/* Decorative quote */}
                     <div className="absolute -right-3 -top-3 text-primary/5 transition-colors duration-300 group-hover:text-primary/10">
                       <IconQuote className="h-16 w-16" />
                     </div>
 
                     <div className="relative">
-                      {/* Content */}
                       <p className="mb-5 text-slate-600 leading-relaxed line-clamp-4 dark:text-slate-300">
                         &ldquo;{testimonial.content}&rdquo;
                       </p>
 
-                      {/* Author */}
                       <div className="flex items-center gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
-                        <TestimonialAvatar
-                          imageUrl={testimonial.imageUrl}
-                          authorName={testimonial.authorName}
-                        />
+                        <TestimonialAvatar imageUrl={testimonial.imageUrl} authorName={testimonial.authorName} />
                         <div className="flex-1 min-w-0">
-                          <p className="font-bold text-slate-900 dark:text-white truncate">
-                            {testimonial.authorName}
-                          </p>
+                          <p className="font-bold text-slate-900 dark:text-white truncate">{testimonial.authorName}</p>
                           <Stars rating={testimonial.rating} />
                         </div>
                         {testimonial.isGoogleReview && <GoogleIcon />}
@@ -152,7 +161,6 @@ export function TestimonialsSection({ testimonials, storeName, city, category, t
                 ))}
               </div>
 
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="mt-12 flex flex-col items-center gap-4">
                   <div className="flex items-center gap-2">
@@ -194,8 +202,9 @@ export function TestimonialsSection({ testimonials, storeName, city, category, t
                     </button>
                   </div>
 
+                  {/* ✅ contador humano via copy */}
                   <p className="text-sm text-white/95 dark:text-slate-500">
-                    Mostrando {startIndex + 1}–{Math.min(endIndex, testimonials.length)} de {testimonials.length} avaliações
+                    {renderTokens(getCopy(ctx, "testimonials.counter"))}
                   </p>
                 </div>
               )}

@@ -424,10 +424,12 @@ export default async function StorePage({ params }: PageProps) {
                   description={storeData.description}
                   neighborhoods={neighborhoods}
                   openingHours={storeData.openingHours as Record<string, string> | null}
-                  servicesCount={services.length}
                   serviceNames={services.map(s => s.name)}
                   termGender={storeData.termGender}
                   termNumber={storeData.termNumber}
+                  mode={storeData.mode}
+                  id={storeData.id}
+                  slug={storeData.slug}
                 />
               )
 
@@ -442,6 +444,9 @@ export default async function StorePage({ params }: PageProps) {
                   city={storeData.city}
                   termGender={storeData.termGender}
                   termNumber={storeData.termNumber}
+                  mode={storeData.mode}
+                  id={storeData.id}
+                  slug={storeData.slug}
                 />
               ) : null
 
@@ -454,8 +459,10 @@ export default async function StorePage({ params }: PageProps) {
                   storeSlug={storeData.slug}
                   category={storeData.category}
                   city={storeData.city}
-                  termGender={storeData.termGender}
-                  termNumber={storeData.termNumber}
+                  state={storeData.state}
+                  mode={storeData.mode}
+                  id={storeData.id}
+                  slug={storeData.slug}
                 />
               ) : null
 
@@ -469,8 +476,10 @@ export default async function StorePage({ params }: PageProps) {
                   storeWhatsapp={storeData.whatsapp}
                   category={storeData.category}
                   city={storeData.city}
-                  termGender={storeData.termGender}
-                  termNumber={storeData.termNumber}
+                  state={storeData.state}
+                  mode={storeData.mode}
+                  id={storeData.id}
+                  slug={storeData.slug}
                 />
               ) : null
 
@@ -482,6 +491,9 @@ export default async function StorePage({ params }: PageProps) {
                   storeName={storeData.name}
                   city={storeData.city}
                   category={storeData.category}
+                  mode={storeData.mode}
+                  id={storeData.id}
+                  slug={storeData.slug}
                 />
               ) : null
 
@@ -496,6 +508,9 @@ export default async function StorePage({ params }: PageProps) {
                   storeName={storeData.name}
                   termGender={storeData.termGender}
                   termNumber={storeData.termNumber}
+                  mode={storeData.mode}
+                  id={storeData.id}
+                  slug={storeData.slug}
                 />
               ) : null
 
@@ -506,9 +521,12 @@ export default async function StorePage({ params }: PageProps) {
                   testimonials={testimonials}
                   storeName={storeData.name}
                   city={storeData.city}
+                  state={storeData.state}
                   category={storeData.category}
-                  termGender={storeData.termGender}
-                  termNumber={storeData.termNumber}
+                  mode={storeData.mode}
+                  id={storeData.id}
+                  slug={storeData.slug}
+
                 />
               ) : null
 
@@ -522,6 +540,9 @@ export default async function StorePage({ params }: PageProps) {
                   category={storeData.category}
                   termGender={storeData.termGender}
                   termNumber={storeData.termNumber}
+                  mode={storeData.mode}
+                  id={storeData.id}
+                  slug={storeData.slug}
                 />
               ) : null
 
@@ -533,7 +554,9 @@ export default async function StorePage({ params }: PageProps) {
                     ...storeData,
                     openingHours: storeData.openingHours as Record<string, string> | null,
                   }}
-                  isOwner={isOwner}
+                  mode={storeData.mode}
+                  id={storeData.id}
+                  slug={storeData.slug}
                 />
               )
 

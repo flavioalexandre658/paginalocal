@@ -2,9 +2,22 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Image from 'next/image'
-import { IconX, IconChevronLeft, IconChevronRight, IconZoomIn, IconZoomOut, IconZoomReset, IconMaximize } from '@tabler/icons-react'
+import {
+  IconX,
+  IconChevronLeft,
+  IconChevronRight,
+  IconZoomIn,
+  IconZoomOut,
+  IconZoomReset,
+  IconMaximize,
+} from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel'
+
+// ✅ local-seo modular
+import { getCopy } from '@/lib/local-copy'
+import { renderTokens } from '@/lib/local-copy/render'
+import type { StoreMode, LocalPageCtx } from '@/lib/local-copy/types'
 
 interface GalleryImage {
   id: string
@@ -18,10 +31,18 @@ interface GallerySectionProps {
   images: GalleryImage[]
   storeName: string
   city: string
+  state?: string
   category: string
+
+  // ✅ para variar por MODE:
+  mode: StoreMode
+
+  // ✅ para seed forte/estável:
+  id?: string | number
+  slug?: string
 }
 
-export function GallerySection({ images, storeName, city, category }: GallerySectionProps) {
+export function GallerySection({ images, storeName, city, state, category, mode, id, slug }: GallerySectionProps) {
   // Lightbox state
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [zoom, setZoom] = useState(1)
@@ -32,6 +53,17 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
   const imageContainerRef = useRef<HTMLDivElement>(null)
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null)
   const [currentSlide, setCurrentSlide] = useState(0)
+
+  const ctx: LocalPageCtx = {
+    id,
+    slug,
+    mode,
+    name: storeName || "",
+    category: category || "Serviços",
+    city: city || "",
+    state: state || "",
+    servicesCount: images?.length ?? 0, // ✅ usa images.length
+  }
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index)
@@ -75,23 +107,29 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
     setPan({ x: 0, y: 0 })
   }, [])
 
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (zoom <= 1) return
-    setIsDragging(true)
-    dragStart.current = { x: e.clientX, y: e.clientY }
-    panStart.current = { ...pan }
-      ; (e.target as HTMLElement).setPointerCapture(e.pointerId)
-  }, [zoom, pan])
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (zoom <= 1) return
+      setIsDragging(true)
+      dragStart.current = { x: e.clientX, y: e.clientY }
+      panStart.current = { ...pan }
+        ; (e.target as HTMLElement).setPointerCapture(e.pointerId)
+    },
+    [zoom, pan]
+  )
 
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    if (!isDragging || zoom <= 1) return
-    const dx = e.clientX - dragStart.current.x
-    const dy = e.clientY - dragStart.current.y
-    setPan({
-      x: panStart.current.x + dx,
-      y: panStart.current.y + dy,
-    })
-  }, [isDragging, zoom])
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isDragging || zoom <= 1) return
+      const dx = e.clientX - dragStart.current.x
+      const dy = e.clientY - dragStart.current.y
+      setPan({
+        x: panStart.current.x + dx,
+        y: panStart.current.y + dy,
+      })
+    },
+    [isDragging, zoom]
+  )
 
   const handlePointerUp = useCallback(() => {
     setIsDragging(false)
@@ -122,9 +160,7 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
     }
   }, [selectedIndex, closeLightbox, goToPrevious, goToNext])
 
-  if (images.length === 0) {
-    return null
-  }
+  if (!images || images.length === 0) return null
 
   return (
     <>
@@ -136,23 +172,21 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
             {/* Section header */}
             <div className="mb-14 animate-fade-in-up">
               <span className="text-sm font-bold uppercase tracking-widest text-primary">
-                Galeria de Fotos
+                {renderTokens(getCopy(ctx, "gallery.kicker"))}
               </span>
+
               <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-                Conheça a <span className="text-primary">{storeName}</span>
+                {renderTokens(getCopy(ctx, "gallery.heading"))}
               </h2>
+
               <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-                {images.length} fotos reais da {storeName} em {city}, estrutura completa para {category.toLowerCase()}.
+                {renderTokens(getCopy(ctx, "gallery.intro"))}
               </p>
             </div>
 
             {/* ====== MOBILE: Embla Carousel + Thumbnails ====== */}
             <div className="md:hidden animate-fade-in-up">
-              <Carousel
-                setApi={setCarouselApi}
-                opts={{ loop: false }}
-                className="w-full"
-              >
+              <Carousel setApi={setCarouselApi} opts={{ loop: false }} className="w-full">
                 <CarouselContent className="-ml-0">
                   {images.map((image, index) => (
                     <CarouselItem key={image.id} className="pl-0">
@@ -215,17 +249,12 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
                   >
                     <CarouselContent className="-ml-2">
                       {images.map((image, index) => (
-                        <CarouselItem
-                          key={image.id}
-                          className="basis-1/4 pl-2"
-                        >
+                        <CarouselItem key={image.id} className="basis-1/4 pl-2">
                           <button
                             onClick={() => goToSlide(index)}
                             className={cn(
                               'relative w-full aspect-square overflow-hidden rounded-lg border-2 transition-all duration-200',
-                              currentSlide === index
-                                ? 'border-primary opacity-100'
-                                : 'border-transparent opacity-40'
+                              currentSlide === index ? 'border-primary opacity-100' : 'border-transparent opacity-40'
                             )}
                           >
                             <Image
@@ -293,7 +322,7 @@ export function GallerySection({ images, storeName, city, category }: GallerySec
         </div>
       </section>
 
-      {/* Lightbox */}
+      {/* Lightbox (inalterado) */}
       {selectedIndex !== null && (
         <div
           className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-xl animate-fade-in"

@@ -5,6 +5,11 @@ import { getServiceIcon } from '@/lib/service-icons'
 import { getStoreGrammar } from '@/lib/store-terms'
 import type { TermGender, TermNumber } from '@/lib/store-terms'
 
+// ✅ local-seo modular
+import { getCopy } from '@/lib/local-copy'
+import { renderTokens } from '@/lib/local-copy/render'
+import type { StoreMode, LocalPageCtx } from '@/lib/local-copy/types'
+
 interface Service {
   id: string
   name: string
@@ -21,12 +26,46 @@ interface ServicesSectionProps {
   storeSlug: string
   category: string
   city: string
+  state?: string
   termGender?: TermGender
   termNumber?: TermNumber
+
+  // ✅ para variar por MODE:
+  mode: StoreMode
+
+  // ✅ seed forte/estável:
+  id?: string | number
+  slug?: string
 }
 
-export function ServicesSection({ services, storeName, storeSlug, category, city, termGender, termNumber }: ServicesSectionProps) {
+export function ServicesSection({
+  services,
+  storeName,
+  storeSlug,
+  category,
+  city,
+  state,
+  termGender,
+  termNumber,
+  mode,
+  id,
+  slug,
+}: ServicesSectionProps) {
   const g = getStoreGrammar(termGender, termNumber)
+
+  if (!services || services.length === 0) return null
+
+  const ctx: LocalPageCtx = {
+    id,
+    slug,
+    mode,
+    name: storeName || "",
+    category: category || "Serviços",
+    city: city || "",
+    state: state || "",
+    servicesCount: services.length,
+  }
+
   return (
     <section id="servicos" className="relative py-20 md:py-28 overflow-hidden bg-[#f3f5f7] dark:bg-slate-950/50">
       <div className="container relative mx-auto px-4">
@@ -34,13 +73,16 @@ export function ServicesSection({ services, storeName, storeSlug, category, city
           {/* Section header */}
           <div className="mb-14 animate-fade-in-up">
             <span className="text-sm font-bold uppercase tracking-widest text-primary">
-              Serviços Profissionais
+              {renderTokens(getCopy(ctx, "services.kicker"))}
             </span>
+
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-              Serviços de {category} em <span className="text-primary">{city}</span> — {storeName}
+              {renderTokens(getCopy(ctx, "services.heading"))}
             </h2>
+
             <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-              Confira os serviços de {category.toLowerCase()} oferecidos {g.pela} {storeName} em {city}. Atendimento profissional e de qualidade para você e sua família.
+              {renderTokens(getCopy(ctx, "services.intro"))}
+
             </p>
           </div>
 
@@ -48,6 +90,7 @@ export function ServicesSection({ services, storeName, storeSlug, category, city
           <div className="grid gap-8 md:grid-cols-2 stagger-children">
             {services.map((svc) => {
               const ServiceIcon = getServiceIcon(svc.iconName)
+
               const cardContent = (
                 <div className="relative flex h-full flex-col p-8">
                   {/* Icon */}
@@ -70,22 +113,23 @@ export function ServicesSection({ services, storeName, storeSlug, category, city
                   {/* Price */}
                   {svc.priceInCents != null && svc.priceInCents > 0 && (
                     <p className="mb-5 text-2xl font-extrabold text-primary">
-                      {new Intl.NumberFormat('pt-BR', {
-                        style: 'currency',
-                        currency: 'BRL',
-                      }).format(svc.priceInCents / 100)}
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(svc.priceInCents / 100)}
                     </p>
                   )}
 
                   {/* Link */}
                   <span className="mt-auto inline-flex items-center gap-1.5 text-sm font-semibold text-primary transition-all group-hover:gap-3">
-                    Ver detalhes de {svc.name}
+                    {/* ✅ CTA humano e curto (opcional) */}
+                    {renderTokens(getCopy(ctx, "services.cardCta"))}
+                    <span className="text-slate-400 dark:text-slate-500">•</span>
+                    <span className="text-slate-700 dark:text-slate-200">{svc.name}</span>
                     <IconArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </span>
                 </div>
               )
 
-              const cardClasses = "group relative overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-primary/30 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-900/30 dark:hover:border-primary/30 animate-fade-in-up"
+              const cardClasses =
+                "group relative overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-primary/30 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-900/30 dark:hover:border-primary/30 animate-fade-in-up"
 
               if (svc.slug) {
                 return (

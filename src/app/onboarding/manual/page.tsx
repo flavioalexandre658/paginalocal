@@ -111,7 +111,7 @@ export default function ManualOnboardingPage() {
   const [selectedMode, setSelectedMode] = useState<StoreMode>('LOCAL_BUSINESS')
   const [currentLogIndex, setCurrentLogIndex] = useState(0)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [createdStore, setCreatedStore] = useState<{ slug: string; name: string; id?: string } | null>(null)
+  const [createdStore, setCreatedStore] = useState<{ slug: string; name: string; id?: string; isActive?: boolean } | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoadingCategories, setIsLoadingCategories] = useState(true)
 
@@ -262,6 +262,7 @@ export default function ManualOnboardingPage() {
         slug: result.data.slug,
         name: result.data.name,
         id: result.data.store.id,
+        isActive: result.data.isActive,
       })
 
       if (selectedMode !== 'LOCAL_BUSINESS') {
@@ -343,6 +344,7 @@ export default function ManualOnboardingPage() {
               key="complete"
               storeName={createdStore.name}
               storeSlug={createdStore.slug}
+              isActive={createdStore.isActive}
             />
           )}
         </AnimatePresence>

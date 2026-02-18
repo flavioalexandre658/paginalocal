@@ -338,5 +338,6 @@ export const createStoreFromGoogleAction = authActionClient
       imagesProcessed,
       heroImageUrl,
       subdomainCreated,
+      isActive: shouldActivateStore,
     }
   })

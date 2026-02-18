@@ -1,0 +1,76 @@
+Instruções para as próximas sessões (processo escalável)
+1) Defina os CopyKeys da sessão
+
+No seu CopyKey, crie chaves semânticas por sessão (sempre com prefixo), exemplo:
+
+faq.kicker, faq.heading, faq.intro, faq.itemsTitle, faq.footer
+
+testimonials.kicker, testimonials.heading, testimonials.lead, testimonials.cta
+
+Regra: cada trecho de texto “humano” que você quer variar vira uma key.
+
+2) Crie um arquivo de defaults da sessão
+
+Crie lib/local-seo/sections/<sessao>.copy.ts exportando:
+
+export const <SESSAO>_DEFAULT: ModeCopy = { ... }
+
+Regras:
+
+mínimo 5 variações por key (pra manter diversidade sem “loteria”)
+
+textos: SEO + emocional (conexão/autoridade/retensão) e com termos semânticos (sinônimos, intenção)
+
+3) (Opcional) Crie overrides por MODE
+
+Se a sessão muda por MODE, crie:
+
+lib/local-seo/sections/<sessao>.by-mode.ts
+
+export const <SESSAO>_BY_MODE: Record<StoreMode, ModeCopy> = { ... }
+E só sobrescreve as keys que realmente mudam.
+
+4) Conecte o resolver (getCopy) com um “registry” de sessões
+
+No arquivo “agregador” (ex: local-seo.tsx ou copy-registry.ts), faça merge na ordem:
+
+DEFAULT_COPY (global) — último fallback
+
+<SESSAO>_DEFAULT (default da sessão) — fallback preferido para aquela sessão
+
+<SESSAO>_BY_MODE[mode] — override por modo
+
+(se existir) <CATEGORY_CLUSTER>_BY_MODE — override por cluster/categoria
+
+A ideia é: sessão fica organizada por arquivo, e os MODEs não viram “um arquivo monstro”.
+
+5) No componente da sessão, só renderiza tokens
+
+No componente:
+
+montar ctx: LocalPageCtx
+
+chamar getCopy(ctx, "sessao.key")
+
+renderizar com renderTokens(...)
+
+Exemplo padrão:
+
+const kicker = getCopy(ctx, "areas.kicker")
+<span>{renderTokens(kicker)}</span>
+
+6) Checklist rápido pra cada nova sessão
+
+ Criou CopyKeys
+
+ Criou <SESSAO>_DEFAULT com 5 variações por key
+
+ (Se precisar) criou <SESSAO>_BY_MODE com overrides
+
+ Ligou no registry/merge
+
+ Aplicou renderTokens(getCopy(ctx, "...")) no componente
+
+ Rodou e viu warning: nenhuma key com < 5 variações
+
+Se você quiser, eu já te devolvo também o “registry/merge” pronto (com ABOUT_DEFAULT, AREAS_DEFAULT e os BY_MODE que você já tem), pra você não precisar “adivinhar” como encaixar isso.

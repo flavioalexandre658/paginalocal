@@ -78,7 +78,7 @@ export default function OnboardingPage() {
   const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(null)
   const [currentLogIndex, setCurrentLogIndex] = useState(0)
   const [showConfetti, setShowConfetti] = useState(false)
-  const [createdStore, setCreatedStore] = useState<{ slug: string; name: string; id?: string } | null>(null)
+  const [createdStore, setCreatedStore] = useState<{ slug: string; name: string; id?: string; isActive?: boolean } | null>(null)
   const [placePreview, setPlacePreview] = useState<PlacePreview | null>(null)
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
   const [selectedCoverIndex, setSelectedCoverIndex] = useState(0)
@@ -184,6 +184,7 @@ export default function OnboardingPage() {
         slug: result.data.slug,
         name: result.data.displayName,
         id: result.data.store.id,
+        isActive: result.data.isActive,
       })
 
       // Modes que precisam de conteúdo vão para setup-content
@@ -300,7 +301,12 @@ export default function OnboardingPage() {
           )}
 
           {step === 'complete' && selectedPlace && createdStore && (
-            <CompleteStep key="complete" place={selectedPlace} storeSlug={createdStore.slug} />
+            <CompleteStep
+              key="complete"
+              place={selectedPlace}
+              storeSlug={createdStore.slug}
+              isActive={createdStore.isActive}
+            />
           )}
         </AnimatePresence>
       </div>
@@ -1390,7 +1396,7 @@ function CreatingStep({
   )
 }
 
-function CompleteStep({ place, storeSlug }: { place: PlaceResult; storeSlug: string }) {
+function CompleteStep({ place, storeSlug, isActive }: { place: PlaceResult; storeSlug: string; isActive?: boolean }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -1408,11 +1414,14 @@ function CompleteStep({ place, storeSlug }: { place: PlaceResult; storeSlug: str
       </motion.div>
 
       <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
-        Seu site está pronto!
+        {isActive ? 'Seu site está ativo!' : 'Seu site está pronto!'}
       </h1>
 
       <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 md:mt-3 md:text-base">
-        Falta só um passo para {place.name} ficar visível para seus clientes
+        {isActive
+          ? `O site de ${place.name} já pode ser acessado por seus clientes`
+          : `Falta só um passo para ${place.name} ficar visível para seus clientes`
+        }
       </p>
 
       <motion.div
@@ -1421,23 +1430,35 @@ function CompleteStep({ place, storeSlug }: { place: PlaceResult; storeSlug: str
         transition={{ delay: 0.4 }}
         className="mt-6 flex flex-col gap-3 md:mt-8"
       >
-        {/* CTA Principal - Ativar */}
-        <Link href={`/planos?plan=essencial&store=${storeSlug}`}>
-          <Button
-            size="lg"
-            className="h-12 w-full gap-2 cursor-pointer text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 md:h-14 md:gap-3 md:text-lg"
-          >
-            <IconRocket className="h-5 w-5 md:h-6 md:w-6" />
-            Ativar meu site por R$59,90
-          </Button>
-        </Link>
+        {/* CTA Principal - Ativar ou Ir para Painel */}
+        {isActive ? (
+          <Link href={`/painel/${storeSlug}`}>
+            <Button
+              size="lg"
+              className="h-12 w-full gap-2 cursor-pointer text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 md:h-14 md:gap-3 md:text-lg"
+            >
+              <IconBuildingStore className="h-5 w-5 md:h-6 md:w-6" />
+              Ir para o painel
+            </Button>
+          </Link>
+        ) : (
+          <Link href={`/planos?plan=essencial&store=${storeSlug}`}>
+            <Button
+              size="lg"
+              className="h-12 w-full gap-2 cursor-pointer text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 md:h-14 md:gap-3 md:text-lg"
+            >
+              <IconRocket className="h-5 w-5 md:h-6 md:w-6" />
+              Ativar meu site por R$59,90
+            </Button>
+          </Link>
+        )}
 
         {/* CTA Secundário - Preview */}
         <Link href={getStoreUrl(storeSlug)} target="_blank">
           <Button
-            variant="ghost"
+            variant="outline"
             size="lg"
-            className="h-10 w-full gap-2 cursor-pointer text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 md:h-11"
+            className="h-12 w-full gap-2 cursor-pointer border-slate-200 bg-white text-base font-medium text-slate-700 transition-all hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white md:h-14"
           >
             <IconEye className="h-4 w-4 md:h-5 md:w-5" />
             Ver prévia do site
@@ -1445,9 +1466,9 @@ function CompleteStep({ place, storeSlug }: { place: PlaceResult; storeSlug: str
         </Link>
       </motion.div>
 
-      {/* Micro-copy opcional para reduzir ansiedade */}
+      {/* Micro-copy opcional */}
       <p className="mt-4 text-xs text-slate-400 dark:text-slate-500 md:mt-5">
-        Você poderá editar tudo depois de ativar
+        Você poderá editar tudo depois no painel
       </p>
     </motion.div>
   )

@@ -2,9 +2,12 @@ import Link from 'next/link'
 import { IconArrowRight } from '@tabler/icons-react'
 import { ProductCard } from '@/components/site/product-card'
 import type { ProductImage } from '@/db/schema'
-import { getStoreGrammar } from '@/lib/store-terms'
-import type { TermGender, TermNumber } from '@/lib/store-terms'
 import { getCollectionPageUrl } from '@/lib/utils'
+
+// ✅ local-seo modular
+import { getCopy } from '@/lib/local-copy'
+import { renderTokens } from '@/lib/local-copy/render'
+import type { StoreMode, LocalPageCtx } from '@/lib/local-copy/types'
 
 interface Product {
   id: string
@@ -24,8 +27,14 @@ interface ProductsSectionProps {
   storeSlug: string
   category: string
   city: string
-  termGender?: TermGender
-  termNumber?: TermNumber
+  state?: string
+
+  // ✅ variar por MODE
+  mode: StoreMode
+
+  // ✅ seed forte/estável
+  id?: string | number
+  slug?: string
 }
 
 export function ProductsSection({
@@ -34,14 +43,26 @@ export function ProductsSection({
   storeSlug,
   category,
   city,
-  termGender,
-  termNumber,
+  state,
+  mode,
+  id,
+  slug,
 }: ProductsSectionProps) {
-  const g = getStoreGrammar(termGender, termNumber)
-  if (products.length === 0) return null
+  if (!products || products.length === 0) return null
 
   const featuredProducts = products.filter(p => p.isFeatured).slice(0, 6)
   const displayProducts = featuredProducts.length >= 3 ? featuredProducts : products.slice(0, 6)
+
+  const ctx: LocalPageCtx = {
+    id,
+    slug,
+    mode,
+    name: storeName || "",
+    category: category || "Produtos",
+    city: city || "",
+    state: state || "",
+    servicesCount: displayProducts.length, // ✅ usado no intro
+  }
 
   return (
     <section className="relative overflow-hidden bg-[#f3f5f7] py-20 md:py-28">
@@ -49,13 +70,15 @@ export function ProductsSection({
         <div className="mx-auto max-w-4xl">
           <div className="mb-12 text-center">
             <span className="text-sm font-bold uppercase tracking-widest text-primary">
-              Produtos
+              {renderTokens(getCopy(ctx, "products.kicker"))}
             </span>
+
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl lg:text-5xl">
-              Produtos de <span className="text-primary">{category}</span> em {city} — {storeName}
+              {renderTokens(getCopy(ctx, "products.heading"))}
             </h2>
+
             <p className="mt-4 text-lg text-slate-600">
-              {displayProducts.length} {displayProducts.length === 1 ? 'produto disponível' : 'produtos disponíveis'} {g.da} {storeName} · Peça pelo WhatsApp
+              {renderTokens(getCopy(ctx, "products.intro"))}
             </p>
           </div>
 
@@ -81,7 +104,7 @@ export function ProductsSection({
             <div className="mt-12 text-center">
               <Link href={getCollectionPageUrl(storeSlug, 'catalogo')}>
                 <button className="inline-flex items-center gap-2 rounded-full border-2 border-primary bg-transparent px-8 py-3 font-semibold text-primary transition-all hover:bg-primary hover:text-white hover:shadow-lg hover:shadow-primary/30">
-                  Ver catálogo completo
+                  {renderTokens(getCopy(ctx, "products.catalogCta"))}
                   <IconArrowRight className="h-5 w-5" />
                 </button>
               </Link>

@@ -1,6 +1,12 @@
-import { IconMapPin } from '@tabler/icons-react'
-import { getStoreGrammar } from '@/lib/store-terms'
-import type { TermGender, TermNumber } from '@/lib/store-terms'
+import React from "react"
+import { IconMapPin } from "@tabler/icons-react"
+import { getStoreGrammar } from "@/lib/store-terms"
+import type { TermGender, TermNumber } from "@/lib/store-terms"
+
+// ✅ novo local-seo modular
+import { getCopy } from "@/lib/local-copy"
+import { renderTokens } from "@/lib/local-copy/render"
+import type { StoreMode, LocalPageCtx } from "@/lib/local-copy/types"
 
 interface AreasSectionProps {
   neighborhoods: string[]
@@ -10,11 +16,39 @@ interface AreasSectionProps {
   storeName?: string
   termGender?: TermGender
   termNumber?: TermNumber
+
+  // para variar por MODE:
+  mode: StoreMode
+
+  // para seed forte/estável:
+  id?: string | number
+  slug?: string
 }
 
-export function AreasSection({ neighborhoods, city, state, category, storeName, termGender, termNumber }: AreasSectionProps) {
+export function AreasSection({
+  neighborhoods,
+  city,
+  state,
+  category,
+  storeName,
+  termGender,
+  termNumber,
+  mode,
+  id,
+  slug,
+}: AreasSectionProps) {
   const g = getStoreGrammar(termGender, termNumber)
   if (!neighborhoods || neighborhoods.length === 0) return null
+
+  const ctx: LocalPageCtx = {
+    id,
+    slug,
+    mode,
+    name: storeName || "", // se não tiver storeName, ainda funciona (tokens não quebram)
+    category,
+    city,
+    state,
+  }
 
   return (
     <section className="relative overflow-hidden py-20 md:py-28 bg-[#f3f5f7] dark:bg-slate-950/50">
@@ -23,13 +57,18 @@ export function AreasSection({ neighborhoods, city, state, category, storeName, 
           {/* Section header */}
           <div className="mb-14 animate-fade-in-up">
             <span className="text-sm font-bold uppercase tracking-widest text-primary">
-              Áreas de Atendimento em {city}
+              {renderTokens(getCopy(ctx, "areas.kicker"))}
             </span>
+
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-              Bairros e Regiões Atendidas por {category} em <span className="text-primary">{city}</span>, {state}
+              {renderTokens(getCopy(ctx, "areas.heading"))}
             </h2>
+
             <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-              {storeName ? `${g.Art} ${storeName} atende` : 'Atendemos'} diversos bairros de {city} com serviços de {category.toLowerCase()} de qualidade. Confira abaixo as regiões onde atuamos.
+              {/* Se quiser manter o “g.Art”, você pode encaixar aqui também.
+                  Eu deixei o texto do copy já pronto para funcionar sem quebrar. */}
+              {storeName ? `${g.Art} ${storeName}. ` : ""}
+              {renderTokens(getCopy(ctx, "areas.intro"))}
             </p>
           </div>
 
@@ -40,12 +79,14 @@ export function AreasSection({ neighborhoods, city, state, category, storeName, 
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
                 <IconMapPin className="h-6 w-6 text-white" />
               </div>
+
               <div className="mt-6">
                 <h3 className="text-2xl font-extrabold text-white md:text-3xl">
-                  {category} em {city}
+                  {renderTokens(getCopy(ctx, "areas.heroTitle"))}
                 </h3>
+
                 <p className="mt-3 text-sm text-white/90 leading-relaxed">
-                  Somos {category.toLowerCase()} em {city}, {state}, atendendo toda a região com qualidade, profissionalismo e compromisso. Nossa equipe está preparada para atender você com agilidade.
+                  {renderTokens(getCopy(ctx, "areas.heroDesc"))}
                 </p>
               </div>
             </div>
@@ -68,7 +109,7 @@ export function AreasSection({ neighborhoods, city, state, category, storeName, 
           </div>
 
           <p className="mt-8 text-center text-sm text-slate-400 animate-fade-in-up dark:text-slate-500">
-            Não encontrou seu bairro? {storeName ? `Entre em contato com a ${storeName}` : 'Entre em contato'} e verificaremos a disponibilidade de atendimento na sua região.
+            {renderTokens(getCopy(ctx, "areas.footer"))}
           </p>
         </div>
       </div>
