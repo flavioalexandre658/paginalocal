@@ -289,6 +289,7 @@ export default async function ServicePage({ params }: PageProps) {
           googleReviewsCount: storeData.googleReviewsCount,
           termGender: storeData.termGender,
           termNumber: storeData.termNumber,
+          mode: storeData.mode,
         }}
         service={{
           name: serviceData.name,

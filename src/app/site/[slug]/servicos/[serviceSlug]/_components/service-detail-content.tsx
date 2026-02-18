@@ -20,6 +20,7 @@ import { TestimonialsSection } from '../../../_components/testimonials-section'
 import { FAQSection } from '../../../_components/faq-section'
 import { getStoreGrammar } from '@/lib/store-terms'
 import type { TermGender, TermNumber } from '@/lib/store-terms'
+import type { StoreMode } from '@/lib/local-copy/types'
 
 interface ServiceDetailContentProps {
   store: {
@@ -43,6 +44,7 @@ interface ServiceDetailContentProps {
     googleReviewsCount: number | null
     termGender?: TermGender | null
     termNumber?: TermNumber | null
+    mode: StoreMode
   }
   service: {
     name: string
@@ -243,8 +245,8 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
           storeName={store.name}
           city={store.city}
           category={store.category}
-          termGender={store.termGender ?? undefined}
-          termNumber={store.termNumber ?? undefined}
+          mode={store.mode}
+          id={store.id}
         />
       )}
 
@@ -257,11 +259,13 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
           city={store.city}
           termGender={store.termGender ?? undefined}
           termNumber={store.termNumber ?? undefined}
+          mode={store.mode}
+          id={store.id}
         />
       )}
 
       {faq.length > 0 && (
-        <FAQSection faq={faq} storeName={store.name} city={store.city} category={store.category} termGender={store.termGender ?? undefined} termNumber={store.termNumber ?? undefined} />
+        <FAQSection faq={faq} storeName={store.name} city={store.city} category={store.category} termGender={store.termGender ?? undefined} termNumber={store.termNumber ?? undefined} mode={store.mode} id={store.id} />
       )}
 
       <section className="sr-only" aria-hidden="false">

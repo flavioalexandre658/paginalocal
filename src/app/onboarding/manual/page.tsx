@@ -344,7 +344,6 @@ export default function ManualOnboardingPage() {
               key="complete"
               storeName={createdStore.name}
               storeSlug={createdStore.slug}
-              isActive={createdStore.isActive}
             />
           )}
         </AnimatePresence>

@@ -309,7 +309,7 @@ export default async function SobreNosPage({ params }: PageProps) {
       </main>
 
       {Array.isArray(storeData.faq) && (storeData.faq as { question: string; answer: string }[]).length > 0 && (
-        <FAQSection faq={storeData.faq as { question: string; answer: string }[]} storeName={storeData.name} city={storeData.city} category={storeData.category} termGender={storeData.termGender} termNumber={storeData.termNumber} />
+        <FAQSection faq={storeData.faq as { question: string; answer: string }[]} storeName={storeData.name} city={storeData.city} category={storeData.category} termGender={storeData.termGender} termNumber={storeData.termNumber} mode={storeData.mode} id={storeData.id} />
       )}
 
       <SiteFooter

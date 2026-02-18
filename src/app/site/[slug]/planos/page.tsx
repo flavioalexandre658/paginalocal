@@ -464,8 +464,8 @@ export default async function PlanosPage({ params }: PageProps) {
             storeName={storeData.name}
             city={storeData.city}
             category={storeData.category}
-            termGender={storeData.termGender}
-            termNumber={storeData.termNumber}
+            mode={storeData.mode}
+            id={storeData.id}
           />
         )}
 
@@ -478,6 +478,8 @@ export default async function PlanosPage({ params }: PageProps) {
             category={storeData.category}
             termGender={storeData.termGender}
             termNumber={storeData.termNumber}
+            mode={storeData.mode}
+            id={storeData.id}
           />
         )}
       </main>
