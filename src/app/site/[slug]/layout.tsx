@@ -66,8 +66,6 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
       <link rel="dns-prefetch" href="https://stagingfy-images.s3.amazonaws.com" />
 
 
-      {/* Font loading assíncrono com CSS inline */}
-      <link rel="stylesheet" href={fontUrl!} />
       {/* Font só carrega se tiver URL válida, e de forma não-bloqueante */}
       {fontUrl && (
         <>
