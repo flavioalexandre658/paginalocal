@@ -52,7 +52,7 @@ export const uploadStoreImageAction = authActionClient
       : { width: 800, height: 800 }
 
     const optimizedBuffer = await sharp(buffer)
-      .resize(dimensions.width, dimensions.height, { fit: 'cover' })
+      .resize(dimensions.width, dimensions.height, { fit: /*isHero ? 'cover' : */'inside', withoutEnlargement: true })
       .webp({ quality: isHero ? 75 : 65 })
       .toBuffer()
 
