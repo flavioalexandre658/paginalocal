@@ -1,26 +1,24 @@
-import Link from 'next/link'
+
 import Image from 'next/image'
 import {
-  IconArrowLeft,
   IconCheck,
-  IconMapPin,
   IconBrandWhatsapp,
   IconPhone,
-  IconStar,
 } from '@tabler/icons-react'
-import { formatCurrency, getWhatsAppUrl, getPhoneUrl, getStoreHomeUrl } from '@/lib/utils'
-import {
-  getContrastTextClass,
-  getContrastMutedClass,
-  getContrastBadgeClasses,
-  isLightColor,
-} from '@/lib/color-contrast'
+import { formatCurrency, getWhatsAppUrl, getPhoneUrl } from '@/lib/utils'
+
 import { ServicesSection } from '../../../_components/services-section'
 import { TestimonialsSection } from '../../../_components/testimonials-section'
 import { FAQSection } from '../../../_components/faq-section'
 import { getStoreGrammar } from '@/lib/store-terms'
 import type { TermGender, TermNumber } from '@/lib/store-terms'
 import type { StoreMode } from '@/lib/local-copy/types'
+
+import { getCopy } from "@/lib/local-copy"
+import { renderTokens } from "@/lib/local-copy/render"
+import type { LocalPageCtx } from "@/lib/local-copy/types"
+import { HeroSection } from '../../../_components/hero-section'
+
 
 interface ServiceDetailContentProps {
   store: {
@@ -44,6 +42,7 @@ interface ServiceDetailContentProps {
     googleReviewsCount: number | null
     termGender?: TermGender | null
     termNumber?: TermNumber | null
+    coverUrl: string | null
     mode: StoreMode
   }
   service: {
@@ -57,6 +56,7 @@ interface ServiceDetailContentProps {
   }
   otherServices: {
     id: string
+    iconName: string | null
     name: string
     slug: string | null
     description: string | null
@@ -75,66 +75,35 @@ interface ServiceDetailContentProps {
 
 export function ServiceDetailContent({ store, service, otherServices, testimonials, faq }: ServiceDetailContentProps) {
   const g = getStoreGrammar(store.termGender ?? undefined, store.termNumber ?? undefined)
+
+  const ctx: LocalPageCtx = {
+    id: store.id,
+    slug: store.slug,
+    mode: store.mode,
+    name: store.name,
+    category: store.category,
+    city: store.city,
+    state: store.state,
+
+    serviceName: service.name,
+    serviceDesc: service.description,
+  }
+
+
+
   const whatsappMessage = store.whatsappDefaultMessage?.trim()
     || `Olá! Gostaria de saber mais sobre o serviço de ${service.name} ${g.na} ${store.name}.`
-  const rating = store.googleRating ? parseFloat(store.googleRating) : 0
-  const showRating = rating >= 4.0 && store.googleReviewsCount && store.googleReviewsCount > 0
-
-  const heroBg = store.heroBackgroundColor || '#1e293b'
-  const textClass = getContrastTextClass(heroBg)
-  const mutedClass = getContrastMutedClass(heroBg)
-  const badgeClasses = getContrastBadgeClasses(heroBg)
-  const isLight = isLightColor(heroBg)
 
   return (
     <main className="w-full max-w-full overflow-x-clip">
       {/* Hero */}
-      <section className="relative overflow-hidden py-20 md:py-28">
-        <div className="absolute inset-0" style={{ backgroundColor: heroBg }} />
-        <div className="absolute -top-24 -right-24 z-0 h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute -bottom-16 -left-16 z-0 h-56 w-56 rounded-full bg-white/5 blur-2xl" />
-
-        <div className={`container relative z-10 mx-auto px-4 ${textClass}`}>
-          <div className="mx-auto max-w-4xl">
-            <Link
-              href={getStoreHomeUrl(store.slug)}
-              className={`mb-8 mr-4 inline-flex max-w-full items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-md transition-all ${badgeClasses} ${isLight ? 'hover:bg-black/10' : 'hover:bg-white/20'}`}
-            >
-              <IconArrowLeft className="h-4 w-4 shrink-0" />
-              <span className="truncate">Voltar para {store.name}</span>
-            </Link>
-
-            <div className={`mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium backdrop-blur-md ${badgeClasses}`}>
-              <IconMapPin className="h-4 w-4" />
-              {store.city}, {store.state}
-            </div>
-
-            <h1 className="mb-4 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl lg:text-6xl">
-              {service.name}
-            </h1>
-
-            <p className={`mb-6 text-lg leading-relaxed ${mutedClass}`}>
-              {store.name} &middot; {store.category} em {store.city}, {store.state}
-            </p>
-
-            <div className="flex flex-wrap items-center gap-4">
-              {service.priceInCents && (
-                <span className={`rounded-full px-5 py-2 text-lg font-bold ${isLight ? 'bg-primary/10 text-primary' : 'bg-white/15 text-white'}`}>
-                  {formatCurrency(service.priceInCents)}
-                </span>
-              )}
-
-              {showRating && (
-                <div className={`flex items-center gap-2 rounded-full px-4 py-2 backdrop-blur-md ${isLight ? 'bg-black/5' : 'bg-white/10'}`}>
-                  <IconStar className="h-5 w-5 fill-amber-400 text-amber-400" />
-                  <span className="font-semibold">{store.googleRating}</span>
-                  <span className={mutedClass}>({store.googleReviewsCount} avaliações)</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSection
+        store={store}
+        pageTitle={service.name}
+        pageSubtitle={`Confira mais sobre este serviço fornecido por ${store.name} em ${store.city}, ${store.state}`}
+        compact
+        showBackLink
+      />
 
       {/* Hero image */}
       {service.heroImageUrl && (
@@ -158,6 +127,21 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
       <section className="py-20 md:py-28 bg-[#f3f5f7] dark:bg-slate-950/50">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl space-y-8">
+            <div className="mb-14 animate-fade-in-up">
+              <span className="text-sm font-bold uppercase tracking-widest text-primary">
+                {renderTokens(getCopy(ctx, "service.kicker"))}
+              </span>
+
+              <h2 className="mt-3 text-3xl font-extrabold tracking-tight ...">
+                {renderTokens(getCopy(ctx, "service.heading"))}
+              </h2>
+
+              <p className="mt-4 text-lg ...">
+                {renderTokens(getCopy(ctx, "service.intro"))}
+              </p>
+
+            </div>
+
             {/* Service image */}
             {service.imageUrl && (
               <div className="overflow-hidden rounded-2xl border-2 border-slate-100 shadow-lg dark:border-slate-800">
@@ -173,9 +157,7 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
 
             {/* Description card */}
             <div className="rounded-2xl border-2 border-slate-100 border-l-4 border-l-primary bg-white p-8 shadow-lg md:p-10 dark:border-slate-800 dark:border-l-primary dark:bg-slate-900">
-              <h2 className="mb-4 text-2xl font-extrabold text-slate-900 dark:text-white md:text-3xl">
-                {service.name} em <span className="text-primary">{store.city}, {store.state}</span> — {store.name}
-              </h2>
+
               {service.longDescription ? (
                 <div className="space-y-4 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
                   {service.longDescription.split('\n').filter(Boolean).map((paragraph, i) => (
@@ -194,7 +176,7 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
                 <div className="mt-6 flex items-center gap-3 rounded-xl bg-primary/10 p-4">
                   <IconCheck className="h-5 w-5 text-primary" />
                   <span className="text-slate-700 dark:text-slate-300">
-                    A partir de{' '}
+                    {renderTokens(getCopy(ctx, "service.priceHint"))}
                     <span className="font-bold text-primary">
                       {formatCurrency(service.priceInCents)}
                     </span>
@@ -206,10 +188,10 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
             {/* CTA card */}
             <div className="overflow-hidden rounded-2xl bg-primary p-8 shadow-lg md:p-10">
               <h3 className="mb-2 text-xl font-extrabold text-white">
-                Solicite {service.name} em {store.city}
+                {renderTokens(getCopy(ctx, "service.ctaTitle"))}
               </h3>
               <p className="mb-6 text-white/90">
-                Fale agora com a {store.name} e solicite o serviço de {service.name.toLowerCase()}. Atendemos em {store.city} e região com qualidade e profissionalismo.
+                {renderTokens(getCopy(ctx, "service.ctaDesc"))}
               </p>
               <div className="flex flex-col gap-3 sm:flex-row">
                 {store.showWhatsappButton && (
@@ -220,7 +202,7 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
                     className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-7 py-3.5 font-bold text-slate-900 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
                   >
                     <IconBrandWhatsapp className="h-5 w-5" />
-                    Solicitar via WhatsApp
+                    {renderTokens(getCopy(ctx, "service.ctaWhatsapp"))}
                   </a>
                 )}
                 {store.showCallButton && store.phone && (
@@ -229,7 +211,7 @@ export function ServiceDetailContent({ store, service, otherServices, testimonia
                     className="inline-flex items-center justify-center gap-2 rounded-full border-2 border-white/30 px-7 py-3.5 font-bold text-white transition-all hover:bg-white/10"
                   >
                     <IconPhone className="h-5 w-5" />
-                    Ligar para {store.name}
+                    {renderTokens(getCopy(ctx, "service.ctaPhone"))}
                   </a>
                 )}
               </div>

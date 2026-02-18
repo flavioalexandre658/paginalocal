@@ -12,6 +12,11 @@ import { getStoreGrammar } from '@/lib/store-terms'
 const FloatingContact = dynamic(() => import('../_components/floating-contact').then(m => m.FloatingContact))
 const FAQSection = dynamic(() => import('../_components/faq-section').then(m => m.FAQSection))
 
+import { getCopy } from "@/lib/local-copy"
+import { renderTokens } from "@/lib/local-copy/render"
+import type { LocalPageCtx } from "@/lib/local-copy/types"
+
+
 interface PageProps {
   params: Promise<{ slug: string }>
 }
@@ -144,6 +149,18 @@ export default async function SobreNosPage({ params }: PageProps) {
   const { store: storeData, page, services, institutionalPages: activePages } = data
   const g = getStoreGrammar(storeData.termGender, storeData.termNumber)
 
+  const ctx: LocalPageCtx = {
+    id: storeData.id,
+    slug: storeData.slug,
+    mode: storeData.mode,
+    name: storeData.name,
+    category: storeData.category,
+    city: storeData.city,
+    state: storeData.state,
+    servicesCount: services.length,
+  }
+
+
   const baseUrl = buildStoreUrl(storeData.slug, storeData.customDomain)
   const pageUrl = `${baseUrl}/sobre-nos`
 
@@ -241,21 +258,21 @@ export default async function SobreNosPage({ params }: PageProps) {
       <main className="relative py-20 md:py-28 overflow-hidden bg-[#f3f5f7] dark:bg-slate-950/50">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl">
-            {/* Section header */}
             <div className="mb-14 animate-fade-in-up">
               <span className="text-sm font-bold uppercase tracking-widest text-primary">
-                Quem Somos
+                {renderTokens(getCopy(ctx, "aboutPage.kicker"))}
               </span>
+
               <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-                Conheça {g.art} <span className="text-primary">{storeData.name}</span> — {storeData.category} em {storeData.city}
+                {renderTokens(getCopy(ctx, "aboutPage.heading"))}
               </h2>
+
               <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-                {page.content
-                  ? page.content.split('\n').filter(Boolean)[0]
-                  : `${g.Art} ${storeData.name} é ${storeData.category.toLowerCase()} em ${storeData.city}, ${storeData.state}. Atendemos com foco nos resultados do cliente.`
+                {renderTokens(getCopy(ctx, "aboutPage.intro"))
                 }
               </p>
             </div>
+
 
             {page.content && (
               <div className="animate-fade-in-up animation-delay-200 rounded-2xl border-2 border-slate-100 border-l-4 border-l-primary bg-white p-8 md:p-10 shadow-lg dark:border-slate-800 dark:border-l-primary dark:bg-slate-900">
@@ -271,7 +288,7 @@ export default async function SobreNosPage({ params }: PageProps) {
             {services.length > 0 && (
               <div className="mt-8 animate-fade-in-up animation-delay-250">
                 <h3 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">
-                  O que {g.art} {storeData.name} oferece em {storeData.city}
+                  {renderTokens(getCopy(ctx, "aboutPage.servicesTitle"))}
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {services.map(s => (
@@ -290,10 +307,10 @@ export default async function SobreNosPage({ params }: PageProps) {
             {/* CTA block */}
             <div className="mt-8 animate-fade-in-up animation-delay-300 overflow-hidden rounded-2xl bg-primary p-8 shadow-lg md:p-10">
               <h3 className="mb-2 text-xl font-extrabold text-white">
-                Fale com {g.art} {storeData.name} em {storeData.city}
+                {renderTokens(getCopy(ctx, "aboutPage.ctaTitle"))}
               </h3>
               <p className="mb-6 text-white/90">
-                Entre em contato pelo WhatsApp ou telefone. Atendemos {storeData.city} e região com foco no que o cliente precisa.
+                {renderTokens(getCopy(ctx, "aboutPage.ctaLead"))}
               </p>
               <a
                 href={`https://wa.me/55${storeData.whatsapp}?text=${encodeURIComponent(`Olá! Vi o site ${g.da} ${storeData.name} e gostaria de saber mais sobre seus serviços.`)}`}
@@ -301,7 +318,7 @@ export default async function SobreNosPage({ params }: PageProps) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 font-bold text-slate-900 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
               >
-                Falar no WhatsApp
+                {renderTokens(getCopy(ctx, "aboutPage.ctaButton"))}
               </a>
             </div>
           </div>

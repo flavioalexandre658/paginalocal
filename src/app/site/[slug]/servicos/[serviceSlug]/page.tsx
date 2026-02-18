@@ -39,6 +39,7 @@ async function getServiceData(storeSlug: string, serviceSlug: string) {
     .select({
       id: service.id,
       name: service.name,
+      iconName: service.iconName,
       slug: service.slug,
       description: service.description,
       priceInCents: service.priceInCents,
@@ -234,20 +235,20 @@ export default async function ServicePage({ params }: PageProps) {
 
   const faqJsonLd = storeData.faq && Array.isArray(storeData.faq) && (storeData.faq as Array<{ question: string; answer: string }>).length > 0
     ? {
-        '@context': 'https://schema.org',
-        '@type': 'FAQPage',
-        mainEntity: (storeData.faq as Array<{ question: string; answer: string }>)
-          .filter(f => f.question.toLowerCase().includes(serviceData.name.toLowerCase()) || f.question.toLowerCase().includes(storeData.category.toLowerCase()))
-          .slice(0, 3)
-          .map(f => ({
-            '@type': 'Question',
-            name: f.question,
-            acceptedAnswer: {
-              '@type': 'Answer',
-              text: f.answer,
-            },
-          })),
-      }
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: (storeData.faq as Array<{ question: string; answer: string }>)
+        .filter(f => f.question.toLowerCase().includes(serviceData.name.toLowerCase()) || f.question.toLowerCase().includes(storeData.category.toLowerCase()))
+        .slice(0, 3)
+        .map(f => ({
+          '@type': 'Question',
+          name: f.question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: f.answer,
+          },
+        })),
+    }
     : null
 
   return (
@@ -289,6 +290,7 @@ export default async function ServicePage({ params }: PageProps) {
           googleReviewsCount: storeData.googleReviewsCount,
           termGender: storeData.termGender,
           termNumber: storeData.termNumber,
+          coverUrl: storeData.coverUrl,
           mode: storeData.mode,
         }}
         service={{
@@ -315,7 +317,7 @@ export default async function ServicePage({ params }: PageProps) {
         googleBusinessUrl={storeData.googleBusinessUrl}
         highlightText={storeData.highlightText}
         storeSlug={storeData.slug}
-        services={otherServices.map(s => ({ name: s.name, slug: s.slug || '' }))}
+        services={otherServices.map(s => ({ name: s.name, slug: s.slug || '', iconName: s.iconName || null }))}
         institutionalPages={institutionalPages}
         logoUrl={storeData.logoUrl}
       />

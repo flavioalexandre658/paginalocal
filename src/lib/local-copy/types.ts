@@ -13,6 +13,9 @@ export type LocalPageCtx = {
     state: string
 
     servicesCount?: number
+    // ✅ service detail context (opcional)
+    serviceName?: string
+    serviceDesc?: string | null
 }
 
 export type Token =
@@ -81,6 +84,34 @@ export type CopyKey =
     | "plans.intro"
     | "plans.badgePopular"
     | "plans.viewAllCta"
+    // --- ContactPage (page-level) ---
+    | "contactPage.kicker"
+    | "contactPage.heading"
+    | "contactPage.intro"
+    | "contactPage.cardsLead"
+    | "contactPage.whatsTitle"
+    | "contactPage.phoneTitle"
+    | "contactPage.addressTitle"
+    // --- AboutPage (page-level) ---
+    | "aboutPage.kicker"
+    | "aboutPage.heading"
+    | "aboutPage.intro"
+    | "aboutPage.servicesTitle"
+    | "aboutPage.ctaTitle"
+    | "aboutPage.ctaLead"
+    | "aboutPage.ctaButton"
+    // --- Service Detail Page ---
+    | "service.kicker"
+    | "service.heading"
+    | "service.intro"
+    | "service.priceHint"
+    | "service.ctaTitle"
+    | "service.ctaDesc"
+    | "service.ctaWhatsapp"
+    | "service.ctaPhone"
+
+
+
 
 export type VariantFn = (ctx: LocalPageCtx) => TokenLine
 export type ModeCopy = Partial<Record<CopyKey, VariantFn[]>>

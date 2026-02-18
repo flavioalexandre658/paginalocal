@@ -14,6 +14,11 @@ import { getStoreGrammar } from '@/lib/store-terms'
 const FloatingContact = dynamic(() => import('../_components/floating-contact').then(m => m.FloatingContact))
 const FAQSection = dynamic(() => import('../_components/faq-section').then(m => m.FAQSection))
 
+import { getCopy } from "@/lib/local-copy"
+import { renderTokens } from "@/lib/local-copy/render"
+import type { LocalPageCtx } from "@/lib/local-copy/types"
+
+
 interface PageProps {
   params: Promise<{ slug: string }>
 }
@@ -157,6 +162,18 @@ export default async function ContatoPage({ params }: PageProps) {
   const { store: storeData, page, services, institutionalPages: activePages } = data
   const g = getStoreGrammar(storeData.termGender, storeData.termNumber)
 
+  const ctx: LocalPageCtx = {
+    id: storeData.id,
+    slug: storeData.slug,
+    mode: storeData.mode,
+    name: storeData.name,
+    category: storeData.category,
+    city: storeData.city,
+    state: storeData.state,
+    servicesCount: services.length, // opcional
+  }
+
+
   const baseUrl = buildStoreUrl(storeData.slug, storeData.customDomain)
   const pageUrl = `${baseUrl}/contato`
   const whatsappUrl = getWhatsAppUrl(storeData.whatsapp)
@@ -237,31 +254,26 @@ export default async function ContatoPage({ params }: PageProps) {
       <main className="relative py-20 md:py-28 overflow-hidden bg-[#f3f5f7] dark:bg-slate-950/50">
         <div className="container mx-auto px-4">
           <div className="mx-auto max-w-4xl">
-            {/* Section header */}
             <div className="mb-14 animate-fade-in-up">
               <span className="text-sm font-bold uppercase tracking-widest text-primary">
-                Entre em Contato
+                {renderTokens(getCopy(ctx, "contactPage.kicker"))}
               </span>
+
               <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-                Fale com {g.art} <span className="text-primary">{storeData.name}</span> em {storeData.city}
+                {renderTokens(getCopy(ctx, "contactPage.heading"))}
               </h2>
+
               <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
                 {page.content
-                  ? page.content.split('\n').filter(Boolean)[0]
-                  : `Precisa de ${storeData.category.toLowerCase()} em ${storeData.city}? Fale com ${g.art} ${storeData.name} pelo WhatsApp ou telefone. Atendemos ${storeData.city} e região.`
                 }
+              </p>
+
+              {/* opcional */}
+              <p className="mt-4 text-sm text-slate-400 dark:text-slate-500">
+                {renderTokens(getCopy(ctx, "contactPage.cardsLead"))}
               </p>
             </div>
 
-            {page.content && (
-              <div className="mb-10 animate-fade-in-up animation-delay-200 rounded-2xl border-2 border-slate-100 border-l-4 border-l-primary bg-white p-8 shadow-lg dark:border-slate-800 dark:border-l-primary dark:bg-slate-900">
-                <div className="space-y-4">
-                  {page.content.split('\n').filter(Boolean).map((paragraph, i) => (
-                    <p key={i} className="text-lg leading-relaxed text-slate-600 dark:text-slate-300">{paragraph}</p>
-                  ))}
-                </div>
-              </div>
-            )}
 
             <div className="grid gap-4 md:grid-cols-2 animate-fade-in-up animation-delay-300">
               <a
@@ -274,7 +286,10 @@ export default async function ContatoPage({ params }: PageProps) {
                   <IconBrandWhatsapp className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">WhatsApp</p>
+                  <p className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    {renderTokens(getCopy(ctx, "contactPage.whatsTitle"))}
+                  </p>
+
                   <p className="mt-0.5 font-semibold text-slate-800 dark:text-slate-200">{formatPhone(storeData.whatsapp)}</p>
                 </div>
               </a>
@@ -288,7 +303,10 @@ export default async function ContatoPage({ params }: PageProps) {
                     <IconPhone className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Telefone</p>
+                    <p className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                      {renderTokens(getCopy(ctx, "contactPage.phoneTitle"))}
+                    </p>
+
                     <p className="mt-0.5 font-semibold text-slate-800 dark:text-slate-200">{formatPhone(storeData.phone)}</p>
                   </div>
                 </a>
@@ -304,7 +322,9 @@ export default async function ContatoPage({ params }: PageProps) {
                   <IconMapPin className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Endereço</p>
+                  <p className="text-sm font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    {renderTokens(getCopy(ctx, "contactPage.addressTitle"))}
+                  </p>
                   <p className="mt-0.5 font-semibold text-slate-800 dark:text-slate-200">{storeData.address}, {storeData.city} - {storeData.state}</p>
                 </div>
               </a>

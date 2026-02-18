@@ -14,6 +14,9 @@ import { SERVICES_DEFAULT, SERVICES_BY_MODE } from "./sections/services.copy"
 import { TESTIMONIALS_DEFAULT, TESTIMONIALS_BY_MODE } from "./sections/testimonials.copy"
 import { PRODUCTS_DEFAULT, PRODUCTS_BY_MODE } from "./sections/products.copy"
 import { PLANS_DEFAULT, PLANS_BY_MODE } from "./sections/plans.copy"
+import { CONTACT_PAGE_DEFAULT, CONTACT_PAGE_BY_MODE } from "./pages/contact-page.copy"
+import { ABOUT_PAGE_DEFAULT, ABOUT_PAGE_BY_MODE } from "./pages/about-page.copy"
+import { SERVICE_PAGE_DEFAULT, SERVICE_PAGE_BY_MODE } from "./pages/service-page.copy"
 
 // cache por MODE
 const TABLE_CACHE: Partial<Record<StoreMode, ModeCopy>> = {}
@@ -33,7 +36,9 @@ function buildCopyForMode(mode: StoreMode): ModeCopy {
         TESTIMONIALS_DEFAULT, // ✅ ADD
         PRODUCTS_DEFAULT, // ✅ ADD
         PLANS_DEFAULT, // ✅ ADD
-
+        CONTACT_PAGE_DEFAULT, // ✅ ADD
+        ABOUT_PAGE_DEFAULT, // ✅ ADD
+        SERVICE_PAGE_DEFAULT, // ✅ ADD
         // 3) overrides por seção e MODE
         ABOUT_BY_MODE[mode] ?? {},
         AREAS_BY_MODE[mode] ?? {},
@@ -44,6 +49,9 @@ function buildCopyForMode(mode: StoreMode): ModeCopy {
         SERVICES_BY_MODE[mode] ?? {}, // ✅ ADD
         TESTIMONIALS_BY_MODE[mode] ?? {}, // ✅ ADD
         PLANS_BY_MODE[mode] ?? {}, // ✅ ADD
+        CONTACT_PAGE_BY_MODE[mode] ?? {}, // ✅ ADD
+        ABOUT_PAGE_BY_MODE[mode] ?? {}, // ✅ ADD
+        SERVICE_PAGE_BY_MODE[mode] ?? {}, // ✅ ADD
     )
 }
 
@@ -58,7 +66,7 @@ export function getCopy(ctx: LocalPageCtx, key: CopyKey): TokenLine {
     const options = table[key] ?? DEFAULT_COPY[key] ?? [() => [{ t: "text", v: "" }]]
 
     if (process.env.NODE_ENV !== "production" && options.length < 5) {
-        // eslint-disable-next-line no-console
+
         console.warn(
             `[local-copy] key "${key}" em mode "${ctx.mode}" tem só ${options.length} variações (mín 5 recomendado).`
         )

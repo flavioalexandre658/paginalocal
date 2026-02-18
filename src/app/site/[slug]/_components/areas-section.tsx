@@ -65,9 +65,6 @@ export function AreasSection({
             </h2>
 
             <p className="mt-4 text-lg text-slate-500 dark:text-slate-400">
-              {/* Se quiser manter o “g.Art”, você pode encaixar aqui também.
-                  Eu deixei o texto do copy já pronto para funcionar sem quebrar. */}
-              {storeName ? `${g.Art} ${storeName}. ` : ""}
               {renderTokens(getCopy(ctx, "areas.intro"))}
             </p>
           </div>
