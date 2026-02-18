@@ -416,7 +416,7 @@ export default async function ProductPage({ params }: PageProps) {
                 </h2>
                 <div className="space-y-3 text-base leading-relaxed text-slate-600 dark:text-slate-300">
                   <p>
-                    {product.name} disponível na <strong>{storeData.name}</strong>, {storeData.category.toLowerCase()} em {storeData.city}, {storeData.state}.
+                    {product.name} disponível {g.na} <strong>{storeData.name}</strong>, {storeData.category.toLowerCase()} em {storeData.city}, {storeData.state}.
                     {product.description ? ` ${product.description}` : ''}
                   </p>
                   <p>

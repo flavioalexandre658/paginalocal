@@ -280,7 +280,7 @@ export default async function CatalogoPage({ params }: PageProps) {
               <p className={`mb-6 text-lg leading-relaxed ${mutedClass}`}>
                 {storeData.name} · {storeData.category} em {storeData.city}, {storeData.state}
                 {collections.length > 0 && (
-                  <> · {collections.length} {collections.length === 1 ? 'categoria disponível' : 'categorias disponíveis'}</>
+                  <> · {collections.length} {collections.length === 1 ? 'coleção disponível' : 'coleções disponíveis'}</>
                 )}
               </p>
 
@@ -303,10 +303,10 @@ export default async function CatalogoPage({ params }: PageProps) {
                 <div className="mb-10">
                   <h2 className="mb-3 text-2xl font-bold text-slate-900">
                     <IconFolders className="mr-2 inline-block h-6 w-6 text-primary" />
-                    Categorias de {storeData.category} da {storeData.name} em {storeData.city}
+                    Coleções {g.da} {storeData.name} em {storeData.city}
                   </h2>
                   <p className="text-slate-600">
-                    Navegue pelas {collections.length} {collections.length === 1 ? 'categoria' : 'categorias'} de produtos da {storeData.name} em {storeData.city}, {storeData.state}
+                    Navegue pelas coleções de produtos {g.da} {storeData.name} em {storeData.city}, {storeData.state}
                   </p>
                 </div>
 
@@ -381,10 +381,10 @@ export default async function CatalogoPage({ params }: PageProps) {
                 <div className="mb-10">
                   <h2 className="mb-3 text-2xl font-bold text-slate-900 dark:text-white">
                     <IconTag className="mr-2 inline-block h-6 w-6 text-primary" />
-                    Produtos em Destaque — {storeData.name}
+                    Produtos em Destaque {g.da} {storeData.name}
                   </h2>
                   <p className="text-slate-600 dark:text-slate-400">
-                    Seleção especial de produtos da {storeData.name} em {storeData.city}, {storeData.state}
+                    Seleção especial de produtos {g.da} {storeData.name} em {storeData.city}, {storeData.state}
                   </p>
                 </div>
 
@@ -433,9 +433,9 @@ export default async function CatalogoPage({ params }: PageProps) {
                   </h2>
                   <div className="space-y-4 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
                     <p>
-                      A <strong>{storeData.name}</strong>, {storeData.category.toLowerCase()} em {storeData.city}, {storeData.state}, oferece
-                      um catálogo completo com {collections.length} {collections.length === 1 ? 'categoria' : 'categorias'} de
-                      produtos: {collections.map(c => c.name).join(', ')}.
+                      {g.Art} <strong>{storeData.name}</strong>, {storeData.category.toLowerCase()} em {storeData.city}, {storeData.state}, oferece
+                      um catálogo completo com coleções de
+                      produtos:
                     </p>
                     {collections.slice(0, 3).map((col) => (
                       col.seoDescription && (

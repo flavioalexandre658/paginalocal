@@ -10,8 +10,6 @@ import {
   IconGripVertical,
   IconShoppingCart,
   IconFolders,
-  IconChevronUp,
-  IconChevronDown,
 } from '@tabler/icons-react'
 import { Badge } from '@/components/ui/badge'
 import { getProductsAction } from '@/actions/products/get-products.action'
@@ -41,6 +39,28 @@ interface Collection {
   id: string
   name: string
 }
+
+interface ProductImage {
+  url: string
+  alt: string
+  order: number
+}
+interface ProductForEdit {
+  id: string
+  name: string
+  description: string | null
+  priceInCents: number
+  originalPriceInCents: number | null
+  collectionId: string | null
+  ctaMode: 'WHATSAPP' | 'EXTERNAL_LINK'
+  ctaLabel: string | null
+  ctaExternalUrl: string | null
+  ctaWhatsappMessage: string | null
+  status: 'ACTIVE' | 'DRAFT' | 'OUT_OF_STOCK'
+  isFeatured: boolean
+  images: ProductImage[] | null
+}
+
 
 export function ProductsManager({ storeId, onNeedCollection }: ProductsManagerProps) {
   const [products, setProducts] = useState<Product[]>([])
@@ -145,13 +165,12 @@ export function ProductsManager({ storeId, onNeedCollection }: ProductsManagerPr
                     )}
                     <Badge
                       variant="secondary"
-                      className={`text-xs ${
-                        product.status === 'ACTIVE'
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : product.status === 'DRAFT'
+                      className={`text-xs ${product.status === 'ACTIVE'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : product.status === 'DRAFT'
                           ? 'bg-amber-100 text-amber-700'
                           : 'bg-red-100 text-red-700'
-                      }`}
+                        }`}
                     >
                       {product.status === 'ACTIVE' ? 'Ativo' : product.status === 'DRAFT' ? 'Rascunho' : 'Esgotado'}
                     </Badge>
@@ -224,7 +243,7 @@ export function ProductsManager({ storeId, onNeedCollection }: ProductsManagerPr
         open={modalOpen}
         onOpenChange={setModalOpen}
         storeId={storeId}
-        product={editingProduct}
+        product={editingProduct as ProductForEdit | null}
         collections={collections}
         onCreated={handleCreated}
         onUpdated={handleUpdated}
