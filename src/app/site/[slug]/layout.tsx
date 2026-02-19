@@ -5,7 +5,6 @@ import { store } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import { SiteHeader } from './_components/site-header'
 import { getSiteFontUrl, getSiteFontFamily } from '@/lib/font-loader'
-import { FontLoader } from './_components/font-loader'
 
 interface LayoutProps {
   children: ReactNode
@@ -68,16 +67,9 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
 
       {/* Font só carrega se tiver URL válida, e de forma não-bloqueante */}
       {fontUrl && (
-        <>
-          <link rel="preload" as="style" href={fontUrl} />
-          <FontLoader fontUrl={fontUrl} />
-        </>
+        <link rel="stylesheet" href={fontUrl} crossOrigin="anonymous" />
       )}
 
-      {/* Fallback para font-display via inline style */}
-      <style dangerouslySetInnerHTML={{
-        __html: `@font-face{font-display:swap;}`
-      }} />
 
       {/* Preload cover image com prioridade 
       {data?.coverUrl && (
