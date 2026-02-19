@@ -4,6 +4,7 @@ import { stripe, STRIPE_WEBHOOK_SECRET } from '@/lib/stripe'
 import { db } from '@/db'
 import { subscription, plan, store, category, storeTransfer } from '@/db/schema'
 import { eq, desc, and, inArray } from 'drizzle-orm'
+import { getOrCreateUserByEmail, createActivationToken, buildActivationUrl } from '@/lib/checkout-helpers'
 import type Stripe from 'stripe'
 import type { SubscriptionStatus } from '@/db/schema'
 import { notifyStoreActivated, notifyStoreDeactivated } from '@/lib/google-indexing'
@@ -108,16 +109,41 @@ function getSubscriptionPeriodDates(sub: Stripe.Subscription) {
 }
 
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-  const { userId, planId, billingInterval, storeSlug } = session.metadata || {}
+  const { planId, billingInterval, storeSlug } = session.metadata || {}
 
-  if (!userId || !planId || !billingInterval) {
-    console.error('Missing metadata in checkout session')
+  if (!planId || !billingInterval) {
+    console.error('[Webhook] Missing planId or billingInterval in checkout session metadata')
     return
   }
 
-  const stripeSubscription = await stripe.subscriptions.retrieve(
-    session.subscription as string
-  )
+  const stripeSubscriptionId = session.subscription as string
+
+  const [alreadyProcessed] = await db
+    .select({ id: subscription.id })
+    .from(subscription)
+    .where(eq(subscription.stripeSubscriptionId, stripeSubscriptionId))
+    .limit(1)
+
+  if (alreadyProcessed) {
+    console.log(`[Webhook] Subscription ${stripeSubscriptionId} already processed, skipping`)
+    return
+  }
+
+  let resolvedUserId = session.metadata?.userId
+  let isNewUser = false
+
+  if (!resolvedUserId) {
+    const email = session.customer_details?.email
+    if (!email) {
+      console.error('[Webhook] No userId in metadata and no email in customer_details')
+      return
+    }
+    const resolved = await getOrCreateUserByEmail(email, session.customer_details?.name)
+    resolvedUserId = resolved.id
+    isNewUser = resolved.isNew
+  }
+
+  const stripeSubscription = await stripe.subscriptions.retrieve(stripeSubscriptionId)
 
   const [selectedPlan] = await db
     .select()
@@ -126,15 +152,15 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     .limit(1)
 
   if (!selectedPlan) {
-    console.error('Plan not found:', planId)
+    console.error('[Webhook] Plan not found:', planId)
     return
   }
 
   const periodDates = getSubscriptionPeriodDates(stripeSubscription)
 
-  const subscriptionData = {
-    userId: userId,
-    planId: planId,
+  await db.insert(subscription).values({
+    userId: resolvedUserId,
+    planId,
     status: 'ACTIVE' as SubscriptionStatus,
     billingInterval: billingInterval as 'MONTHLY' | 'YEARLY',
     stripeCustomerId: session.customer as string,
@@ -144,9 +170,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     currentPeriodEnd: periodDates.currentPeriodEnd,
     aiRewritesUsedThisMonth: 0,
     aiRewritesResetAt: getNextMonthReset(),
-  }
-
-  await db.insert(subscription).values(subscriptionData)
+  })
 
   const maxStores = selectedPlan.features.maxStores
 
@@ -158,22 +182,18 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         .where(eq(store.slug, storeSlug))
         .limit(1)
 
-      if (storeToTransfer && storeToTransfer.userId !== userId) {
+      if (storeToTransfer && storeToTransfer.userId !== resolvedUserId) {
         const fromUserId = storeToTransfer.userId
 
         await db
           .update(store)
-          .set({
-            userId: userId,
-            isActive: true,
-            updatedAt: new Date(),
-          })
+          .set({ userId: resolvedUserId, isActive: true, updatedAt: new Date() })
           .where(eq(store.id, storeToTransfer.id))
 
         await db.insert(storeTransfer).values({
           storeId: storeToTransfer.id,
           fromUserId,
-          toUserId: userId,
+          toUserId: resolvedUserId,
           adminId: fromUserId,
           wasActivated: true,
         })
@@ -195,9 +215,9 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           console.error(`[Webhook] Error indexing transferred store "${storeSlug}":`, indexError)
         }
 
-        console.log(`[Webhook] Store "${storeSlug}" auto-transferred to user ${userId}`)
+        console.log(`[Webhook] Store "${storeSlug}" transferred to user ${resolvedUserId}`)
       } else if (storeToTransfer) {
-        console.log(`[Webhook] Store "${storeSlug}" already belongs to user ${userId}, skipping transfer`)
+        console.log(`[Webhook] Store "${storeSlug}" already belongs to user ${resolvedUserId}, skipping transfer`)
       } else {
         console.error(`[Webhook] Store "${storeSlug}" not found for auto-transfer`)
       }
@@ -206,9 +226,15 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }
   }
 
-  await syncUserStoresWithPlanLimit(userId, maxStores)
+  await syncUserStoresWithPlanLimit(resolvedUserId, maxStores)
 
-  console.log(`Subscription created for user ${userId} with plan ${selectedPlan.name} (max stores: ${maxStores})`)
+  if (isNewUser) {
+    const email = session.customer_details!.email!
+    const raw = await createActivationToken(email)
+    console.log(`[Onboarding] Link de ativação para ${email}: ${buildActivationUrl(raw)}`)
+  }
+
+  console.log(`[Webhook] Subscription created for user ${resolvedUserId} with plan ${selectedPlan.name} (max stores: ${maxStores})`)
 }
 
 async function handleSubscriptionCreated(stripeSubscription: Stripe.Subscription) {

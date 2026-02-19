@@ -8,6 +8,8 @@ import {
   IconLayoutDashboard,
   IconUsers,
   IconMenu2,
+  IconCategory,
+  IconLink,
 } from '@tabler/icons-react'
 import { useState } from 'react'
 import { LogoutButton } from '@/components/auth/logout-button'
@@ -24,6 +26,8 @@ const MOBILE_NAV = [
   { href: '/admin', label: 'Dashboard', icon: IconLayoutDashboard },
   { href: '/admin/usuarios', label: 'Usuários', icon: IconUsers },
   { href: '/admin/lojas', label: 'Lojas', icon: IconBuildingStore },
+  { href: '/admin/categorias', label: 'Categorias', icon: IconCategory },
+  { href: '/admin/vendas', label: 'Vendas', icon: IconLink },
 ]
 
 export function AdminHeader({ userName }: AdminHeaderProps) {

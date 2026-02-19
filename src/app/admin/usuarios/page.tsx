@@ -12,9 +12,12 @@ import {
   IconMail,
   IconPhone,
   IconCrown,
+  IconKey,
+  IconLoader2,
 } from '@tabler/icons-react'
 
 import { getAdminUsersAction } from '@/actions/admin/get-admin-users.action'
+import { generateActivationLinkAction } from '@/actions/admin/generate-activation-link.action'
 import { Badge } from '@/components/ui/badge'
 import {
   DataTableRoot,
@@ -70,6 +73,35 @@ function getRoleBadge(role: string | null) {
     return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-400">Admin</Badge>
   }
   return <Badge variant="secondary">Usuário</Badge>
+}
+
+function CopyActivationLinkButton({ userId }: { userId: string }) {
+  const { executeAsync, isExecuting } = useAction(generateActivationLinkAction)
+
+  async function handleCopy() {
+    const res = await executeAsync({ userId })
+    if (res?.data?.url) {
+      await navigator.clipboard.writeText(res.data.url)
+      toast.success('Link de ativação copiado!')
+    } else {
+      toast.error('Erro ao gerar link de ativação')
+    }
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      disabled={isExecuting}
+      title="Copiar link de ativação de senha"
+      className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-amber-50 hover:text-amber-600 disabled:opacity-50 dark:hover:bg-amber-950 dark:hover:text-amber-400"
+    >
+      {isExecuting ? (
+        <IconLoader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <IconKey className="h-4 w-4" />
+      )}
+    </button>
+  )
 }
 
 function getUserInitials(name: string) {
@@ -152,6 +184,7 @@ const columns: ColumnDef<AdminUser>[] = [
         >
           <IconBuildingStore className="h-4 w-4" />
         </Link>
+        <CopyActivationLinkButton userId={row.original.id} />
       </DataTableRowActions>
     ),
   },
@@ -273,6 +306,7 @@ export default function AdminUsersPage() {
                           >
                             <IconBuildingStore className="h-4 w-4" />
                           </Link>
+                          <CopyActivationLinkButton userId={user.id} />
                         </div>
                       }
                     >
