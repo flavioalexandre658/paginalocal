@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import toast from 'react-hot-toast'
 import { useAction } from 'next-safe-action/hooks'
 import {
@@ -15,13 +15,17 @@ import {
   IconBrandWhatsapp,
   IconExternalLink,
   IconCreditCard,
+  IconBuildingStore,
+  IconSearch,
+  IconX,
+  IconChevronDown,
 } from '@tabler/icons-react'
 
 import { getAdminPlansAction } from '@/actions/admin/get-admin-plans.action'
+import { getAdminStoresAction } from '@/actions/admin/get-admin-stores.action'
 import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardDescription } from '@/components/ui/glass-card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -39,6 +43,233 @@ import {
   FormDescription,
 } from '@/components/ui/form'
 import { cn } from '@/lib/utils'
+
+interface StoreOption {
+  id: string
+  name: string
+  slug: string
+  city: string
+  state: string
+  isActive: boolean
+}
+
+function getInitials(name: string) {
+  return name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+}
+
+function StorePicker({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (slug: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [stores, setStores] = useState<StoreOption[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [selectedStore, setSelectedStore] = useState<StoreOption | null>(null)
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({})
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLInputElement>(null)
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+
+  const { executeAsync } = useAction(getAdminStoresAction)
+
+  const fetchStores = useCallback(async (q: string) => {
+    setIsLoading(true)
+    const res = await executeAsync({ search: q || undefined, limit: 30, page: 1 })
+    if (res?.data?.stores) {
+      setStores(res.data.stores as StoreOption[])
+    }
+    setIsLoading(false)
+  }, [executeAsync])
+
+  const updateDropdownPosition = useCallback(() => {
+    if (!triggerRef.current) return
+    const rect = triggerRef.current.getBoundingClientRect()
+    setDropdownStyle({
+      position: 'fixed',
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+    })
+  }, [])
+
+  useEffect(() => {
+    if (open) {
+      updateDropdownPosition()
+      fetchStores('')
+      setTimeout(() => searchRef.current?.focus(), 50)
+    }
+  }, [open, fetchStores, updateDropdownPosition])
+
+  useEffect(() => {
+    if (!open) return
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => fetchStores(search), 300)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [search, open, fetchStores])
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      const target = e.target as Node
+      if (
+        triggerRef.current?.contains(target) ||
+        dropdownRef.current?.contains(target)
+      ) return
+      setOpen(false)
+    }
+    function handleScroll() { if (open) updateDropdownPosition() }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    window.addEventListener('scroll', handleScroll, true)
+    window.addEventListener('resize', updateDropdownPosition)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      window.removeEventListener('scroll', handleScroll, true)
+      window.removeEventListener('resize', updateDropdownPosition)
+    }
+  }, [open, updateDropdownPosition])
+
+  function handleSelect(store: StoreOption) {
+    setSelectedStore(store)
+    onChange(store.slug)
+    setOpen(false)
+    setSearch('')
+  }
+
+  function handleClear(e: React.MouseEvent) {
+    e.stopPropagation()
+    setSelectedStore(null)
+    onChange('')
+  }
+
+  return (
+    <>
+      {/* Trigger */}
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={cn(
+          'flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm transition-colors',
+          'border-slate-200 bg-white hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:hover:bg-slate-800',
+          open && 'border-primary/50 ring-2 ring-primary/10',
+        )}
+      >
+        {selectedStore ? (
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-gradient-to-br from-primary/20 to-primary/5 text-[10px] font-bold text-primary">
+              {getInitials(selectedStore.name)}
+            </div>
+            <span className="truncate font-medium text-slate-900 dark:text-white">
+              {selectedStore.name}
+            </span>
+            <span className="ml-1 shrink-0 font-mono text-xs text-slate-400">
+              {selectedStore.slug}
+            </span>
+          </div>
+        ) : (
+          <span className="text-slate-400">Selecionar loja (opcional)...</span>
+        )}
+        <div className="ml-2 flex shrink-0 items-center gap-1">
+          {selectedStore && (
+            <span
+              role="button"
+              onClick={handleClear}
+              className="rounded p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700"
+            >
+              <IconX className="h-3.5 w-3.5" />
+            </span>
+          )}
+          <IconChevronDown className={cn('h-4 w-4 text-slate-400 transition-transform', open && 'rotate-180')} />
+        </div>
+      </button>
+
+      {/* Dropdown — rendered via fixed positioning to escape stacking contexts */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            ref={dropdownRef}
+            style={dropdownStyle}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="z-[9999] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
+          >
+            {/* Search */}
+            <div className="border-b border-slate-100 p-2 dark:border-slate-800">
+              <div className="relative">
+                <IconSearch className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  ref={searchRef}
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar por nome ou slug..."
+                  className="h-8 w-full rounded-md bg-slate-50 pl-8 pr-3 text-sm outline-none placeholder:text-slate-400 focus:bg-slate-100 dark:bg-slate-800 dark:focus:bg-slate-700"
+                />
+              </div>
+            </div>
+
+            {/* List */}
+            <div className="max-h-64 overflow-y-auto">
+              {isLoading ? (
+                <div className="flex items-center justify-center gap-2 py-6 text-sm text-slate-400">
+                  <IconLoader2 className="h-4 w-4 animate-spin" />
+                  Carregando...
+                </div>
+              ) : stores.length === 0 ? (
+                <div className="py-6 text-center text-sm text-slate-400">
+                  Nenhuma loja encontrada
+                </div>
+              ) : (
+                stores.map((store) => (
+                  <button
+                    key={store.id}
+                    type="button"
+                    onClick={() => handleSelect(store)}
+                    className={cn(
+                      'flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800',
+                      selectedStore?.id === store.id && 'bg-primary/5 dark:bg-primary/10',
+                    )}
+                  >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 text-xs font-bold text-primary">
+                      {getInitials(store.name)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-slate-900 dark:text-white">
+                        {store.name}
+                      </p>
+                      <p className="truncate font-mono text-xs text-slate-400">
+                        {store.slug}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      {store.isActive ? (
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      ) : (
+                        <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                      )}
+                      <span className="text-[10px] text-slate-400">
+                        {store.city}/{store.state}
+                      </span>
+                      {selectedStore?.id === store.id && (
+                        <IconCheck className="h-3.5 w-3.5 text-primary" />
+                      )}
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  )
+}
 
 function formatCurrency(cents: number) {
   return new Intl.NumberFormat('pt-BR', {
@@ -250,21 +481,21 @@ export default function VendasPage() {
                   )}
                 />
 
-                {/* Store slug (optional) */}
+                {/* Store picker (optional) */}
                 <FormField
                   control={form.control}
                   name="storeSlug"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Slug da loja (opcional)</FormLabel>
+                      <FormLabel>Loja (opcional)</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="ex: borracharia-silva-guarulhos"
-                          {...field}
+                        <StorePicker
+                          value={field.value ?? ''}
+                          onChange={field.onChange}
                         />
                       </FormControl>
                       <FormDescription>
-                        Se preenchido, a loja será ativada e transferida ao cliente
+                        Se selecionada, a loja será ativada e transferida ao cliente
                         automaticamente após o pagamento.
                       </FormDescription>
                       <FormMessage />

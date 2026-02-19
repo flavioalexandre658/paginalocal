@@ -22,6 +22,8 @@ import {
   IconRefresh,
   IconDotsVertical,
   IconWorldWww,
+  IconCopy,
+  IconCheck,
 } from '@tabler/icons-react'
 
 import { getAdminStoresAction } from '@/actions/admin/get-admin-stores.action'
@@ -96,6 +98,33 @@ interface AdminStore {
   ownerEmail: string
   ownerPhone: string | null
   ownerPlan: string | null
+}
+
+function CopySlug({ slug }: { slug: string }) {
+  const [copied, setCopied] = useState(false)
+
+  function handleCopy(e: React.MouseEvent) {
+    e.stopPropagation()
+    navigator.clipboard.writeText(slug)
+    setCopied(true)
+    toast.success(`Slug copiado: ${slug}`)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      title="Copiar slug"
+      className="group/slug flex items-center gap-1 text-xs text-slate-500 transition-colors hover:text-primary"
+    >
+      <span className="truncate max-w-[120px]">{slug}</span>
+      {copied ? (
+        <IconCheck className="h-3 w-3 shrink-0 text-emerald-500" />
+      ) : (
+        <IconCopy className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover/slug:opacity-100" />
+      )}
+    </button>
+  )
 }
 
 function getStoreInitials(name: string) {
@@ -329,7 +358,7 @@ export default function AdminStoresPage() {
           </div>
           <div className="min-w-0">
             <p className="truncate font-medium text-slate-900 dark:text-white">{row.original.name}</p>
-            <p className="truncate text-xs text-slate-500">{row.original.slug}</p>
+            <CopySlug slug={row.original.slug} />
           </div>
         </div>
       ),
@@ -535,7 +564,7 @@ export default function AdminStoresPage() {
                       />
                       <MobileCardTitle
                         title={storeItem.name}
-                        subtitle={storeItem.slug}
+                        subtitle={<CopySlug slug={storeItem.slug} />}
                         badge={
                           storeItem.isActive ? (
                             <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400 text-[10px] px-1.5 py-0">
