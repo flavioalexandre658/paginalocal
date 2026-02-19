@@ -69,7 +69,7 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
       )}
 
 
-      {/* Preload cover image com prioridade */}
+      {/* Preload cover image com prioridade 
       {data?.coverUrl && (
         <>
           <link
@@ -87,9 +87,8 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
             fetchPriority="high"
           />
         </>
-      )}
-
-      {/* Preload logo se existir */}
+      )}*/}
+      {/* Preload logo se existir 
       {data?.logoUrl && (
         <link
           rel="preload"
@@ -97,7 +96,7 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
           href={`/_next/image?url=${encodeURIComponent(data.logoUrl)}&w=256&q=75`}
           fetchPriority="high"
         />
-      )}
+      )}*/}
 
       <div
         className="relative w-full max-w-full min-h-screen overflow-hidden bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950"
