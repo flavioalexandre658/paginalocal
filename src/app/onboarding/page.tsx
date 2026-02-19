@@ -192,9 +192,13 @@ export default function OnboardingPage() {
         setStep('setup-content')
         toast.success('Site criado! Agora vamos configurar seu conteúdo.')
       } else {
-        setStep('complete')
-        setShowConfetti(true)
         toast.success('Site criado com sucesso!')
+        if (result.data.isActive) {
+          setStep('complete')
+          setShowConfetti(true)
+        } else {
+          router.push(getStoreUrl(result.data.slug))
+        }
       }
     }
   }
@@ -294,8 +298,12 @@ export default function OnboardingPage() {
               storeName={createdStore.name}
               mode={selectedMode}
               onComplete={() => {
-                setStep('complete')
-                setShowConfetti(true)
+                if (createdStore.isActive) {
+                  setStep('complete')
+                  setShowConfetti(true)
+                } else {
+                  router.push(getStoreUrl(createdStore.slug))
+                }
               }}
             />
           )}
@@ -305,7 +313,6 @@ export default function OnboardingPage() {
               key="complete"
               place={selectedPlace}
               storeSlug={createdStore.slug}
-              isActive={createdStore.isActive}
             />
           )}
         </AnimatePresence>
@@ -1396,7 +1403,7 @@ function CreatingStep({
   )
 }
 
-function CompleteStep({ place, storeSlug, isActive }: { place: PlaceResult; storeSlug: string; isActive?: boolean }) {
+function CompleteStep({ place, storeSlug }: { place: PlaceResult; storeSlug: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -1414,14 +1421,11 @@ function CompleteStep({ place, storeSlug, isActive }: { place: PlaceResult; stor
       </motion.div>
 
       <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
-        {isActive ? 'Seu site está ativo!' : 'Seu site está pronto!'}
+        Seu site está ativo!
       </h1>
 
       <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 md:mt-3 md:text-base">
-        {isActive
-          ? `O site de ${place.name} já pode ser acessado por seus clientes`
-          : `Falta só um passo para ${place.name} ficar visível para seus clientes`
-        }
+        O site de {place.name} já pode ser acessado por seus clientes
       </p>
 
       <motion.div
@@ -1430,30 +1434,16 @@ function CompleteStep({ place, storeSlug, isActive }: { place: PlaceResult; stor
         transition={{ delay: 0.4 }}
         className="mt-6 flex flex-col gap-3 md:mt-8"
       >
-        {/* CTA Principal - Ativar ou Ir para Painel */}
-        {isActive ? (
-          <Link href={`/painel/${storeSlug}`}>
-            <Button
-              size="lg"
-              className="h-12 w-full gap-2 cursor-pointer text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 md:h-14 md:gap-3 md:text-lg"
-            >
-              <IconBuildingStore className="h-5 w-5 md:h-6 md:w-6" />
-              Ir para o painel
-            </Button>
-          </Link>
-        ) : (
-          <Link href={`/planos?plan=essencial&store=${storeSlug}`}>
-            <Button
-              size="lg"
-              className="h-12 w-full gap-2 cursor-pointer text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 md:h-14 md:gap-3 md:text-lg"
-            >
-              <IconRocket className="h-5 w-5 md:h-6 md:w-6" />
-              Ativar meu site por R$59,90
-            </Button>
-          </Link>
-        )}
+        <Link href={`/painel/${storeSlug}`}>
+          <Button
+            size="lg"
+            className="h-12 w-full gap-2 cursor-pointer text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 md:h-14 md:gap-3 md:text-lg"
+          >
+            <IconBuildingStore className="h-5 w-5 md:h-6 md:w-6" />
+            Ir para o painel
+          </Button>
+        </Link>
 
-        {/* CTA Secundário - Preview */}
         <Link href={getStoreUrl(storeSlug)} target="_blank">
           <Button
             variant="outline"
@@ -1466,7 +1456,6 @@ function CompleteStep({ place, storeSlug, isActive }: { place: PlaceResult; stor
         </Link>
       </motion.div>
 
-      {/* Micro-copy opcional */}
       <p className="mt-4 text-xs text-slate-400 dark:text-slate-500 md:mt-5">
         Você poderá editar tudo depois no painel
       </p>
