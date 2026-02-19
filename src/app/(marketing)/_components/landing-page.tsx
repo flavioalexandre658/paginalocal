@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import { useRef, useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import { motion, useInView } from 'framer-motion'
+import { useRef, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { motion, useInView } from "framer-motion";
 import {
   IconRocket,
   IconSparkles,
@@ -35,21 +35,20 @@ import {
   IconPercentage,
   IconWorld,
   IconTag,
-
   IconBrandGoogle,
   IconBrandInstagram,
   IconPhone,
   IconMessageCircle,
   IconTrendingUp,
-} from '@tabler/icons-react'
-import { cn } from '@/lib/utils'
-import { trackWhatsAppClick } from '@/lib/tracking'
-import { MarketingHeader } from './marketing-header'
-import { MarketingFooter } from './marketing-footer'
+} from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
+import { trackWhatsAppClick } from "@/lib/tracking";
+import { MarketingHeader } from "./marketing-header";
+import { MarketingFooter } from "./marketing-footer";
 
 interface LandingPageProps {
-  isLoggedIn?: boolean
-  hasSubscription?: boolean
+  isLoggedIn?: boolean;
+  hasSubscription?: boolean;
 }
 
 const revealVariants = {
@@ -57,55 +56,67 @@ const revealVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const }
-  }
-}
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
 
 const staggerContainer = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.1 }
-  }
-}
+    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+  },
+};
 
 const staggerItem = {
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }
-  }
-}
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
 
-function ScrollReveal({ children, className }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
+function ScrollReveal({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
     <motion.div
       ref={ref}
       initial="hidden"
-      animate={isInView ? 'visible' : 'hidden'}
+      animate={isInView ? "visible" : "hidden"}
       variants={revealVariants}
       className={className}
     >
       {children}
     </motion.div>
-  )
+  );
 }
 
-const WHATSAPP_URL = `https://wa.me/55${process.env.NEXT_PUBLIC_SUPPORT_NUMBER || '73981269904'}?text=${encodeURIComponent('Olá! Quero saber mais sobre o site para meu negócio.')}`
+const WHATSAPP_URL = `https://wa.me/55${process.env.NEXT_PUBLIC_SUPPORT_NUMBER || "73981269904"}?text=${encodeURIComponent("Olá! Quero saber mais sobre o site para meu negócio.")}`;
 
-export function LandingPage({ isLoggedIn = false, hasSubscription = false }: LandingPageProps) {
-  const searchParams = useSearchParams()
-  const shouldRedirectToWhatsApp = searchParams.get('wpp') === 'true'
+export function LandingPage({
+  isLoggedIn = false,
+  hasSubscription = false,
+}: LandingPageProps) {
+  const searchParams = useSearchParams();
+  const shouldRedirectToWhatsApp = searchParams.get("wpp") === "true";
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
-      <MarketingHeader isLoggedIn={isLoggedIn} hasSubscription={hasSubscription} />
+      <MarketingHeader
+        isLoggedIn={isLoggedIn}
+        hasSubscription={hasSubscription}
+      />
       <HeroSection shouldRedirectToWhatsApp={shouldRedirectToWhatsApp} />
       <SocialProofBar />
       <StepsSection />
@@ -116,18 +127,26 @@ export function LandingPage({ isLoggedIn = false, hasSubscription = false }: Lan
       <NichesSection />
       <CTASection shouldRedirectToWhatsApp={shouldRedirectToWhatsApp} />
       <MarketingFooter />
-      <FloatingWhatsAppButton shouldRedirectToWhatsApp={shouldRedirectToWhatsApp} />
+      <FloatingWhatsAppButton
+        shouldRedirectToWhatsApp={shouldRedirectToWhatsApp}
+      />
     </main>
-  )
+  );
 }
 
-function HeroSection({ shouldRedirectToWhatsApp }: { shouldRedirectToWhatsApp: boolean }) {
+function HeroSection({
+  shouldRedirectToWhatsApp,
+}: {
+  shouldRedirectToWhatsApp: boolean;
+}) {
   const primaryCTAUrl = shouldRedirectToWhatsApp
     ? WHATSAPP_URL
-    : `${process.env.NEXT_PUBLIC_APP_URL}/cadastro`
+    : `${process.env.NEXT_PUBLIC_APP_URL}/cadastro`;
 
-  const primaryCTATarget = shouldRedirectToWhatsApp ? '_blank' : undefined
-  const primaryCTARel = shouldRedirectToWhatsApp ? 'noopener noreferrer' : undefined
+  const primaryCTATarget = shouldRedirectToWhatsApp ? "_blank" : undefined;
+  const primaryCTARel = shouldRedirectToWhatsApp
+    ? "noopener noreferrer"
+    : undefined;
 
   return (
     <section id="hero" className="relative py-20 md:py-32">
@@ -136,23 +155,20 @@ function HeroSection({ shouldRedirectToWhatsApp }: { shouldRedirectToWhatsApp: b
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary"
+          className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-bold text-primary border border-primary/20"
         >
           <IconSparkles className="h-4 w-4" />
-          Seu site pronto em poucos minutos
+          ESPECIALISTA EM NEGÓCIOS LOCAIS
         </motion.div>
 
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="mx-auto max-w-4xl text-4xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-5xl lg:text-6xl"
+          className="mx-auto max-w-4xl text-4xl font-normal tracking-tight text-slate-900 dark:text-white md:text-5xl lg:text-6xl"
         >
-          Seu negócio no topo do Google.
-          <br />
-          <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            Clientes no WhatsApp.
-          </span>
+          Seu negócio na primeira página do{" "}
+          <span className="text-primary font-black">Google da sua cidade.</span>
         </motion.h1>
 
         <motion.p
@@ -161,11 +177,10 @@ function HeroSection({ shouldRedirectToWhatsApp }: { shouldRedirectToWhatsApp: b
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mx-auto mt-6 max-w-2xl text-lg text-slate-500 dark:text-slate-400"
         >
-          Tenha um site profissional com SEO nativo, otimizado para sua cidade
-          e feito para converter visitantes em contatos pelo WhatsApp.
-          Nós fazemos tudo por você.
+          Criamos sites focados em <strong>Google Local</strong>, otimizados
+          para sua região e prontos para transformar buscas locais em mensagens
+          no WhatsApp todos os dias.
         </motion.p>
-
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -176,7 +191,9 @@ function HeroSection({ shouldRedirectToWhatsApp }: { shouldRedirectToWhatsApp: b
             href={primaryCTAUrl}
             target={primaryCTATarget}
             rel={primaryCTARel}
-            onClick={() => shouldRedirectToWhatsApp && trackWhatsAppClick('hero')}
+            onClick={() =>
+              shouldRedirectToWhatsApp && trackWhatsAppClick("hero")
+            }
             className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
           >
             {shouldRedirectToWhatsApp ? (
@@ -206,22 +223,23 @@ function HeroSection({ shouldRedirectToWhatsApp }: { shouldRedirectToWhatsApp: b
           transition={{ duration: 0.6, delay: 0.5 }}
           className="mt-8 text-sm text-slate-400"
         >
-          <span className="font-semibold text-primary">+200 negócios</span> já faturam mais com Página Local
+          <span className="font-semibold text-primary">+200 negócios</span> já
+          faturam mais com Página Local
         </motion.p>
       </div>
     </section>
-  )
+  );
 }
 
 function SocialProofBar() {
   const niches = [
-    { icon: IconEngine, name: 'Oficinas' },
-    { icon: IconScissors, name: 'Salões' },
-    { icon: IconDog, name: 'Pet Shops' },
-    { icon: IconToolsKitchen2, name: 'Restaurantes' },
-    { icon: IconBarbell, name: 'Academias' },
-    { icon: IconStethoscope, name: 'Clínicas' },
-  ]
+    { icon: IconEngine, name: "Oficinas" },
+    { icon: IconScissors, name: "Salões" },
+    { icon: IconDog, name: "Pet Shops" },
+    { icon: IconToolsKitchen2, name: "Restaurantes" },
+    { icon: IconBarbell, name: "Academias" },
+    { icon: IconStethoscope, name: "Clínicas" },
+  ];
 
   return (
     <div className="border-y border-slate-200/40 bg-slate-50/50 py-6 dark:border-slate-700/40 dark:bg-slate-900/50">
@@ -245,44 +263,49 @@ function SocialProofBar() {
             transition={{ duration: 0.4, delay: 0.6 }}
             className="flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5"
           >
-            <span className="text-sm font-semibold text-primary">+2.000 confiam</span>
+            <span className="text-sm font-semibold text-primary">
+              +2.000 confiam
+            </span>
           </motion.div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function StepsSection() {
   const steps = [
     {
-      number: '01',
+      number: "01",
       icon: IconBrandGoogle,
-      title: 'Busque seu negócio',
-      description: 'Digite o nome da sua empresa e nós encontramos suas fotos, avaliações e endereço no Google.',
-      color: 'from-blue-500/20 to-blue-500/5',
-      iconColor: 'text-blue-500',
+      title: "Busque seu negócio",
+      description:
+        "Digite o nome da sua empresa e nós encontramos suas fotos, avaliações e endereço no Google.",
+      color: "from-blue-500/20 to-blue-500/5",
+      iconColor: "text-blue-500",
     },
     {
-      number: '02',
+      number: "02",
       icon: IconSparkles,
-      title: 'Nossa IA cria seu site',
-      description: 'Seu site será criado com SEO otimizado para sua cidade e seu nicho.',
-      color: 'from-amber-500/20 to-amber-500/5',
-      iconColor: 'text-amber-500',
+      title: "Nossa IA cria seu site",
+      description:
+        "Seu site será criado com SEO otimizado para sua cidade e seu nicho.",
+      color: "from-amber-500/20 to-amber-500/5",
+      iconColor: "text-amber-500",
     },
     {
-      number: '03',
+      number: "03",
       icon: IconRocket,
-      title: 'Ative seu site',
-      description: 'Escolha um plano e coloque seu site no ar para começar a receber clientes.',
-      color: 'from-emerald-500/20 to-emerald-500/5',
-      iconColor: 'text-emerald-500',
+      title: "Ative seu site",
+      description:
+        "Escolha um plano e coloque seu site no ar para começar a receber clientes.",
+      color: "from-emerald-500/20 to-emerald-500/5",
+      iconColor: "text-emerald-500",
     },
-  ]
+  ];
 
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
     <section id="como-funciona" className="relative py-24">
@@ -296,14 +319,15 @@ function StepsSection() {
             Você fala, nós fazemos
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
-            Sem código, sem designer, sem complicação. Conte sobre seu negócio e receba seu site pronto em poucos minutos.
+            Sem código, sem designer, sem complicação. Conte sobre seu negócio e
+            receba seu site pronto em poucos minutos.
           </p>
         </ScrollReveal>
 
         <motion.div
           ref={ref}
           initial="hidden"
-          animate={isInView ? 'visible' : 'hidden'}
+          animate={isInView ? "visible" : "hidden"}
           variants={staggerContainer}
           className="grid gap-8 md:grid-cols-3"
         >
@@ -318,11 +342,13 @@ function StepsSection() {
                   {step.number}
                 </div>
 
-                <div className={cn(
-                  'mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg',
-                  step.color,
-                  step.iconColor
-                )}>
+                <div
+                  className={cn(
+                    "mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg",
+                    step.color,
+                    step.iconColor,
+                  )}
+                >
                   <step.icon className="h-7 w-7" />
                 </div>
 
@@ -342,7 +368,7 @@ function StepsSection() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
 
 function BeforeAfterSection() {
@@ -360,7 +386,8 @@ function BeforeAfterSection() {
             Sem site, sem clientes
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
-            Veja a diferença entre quem tem um site profissional e quem ainda não aparece no Google
+            Veja a diferença entre quem tem um site profissional e quem ainda
+            não aparece no Google
           </p>
         </ScrollReveal>
 
@@ -420,8 +447,10 @@ function BeforeAfterSection() {
                       <div className="h-3 w-3 rounded-full bg-emerald-500" />
                       <div className="h-2 w-32 rounded bg-slate-300" />
                       <div className="ml-auto flex text-amber-400">
-                        {'★★★★★'.split('').map((_, i) => (
-                          <span key={i} className="text-xs">★</span>
+                        {"★★★★★".split("").map((_, i) => (
+                          <span key={i} className="text-xs">
+                            ★
+                          </span>
                         ))}
                       </div>
                     </div>
@@ -443,7 +472,9 @@ function BeforeAfterSection() {
 
                   <div className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500 p-3 text-white shadow-lg shadow-emerald-500/30">
                     <IconBrandWhatsapp className="h-5 w-5" />
-                    <span className="font-semibold">Cliente entrou em contato!</span>
+                    <span className="font-semibold">
+                      Cliente entrou em contato!
+                    </span>
                   </div>
                 </div>
 
@@ -461,19 +492,19 @@ function BeforeAfterSection() {
         </ScrollReveal>
       </div>
     </section>
-  )
+  );
 }
 
 function PageSpeedSection() {
   const metrics = [
-    { name: 'Performance', score: 95, icon: IconGauge },
-    { name: 'Acessibilidade', score: 100, icon: IconShieldCheck },
-    { name: 'Boas Práticas', score: 100, icon: IconCheck },
-    { name: 'SEO', score: 100, icon: IconSeo },
-  ]
+    { name: "Performance", score: 95, icon: IconGauge },
+    { name: "Acessibilidade", score: 100, icon: IconShieldCheck },
+    { name: "Boas Práticas", score: 100, icon: IconCheck },
+    { name: "SEO", score: 100, icon: IconSeo },
+  ];
 
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
     <section className="relative py-24">
@@ -487,7 +518,8 @@ function PageSpeedSection() {
             Sites ultra-rápidos que o Google adora
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
-            Google prioriza sites rápidos no ranking. Os nossos são mais rápidos que 90% da internet.
+            Google prioriza sites rápidos no ranking. Os nossos são mais rápidos
+            que 90% da internet.
           </p>
         </ScrollReveal>
 
@@ -520,9 +552,13 @@ function PageSpeedSection() {
                       fill="none"
                       strokeLinecap="round"
                       className="text-emerald-500"
-                      initial={{ strokeDasharray: '0 553' }}
-                      animate={isInView ? { strokeDasharray: '525 553' } : {}}
-                      transition={{ duration: 1.5, ease: 'easeOut', delay: 0.3 }}
+                      initial={{ strokeDasharray: "0 553" }}
+                      animate={isInView ? { strokeDasharray: "525 553" } : {}}
+                      transition={{
+                        duration: 1.5,
+                        ease: "easeOut",
+                        delay: 0.3,
+                      }}
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -542,11 +578,15 @@ function PageSpeedSection() {
                   <div className="flex flex-col gap-2 text-sm">
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-full bg-red-400" />
-                      <span className="text-slate-500">Sites comuns: 40-60</span>
+                      <span className="text-slate-500">
+                        Sites comuns: 40-60
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded-full bg-emerald-500" />
-                      <span className="font-medium text-emerald-600">Página Local: 95+</span>
+                      <span className="font-medium text-emerald-600">
+                        Página Local: 95+
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -569,13 +609,17 @@ function PageSpeedSection() {
                         <span className="font-medium text-slate-700 dark:text-slate-200">
                           {metric.name}
                         </span>
-                        <span className="font-bold text-emerald-500">{metric.score}</span>
+                        <span className="font-bold text-emerald-500">
+                          {metric.score}
+                        </span>
                       </div>
                       <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
                         <motion.div
                           className="h-full rounded-full bg-emerald-500"
                           initial={{ width: 0 }}
-                          animate={isInView ? { width: `${metric.score}%` } : {}}
+                          animate={
+                            isInView ? { width: `${metric.score}%` } : {}
+                          }
                           transition={{ duration: 1, delay: 0.6 + index * 0.1 }}
                         />
                       </div>
@@ -588,57 +632,86 @@ function PageSpeedSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function AnalyticsSection() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   const metrics = [
-    { label: 'Visualizações', shortLabel: 'Visitas', value: 847, color: 'text-cyan-500', bg: 'bg-cyan-500/10' },
-    { label: 'Contatos', shortLabel: 'Contatos', value: 127, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-    { label: 'Conversão', shortLabel: 'Conversão', value: 15, suffix: '%', color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  ]
+    {
+      label: "Visualizações",
+      shortLabel: "Visitas",
+      value: 847,
+      color: "text-cyan-500",
+      bg: "bg-cyan-500/10",
+    },
+    {
+      label: "Contatos",
+      shortLabel: "Contatos",
+      value: 127,
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/10",
+    },
+    {
+      label: "Conversão",
+      shortLabel: "Conversão",
+      value: 15,
+      suffix: "%",
+      color: "text-purple-500",
+      bg: "bg-purple-500/10",
+    },
+  ];
 
   const sources = [
-    { name: 'Google', icon: IconBrandGoogle, color: 'bg-blue-500', percentage: 45 },
-    { name: 'Instagram', icon: IconBrandInstagram, color: 'bg-pink-500', percentage: 30 },
-    { name: 'Direto', icon: IconWorld, color: 'bg-slate-500', percentage: 25 },
-  ]
+    {
+      name: "Google",
+      icon: IconBrandGoogle,
+      color: "bg-blue-500",
+      percentage: 45,
+    },
+    {
+      name: "Instagram",
+      icon: IconBrandInstagram,
+      color: "bg-pink-500",
+      percentage: 30,
+    },
+    { name: "Direto", icon: IconWorld, color: "bg-slate-500", percentage: 25 },
+  ];
 
   const features = [
     {
       icon: IconEye,
-      title: 'Visualizações em tempo real',
-      description: 'Acompanhe quantas pessoas visitam seu site a cada dia',
+      title: "Visualizações em tempo real",
+      description: "Acompanhe quantas pessoas visitam seu site a cada dia",
     },
     {
       icon: IconMessageCircle,
-      title: 'Cliques no WhatsApp',
-      description: 'Saiba quantos clientes entraram em contato via WhatsApp',
+      title: "Cliques no WhatsApp",
+      description: "Saiba quantos clientes entraram em contato via WhatsApp",
     },
     {
       icon: IconPhone,
-      title: 'Cliques para ligar',
-      description: 'Contabilize quantas ligações seu site gerou',
+      title: "Cliques para ligar",
+      description: "Contabilize quantas ligações seu site gerou",
     },
     {
       icon: IconPercentage,
-      title: 'Taxa de conversão',
-      description: 'Descubra qual porcentagem de visitantes vira cliente',
+      title: "Taxa de conversão",
+      description: "Descubra qual porcentagem de visitantes vira cliente",
     },
     {
       icon: IconWorld,
-      title: 'Origem do tráfego',
-      description: 'Saiba se seus clientes vêm do Google, Instagram ou outros',
+      title: "Origem do tráfego",
+      description: "Saiba se seus clientes vêm do Google, Instagram ou outros",
     },
     {
       icon: IconTag,
-      title: 'Rastreamento UTM',
-      description: 'Acompanhe o desempenho de suas campanhas de marketing',
+      title: "Rastreamento UTM",
+      description: "Acompanhe o desempenho de suas campanhas de marketing",
     },
-  ]
+  ];
 
   return (
     <section className="relative py-24 overflow-hidden">
@@ -694,15 +767,18 @@ function AnalyticsSection() {
                       animate={isInView ? { opacity: 1, y: 0 } : {}}
                       transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
                       className={cn(
-                        'rounded-2xl p-3 text-center sm:p-4',
-                        metric.bg
+                        "rounded-2xl p-3 text-center sm:p-4",
+                        metric.bg,
                       )}
                     >
                       <AnimatedCounter
                         value={metric.value}
                         suffix={metric.suffix}
                         isInView={isInView}
-                        className={cn('text-xl font-bold sm:text-2xl md:text-3xl', metric.color)}
+                        className={cn(
+                          "text-xl font-bold sm:text-2xl md:text-3xl",
+                          metric.color,
+                        )}
                       />
                       <p className="mt-1 text-[10px] text-slate-600 dark:text-slate-300 sm:text-xs">
                         <span className="sm:hidden">{metric.shortLabel}</span>
@@ -746,7 +822,12 @@ function AnalyticsSection() {
                         key={source.name}
                         className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1.5 dark:bg-slate-800"
                       >
-                        <div className={cn('flex h-5 w-5 items-center justify-center rounded-full text-white', source.color)}>
+                        <div
+                          className={cn(
+                            "flex h-5 w-5 items-center justify-center rounded-full text-white",
+                            source.color,
+                          )}
+                        >
                           <source.icon className="h-3 w-3" />
                         </div>
                         <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
@@ -769,7 +850,7 @@ function AnalyticsSection() {
             {/* Features List */}
             <motion.div
               initial="hidden"
-              animate={isInView ? 'visible' : 'hidden'}
+              animate={isInView ? "visible" : "hidden"}
               variants={staggerContainer}
               className="space-y-4"
             >
@@ -797,21 +878,21 @@ function AnalyticsSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function AnimatedCounter({
   value,
-  suffix = '',
+  suffix = "",
   isInView,
-  className
+  className,
 }: {
-  value: number
-  suffix?: string
-  isInView: boolean
-  className?: string
+  value: number;
+  suffix?: string;
+  isInView: boolean;
+  className?: string;
 }) {
-  const nodeRef = useRef<HTMLSpanElement>(null)
+  const nodeRef = useRef<HTMLSpanElement>(null);
 
   return (
     <motion.span
@@ -825,40 +906,36 @@ function AnimatedCounter({
         animate={isInView ? { opacity: 1 } : {}}
         transition={{ duration: 0.5 }}
       >
-        {isInView ? (
-          <CountUp value={value} />
-        ) : (
-          0
-        )}
+        {isInView ? <CountUp value={value} /> : 0}
         {suffix}
       </motion.span>
     </motion.span>
-  )
+  );
 }
 
 function CountUp({ value }: { value: number }) {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    const duration = 1500
-    const steps = 30
-    const increment = value / steps
-    let current = 0
+    const duration = 1500;
+    const steps = 30;
+    const increment = value / steps;
+    let current = 0;
 
     const timer = setInterval(() => {
-      current += increment
+      current += increment;
       if (current >= value) {
-        setCount(value)
-        clearInterval(timer)
+        setCount(value);
+        clearInterval(timer);
       } else {
-        setCount(Math.floor(current))
+        setCount(Math.floor(current));
       }
-    }, duration / steps)
+    }, duration / steps);
 
-    return () => clearInterval(timer)
-  }, [value])
+    return () => clearInterval(timer);
+  }, [value]);
 
-  return <>{count}</>
+  return <>{count}</>;
 }
 
 function MiniChart({ isInView }: { isInView: boolean }) {
@@ -871,7 +948,7 @@ function MiniChart({ isInView }: { isInView: boolean }) {
     { x: 100, y: 25 },
     { x: 120, y: 30 },
     { x: 140, y: 15 },
-  ]
+  ];
 
   const points2 = [
     { x: 0, y: 75 },
@@ -882,10 +959,14 @@ function MiniChart({ isInView }: { isInView: boolean }) {
     { x: 100, y: 50 },
     { x: 120, y: 45 },
     { x: 140, y: 35 },
-  ]
+  ];
 
-  const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
-  const pathD2 = points2.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+  const pathD = points
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+    .join(" ");
+  const pathD2 = points2
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+    .join(" ");
 
   return (
     <svg viewBox="0 0 140 80" className="h-20 w-full">
@@ -947,19 +1028,39 @@ function MiniChart({ isInView }: { isInView: boolean }) {
         </linearGradient>
       </defs>
     </svg>
-  )
+  );
 }
 
 function ComparisonSection() {
   const features = [
-    { name: 'Tempo para ficar pronto', local: 'Em poucos minutos', agency: '30+ dias', alone: 'Semanas' },
-    { name: 'Custo mensal', local: 'A partir de R$ 59', agency: 'R$ 2.500+', alone: 'R$ 0' },
-    { name: 'Manutenção mensal', local: 'Inclusa', agency: 'R$ 500+', alone: 'Você mesmo' },
-    { name: 'SEO otimizado', local: true, agency: 'Talvez', alone: false },
-    { name: 'Integração Google', local: true, agency: false, alone: false },
-    { name: 'IA para conteúdo', local: true, agency: false, alone: false },
-    { name: 'Analytics de leads', local: true, agency: 'Pago à parte', alone: false },
-  ]
+    {
+      name: "Tempo para ficar pronto",
+      local: "Em poucos minutos",
+      agency: "30+ dias",
+      alone: "Semanas",
+    },
+    {
+      name: "Custo mensal",
+      local: "A partir de R$ 59",
+      agency: "R$ 2.500+",
+      alone: "R$ 0",
+    },
+    {
+      name: "Manutenção mensal",
+      local: "Inclusa",
+      agency: "R$ 500+",
+      alone: "Você mesmo",
+    },
+    { name: "SEO otimizado", local: true, agency: "Talvez", alone: false },
+    { name: "Integração Google", local: true, agency: false, alone: false },
+    { name: "IA para conteúdo", local: true, agency: false, alone: false },
+    {
+      name: "Analytics de leads",
+      local: true,
+      agency: "Pago à parte",
+      alone: false,
+    },
+  ];
 
   return (
     <section className="relative py-24 overflow-hidden">
@@ -988,13 +1089,19 @@ function ComparisonSection() {
                   <div className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
                     Melhor opção
                   </div>
-                  <span className="text-sm font-bold text-orange-600">Página Local</span>
+                  <span className="text-sm font-bold text-orange-600">
+                    Página Local
+                  </span>
                 </div>
                 <div className="p-4 text-center">
-                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Agência</span>
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    Agência
+                  </span>
                 </div>
                 <div className="p-4 text-center">
-                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Fazer sozinho</span>
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                    Fazer sozinho
+                  </span>
                 </div>
               </div>
 
@@ -1002,8 +1109,8 @@ function ComparisonSection() {
                 <div
                   key={feature.name}
                   className={cn(
-                    'grid grid-cols-4 border-b border-slate-100 dark:border-slate-800',
-                    index === features.length - 1 && 'border-b-0'
+                    "grid grid-cols-4 border-b border-slate-100 dark:border-slate-800",
+                    index === features.length - 1 && "border-b-0",
                   )}
                 >
                   <div className="p-4">
@@ -1012,36 +1119,42 @@ function ComparisonSection() {
                     </span>
                   </div>
                   <div className="flex items-center justify-center border-x-2 border-orange-400/30 bg-orange-500/5 p-4">
-                    {typeof feature.local === 'boolean' ? (
+                    {typeof feature.local === "boolean" ? (
                       feature.local ? (
                         <IconCheck className="h-5 w-5 text-emerald-500" />
                       ) : (
                         <IconX className="h-5 w-5 text-red-400" />
                       )
                     ) : (
-                      <span className="text-sm font-semibold text-orange-600">{feature.local}</span>
+                      <span className="text-sm font-semibold text-orange-600">
+                        {feature.local}
+                      </span>
                     )}
                   </div>
                   <div className="flex items-center justify-center p-4">
-                    {typeof feature.agency === 'boolean' ? (
+                    {typeof feature.agency === "boolean" ? (
                       feature.agency ? (
                         <IconCheck className="h-5 w-5 text-emerald-500" />
                       ) : (
                         <IconX className="h-5 w-5 text-red-400" />
                       )
                     ) : (
-                      <span className="text-sm text-slate-500">{feature.agency}</span>
+                      <span className="text-sm text-slate-500">
+                        {feature.agency}
+                      </span>
                     )}
                   </div>
                   <div className="flex items-center justify-center p-4">
-                    {typeof feature.alone === 'boolean' ? (
+                    {typeof feature.alone === "boolean" ? (
                       feature.alone ? (
                         <IconCheck className="h-5 w-5 text-emerald-500" />
                       ) : (
                         <IconX className="h-5 w-5 text-red-400" />
                       )
                     ) : (
-                      <span className="text-sm text-slate-500">{feature.alone}</span>
+                      <span className="text-sm text-slate-500">
+                        {feature.alone}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -1054,19 +1167,28 @@ function ComparisonSection() {
               <div className="absolute right-4 top-4 rounded-full bg-orange-500 px-3 py-1 text-xs font-bold text-white shadow-lg">
                 Melhor opção
               </div>
-              <h3 className="mb-4 text-lg font-bold text-orange-600">Página Local</h3>
+              <h3 className="mb-4 text-lg font-bold text-orange-600">
+                Página Local
+              </h3>
               <div className="space-y-3">
                 {features.map((feature) => (
-                  <div key={feature.name} className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600 dark:text-slate-300">{feature.name}</span>
-                    {typeof feature.local === 'boolean' ? (
+                  <div
+                    key={feature.name}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-sm text-slate-600 dark:text-slate-300">
+                      {feature.name}
+                    </span>
+                    {typeof feature.local === "boolean" ? (
                       feature.local ? (
                         <IconCheck className="h-5 w-5 text-emerald-500" />
                       ) : (
                         <IconX className="h-5 w-5 text-red-400" />
                       )
                     ) : (
-                      <span className="text-sm font-semibold text-orange-600">{feature.local}</span>
+                      <span className="text-sm font-semibold text-orange-600">
+                        {feature.local}
+                      </span>
                     )}
                   </div>
                 ))}
@@ -1074,19 +1196,28 @@ function ComparisonSection() {
             </div>
 
             <div className="rounded-2xl border border-slate-200/60 bg-white p-6 shadow-lg dark:border-slate-700/60 dark:bg-slate-900">
-              <h3 className="mb-4 text-lg font-semibold text-slate-700 dark:text-slate-300">Agência</h3>
+              <h3 className="mb-4 text-lg font-semibold text-slate-700 dark:text-slate-300">
+                Agência
+              </h3>
               <div className="space-y-3">
                 {features.map((feature) => (
-                  <div key={feature.name} className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">{feature.name}</span>
-                    {typeof feature.agency === 'boolean' ? (
+                  <div
+                    key={feature.name}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-sm text-slate-500">
+                      {feature.name}
+                    </span>
+                    {typeof feature.agency === "boolean" ? (
                       feature.agency ? (
                         <IconCheck className="h-5 w-5 text-emerald-500" />
                       ) : (
                         <IconX className="h-5 w-5 text-red-400" />
                       )
                     ) : (
-                      <span className="text-sm text-slate-500">{feature.agency}</span>
+                      <span className="text-sm text-slate-500">
+                        {feature.agency}
+                      </span>
                     )}
                   </div>
                 ))}
@@ -1094,19 +1225,28 @@ function ComparisonSection() {
             </div>
 
             <div className="rounded-2xl border border-slate-200/60 bg-white p-6 shadow-lg dark:border-slate-700/60 dark:bg-slate-900">
-              <h3 className="mb-4 text-lg font-semibold text-slate-700 dark:text-slate-300">Fazer sozinho</h3>
+              <h3 className="mb-4 text-lg font-semibold text-slate-700 dark:text-slate-300">
+                Fazer sozinho
+              </h3>
               <div className="space-y-3">
                 {features.map((feature) => (
-                  <div key={feature.name} className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">{feature.name}</span>
-                    {typeof feature.alone === 'boolean' ? (
+                  <div
+                    key={feature.name}
+                    className="flex items-center justify-between"
+                  >
+                    <span className="text-sm text-slate-500">
+                      {feature.name}
+                    </span>
+                    {typeof feature.alone === "boolean" ? (
                       feature.alone ? (
                         <IconCheck className="h-5 w-5 text-emerald-500" />
                       ) : (
                         <IconX className="h-5 w-5 text-red-400" />
                       )
                     ) : (
-                      <span className="text-sm text-slate-500">{feature.alone}</span>
+                      <span className="text-sm text-slate-500">
+                        {feature.alone}
+                      </span>
                     )}
                   </div>
                 ))}
@@ -1116,27 +1256,27 @@ function ComparisonSection() {
         </ScrollReveal>
       </div>
     </section>
-  )
+  );
 }
 
 function NichesSection() {
   const niches = [
-    { icon: IconCircleDotted, name: 'Borracharias', slug: 'borracharias' },
-    { icon: IconEngine, name: 'Oficinas', slug: 'oficinas' },
-    { icon: IconCarGarage, name: 'Auto Centers', slug: 'auto-centers' },
-    { icon: IconScissors, name: 'Salões de Beleza', slug: 'saloes' },
-    { icon: IconRazor, name: 'Barbearias', slug: 'barbearias' },
-    { icon: IconDog, name: 'Pet Shops', slug: 'pet-shops' },
-    { icon: IconDental, name: 'Dentistas', slug: 'dentistas' },
-    { icon: IconPizza, name: 'Pizzarias', slug: 'pizzarias' },
-    { icon: IconBarbell, name: 'Academias', slug: 'academias' },
-    { icon: IconBuildingStore, name: 'Lojas', slug: 'lojas' },
-    { icon: IconHomeHeart, name: 'Imobiliárias', slug: 'imobiliarias' },
-    { icon: IconCoffee, name: 'Cafeterias', slug: 'cafeterias' },
-  ]
+    { icon: IconCircleDotted, name: "Borracharias", slug: "borracharias" },
+    { icon: IconEngine, name: "Oficinas", slug: "oficinas" },
+    { icon: IconCarGarage, name: "Auto Centers", slug: "auto-centers" },
+    { icon: IconScissors, name: "Salões de Beleza", slug: "saloes" },
+    { icon: IconRazor, name: "Barbearias", slug: "barbearias" },
+    { icon: IconDog, name: "Pet Shops", slug: "pet-shops" },
+    { icon: IconDental, name: "Dentistas", slug: "dentistas" },
+    { icon: IconPizza, name: "Pizzarias", slug: "pizzarias" },
+    { icon: IconBarbell, name: "Academias", slug: "academias" },
+    { icon: IconBuildingStore, name: "Lojas", slug: "lojas" },
+    { icon: IconHomeHeart, name: "Imobiliárias", slug: "imobiliarias" },
+    { icon: IconCoffee, name: "Cafeterias", slug: "cafeterias" },
+  ];
 
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
     <section className="relative py-24">
@@ -1150,14 +1290,15 @@ function NichesSection() {
             Sites para todos os tipos de negócio local
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-slate-500 dark:text-slate-400">
-            Oficinas, salões, pet shops, restaurantes... Se seu cliente pesquisa no Google, nós colocamos você lá.
+            Oficinas, salões, pet shops, restaurantes... Se seu cliente pesquisa
+            no Google, nós colocamos você lá.
           </p>
         </ScrollReveal>
 
         <motion.div
           ref={ref}
           initial="hidden"
-          animate={isInView ? 'visible' : 'hidden'}
+          animate={isInView ? "visible" : "hidden"}
           variants={staggerContainer}
           className="mx-auto grid max-w-4xl grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4"
         >
@@ -1178,10 +1319,14 @@ function NichesSection() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }
 
-function CTASection({ shouldRedirectToWhatsApp }: { shouldRedirectToWhatsApp: boolean }) {
+function CTASection({
+  shouldRedirectToWhatsApp,
+}: {
+  shouldRedirectToWhatsApp: boolean;
+}) {
   return (
     <section className="relative py-24">
       <div className="container mx-auto px-4">
@@ -1192,7 +1337,7 @@ function CTASection({ shouldRedirectToWhatsApp }: { shouldRedirectToWhatsApp: bo
                 initial={{ scale: 0 }}
                 whileInView={{ scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
+                transition={{ type: "spring", stiffness: 200, delay: 0.2 }}
                 className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/30"
               >
                 <IconRocket className="h-8 w-8 text-white" />
@@ -1202,20 +1347,30 @@ function CTASection({ shouldRedirectToWhatsApp }: { shouldRedirectToWhatsApp: bo
                 Enquanto você lê isso...
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-lg text-slate-600 dark:text-slate-300">
-                seu concorrente já está aparecendo no Google e recebendo os clientes que poderiam ser seus.
+                seu concorrente já está aparecendo no Google e recebendo os
+                clientes que poderiam ser seus.
               </p>
               <p className="mx-auto mt-2 text-slate-500 dark:text-slate-400">
                 {shouldRedirectToWhatsApp
-                  ? 'Fale conosco e tenha seu site profissional pronto em poucos minutos.'
-                  : 'Crie seu site profissional agora e comece a receber mais clientes.'}
+                  ? "Fale conosco e tenha seu site profissional pronto em poucos minutos."
+                  : "Crie seu site profissional agora e comece a receber mais clientes."}
               </p>
 
               <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <a
-                  href={shouldRedirectToWhatsApp ? WHATSAPP_URL : `${process.env.NEXT_PUBLIC_APP_URL}/cadastro`}
-                  target={shouldRedirectToWhatsApp ? '_blank' : undefined}
-                  rel={shouldRedirectToWhatsApp ? 'noopener noreferrer' : undefined}
-                  onClick={() => shouldRedirectToWhatsApp && trackWhatsAppClick('cta_section')}
+                  href={
+                    shouldRedirectToWhatsApp
+                      ? WHATSAPP_URL
+                      : `${process.env.NEXT_PUBLIC_APP_URL}/cadastro`
+                  }
+                  target={shouldRedirectToWhatsApp ? "_blank" : undefined}
+                  rel={
+                    shouldRedirectToWhatsApp ? "noopener noreferrer" : undefined
+                  }
+                  onClick={() =>
+                    shouldRedirectToWhatsApp &&
+                    trackWhatsAppClick("cta_section")
+                  }
                   className="group inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-10 py-5 text-lg font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/40"
                 >
                   {shouldRedirectToWhatsApp ? (
@@ -1240,40 +1395,50 @@ function CTASection({ shouldRedirectToWhatsApp }: { shouldRedirectToWhatsApp: bo
         </ScrollReveal>
       </div>
     </section>
-  )
+  );
 }
 
-function FloatingWhatsAppButton({ shouldRedirectToWhatsApp }: { shouldRedirectToWhatsApp: boolean }) {
-  const [isVisible, setIsVisible] = useState(false)
+function FloatingWhatsAppButton({
+  shouldRedirectToWhatsApp,
+}: {
+  shouldRedirectToWhatsApp: boolean;
+}) {
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      const heroSection = document.getElementById('hero')
-      if (!heroSection) return
+      const heroSection = document.getElementById("hero");
+      if (!heroSection) return;
 
-      const heroBottom = heroSection.getBoundingClientRect().bottom
-      setIsVisible(heroBottom < 0)
-    }
+      const heroBottom = heroSection.getBoundingClientRect().bottom;
+      setIsVisible(heroBottom < 0);
+    };
 
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-  if (!isVisible) return null
+  if (!isVisible) return null;
 
   return (
     <motion.div
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 100, opacity: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut' }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       className="fixed bottom-0 left-0 right-0 z-50 p-3 md:hidden"
     >
       <a
-        href={shouldRedirectToWhatsApp ? WHATSAPP_URL : `${process.env.NEXT_PUBLIC_APP_URL}/cadastro`}
-        target={shouldRedirectToWhatsApp ? '_blank' : undefined}
-        rel={shouldRedirectToWhatsApp ? 'noopener noreferrer' : undefined}
-        onClick={() => shouldRedirectToWhatsApp && trackWhatsAppClick('floating_mobile')}
+        href={
+          shouldRedirectToWhatsApp
+            ? WHATSAPP_URL
+            : `${process.env.NEXT_PUBLIC_APP_URL}/cadastro`
+        }
+        target={shouldRedirectToWhatsApp ? "_blank" : undefined}
+        rel={shouldRedirectToWhatsApp ? "noopener noreferrer" : undefined}
+        onClick={() =>
+          shouldRedirectToWhatsApp && trackWhatsAppClick("floating_mobile")
+        }
         className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#25D366] px-6 py-4 text-base font-semibold text-white shadow-lg shadow-[#25D366]/30 transition-all active:scale-[0.98]"
       >
         {shouldRedirectToWhatsApp ? (
@@ -1281,8 +1446,8 @@ function FloatingWhatsAppButton({ shouldRedirectToWhatsApp }: { shouldRedirectTo
         ) : (
           <IconRocket className="h-5 w-5" />
         )}
-        {shouldRedirectToWhatsApp ? 'Falar no WhatsApp' : 'Criar meu site'}
+        {shouldRedirectToWhatsApp ? "Falar no WhatsApp" : "Criar meu site"}
       </a>
     </motion.div>
-  )
+  );
 }
