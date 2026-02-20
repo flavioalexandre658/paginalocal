@@ -208,6 +208,94 @@ export default async function StorePage({ params }: PageProps) {
   const session = await auth.api.getSession({ headers: await headers() })
   const isOwner = session?.user?.id === storeData.userId
 
+  if (!storeData.isActive && !isOwner) {
+    const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'
+    const signupUrl = `https://${mainDomain}/cadastro`
+    const plansUrl = `https://${mainDomain}/planos`
+
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-500/5 via-transparent to-transparent" />
+
+        <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-16">
+          <div className="mx-auto w-full max-w-md space-y-4">
+
+            {/* Draft notice card */}
+            <div className="rounded-2xl border border-slate-200/40 bg-white/70 p-8 shadow-xl shadow-slate-200/50 backdrop-blur-xl text-center">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-500/5 shadow-lg shadow-amber-400/10">
+                <span className="text-3xl leading-none">🚧</span>
+              </div>
+
+              <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+                Site em fase de publicação
+              </h1>
+              <p className="mt-2 text-sm text-slate-500">
+                Esta página foi criada como prévia e ainda não está ativa publicamente.
+              </p>
+
+              <div className="my-6 rounded-xl border border-slate-100 bg-slate-50/80 p-4 text-left">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Se você é o proprietário, ative agora para
+                </p>
+                <ul className="space-y-2">
+                  {[
+                    'Liberar acesso público ao site',
+                    'Começar a aparecer no Google',
+                    'Remover o selo de prévia',
+                  ].map((item) => (
+                    <li key={item} className="flex items-center gap-2.5 text-sm text-slate-600">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 text-[10px] font-bold">✓</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <a
+                href={plansUrl}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/40"
+              >
+                Ativar agora
+              </a>
+            </div>
+
+            {/* Promo card — Página Local brand */}
+            <div className="overflow-hidden rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-600 to-emerald-700 p-6 text-center shadow-xl shadow-emerald-600/20">
+              <div className="mb-4 flex items-center justify-center gap-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/assets/images/icon/favicon.ico"
+                  alt="Página Local"
+                  width={28}
+                  height={28}
+                  className="rounded-lg"
+                />
+                <span className="text-base font-semibold tracking-tight text-white">
+                  Página Local
+                </span>
+              </div>
+
+              <h2 className="text-lg font-semibold tracking-tight text-white">
+                Quer ter seu próprio site profissional?
+              </h2>
+              <p className="mt-1.5 text-sm text-emerald-100">
+                Crie agora em poucos minutos e comece a divulgar sua empresa online.
+              </p>
+
+              <a
+                href={signupUrl}
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-2.5 text-sm font-semibold text-emerald-700 shadow-md shadow-black/10 transition-all hover:scale-[1.02] hover:bg-emerald-50 hover:shadow-lg"
+              >
+                🚀 Criar meu site agora
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const faq = (storeData.faq as FAQItem[] | null) || []
   const neighborhoods = (storeData.neighborhoods as string[] | null) || []
 

@@ -120,13 +120,13 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
       >
         <TrackingScripts storeSlug={slug} />
 
-        {isDraft && <DraftBanner isOwner={isOwner} />}
+        {isDraft && isOwner && <DraftBanner isOwner={isOwner} />}
 
         <div className="relative z-10 flex min-h-screen flex-col">
-          {/* Spacer to push content below the fixed DraftBanner */}
-          {isDraft && <div className="h-10 shrink-0 sm:h-11" />}
+          {/* Spacer to push content below the fixed DraftBanner (owner only) */}
+          {isDraft && isOwner && <div className="h-10 shrink-0 sm:h-11" />}
 
-          {showHeader && data && (
+          {showHeader && data && (!isDraft || isOwner) && (
             <SiteHeader
               storeName={data.name}
               slug={data.slug}
