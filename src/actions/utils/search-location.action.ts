@@ -18,6 +18,8 @@ interface LocationPrediction {
   secondaryText: string
 }
 
+export type LocationScope = 'city' | 'state' | 'country'
+
 export interface LocationDetails {
   placeId: string
   street: string
@@ -29,6 +31,7 @@ export interface LocationDetails {
   fullAddress: string
   latitude: number
   longitude: number
+  locationScope: LocationScope
 }
 
 export const searchLocationAction = actionClient
@@ -40,7 +43,7 @@ export const searchLocationAction = actionClient
     }
 
     const response = await fetch(
-      `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(parsedInput.query)}&types=geocode&language=pt-BR&components=country:br&key=${apiKey}`
+      `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(parsedInput.query)}&types=(regions)&language=pt-BR&components=country:br&key=${apiKey}`
     )
 
     const data = await response.json()
@@ -88,6 +91,7 @@ export const getLocationDetailsAction = actionClient
     let streetNumber = ''
     let neighborhood = ''
     let city = ''
+    let stateLongName = ''
     let state = ''
     let zipCode = ''
 
@@ -109,12 +113,32 @@ export const getLocationDetailsAction = actionClient
       if (types.includes('locality') && !city) {
         city = component.long_name
       }
+      if (types.includes('administrative_area_level_3') && !city) {
+        city = component.long_name
+      }
       if (types.includes('administrative_area_level_1')) {
         state = component.short_name
+        stateLongName = component.long_name
       }
       if (types.includes('postal_code')) {
         zipCode = component.long_name.replace('-', '')
       }
+    }
+
+    // Detectar escopo do local selecionado
+    const resultTypes: string[] = result.types || []
+    let locationScope: LocationScope = 'city'
+
+    if (resultTypes.includes('country')) {
+      locationScope = 'country'
+      city = 'Brasil'
+      state = 'BR'
+    } else if (
+      resultTypes.includes('administrative_area_level_1') ||
+      (!city && stateLongName)
+    ) {
+      locationScope = 'state'
+      city = stateLongName
     }
 
     return {
@@ -128,6 +152,7 @@ export const getLocationDetailsAction = actionClient
       fullAddress: result.formatted_address || '',
       latitude: result.geometry?.location?.lat || 0,
       longitude: result.geometry?.location?.lng || 0,
+      locationScope,
     }
   })
 

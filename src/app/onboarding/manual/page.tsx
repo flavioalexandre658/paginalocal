@@ -193,7 +193,16 @@ export default function ManualOnboardingPage() {
 
     if (result?.data) {
       setSelectedLocation(result.data)
-      form.setValue('locationQuery', `${result.data.city}, ${result.data.state}`)
+      const { city, state, locationScope } = result.data
+      let displayValue = ''
+      if (locationScope === 'country') {
+        displayValue = 'Todo o Brasil'
+      } else if (locationScope === 'state') {
+        displayValue = `Todo o ${city}, ${state}`
+      } else {
+        displayValue = `${city}, ${state}`
+      }
+      form.setValue('locationQuery', displayValue)
     } else {
       toast.error('Erro ao buscar detalhes da localização')
     }
@@ -253,8 +262,10 @@ export default function ManualOnboardingPage() {
     }
 
     if (result?.validationErrors) {
-      const errors = Object.values(result.validationErrors).flat()
-      toast.error(errors[0] as string || 'Erro de validação')
+      const errors = Object.values(result.validationErrors).flatMap(
+        (field) => (field as { _errors?: string[] })?._errors ?? []
+      )
+      toast.error(errors[0] || 'Erro de validação')
       setStep('form')
       return
     }
@@ -724,7 +735,11 @@ function FormStep({
                   {selectedLocation && (
                     <p className="mt-2 flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
                       <IconCheck className="h-4 w-4" />
-                      {selectedLocation.fullAddress || `${selectedLocation.city}, ${selectedLocation.state}`}
+                      {selectedLocation.locationScope === 'country'
+                        ? 'Atendimento em todo o Brasil'
+                        : selectedLocation.locationScope === 'state'
+                          ? `Atendimento em todo o ${selectedLocation.city}, ${selectedLocation.state}`
+                          : selectedLocation.fullAddress || `${selectedLocation.city}, ${selectedLocation.state}`}
                     </p>
                   )}
                   <FormMessage />

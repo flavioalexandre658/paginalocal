@@ -46,6 +46,7 @@ const BRAZILIAN_STATES = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
   'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
   'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
+  'BR', // Brasil inteiro
 ] as const
 
 const createStoreManualSchema = z.object({
@@ -78,16 +79,31 @@ function truncate(str: string | undefined | null, maxLength: number): string | u
   return str.length > maxLength ? str.substring(0, maxLength) : str
 }
 
-function buildSeoH1(category: string, city: string, displayName: string): string {
-  return `${category} em ${city} – ${displayName}`
+function getCoverageLabel(city: string, state: string): string {
+  if (state === 'BR') return 'em todo o Brasil'
+  const stateNames: Record<string, string> = {
+    AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas', BA: 'Bahia',
+    CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás',
+    MA: 'Maranhão', MT: 'Mato Grosso', MS: 'Mato Grosso do Sul', MG: 'Minas Gerais',
+    PA: 'Pará', PB: 'Paraíba', PR: 'Paraná', PE: 'Pernambuco', PI: 'Piauí',
+    RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul',
+    RO: 'Rondônia', RR: 'Roraima', SC: 'Santa Catarina', SP: 'São Paulo',
+    SE: 'Sergipe', TO: 'Tocantins',
+  }
+  if (stateNames[state] === city) return `em todo o ${city}`
+  return `em ${city}`
 }
 
-function buildSeoSubtitle(category: string, city: string): string {
-  return `${capitalizeWords(category)} em ${city} com atendimento rápido e de confiança`
+function buildSeoH1(category: string, city: string, state: string, displayName: string): string {
+  return `${category} ${getCoverageLabel(city, state)} – ${displayName}`
 }
 
-function buildSeoDescription(displayName: string, category: string, city: string): string {
-  return `${displayName} é referência em ${category.toLowerCase()} em ${city}, oferecendo serviços de qualidade com rapidez e atendimento de confiança.`
+function buildSeoSubtitle(category: string, city: string, state: string): string {
+  return `${capitalizeWords(category)} ${getCoverageLabel(city, state)} com atendimento rápido e de confiança`
+}
+
+function buildSeoDescription(displayName: string, category: string, city: string, state: string): string {
+  return `${displayName} é referência em ${category.toLowerCase()} ${getCoverageLabel(city, state)}, oferecendo serviços de qualidade com rapidez e atendimento de confiança.`
 }
 
 function fixOpeningHoursInFAQ(faq: FAQItem[], storeName: string): FAQItem[] {
@@ -161,9 +177,9 @@ export const createStoreManualAction = authActionClient
       counter++
     }
 
-    const heroTitle = buildSeoH1(categoryFormatted, city, displayName)
-    const heroSubtitle = buildSeoSubtitle(categoryFormatted, city)
-    const aboutSection = buildSeoDescription(displayName, categoryFormatted, city)
+    const heroTitle = buildSeoH1(categoryFormatted, city, state, displayName)
+    const heroSubtitle = buildSeoSubtitle(categoryFormatted, city, state)
+    const aboutSection = buildSeoDescription(displayName, categoryFormatted, city, state)
 
     let marketingCopy: MarketingCopy | null = null
     try {
@@ -178,12 +194,13 @@ export const createStoreManualAction = authActionClient
       console.error('[Manual Creation] Erro ao gerar marketing copy:', error)
     }
 
+    const coverageLabel = getCoverageLabel(city, state)
     const seoTitle = truncate(
-      `${categoryFormatted} em ${city} | ${displayName}`,
+      `${categoryFormatted} ${coverageLabel} | ${displayName}`,
       70
     )
     const seoDescription = truncate(
-      marketingCopy?.seoDescription || `${displayName} - ${categoryFormatted} em ${city}, ${state}. Entre em contato pelo WhatsApp!`,
+      marketingCopy?.seoDescription || `${displayName} - ${categoryFormatted} ${coverageLabel}. Entre em contato pelo WhatsApp!`,
       160
     )
 
