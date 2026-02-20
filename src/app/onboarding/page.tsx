@@ -1108,11 +1108,11 @@ function ConfirmStep({
               {/* Info do negócio */}
               <div className="flex items-start justify-between gap-2 md:gap-3">
                 <div className="min-w-0 flex-1 space-y-1">
-                  {preview.category && (
+                  {/*preview.category && (
                     <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary md:text-xs">
                       {preview.category}
                     </span>
-                  )}
+                  )*/}
                   <div>
                     <label className="mb-1 block text-[10px] font-medium text-slate-500 dark:text-slate-400 md:text-xs">
                       Nome do negócio
