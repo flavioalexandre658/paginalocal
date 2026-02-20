@@ -158,7 +158,7 @@ function HeroSection({
           className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-bold text-primary border border-primary/20"
         >
           <IconSparkles className="h-4 w-4" />
-          ESPECIALISTA EM NEGÓCIOS LOCAIS
+          SUA EMPRESA ONLINE HOJE
         </motion.div>
 
         <motion.h1
@@ -167,8 +167,8 @@ function HeroSection({
           transition={{ duration: 0.6, delay: 0.1 }}
           className="mx-auto max-w-4xl text-4xl font-normal tracking-tight text-slate-900 dark:text-white md:text-5xl lg:text-6xl"
         >
-          Seu negócio na primeira página do{" "}
-          <span className="text-primary font-black">Google da sua cidade.</span>
+          Crie o site profissional da sua empresa{" "}
+          <span className="text-primary font-black">em minutos.</span>
         </motion.h1>
 
         <motion.p
@@ -177,9 +177,7 @@ function HeroSection({
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mx-auto mt-6 max-w-2xl text-lg text-slate-500 dark:text-slate-400"
         >
-          Criamos sites focados em <strong>Google Local</strong>, otimizados
-          para sua região e prontos para transformar buscas locais em mensagens
-          no WhatsApp todos os dias.
+          Nossa IA cria seu site profissional, altamente otimizado para SEO pronto para aparecer no Google e receber clientes pelo WhatsApp.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -1041,7 +1039,7 @@ function ComparisonSection() {
     },
     {
       name: "Custo mensal",
-      local: "A partir de R$ 59",
+      local: "A partir de R$ 29,90",
       agency: "R$ 2.500+",
       alone: "R$ 0",
     },
