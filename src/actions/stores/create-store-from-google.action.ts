@@ -34,7 +34,11 @@ const createStoreFromGoogleSchema = z.object({
   selectedCoverIndex: z.number().int().min(0).optional(),
   whatsappOverride: z.string().optional(),
   phoneOverride: z.string().optional(),
+  nameOverride: z.string().min(2).max(100).optional(),
   mode: z.enum(['LOCAL_BUSINESS', 'PRODUCT_CATALOG', 'SERVICE_PRICING', 'HYBRID']).default('LOCAL_BUSINESS'),
+  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  termGender: z.enum(['MASCULINE', 'FEMININE']).optional(),
+  termNumber: z.enum(['SINGULAR', 'PLURAL']).optional(),
 })
 
 // ===== Main Action =====
@@ -58,7 +62,15 @@ export const createStoreFromGoogleAction = authActionClient
       shouldActivateStore,
     })
 
-    const { googlePlaceId, searchTerm, selectedCoverIndex = 0 } = parsedInput
+    const {
+      googlePlaceId,
+      searchTerm,
+      selectedCoverIndex = 0,
+      nameOverride,
+      primaryColor,
+      termGender: inputTermGender,
+      termNumber: inputTermNumber,
+    } = parsedInput
 
     const existingStore = await db.query.store.findFirst({
       where: (s, { eq }) => eq(s.googlePlaceId, googlePlaceId),
@@ -91,11 +103,13 @@ export const createStoreFromGoogleAction = authActionClient
     }
 
     // ===== Create store =====
+    const finalDisplayName = nameOverride?.trim() || result.displayName
+
     const [newStore] = await db
       .insert(store)
       .values({
         userId: ctx.userId,
-        name: result.displayName,
+        name: finalDisplayName,
         slug,
         category: truncate(result.category.name, 100)!,
         categoryId: result.category.id,
@@ -123,8 +137,9 @@ export const createStoreFromGoogleAction = authActionClient
         sections: getDefaultSectionsForMode(parsedInput.mode),
         templateId: 'default',
         templateConfig: null,
-        termGender: result.termGender,
-        termNumber: result.termNumber,
+        termGender: inputTermGender ?? result.termGender,
+        termNumber: inputTermNumber ?? result.termNumber,
+        primaryColor: primaryColor ?? '#3b82f6',
         isActive: shouldActivateStore,
       })
       .returning()
@@ -328,8 +343,8 @@ export const createStoreFromGoogleAction = authActionClient
     return {
       store: newStore,
       slug: newStore.slug,
-      brandName: result.displayName,
-      displayName: result.displayName,
+      brandName: finalDisplayName,
+      displayName: finalDisplayName,
       marketingGenerated: result.marketingGenerated,
       reviewsSynced: result.placeDetails.reviews?.length || 0,
       servicesGenerated: result.services.length,

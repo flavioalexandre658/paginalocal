@@ -3,8 +3,11 @@ import { TrackingScripts } from '@/components/site/tracking-scripts'
 import { db } from '@/db'
 import { store } from '@/db/schema'
 import { eq } from 'drizzle-orm'
+import { headers } from 'next/headers'
 import { SiteHeader } from './_components/site-header'
+import { DraftBanner } from '@/components/site/draft-banner'
 import { getSiteFontUrl, getSiteFontFamily } from '@/lib/font-loader'
+import { auth } from '@/lib/auth'
 
 interface LayoutProps {
   children: ReactNode
@@ -25,6 +28,8 @@ async function getStoreLayoutData(slug: string) {
       whatsappDefaultMessage: store.whatsappDefaultMessage,
       showWhatsappButton: store.showWhatsappButton,
       fontFamily: store.fontFamily,
+      isActive: store.isActive,
+      userId: store.userId,
     })
     .from(store)
     .where(eq(store.slug, slug))
@@ -35,7 +40,13 @@ async function getStoreLayoutData(slug: string) {
 
 export default async function SiteLayout({ children, params }: LayoutProps) {
   const { slug } = await params
-  const data = await getStoreLayoutData(slug)
+  const [data, session] = await Promise.all([
+    getStoreLayoutData(slug),
+    auth.api.getSession({ headers: await headers() }),
+  ])
+
+  const isDraft = !data?.isActive
+  const isOwner = session?.user?.id === data?.userId
 
   const cssVars: Record<string, string> = {}
   if (data?.primaryColor) {
@@ -108,7 +119,13 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
         }}
       >
         <TrackingScripts storeSlug={slug} />
+
+        {isDraft && <DraftBanner isOwner={isOwner} />}
+
         <div className="relative z-10 flex min-h-screen flex-col">
+          {/* Spacer to push content below the fixed DraftBanner */}
+          {isDraft && <div className="h-10 shrink-0 sm:h-11" />}
+
           {showHeader && data && (
             <SiteHeader
               storeName={data.name}

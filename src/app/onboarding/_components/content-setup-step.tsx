@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useAction } from 'next-safe-action/hooks'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -12,12 +12,16 @@ import {
     IconCategory,
     IconSparkles,
     IconRocket,
+    IconUpload,
+    IconX,
+    IconPhoto,
 } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
 
 import { createCollectionAction } from '@/actions/collections/create-collection.action'
 import { createProductAction } from '@/actions/products/create-product.action'
 import { createPricingPlanAction } from '@/actions/pricing-plans/create-pricing-plan.action'
+import { uploadEntityImageAction } from '@/actions/uploads/upload-entity-image.action'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -243,6 +247,74 @@ export function ContentSetupStep({ storeId, storeName, mode, onComplete }: Conte
     )
 }
 
+// ===== Shared Mini Drop Zone =====
+
+function MiniDropZone({
+    preview,
+    onSelect,
+    onRemove,
+    label,
+}: {
+    preview: { file: File; url: string } | null
+    onSelect: (file: File) => void
+    onRemove: () => void
+    label: string
+}) {
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    return (
+        <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                {label}
+                <span className="ml-1 font-normal text-slate-400">(opcional)</span>
+            </label>
+            {preview ? (
+                <div className="relative h-28 w-full overflow-hidden rounded-lg border border-emerald-200/60 bg-emerald-50/30 dark:border-emerald-800/40 dark:bg-emerald-950/20">
+                    <img src={preview.url} alt="preview" className="h-full w-full object-cover" />
+                    <button
+                        type="button"
+                        onClick={onRemove}
+                        className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm transition-colors hover:bg-black/50"
+                    >
+                        <IconX className="h-3.5 w-3.5 text-white" />
+                    </button>
+                    <div className="absolute left-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500">
+                        <IconCheck className="h-3 w-3 text-white" />
+                    </div>
+                </div>
+            ) : (
+                <button
+                    type="button"
+                    onClick={() => inputRef.current?.click()}
+                    className="flex w-full items-center gap-3 rounded-lg border-2 border-dashed border-slate-200/70 bg-slate-50/50 px-4 py-3 text-left transition-all hover:border-primary/30 hover:bg-primary/5 dark:border-slate-700/60 dark:bg-slate-800/40"
+                >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700/60">
+                        <IconPhoto className="h-4 w-4 text-slate-400" />
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                            <span className="font-medium text-primary">Clique</span> para adicionar imagem
+                        </p>
+                        <p className="text-xs text-slate-400">JPG, PNG, WebP · Máx 10MB</p>
+                    </div>
+                    <IconUpload className="ml-auto h-4 w-4 shrink-0 text-slate-300" />
+                </button>
+            )}
+            <input
+                ref={inputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) onSelect(file)
+                    e.target.value = ''
+                }}
+            />
+        </div>
+    )
+}
+
 // ===== Collection Form =====
 
 function CollectionForm({
@@ -253,16 +325,40 @@ function CollectionForm({
     onSuccess: (collectionId: string) => void
 }) {
     const [name, setName] = useState('')
+    const [imagePreview, setImagePreview] = useState<{ file: File; url: string } | null>(null)
     const { executeAsync, isExecuting } = useAction(createCollectionAction)
+    const { executeAsync: uploadImage, isExecuting: isUploading } = useAction(uploadEntityImageAction)
+
+    function handleImageSelect(file: File) {
+        if (imagePreview) URL.revokeObjectURL(imagePreview.url)
+        setImagePreview({ file, url: URL.createObjectURL(file) })
+    }
+
+    function handleImageRemove() {
+        if (imagePreview) URL.revokeObjectURL(imagePreview.url)
+        setImagePreview(null)
+    }
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         if (!name.trim()) return
 
+        let imageUrl: string | undefined
+
+        if (imagePreview) {
+            const fd = new FormData()
+            fd.append('file', imagePreview.file)
+            const uploadResult = await uploadImage({ storeId, file: fd, entity: 'collection' })
+            if (uploadResult?.data?.url) {
+                imageUrl = uploadResult.data.url
+            }
+        }
+
         const result = await executeAsync({
             storeId,
             name: name.trim(),
             isActive: true,
+            imageUrl,
         })
 
         if (result?.serverError) {
@@ -276,6 +372,8 @@ function CollectionForm({
         }
     }
 
+    const isBusy = isExecuting || isUploading
+
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -287,17 +385,24 @@ function CollectionForm({
                     value={name}
                     onChange={e => setName(e.target.value)}
                     className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
-                    disabled={isExecuting}
+                    disabled={isBusy}
                     autoFocus
                 />
             </div>
 
+            <MiniDropZone
+                label="Imagem da coleção"
+                preview={imagePreview}
+                onSelect={handleImageSelect}
+                onRemove={handleImageRemove}
+            />
+
             <Button
                 type="submit"
-                disabled={isExecuting || !name.trim()}
+                disabled={isBusy || !name.trim()}
                 className="h-11 w-full gap-2 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
             >
-                {isExecuting ? (
+                {isBusy ? (
                     <IconLoader2 className="h-4 w-4 animate-spin" />
                 ) : (
                     <IconArrowRight className="h-4 w-4" />
@@ -321,7 +426,19 @@ function ProductForm({
 }) {
     const [name, setName] = useState('')
     const [price, setPrice] = useState('')
+    const [imagePreview, setImagePreview] = useState<{ file: File; url: string } | null>(null)
     const { executeAsync, isExecuting } = useAction(createProductAction)
+    const { executeAsync: uploadImage, isExecuting: isUploading } = useAction(uploadEntityImageAction)
+
+    function handleImageSelect(file: File) {
+        if (imagePreview) URL.revokeObjectURL(imagePreview.url)
+        setImagePreview({ file, url: URL.createObjectURL(file) })
+    }
+
+    function handleImageRemove() {
+        if (imagePreview) URL.revokeObjectURL(imagePreview.url)
+        setImagePreview(null)
+    }
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
@@ -333,6 +450,17 @@ function ProductForm({
             return
         }
 
+        let images: Array<{ url: string; alt: string; order: number }> | undefined
+
+        if (imagePreview) {
+            const fd = new FormData()
+            fd.append('file', imagePreview.file)
+            const uploadResult = await uploadImage({ storeId, file: fd, entity: 'product' })
+            if (uploadResult?.data?.url) {
+                images = [{ url: uploadResult.data.url, alt: name.trim(), order: 0 }]
+            }
+        }
+
         const result = await executeAsync({
             storeId,
             collectionId: collectionId || undefined,
@@ -340,6 +468,7 @@ function ProductForm({
             priceInCents,
             ctaMode: 'WHATSAPP',
             status: 'ACTIVE',
+            images,
         })
 
         if (result?.serverError) {
@@ -353,6 +482,8 @@ function ProductForm({
         }
     }
 
+    const isBusy = isExecuting || isUploading
+
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -364,7 +495,7 @@ function ProductForm({
                     value={name}
                     onChange={e => setName(e.target.value)}
                     className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
-                    disabled={isExecuting}
+                    disabled={isBusy}
                     autoFocus
                 />
             </div>
@@ -378,16 +509,23 @@ function ProductForm({
                     value={price}
                     onChange={e => setPrice(e.target.value)}
                     className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
-                    disabled={isExecuting}
+                    disabled={isBusy}
                 />
             </div>
 
+            <MiniDropZone
+                label="Foto do produto"
+                preview={imagePreview}
+                onSelect={handleImageSelect}
+                onRemove={handleImageRemove}
+            />
+
             <Button
                 type="submit"
-                disabled={isExecuting || !name.trim() || !price}
+                disabled={isBusy || !name.trim() || !price}
                 className="h-11 w-full gap-2 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
             >
-                {isExecuting ? (
+                {isBusy ? (
                     <IconLoader2 className="h-4 w-4 animate-spin" />
                 ) : (
                     <IconArrowRight className="h-4 w-4" />

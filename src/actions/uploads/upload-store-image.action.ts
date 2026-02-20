@@ -12,7 +12,7 @@ import { revalidateStoreCache } from '@/lib/sitemap-revalidation'
 const uploadStoreImageSchema = z.object({
   storeId: z.string().uuid(),
   file: z.instanceof(FormData),
-  role: z.enum(['hero', 'gallery']).default('gallery'),
+  role: z.enum(['hero', 'gallery', 'logo']).default('gallery'),
 })
 
 export const uploadStoreImageAction = authActionClient
@@ -47,12 +47,33 @@ export const uploadStoreImageAction = authActionClient
     const buffer = Buffer.from(await file.arrayBuffer())
 
     const isHero = role === 'hero'
+    const isLogo = role === 'logo'
+
+    if (isLogo) {
+      const optimizedBuffer = await sharp(buffer)
+        .resize(400, 400, { fit: 'inside', withoutEnlargement: true })
+        .png({ quality: 100, compressionLevel: 6 })
+        .toBuffer()
+
+      const timestamp = Date.now()
+      const key = `stores/${storeId}/logo-${timestamp}.png`
+      const { url } = await uploadToS3(optimizedBuffer, key, 'image/png')
+
+      await db
+        .update(store)
+        .set({ logoUrl: url, updatedAt: new Date() })
+        .where(eq(store.id, storeId))
+
+      revalidateStoreCache(storeData.slug)
+      return { url }
+    }
+
     const dimensions = isHero
       ? { width: 1920, height: 1080 }
       : { width: 800, height: 800 }
 
     const optimizedBuffer = await sharp(buffer)
-      .resize(dimensions.width, dimensions.height, { fit: /*isHero ? 'cover' : */'inside', withoutEnlargement: true })
+      .resize(dimensions.width, dimensions.height, { fit: 'inside', withoutEnlargement: true })
       .webp({ quality: isHero ? 75 : 65 })
       .toBuffer()
 

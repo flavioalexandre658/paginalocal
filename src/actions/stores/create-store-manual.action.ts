@@ -64,6 +64,9 @@ const createStoreManualSchema = z.object({
   differential: z.string().min(10, 'Descreva seu diferencial (mínimo 10 caracteres)').max(300),
   whatsapp: z.string().regex(/^\d{10,11}$/, 'WhatsApp inválido (apenas números, 10 ou 11 dígitos)'),
   mode: z.enum(['LOCAL_BUSINESS', 'PRODUCT_CATALOG', 'SERVICE_PRICING', 'HYBRID']).default('LOCAL_BUSINESS'),
+  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  termGender: z.enum(['MASCULINE', 'FEMININE']).optional(),
+  termNumber: z.enum(['SINGULAR', 'PLURAL']).optional(),
 })
 
 function capitalizeWords(str: string): string {
@@ -158,6 +161,9 @@ export const createStoreManualAction = authActionClient
       neighborhoods: inputNeighborhoods,
       differential,
       whatsapp,
+      primaryColor,
+      termGender: inputTermGender,
+      termNumber: inputTermNumber,
     } = parsedInput
 
     const displayName = name.trim()
@@ -255,8 +261,9 @@ export const createStoreManualAction = authActionClient
         sections: getDefaultSectionsForMode(parsedInput.mode),
         templateId: 'default',
         templateConfig: null,
-        termGender: marketingCopy?.termGender ?? 'FEMININE',
-        termNumber: marketingCopy?.termNumber ?? 'SINGULAR',
+        termGender: inputTermGender ?? marketingCopy?.termGender ?? 'FEMININE',
+        termNumber: inputTermNumber ?? marketingCopy?.termNumber ?? 'SINGULAR',
+        primaryColor: primaryColor ?? '#3b82f6',
         isActive: shouldActivateStore,
       })
       .returning()

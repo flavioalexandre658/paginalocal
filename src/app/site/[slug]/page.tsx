@@ -24,8 +24,6 @@ const FloatingContact = dynamic(() => import('./_components/floating-contact').t
 const FAQSection = dynamic(() => import('./_components/faq-section').then(m => m.FAQSection))
 const AreasSection = dynamic(() => import('./_components/areas-section').then(m => m.AreasSection))
 const GallerySection = dynamic(() => import('./_components/gallery-section').then(m => m.GallerySection))
-const DraftBanner = dynamic(() => import('@/components/site/draft-banner').then(m => m.DraftBanner))
-const DraftModal = dynamic(() => import('@/components/site/draft-modal').then(m => m.DraftModal))
 const PageviewTracker = dynamic(() => import('./_components/pageview-tracker').then(m => m.PageviewTracker))
 
 interface FAQItem {
@@ -207,11 +205,8 @@ export default async function StorePage({ params }: PageProps) {
 
   const { store: storeData, services, testimonials, galleryImages, heroImage, institutionalPages, products, pricingPlans } = data
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
+  const session = await auth.api.getSession({ headers: await headers() })
   const isOwner = session?.user?.id === storeData.userId
-  const isDraft = !storeData.isActive
 
   const faq = (storeData.faq as FAQItem[] | null) || []
   const neighborhoods = (storeData.neighborhoods as string[] | null) || []
@@ -377,14 +372,9 @@ export default async function StorePage({ params }: PageProps) {
 
       <PageviewTracker storeId={storeData.id} />
 
-      {isDraft && (
-        <>
-          <DraftBanner isOwner={isOwner} />
-          {/*<DraftModal storeName={storeData.name} isOwner={isOwner} />*/}
-        </>
-      )}
+      {/*<DraftModal storeName={storeData.name} isOwner={isOwner} />*/}
 
-      <main className={isDraft ? 'pt-12' : ''}>
+      <main className={''}>
         {activeSections.map((section) => {
           switch (section.type) {
             case 'HERO':

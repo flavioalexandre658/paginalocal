@@ -29,6 +29,7 @@ import Link from 'next/link'
 
 import { createStoreManualAction } from '@/actions/stores/create-store-manual.action'
 import { ContentSetupStep } from '@/app/onboarding/_components/content-setup-step'
+import { ImageSetupStep } from '@/app/onboarding/_components/image-setup-step'
 import { getCategoriesAction } from '@/actions/categories/get-categories.action'
 import {
   searchLocationAction,
@@ -92,11 +93,14 @@ const formSchema = z.object({
   locationQuery: z.string().min(1, 'Selecione uma localização'),
   differential: z.string().min(10, 'Descreva seu diferencial (mínimo 10 caracteres)').max(300),
   whatsapp: z.string().min(14, 'WhatsApp é obrigatório'),
+  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  termGender: z.enum(['MASCULINE', 'FEMININE']),
+  termNumber: z.enum(['SINGULAR', 'PLURAL']),
 })
 
 type FormData = z.infer<typeof formSchema>
 
-type ManualStep = 'mode-selection' | 'form' | 'creating' | 'setup-content' | 'complete'
+type ManualStep = 'mode-selection' | 'form' | 'creating' | 'image-setup' | 'setup-content' | 'complete'
 type StoreMode = 'LOCAL_BUSINESS' | 'PRODUCT_CATALOG' | 'SERVICE_PRICING' | 'HYBRID'
 
 const HUMANIZED_LOGS = [
@@ -139,6 +143,9 @@ export default function ManualOnboardingPage() {
       locationQuery: '',
       differential: '',
       whatsapp: '',
+      primaryColor: '#3b82f6',
+      termGender: 'FEMININE' as const,
+      termNumber: 'SINGULAR' as const,
     },
   })
 
@@ -250,6 +257,9 @@ export default function ManualOnboardingPage() {
       differential: data.differential,
       whatsapp: whatsappClean,
       mode: selectedMode,
+      primaryColor: data.primaryColor,
+      termGender: data.termGender,
+      termNumber: data.termNumber,
     })
 
     if (result?.serverError) {
@@ -277,22 +287,23 @@ export default function ManualOnboardingPage() {
         id: result.data.store.id,
         isActive: result.data.isActive,
       })
-
-      if (selectedMode !== 'LOCAL_BUSINESS') {
-        setStep('setup-content')
-        toast.success('Site criado! Agora vamos configurar seu conteúdo.')
-      } else {
-        toast.success('Site criado com sucesso!')
-        if (result.data.isActive) {
-          setStep('complete')
-          setShowConfetti(true)
-        } else {
-          router.push(getStoreUrl(result.data.slug))
-        }
-      }
+      toast.success('Site criado! Adicione imagens para personalizar.')
+      setStep('image-setup')
     } else {
       toast.error('Erro inesperado ao criar site')
       setStep('form')
+    }
+  }
+
+  function handleImageSetupComplete() {
+    if (!createdStore) return
+    if (selectedMode !== 'LOCAL_BUSINESS') {
+      setStep('setup-content')
+    } else if (createdStore.isActive) {
+      setStep('complete')
+      setShowConfetti(true)
+    } else {
+      router.push(getStoreUrl(createdStore.slug))
     }
   }
 
@@ -340,6 +351,14 @@ export default function ManualOnboardingPage() {
               key="creating"
               businessName={form.getValues('name')}
               currentLogIndex={currentLogIndex}
+            />
+          )}
+
+          {step === 'image-setup' && createdStore?.id && (
+            <ImageSetupStep
+              key="image-setup"
+              storeId={createdStore.id}
+              onComplete={handleImageSetupComplete}
             />
           )}
 
@@ -797,6 +816,8 @@ function FormStep({
               )}
             />
 
+            <VisualPrefsFields form={form} />
+
             <Button
               type="submit"
               disabled={isExecuting || isLoadingCategories || !selectedLocation}
@@ -997,6 +1018,130 @@ function SiteSkeletonPreview() {
         <div className="mt-4 flex gap-2">
           <div className="h-8 w-24 rounded-lg bg-primary/20" />
           <div className="h-8 w-20 rounded-lg bg-slate-100 dark:bg-slate-800" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function VisualPrefsFields({ form }: { form: ReturnType<typeof useForm<FormData>> }) {
+  const primaryColor = form.watch('primaryColor')
+  const termGender = form.watch('termGender')
+  const termNumber = form.watch('termNumber')
+  const businessName = form.watch('name') || 'seu negócio'
+
+  const shortName = businessName.length > 18 ? businessName.slice(0, 18) + '…' : businessName
+
+  const genderOptions = [
+    { value: 'FEMININE' as const, article: 'A', label: `A ${shortName}` },
+    { value: 'MASCULINE' as const, article: 'O', label: `O ${shortName}` },
+  ]
+
+  const numberOptions = [
+    {
+      value: 'SINGULAR' as const,
+      label: termGender === 'FEMININE' ? `A ${shortName}` : `O ${shortName}`,
+    },
+    {
+      value: 'PLURAL' as const,
+      label: termGender === 'FEMININE' ? `As ${shortName}` : `Os ${shortName}`,
+    },
+  ]
+
+  function handleHexInput(raw: string) {
+    const val = raw.startsWith('#') ? raw : `#${raw}`
+    form.setValue('primaryColor', val)
+  }
+
+  return (
+    <div className="space-y-4 rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-slate-700/40 dark:bg-slate-800/30">
+      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+        Personalização
+      </p>
+
+      {/* Color picker */}
+      <div>
+        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+          Cor principal do site
+        </label>
+        <div className="flex items-center gap-2">
+          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-200/60 dark:border-slate-600/60">
+            <input
+              type="color"
+              value={primaryColor}
+              onChange={(e) => form.setValue('primaryColor', e.target.value)}
+              className="absolute inset-0 h-full w-full cursor-pointer border-0 bg-transparent p-0 opacity-0"
+            />
+            <div className="h-full w-full rounded-lg" style={{ backgroundColor: primaryColor }} />
+          </div>
+          <div
+            className="h-10 flex-1 rounded-lg border border-slate-200/60 shadow-sm dark:border-slate-600/60"
+            style={{ backgroundColor: primaryColor }}
+          />
+          <input
+            type="text"
+            value={primaryColor}
+            onChange={(e) => handleHexInput(e.target.value)}
+            maxLength={7}
+            spellCheck={false}
+            className="w-24 rounded-lg border border-slate-200/60 bg-white/80 px-2.5 py-2 font-mono text-xs text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:border-slate-600/60 dark:bg-slate-800/60 dark:text-slate-200"
+            placeholder="#3b82f6"
+          />
+        </div>
+        <p className="mt-1.5 text-xs text-slate-400">
+          Clique no quadrado ou digite o código hex
+        </p>
+      </div>
+
+      {/* Gender */}
+      <div>
+        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+          Como o negócio é referenciado?
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          {genderOptions.map(({ value, article, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => form.setValue('termGender', value)}
+              className={cn(
+                'flex flex-col items-start rounded-lg border px-3 py-2.5 text-left transition-all',
+                termGender === value
+                  ? 'border-primary/40 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/20'
+                  : 'border-slate-200/60 bg-white/60 text-slate-500 hover:border-slate-300/80 dark:border-slate-700/50 dark:bg-slate-800/40 dark:text-slate-400'
+              )}
+            >
+              <span className="text-base font-bold leading-none">{article}</span>
+              <span className="mt-1 truncate text-[11px] font-medium">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Number */}
+      <div>
+        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+          Singular ou plural?
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          {numberOptions.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => form.setValue('termNumber', value)}
+              className={cn(
+                'flex flex-col items-start rounded-lg border px-3 py-2.5 text-left transition-all',
+                termNumber === value
+                  ? 'border-primary/40 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/20'
+                  : 'border-slate-200/60 bg-white/60 text-slate-500 hover:border-slate-300/80 dark:border-slate-700/50 dark:bg-slate-800/40 dark:text-slate-400'
+              )}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wide opacity-60">
+                {value === 'SINGULAR' ? 'Singular' : 'Plural'}
+              </span>
+              <span className="mt-0.5 truncate text-[11px] font-medium">{label}</span>
+            </button>
+          ))}
         </div>
       </div>
     </div>

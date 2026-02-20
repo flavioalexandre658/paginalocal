@@ -39,6 +39,7 @@ import { searchPlacesAction } from '@/actions/google/search-places.action'
 import { getPlacePreviewAction, type PlacePreview } from '@/actions/google/get-place-preview.action'
 import { createStoreFromGoogleAction } from '@/actions/stores/create-store-from-google.action'
 import { ContentSetupStep } from '@/app/onboarding/_components/content-setup-step'
+import { ImageSetupStep } from '@/app/onboarding/_components/image-setup-step'
 import { getUserStoresAction } from '@/actions/stores/get-user-stores.action'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -56,7 +57,7 @@ interface PlaceResult {
   category: string | null
 }
 
-type OnboardingStep = 'choose' | 'mode-selection' | 'search' | 'confirm' | 'creating' | 'setup-content' | 'complete'
+type OnboardingStep = 'choose' | 'mode-selection' | 'search' | 'confirm' | 'creating' | 'image-setup' | 'setup-content' | 'complete'
 type StoreMode = 'LOCAL_BUSINESS' | 'PRODUCT_CATALOG' | 'SERVICE_PRICING' | 'HYBRID'
 
 const HUMANIZED_LOGS = [
@@ -85,6 +86,10 @@ export default function OnboardingPage() {
   const [hasStores, setHasStores] = useState(false)
   const [editedWhatsapp, setEditedWhatsapp] = useState<string>('')
   const [editedPhone, setEditedPhone] = useState<string>('')
+  const [editedName, setEditedName] = useState<string>('')
+  const [primaryColor, setPrimaryColor] = useState<string>('#3b82f6')
+  const [termGender, setTermGender] = useState<'MASCULINE' | 'FEMININE'>('FEMININE')
+  const [termNumber, setTermNumber] = useState<'SINGULAR' | 'PLURAL'>('SINGULAR')
   const [selectedMode, setSelectedMode] = useState<StoreMode>('LOCAL_BUSINESS')
 
   const { executeAsync: searchPlaces } = useAction(searchPlacesAction)
@@ -130,6 +135,7 @@ export default function OnboardingPage() {
 
   async function handleSelectPlace(place: PlaceResult) {
     setSelectedPlace(place)
+    setEditedName(place.name)
     setStep('confirm')
     setIsLoadingPreview(true)
     setPlacePreview(null)
@@ -137,7 +143,7 @@ export default function OnboardingPage() {
     const result = await getPlacePreview({ placeId: place.placeId })
     if (result?.data) {
       setPlacePreview(result.data)
-      // Initialize phone fields with Google data
+      setEditedName(result.data.name || place.name)
       if (result.data.phone) {
         const cleanPhone = result.data.phone.replace(/\D/g, '')
         setEditedWhatsapp(cleanPhone)
@@ -166,7 +172,11 @@ export default function OnboardingPage() {
       selectedCoverIndex,
       whatsappOverride: cleanWhatsapp,
       phoneOverride: editedPhone.replace(/\D/g, '') || undefined,
+      nameOverride: editedName.trim() !== selectedPlace.name ? editedName.trim() : undefined,
       mode: selectedMode,
+      primaryColor,
+      termGender,
+      termNumber,
     })
 
     if (result?.serverError) {
@@ -186,20 +196,20 @@ export default function OnboardingPage() {
         id: result.data.store.id,
         isActive: result.data.isActive,
       })
+      toast.success('Site criado! Adicione imagens para personalizar.')
+      setStep('image-setup')
+    }
+  }
 
-      // Modes que precisam de conteúdo vão para setup-content
-      if (selectedMode !== 'LOCAL_BUSINESS') {
-        setStep('setup-content')
-        toast.success('Site criado! Agora vamos configurar seu conteúdo.')
-      } else {
-        toast.success('Site criado com sucesso!')
-        if (result.data.isActive) {
-          setStep('complete')
-          setShowConfetti(true)
-        } else {
-          router.push(getStoreUrl(result.data.slug))
-        }
-      }
+  function handleImageSetupComplete() {
+    if (!createdStore) return
+    if (selectedMode !== 'LOCAL_BUSINESS') {
+      setStep('setup-content')
+    } else if (createdStore.isActive) {
+      setStep('complete')
+      setShowConfetti(true)
+    } else {
+      router.push(getStoreUrl(createdStore.slug))
     }
   }
 
@@ -213,6 +223,10 @@ export default function OnboardingPage() {
     setSelectedCoverIndex(0)
     setEditedWhatsapp('')
     setEditedPhone('')
+    setEditedName('')
+    setPrimaryColor('#3b82f6')
+    setTermGender('FEMININE')
+    setTermNumber('SINGULAR')
     setSelectedMode('LOCAL_BUSINESS')
   }
 
@@ -275,11 +289,20 @@ export default function OnboardingPage() {
                 setSelectedCoverIndex(0)
                 setEditedWhatsapp('')
                 setEditedPhone('')
+                setEditedName('')
               }}
               editedWhatsapp={editedWhatsapp}
               editedPhone={editedPhone}
               onWhatsappChange={setEditedWhatsapp}
               onPhoneChange={setEditedPhone}
+              editedName={editedName}
+              onNameChange={setEditedName}
+              primaryColor={primaryColor}
+              onPrimaryColorChange={setPrimaryColor}
+              termGender={termGender}
+              onTermGenderChange={setTermGender}
+              termNumber={termNumber}
+              onTermNumberChange={setTermNumber}
             />
           )}
 
@@ -288,6 +311,14 @@ export default function OnboardingPage() {
               key="creating"
               place={selectedPlace}
               currentLogIndex={currentLogIndex}
+            />
+          )}
+
+          {step === 'image-setup' && createdStore?.id && (
+            <ImageSetupStep
+              key="image-setup"
+              storeId={createdStore.id}
+              onComplete={handleImageSetupComplete}
             />
           )}
 
@@ -942,6 +973,14 @@ function ConfirmStep({
   editedPhone,
   onWhatsappChange,
   onPhoneChange,
+  editedName,
+  onNameChange,
+  primaryColor,
+  onPrimaryColorChange,
+  termGender,
+  onTermGenderChange,
+  termNumber,
+  onTermNumberChange,
 }: {
   place: PlaceResult
   preview: PlacePreview | null
@@ -954,6 +993,14 @@ function ConfirmStep({
   editedPhone: string
   onWhatsappChange: (value: string) => void
   onPhoneChange: (value: string) => void
+  editedName: string
+  onNameChange: (value: string) => void
+  primaryColor: string
+  onPrimaryColorChange: (value: string) => void
+  termGender: 'MASCULINE' | 'FEMININE'
+  onTermGenderChange: (value: 'MASCULINE' | 'FEMININE') => void
+  termNumber: 'SINGULAR' | 'PLURAL'
+  onTermNumberChange: (value: 'SINGULAR' | 'PLURAL') => void
 }) {
   return (
     <motion.div
@@ -1066,9 +1113,18 @@ function ConfirmStep({
                       {preview.category}
                     </span>
                   )}
-                  <h2 className="line-clamp-2 text-sm font-semibold text-slate-900 dark:text-white md:text-base" title={preview.name}>
-                    {preview.name}
-                  </h2>
+                  <div>
+                    <label className="mb-1 block text-[10px] font-medium text-slate-500 dark:text-slate-400 md:text-xs">
+                      Nome do negócio
+                    </label>
+                    <input
+                      type="text"
+                      value={editedName}
+                      onChange={(e) => onNameChange(e.target.value)}
+                      className="w-full rounded-md border border-slate-200/60 bg-white/80 px-2.5 py-1.5 text-sm font-semibold text-slate-900 transition-colors focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
+                    />
+                    <p className="mt-0.5 text-[10px] text-slate-400">Edite se o nome estiver muito longo</p>
+                  </div>
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 md:text-xs">
                     {preview.address}
                   </p>
@@ -1199,6 +1255,17 @@ function ConfirmStep({
                 </div>
               </div>
             )}
+
+            {/* Personalização visual */}
+            <ConfirmVisualPrefs
+              businessName={editedName || place.name}
+              primaryColor={primaryColor}
+              onPrimaryColorChange={onPrimaryColorChange}
+              termGender={termGender}
+              onTermGenderChange={onTermGenderChange}
+              termNumber={termNumber}
+              onTermNumberChange={onTermNumberChange}
+            />
 
             {/* Success message - inline compacto */}
             <div className="flex items-center gap-2 rounded-lg border border-emerald-200/60 bg-emerald-50/50 px-3 py-2 dark:border-emerald-900/40 dark:bg-emerald-950/20">
@@ -1460,6 +1527,133 @@ function CompleteStep({ place, storeSlug }: { place: PlaceResult; storeSlug: str
         Você poderá editar tudo depois no painel
       </p>
     </motion.div>
+  )
+}
+
+function ConfirmVisualPrefs({
+  businessName,
+  primaryColor,
+  onPrimaryColorChange,
+  termGender,
+  onTermGenderChange,
+  termNumber,
+  onTermNumberChange,
+}: {
+  businessName: string
+  primaryColor: string
+  onPrimaryColorChange: (v: string) => void
+  termGender: 'MASCULINE' | 'FEMININE'
+  onTermGenderChange: (v: 'MASCULINE' | 'FEMININE') => void
+  termNumber: 'SINGULAR' | 'PLURAL'
+  onTermNumberChange: (v: 'SINGULAR' | 'PLURAL') => void
+}) {
+  const shortName = businessName.length > 16 ? businessName.slice(0, 16) + '…' : businessName
+
+  const genderOptions = [
+    { value: 'FEMININE' as const, article: 'A', label: `A ${shortName}` },
+    { value: 'MASCULINE' as const, article: 'O', label: `O ${shortName}` },
+  ]
+
+  const numberOptions = [
+    {
+      value: 'SINGULAR' as const,
+      label: termGender === 'FEMININE' ? `A ${shortName}` : `O ${shortName}`,
+    },
+    {
+      value: 'PLURAL' as const,
+      label: termGender === 'FEMININE' ? `As ${shortName}` : `Os ${shortName}`,
+    },
+  ]
+
+  function handleHexInput(raw: string) {
+    const val = raw.startsWith('#') ? raw : `#${raw}`
+    onPrimaryColorChange(val)
+  }
+
+  return (
+    <div className="space-y-3 rounded-lg border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-700/40 dark:bg-slate-800/30">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 md:text-xs">
+        Personalização
+      </p>
+
+      {/* Color */}
+      <div>
+        <p className="mb-1.5 text-[10px] font-medium text-slate-600 dark:text-slate-300 md:text-xs">Cor principal</p>
+        <div className="flex items-center gap-2">
+          <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-slate-200/60 dark:border-slate-600/60">
+            <input
+              type="color"
+              value={primaryColor}
+              onChange={(e) => onPrimaryColorChange(e.target.value)}
+              className="absolute inset-0 h-full w-full cursor-pointer border-0 bg-transparent p-0 opacity-0"
+            />
+            <div className="h-full w-full rounded-lg" style={{ backgroundColor: primaryColor }} />
+          </div>
+          <div className="h-8 flex-1 rounded-lg border border-slate-200/60 shadow-sm" style={{ backgroundColor: primaryColor }} />
+          <input
+            type="text"
+            value={primaryColor}
+            onChange={(e) => handleHexInput(e.target.value)}
+            maxLength={7}
+            spellCheck={false}
+            className="w-20 rounded-lg border border-slate-200/60 bg-white/80 px-2 py-1.5 font-mono text-[10px] text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/30 dark:border-slate-600/60 dark:bg-slate-800/60 dark:text-slate-200 md:text-xs"
+            placeholder="#3b82f6"
+          />
+        </div>
+      </div>
+
+      {/* Gender */}
+      <div>
+        <p className="mb-1.5 text-[10px] font-medium text-slate-600 dark:text-slate-300 md:text-xs">
+          Como é referenciado?
+        </p>
+        <div className="grid grid-cols-2 gap-1.5">
+          {genderOptions.map(({ value, article, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onTermGenderChange(value)}
+              className={cn(
+                'flex flex-col items-start rounded-lg border px-2.5 py-2 text-left transition-all',
+                termGender === value
+                  ? 'border-primary/40 bg-primary/10 text-primary'
+                  : 'border-slate-200/60 bg-white/60 text-slate-500 hover:border-slate-300 dark:border-slate-700/50 dark:bg-slate-800/40 dark:text-slate-400'
+              )}
+            >
+              <span className="text-sm font-bold leading-none">{article}</span>
+              <span className="mt-0.5 truncate text-[10px] font-medium">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Number */}
+      <div>
+        <p className="mb-1.5 text-[10px] font-medium text-slate-600 dark:text-slate-300 md:text-xs">
+          Singular ou plural?
+        </p>
+        <div className="grid grid-cols-2 gap-1.5">
+          {numberOptions.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onTermNumberChange(value)}
+              className={cn(
+                'flex flex-col items-start rounded-lg border px-2.5 py-2 text-left transition-all',
+                termNumber === value
+                  ? 'border-primary/40 bg-primary/10 text-primary'
+                  : 'border-slate-200/60 bg-white/60 text-slate-500 hover:border-slate-300 dark:border-slate-700/50 dark:bg-slate-800/40 dark:text-slate-400'
+              )}
+            >
+              <span className="text-[9px] font-semibold uppercase tracking-wide opacity-60">
+                {value === 'SINGULAR' ? 'Singular' : 'Plural'}
+              </span>
+              <span className="mt-0.5 truncate text-[10px] font-medium">{label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
   )
 }
 
