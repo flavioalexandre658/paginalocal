@@ -197,6 +197,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function StorePage({ params }: PageProps) {
   const { slug } = await params
+
+  // Must be called before unstable_cache to ensure Next.js treats this page
+  // as dynamic and headers() returns actual request headers (not empty/static).
+  const requestHeaders = await headers()
+
   const data = await getStoreData(slug)
 
   if (!data) {
@@ -205,7 +210,7 @@ export default async function StorePage({ params }: PageProps) {
 
   const { store: storeData, services, testimonials, galleryImages, heroImage, institutionalPages, products, pricingPlans } = data
 
-  const session = await auth.api.getSession({ headers: await headers() })
+  const session = await auth.api.getSession({ headers: requestHeaders })
   const isOwner = session?.user?.id === storeData.userId
 
   if (!storeData.isActive && !isOwner) {

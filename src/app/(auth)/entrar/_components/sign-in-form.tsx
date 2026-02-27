@@ -13,7 +13,6 @@ import { signIn } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/ui/password-input'
-import { SocialLoginButton } from '@/components/auth/social-login-button'
 import {
   Form,
   FormControl,
@@ -62,19 +61,6 @@ export function SignInForm() {
 
   return (
     <div className="space-y-6">
-      <SocialLoginButton />
-
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-slate-200/60 dark:border-slate-700/60" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white/70 px-3 text-slate-400 dark:bg-slate-900/70">
-            ou continue com email
-          </span>
-        </div>
-      </div>
-
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
           <FormField

@@ -40,9 +40,11 @@ async function getStoreLayoutData(slug: string) {
 
 export default async function SiteLayout({ children, params }: LayoutProps) {
   const { slug } = await params
+  // Resolve headers before any cached calls to keep dynamic rendering active
+  const requestHeaders = await headers()
   const [data, session] = await Promise.all([
     getStoreLayoutData(slug),
-    auth.api.getSession({ headers: await headers() }),
+    auth.api.getSession({ headers: requestHeaders }),
   ])
 
   const isDraft = !data?.isActive

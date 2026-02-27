@@ -46,5 +46,9 @@ export const auth = betterAuth({
   advanced: {
     cookiePrefix: 'pgl',
     useSecureCookies: process.env.NODE_ENV === 'production',
+    crossSubdomainCookies: {
+      enabled: process.env.NODE_ENV === 'production',
+      domain: process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br',
+    },
   },
 })
