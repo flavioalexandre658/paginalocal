@@ -1,0 +1,1 @@
+ALTER TABLE "store" ADD COLUMN "use_v2_renderer" boolean DEFAULT false NOT NULL;

@@ -22,13 +22,9 @@ import {
   IconBuildingStore,
   IconPhone,
   IconBrandWhatsapp,
-  IconAlertCircle,
   IconClock,
   IconBrandGoogle,
   IconForms,
-  IconEye,
-  IconShoppingCart,
-  IconCreditCard,
 } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
@@ -38,12 +34,11 @@ import { PatternFormat } from 'react-number-format'
 import { searchPlacesAction } from '@/actions/google/search-places.action'
 import { getPlacePreviewAction, type PlacePreview } from '@/actions/google/get-place-preview.action'
 import { createStoreFromGoogleAction } from '@/actions/stores/create-store-from-google.action'
-import { ContentSetupStep } from '@/app/onboarding/_components/content-setup-step'
-import { ImageSetupStep } from '@/app/onboarding/_components/image-setup-step'
+import { generateSiteAfterOnboarding } from '@/actions/ai/generate-site-after-onboarding'
 import { getUserStoresAction } from '@/actions/stores/get-user-stores.action'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { cn, getStoreUrl } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { usePlanLimitRedirect } from '@/hooks/use-plan-limit-redirect'
 
 interface PlaceResult {
@@ -57,16 +52,51 @@ interface PlaceResult {
   category: string | null
 }
 
-type OnboardingStep = 'choose' | 'mode-selection' | 'search' | 'confirm' | 'creating' | 'image-setup' | 'setup-content' | 'complete'
-type StoreMode = 'LOCAL_BUSINESS' | 'PRODUCT_CATALOG' | 'SERVICE_PRICING' | 'HYBRID'
+type OnboardingStep = 'choose' | 'search' | 'confirm' | 'style' | 'contacts' | 'creating'
 
 const HUMANIZED_LOGS = [
   { icon: IconMapPin, text: 'Conectando com o Google Maps...', shortText: 'Google Maps' },
-  { icon: IconStar, text: 'Analisando suas avaliações para destacar pontos fortes...', shortText: 'Avaliações' },
+  { icon: IconStar, text: 'Analisando suas avaliações...', shortText: 'Avaliações' },
   { icon: IconPhoto, text: 'Importando suas melhores fotos...', shortText: 'Fotos' },
-  { icon: IconSparkles, text: 'Redigindo títulos persuasivos com IA...', shortText: 'Títulos IA' },
-  { icon: IconFileText, text: 'Gerando descrições otimizadas para SEO...', shortText: 'SEO' },
-  { icon: IconRocket, text: 'Otimizando carregamento para o Google...', shortText: 'Otimizando' },
+  { icon: IconSparkles, text: 'Redigindo títulos persuasivos...', shortText: 'Títulos IA' },
+  { icon: IconFileText, text: 'Gerando descrições para SEO...', shortText: 'SEO' },
+  { icon: IconSparkles, text: 'Desenhando o layout...', shortText: 'Layout' },
+  { icon: IconSparkles, text: 'Escolhendo cores e fontes...', shortText: 'Design' },
+  { icon: IconSparkles, text: 'Montando as seções...', shortText: 'Seções' },
+  { icon: IconRocket, text: 'Finalizando seu site!', shortText: 'Finalizando' },
+]
+
+const STYLE_OPTIONS = [
+  {
+    id: 'industrial',
+    name: 'Industrial',
+    description: 'Moderno e direto ao ponto',
+    palette: { primary: '#0f1923', secondary: '#1e3a5f', accent: '#ea580c' },
+  },
+  {
+    id: 'elegant',
+    name: 'Elegante',
+    description: 'Sofisticado e refinado',
+    palette: { primary: '#581c87', secondary: '#7c3aed', accent: '#d4a574' },
+  },
+  {
+    id: 'warm',
+    name: 'Acolhedor',
+    description: 'Amigável e convidativo',
+    palette: { primary: '#9a3412', secondary: '#78350f', accent: '#f97316' },
+  },
+  {
+    id: 'bold',
+    name: 'Impactante',
+    description: 'Forte e energético',
+    palette: { primary: '#111111', secondary: '#1f2937', accent: '#84cc16' },
+  },
+  {
+    id: 'minimal',
+    name: 'Minimalista',
+    description: 'Clean e espaçoso',
+    palette: { primary: '#1e293b', secondary: '#334155', accent: '#3b82f6' },
+  },
 ]
 
 export default function OnboardingPage() {
@@ -78,22 +108,19 @@ export default function OnboardingPage() {
   const [hasSearched, setHasSearched] = useState(false)
   const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(null)
   const [currentLogIndex, setCurrentLogIndex] = useState(0)
-  const [showConfetti, setShowConfetti] = useState(false)
-  const [createdStore, setCreatedStore] = useState<{ slug: string; name: string; id?: string; isActive?: boolean } | null>(null)
+  const [createdStore, setCreatedStore] = useState<{ slug: string; name: string; id?: string } | null>(null)
   const [placePreview, setPlacePreview] = useState<PlacePreview | null>(null)
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
-  const [selectedCoverIndex, setSelectedCoverIndex] = useState(0)
   const [hasStores, setHasStores] = useState(false)
-  const [editedWhatsapp, setEditedWhatsapp] = useState<string>('')
-  const [editedPhone, setEditedPhone] = useState<string>('')
-  const [editedName, setEditedName] = useState<string>('')
-  const [primaryColor, setPrimaryColor] = useState<string>('#3b82f6')
-  const [termGender, setTermGender] = useState<'MASCULINE' | 'FEMININE'>('FEMININE')
-  const [termNumber, setTermNumber] = useState<'SINGULAR' | 'PLURAL'>('SINGULAR')
-  const [selectedMode, setSelectedMode] = useState<StoreMode>('LOCAL_BUSINESS')
+  const [editedWhatsapp, setEditedWhatsapp] = useState('')
+  const [editedPhone, setEditedPhone] = useState('')
+  const [editedName, setEditedName] = useState('')
+  const [primaryColor, setPrimaryColor] = useState('#0f1923')
+  const [selectedStyle, setSelectedStyle] = useState('industrial')
 
   const { executeAsync: searchPlaces } = useAction(searchPlacesAction)
   const { executeAsync: getPlacePreview } = useAction(getPlacePreviewAction)
+  const { executeAsync: generateSiteV2 } = useAction(generateSiteAfterOnboarding)
   const { executeAsync: createStore } = useAction(createStoreFromGoogleAction)
   const { executeAsync: getUserStores } = useAction(getUserStoresAction)
   const { handleActionError } = usePlanLimitRedirect()
@@ -115,19 +142,17 @@ export default function OnboardingPage() {
           if (prev < HUMANIZED_LOGS.length - 1) return prev + 1
           return prev
         })
-      }, 2000)
+      }, 2500)
       return () => clearInterval(interval)
     }
   }, [step])
 
   async function handleSearch() {
     if (query.length < 3) return
-
     setIsSearching(true)
     setHasSearched(true)
     const result = await searchPlaces({ query })
     setIsSearching(false)
-
     if (result?.data) {
       setResults(result.data)
     }
@@ -153,10 +178,9 @@ export default function OnboardingPage() {
     setIsLoadingPreview(false)
   }
 
-  async function handleConfirmAndCreate() {
+  async function handleCreateAndGenerate() {
     if (!selectedPlace) return
 
-    // Validate WhatsApp
     const cleanWhatsapp = editedWhatsapp.replace(/\D/g, '')
     if (cleanWhatsapp.length < 10) {
       toast.error('Por favor, informe um WhatsApp válido')
@@ -166,17 +190,18 @@ export default function OnboardingPage() {
     setStep('creating')
     setCurrentLogIndex(0)
 
+    const styleOption = STYLE_OPTIONS.find(s => s.id === selectedStyle)
+
     const result = await createStore({
       googlePlaceId: selectedPlace.placeId,
       searchTerm: query.trim(),
-      selectedCoverIndex,
       whatsappOverride: cleanWhatsapp,
       phoneOverride: editedPhone.replace(/\D/g, '') || undefined,
       nameOverride: editedName.trim() !== selectedPlace.name ? editedName.trim() : undefined,
-      mode: selectedMode,
       primaryColor,
-      termGender,
-      termNumber,
+      secondaryColor: styleOption?.palette.secondary,
+      accentColor: styleOption?.palette.accent,
+      selectedStyle: selectedStyle as 'industrial' | 'elegant' | 'warm' | 'bold' | 'minimal',
     })
 
     if (result?.serverError) {
@@ -185,32 +210,27 @@ export default function OnboardingPage() {
         toast.error(result.serverError)
       }
       setStep('search')
-      setSelectedPlace(null)
       return
     }
 
-    if (result?.data) {
-      setCreatedStore({
-        slug: result.data.slug,
-        name: result.data.displayName,
-        id: result.data.store.id,
-        isActive: result.data.isActive,
-      })
-      toast.success('Site criado! Adicione imagens para personalizar.')
-      setStep('image-setup')
+    if (!result?.data) {
+      toast.error('Erro ao criar site')
+      setStep('search')
+      return
     }
-  }
 
-  function handleImageSetupComplete() {
-    if (!createdStore) return
-    if (selectedMode !== 'LOCAL_BUSINESS') {
-      setStep('setup-content')
-    } else if (createdStore.isActive) {
-      setStep('complete')
-      setShowConfetti(true)
-    } else {
-      router.push(getStoreUrl(createdStore.slug))
+    setCreatedStore({
+      slug: result.data.slug,
+      name: result.data.displayName,
+      id: result.data.store.id,
+    })
+
+    const v2Result = await generateSiteV2({ storeId: result.data.store.id })
+    if (v2Result?.serverError) {
+      console.error('[Onboarding] V2 failed:', v2Result.serverError)
     }
+
+    router.push(`/site/${result.data.slug}`)
   }
 
   function handleBackToChoose() {
@@ -220,21 +240,16 @@ export default function OnboardingPage() {
     setHasSearched(false)
     setSelectedPlace(null)
     setPlacePreview(null)
-    setSelectedCoverIndex(0)
     setEditedWhatsapp('')
     setEditedPhone('')
     setEditedName('')
-    setPrimaryColor('#3b82f6')
-    setTermGender('FEMININE')
-    setTermNumber('SINGULAR')
-    setSelectedMode('LOCAL_BUSINESS')
+    setPrimaryColor('#0f1923')
+    setSelectedStyle('industrial')
   }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
-
-      {showConfetti && <ConfettiEffect />}
 
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12">
         <AnimatePresence mode="wait">
@@ -242,19 +257,7 @@ export default function OnboardingPage() {
             <ChoosePathStep
               key="choose"
               hasStores={hasStores}
-              onChooseAutomatic={() => setStep('mode-selection')}
-            />
-          )}
-
-          {step === 'mode-selection' && (
-            <ModeSelectionStep
-              key="mode-selection"
-              hasStores={hasStores}
-              onSelectMode={(mode) => {
-                setSelectedMode(mode)
-                setStep('search')
-              }}
-              onBack={handleBackToChoose}
+              onChooseAutomatic={() => setStep('search')}
             />
           )}
 
@@ -279,30 +282,43 @@ export default function OnboardingPage() {
               place={selectedPlace}
               preview={placePreview}
               isLoadingPreview={isLoadingPreview}
-              selectedCoverIndex={selectedCoverIndex}
-              onSelectCover={setSelectedCoverIndex}
-              onConfirm={handleConfirmAndCreate}
+              editedName={editedName}
+              onNameChange={setEditedName}
+              onConfirm={() => setStep('style')}
               onBack={() => {
                 setStep('search')
                 setSelectedPlace(null)
                 setPlacePreview(null)
-                setSelectedCoverIndex(0)
                 setEditedWhatsapp('')
                 setEditedPhone('')
                 setEditedName('')
               }}
+            />
+          )}
+
+          {step === 'style' && (
+            <StyleStep
+              key="style"
+              selectedStyle={selectedStyle}
+              onStyleChange={(styleId, palette) => {
+                setSelectedStyle(styleId)
+                setPrimaryColor(palette.primary)
+              }}
+              onContinue={() => setStep('contacts')}
+              onBack={() => setStep('confirm')}
+            />
+          )}
+
+          {step === 'contacts' && (
+            <ContactsStep
+              key="contacts"
               editedWhatsapp={editedWhatsapp}
               editedPhone={editedPhone}
               onWhatsappChange={setEditedWhatsapp}
               onPhoneChange={setEditedPhone}
-              editedName={editedName}
-              onNameChange={setEditedName}
-              primaryColor={primaryColor}
-              onPrimaryColorChange={setPrimaryColor}
-              termGender={termGender}
-              onTermGenderChange={setTermGender}
-              termNumber={termNumber}
-              onTermNumberChange={setTermNumber}
+              preview={placePreview}
+              onConfirm={handleCreateAndGenerate}
+              onBack={() => setStep('style')}
             />
           )}
 
@@ -313,217 +329,13 @@ export default function OnboardingPage() {
               currentLogIndex={currentLogIndex}
             />
           )}
-
-          {step === 'image-setup' && createdStore?.id && (
-            <ImageSetupStep
-              key="image-setup"
-              storeId={createdStore.id}
-              onComplete={handleImageSetupComplete}
-            />
-          )}
-
-          {step === 'setup-content' && createdStore?.id && (
-            <ContentSetupStep
-              key="setup-content"
-              storeId={createdStore.id}
-              storeName={createdStore.name}
-              mode={selectedMode}
-              onComplete={() => {
-                if (createdStore.isActive) {
-                  setStep('complete')
-                  setShowConfetti(true)
-                } else {
-                  router.push(getStoreUrl(createdStore.slug))
-                }
-              }}
-            />
-          )}
-
-          {step === 'complete' && selectedPlace && createdStore && (
-            <CompleteStep
-              key="complete"
-              place={selectedPlace}
-              storeSlug={createdStore.slug}
-            />
-          )}
         </AnimatePresence>
       </div>
     </div>
   )
 }
 
-function ModeSelectionStep({
-  hasStores,
-  onSelectMode,
-  onBack,
-}: {
-  hasStores: boolean
-  onSelectMode: (mode: StoreMode) => void
-  onBack: () => void
-}) {
-  const modes: Array<{
-    mode: StoreMode
-    title: string
-    description: string
-    examples: string[]
-    icon: typeof IconMapPin
-    isRecommended?: boolean
-  }> = [
-      {
-        mode: 'LOCAL_BUSINESS',
-        title: 'Negócio Local',
-        description: 'Serviços profissionais com foco em localização',
-        examples: ['Oficina', 'Barbearia', 'Consultório'],
-        icon: IconMapPin,
-        isRecommended: true,
-      },
-      {
-        mode: 'PRODUCT_CATALOG',
-        title: 'Loja / Catálogo',
-        description: 'Venda produtos com catálogo e coleções',
-        examples: ['Loja de Roupas', 'Pet Shop', 'Floricultura'],
-        icon: IconShoppingCart,
-      },
-      {
-        mode: 'SERVICE_PRICING',
-        title: 'Planos e Preços',
-        description: 'Ofereça planos com tabela de preços',
-        examples: ['Academia', 'SaaS', 'Consultoria'],
-        icon: IconCreditCard,
-      },
-      {
-        mode: 'HYBRID',
-        title: 'Híbrido',
-        description: 'Serviços + Produtos + Planos',
-        examples: ['Pet Shop completo', 'Academia com loja'],
-        icon: IconSparkles,
-      },
-    ]
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="w-full max-w-2xl"
-    >
-      {hasStores && (
-        <button
-          onClick={onBack}
-          className="mb-4 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-        >
-          <IconArrowLeft className="h-4 w-4" />
-          Voltar
-        </button>
-      )}
-
-      <div className="mb-6 text-center md:mb-8">
-        <motion.div
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.1 }}
-          className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
-        >
-          <IconBuildingStore className="h-6 w-6 text-primary" />
-        </motion.div>
-        <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-          Que tipo de site você quer criar?
-        </h1>
-        <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
-          Escolha o formato ideal para o seu negócio
-        </p>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-2 md:gap-4">
-        {modes.map((modeConfig, index) => (
-          <motion.button
-            key={modeConfig.mode}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 + index * 0.1, duration: 0.35 }}
-            onClick={() => onSelectMode(modeConfig.mode)}
-            className={cn(
-              'group relative cursor-pointer overflow-hidden rounded-2xl border-2 bg-white/70 p-5 text-left backdrop-blur-sm transition-all duration-300 md:p-6',
-              modeConfig.isRecommended
-                ? 'border-primary/20 hover:-translate-y-1 hover:border-primary/40 hover:bg-white hover:shadow-xl hover:shadow-primary/10'
-                : 'border-slate-200/60 hover:-translate-y-1 hover:border-slate-300/80 hover:bg-white hover:shadow-lg hover:shadow-slate-200/30',
-              'dark:border-slate-700/60 dark:bg-slate-800/70 dark:hover:bg-slate-800'
-            )}
-          >
-            {modeConfig.isRecommended && (
-              <div className="absolute right-3 top-3 md:right-4 md:top-4">
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary md:text-xs">
-                  <IconSparkles className="h-3 w-3" />
-                  Recomendado
-                </span>
-              </div>
-            )}
-
-            <div className={cn(
-              'absolute inset-0 bg-gradient-to-br transition-all duration-300',
-              modeConfig.isRecommended
-                ? 'from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/3 group-hover:to-transparent'
-                : 'from-transparent via-transparent to-transparent'
-            )} />
-
-            <div className="relative">
-              <div className={cn(
-                'mb-3 flex h-11 w-11 items-center justify-center rounded-xl shadow-md transition-transform duration-300 group-hover:scale-110 md:h-12 md:w-12',
-                modeConfig.isRecommended
-                  ? 'bg-gradient-to-br from-primary/20 to-primary/5 shadow-primary/10'
-                  : 'bg-slate-100 dark:bg-slate-700/60'
-              )}>
-                <modeConfig.icon className={cn(
-                  'h-5 w-5 md:h-6 md:w-6',
-                  modeConfig.isRecommended ? 'text-primary' : 'text-slate-500 dark:text-slate-400'
-                )} />
-              </div>
-
-              <h2 className={cn(
-                'mb-1.5 text-base font-semibold dark:text-white md:text-lg',
-                modeConfig.isRecommended ? 'pr-16 md:pr-20' : ''
-              )}>
-                {modeConfig.title}
-              </h2>
-              <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 md:text-sm">
-                {modeConfig.description}
-              </p>
-
-              <div className="mt-4 flex flex-wrap gap-1.5 md:gap-2">
-                {modeConfig.examples.map((example) => (
-                  <span
-                    key={example}
-                    className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-700/60 dark:text-slate-300 md:text-xs"
-                  >
-                    {example}
-                  </span>
-                ))}
-              </div>
-
-              <div className={cn(
-                'mt-4 flex items-center gap-1.5 text-xs font-medium transition-all group-hover:gap-2.5 md:text-sm',
-                modeConfig.isRecommended ? 'text-primary' : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-400 dark:group-hover:text-slate-200'
-              )}>
-                Selecionar
-                <IconArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </div>
-            </div>
-          </motion.button>
-        ))}
-      </div>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="mt-6 text-center text-sm text-slate-400"
-      >
-        Você poderá alterar depois
-      </motion.p>
-    </motion.div>
-  )
-}
+// ─── ChoosePathStep ──────────────────────────────────────────────────────────
 
 function ChoosePathStep({
   hasStores,
@@ -550,7 +362,6 @@ function ChoosePathStep({
         </Link>
       )}
 
-      {/* Header */}
       <div className="mb-6 text-center md:mb-8">
         <motion.div
           initial={{ scale: 0.8 }}
@@ -568,9 +379,7 @@ function ChoosePathStep({
         </p>
       </div>
 
-      {/* Path Cards */}
       <div className="grid gap-3 md:grid-cols-2 md:gap-4">
-        {/* Automatic Path */}
         <motion.button
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -582,29 +391,23 @@ function ChoosePathStep({
             'dark:border-primary/20 dark:bg-slate-800/70 dark:hover:border-primary/40 dark:hover:bg-slate-800'
           )}
         >
-          {/* Recommended badge */}
           <div className="absolute right-3 top-3 md:right-4 md:top-4">
             <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary md:text-xs">
               <IconSparkles className="h-3 w-3" />
               Recomendado
             </span>
           </div>
-
-          {/* Gradient overlay on hover */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/0 transition-all duration-300 group-hover:from-primary/5 group-hover:via-primary/3 group-hover:to-transparent" />
-
           <div className="relative">
             <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-md shadow-primary/10 transition-transform duration-300 group-hover:scale-110 md:h-12 md:w-12">
               <IconBrandGoogle className="h-5 w-5 text-primary md:h-6 md:w-6" />
             </div>
-
             <h2 className="mb-1.5 pr-16 text-base font-semibold text-slate-900 dark:text-white md:pr-20 md:text-lg">
               Importar do Google
             </h2>
             <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 md:text-sm">
               Importamos fotos, avaliações e dados do seu Google Meu Negócio automaticamente.
             </p>
-
             <div className="mt-4 flex flex-wrap gap-1.5 md:gap-2">
               {['Fotos', 'Avaliações', 'Endereço', 'IA'].map((tag, i) => (
                 <span
@@ -616,7 +419,6 @@ function ChoosePathStep({
                 </span>
               ))}
             </div>
-
             <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-primary transition-all group-hover:gap-2.5 md:text-sm">
               Começar
               <IconArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -624,7 +426,6 @@ function ChoosePathStep({
           </div>
         </motion.button>
 
-        {/* Manual Path */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
@@ -639,19 +440,16 @@ function ChoosePathStep({
               )}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-slate-100/0 via-slate-100/0 to-slate-100/0 transition-all duration-300 group-hover:from-slate-50/50 group-hover:via-slate-50/30 group-hover:to-transparent dark:group-hover:from-slate-800/50 dark:group-hover:via-slate-800/30" />
-
               <div className="relative">
                 <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-slate-100 shadow-sm transition-transform duration-300 group-hover:scale-110 dark:bg-slate-700/60 md:h-12 md:w-12">
                   <IconForms className="h-5 w-5 text-slate-500 dark:text-slate-400 md:h-6 md:w-6" />
                 </div>
-
                 <h2 className="mb-1.5 text-base font-semibold text-slate-900 dark:text-white md:text-lg">
                   Criar manualmente
                 </h2>
                 <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 md:text-sm">
                   Preencha as informações do seu negócio e monte seu site do zero.
                 </p>
-
                 <div className="mt-4 flex flex-wrap gap-1.5 md:gap-2">
                   {['Personalizado', 'Sem Google'].map((tag) => (
                     <span
@@ -662,7 +460,6 @@ function ChoosePathStep({
                     </span>
                   ))}
                 </div>
-
                 <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-slate-500 transition-all group-hover:gap-2.5 group-hover:text-slate-700 dark:text-slate-400 dark:group-hover:text-slate-200 md:text-sm">
                   Começar
                   <IconArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -673,10 +470,7 @@ function ChoosePathStep({
         </motion.div>
       </div>
 
-
-
-      {/* Support CTA */}
-      {process.env.NEXT_PUBLIC_SUPPORT_NUMBER && (
+      {/*process.env.NEXT_PUBLIC_SUPPORT_NUMBER && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -710,7 +504,7 @@ function ChoosePathStep({
             <IconArrowRight className="h-4 w-4 shrink-0 text-slate-300 transition-all group-hover:translate-x-0.5 group-hover:text-emerald-500 dark:text-slate-600" />
           </a>
         </motion.div>
-      )}
+      )*/}
 
       <motion.p
         initial={{ opacity: 0 }}
@@ -723,6 +517,8 @@ function ChoosePathStep({
     </motion.div>
   )
 }
+
+// ─── SearchStep ──────────────────────────────────────────────────────────────
 
 function SearchStep({
   query,
@@ -849,9 +645,7 @@ function SearchStep({
                   Tente buscar com termos diferentes ou crie seu site manualmente.
                 </p>
                 <Link href="/onboarding/manual" className="mt-4 inline-block">
-                  <Button
-                    className="gap-2 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30"
-                  >
+                  <Button className="gap-2 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30">
                     <IconPlus className="h-4 w-4" />
                     Criar meu site manualmente
                   </Button>
@@ -873,6 +667,8 @@ function SearchStep({
     </motion.div>
   )
 }
+
+// ─── PlaceCard ───────────────────────────────────────────────────────────────
 
 function PlaceCard({
   place,
@@ -896,7 +692,6 @@ function PlaceCard({
       )}
     >
       <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/0 to-primary/0 transition-all duration-300 group-hover:from-primary/5 group-hover:via-primary/3 group-hover:to-primary/0" />
-
       <div className="relative flex gap-3">
         {place.photoUrl ? (
           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg sm:h-24 sm:w-24">
@@ -914,12 +709,10 @@ function PlaceCard({
             <IconBuildingStore className="h-8 w-8 text-slate-400 dark:text-slate-500" />
           </div>
         )}
-
         <div className="flex flex-1 flex-col justify-center gap-1 min-w-0">
           <p className="font-semibold leading-tight text-slate-900 dark:text-white line-clamp-2">
             {place.name}
           </p>
-
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
             {place.rating && (
               <span className="flex items-center gap-0.5 text-sm">
@@ -936,12 +729,10 @@ function PlaceCard({
               </span>
             )}
           </div>
-
           <p className="text-sm leading-snug text-slate-500 dark:text-slate-400 line-clamp-2">
             <IconMapPin className="mr-0.5 inline-block h-3.5 w-3.5 shrink-0 -translate-y-px" />
             {place.address}
           </p>
-
           {place.isOpen !== null && (
             <span className={cn(
               'inline-flex w-fit items-center gap-1 text-xs font-medium',
@@ -954,53 +745,174 @@ function PlaceCard({
             </span>
           )}
         </div>
-
         <IconArrowRight className="mt-2 h-5 w-5 shrink-0 text-slate-300 transition-all group-hover:translate-x-1 group-hover:text-primary dark:text-slate-600" />
       </div>
     </motion.button>
   )
 }
 
+// ─── ConfirmStep ─────────────────────────────────────────────────────────────
+
 function ConfirmStep({
   place,
   preview,
   isLoadingPreview,
-  selectedCoverIndex,
-  onSelectCover,
-  onConfirm,
-  onBack,
-  editedWhatsapp,
-  editedPhone,
-  onWhatsappChange,
-  onPhoneChange,
   editedName,
   onNameChange,
-  primaryColor,
-  onPrimaryColorChange,
-  termGender,
-  onTermGenderChange,
-  termNumber,
-  onTermNumberChange,
+  onConfirm,
+  onBack,
 }: {
   place: PlaceResult
   preview: PlacePreview | null
   isLoadingPreview: boolean
-  selectedCoverIndex: number
-  onSelectCover: (index: number) => void
-  onConfirm: () => void
-  onBack: () => void
-  editedWhatsapp: string
-  editedPhone: string
-  onWhatsappChange: (value: string) => void
-  onPhoneChange: (value: string) => void
   editedName: string
   onNameChange: (value: string) => void
-  primaryColor: string
-  onPrimaryColorChange: (value: string) => void
-  termGender: 'MASCULINE' | 'FEMININE'
-  onTermGenderChange: (value: 'MASCULINE' | 'FEMININE') => void
-  termNumber: 'SINGULAR' | 'PLURAL'
-  onTermNumberChange: (value: 'SINGULAR' | 'PLURAL') => void
+  onConfirm: () => void
+  onBack: () => void
+}) {
+  const [isEditingName, setIsEditingName] = useState(false)
+  const heroPhoto = preview?.photos?.[0] || place.photoUrl
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="w-full max-w-lg px-4"
+    >
+      <GlassCard className="p-6 md:p-8">
+        {isLoadingPreview ? (
+          <div className="space-y-4">
+            <div className="mx-auto h-40 w-40 rounded-xl bg-slate-200 dark:bg-slate-700 relative overflow-hidden">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                animate={{ x: ['-100%', '100%'] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+              />
+            </div>
+            <div className="space-y-2 text-center">
+              <div className="mx-auto h-6 w-48 rounded-lg bg-slate-200 dark:bg-slate-700" />
+              <div className="mx-auto h-4 w-64 rounded-lg bg-slate-100 dark:bg-slate-800" />
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div className="text-center">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white md:text-2xl">
+                Confirme seu negócio
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Veja o que encontramos no Google
+              </p>
+            </div>
+
+            {heroPhoto && (
+              <div className="flex justify-center">
+                <img
+                  src={heroPhoto}
+                  alt={editedName || place.name}
+                  className="h-40 w-40 rounded-xl object-cover shadow-lg md:h-48 md:w-48"
+                />
+              </div>
+            )}
+
+            <div className="text-center">
+              {isEditingName ? (
+                <div className="mx-auto max-w-sm">
+                  <Input
+                    type="text"
+                    value={editedName}
+                    onChange={(e) => onNameChange(e.target.value)}
+                    onBlur={() => setIsEditingName(false)}
+                    onKeyDown={(e) => e.key === 'Enter' && setIsEditingName(false)}
+                    autoFocus
+                    className="text-center text-xl font-semibold md:text-2xl"
+                  />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsEditingName(true)}
+                  className="group inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">
+                    {editedName || place.name}
+                  </h3>
+                  <IconEdit className="h-4 w-4 text-slate-400 opacity-0 transition-opacity group-hover:opacity-100" />
+                </button>
+              )}
+
+              {(preview?.address || place.address) && (
+                <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+                  {preview?.address || place.address}
+                </p>
+              )}
+            </div>
+
+            {preview?.rating && (
+              <div className="flex items-center justify-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
+                <IconStarFilled className="h-4 w-4 text-amber-500" />
+                <span className="font-medium">{preview.rating.toFixed(1)}</span>
+                {preview.reviewsCount && (
+                  <>
+                    <span className="text-slate-400">·</span>
+                    <span>{preview.reviewsCount} avaliações</span>
+                  </>
+                )}
+              </div>
+            )}
+
+            {preview?.category && (
+              <div className="flex justify-center">
+                <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  {preview.category}
+                </span>
+              </div>
+            )}
+
+            <Button
+              onClick={onConfirm}
+              disabled={isLoadingPreview}
+              className="h-12 w-full cursor-pointer gap-2 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+            >
+              {isLoadingPreview ? (
+                <IconLoader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <IconCheck className="h-4 w-4" />
+              )}
+              Confirmar e continuar
+            </Button>
+
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={onBack}
+                className="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer transition-colors"
+              >
+                <IconArrowLeft className="mr-1 inline h-3.5 w-3.5" />
+                Voltar
+              </button>
+            </div>
+          </div>
+        )}
+      </GlassCard>
+    </motion.div>
+  )
+}
+
+// ─── StyleStep ───────────────────────────────────────────────────────────────
+
+function StyleStep({
+  selectedStyle,
+  onStyleChange,
+  onContinue,
+  onBack,
+}: {
+  selectedStyle: string
+  onStyleChange: (styleId: string, palette: { primary: string; secondary: string; accent: string }) => void
+  onContinue: () => void
+  onBack: () => void
 }) {
   return (
     <motion.div
@@ -1010,368 +922,223 @@ function ConfirmStep({
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="w-full max-w-2xl px-4"
     >
-      {/* Header compacto */}
-      <div className="mb-3 text-center md:mb-4">
-        <motion.div
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 shadow-lg shadow-emerald-500/10 md:mb-3 md:h-12 md:w-12"
-        >
-          <IconCheck className="h-5 w-5 text-emerald-500 md:h-6 md:w-6" />
-        </motion.div>
-        <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-2xl">
-          Confirme sua empresa
-        </h1>
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 md:text-sm">
-          Veja o que vamos importar do Google
-        </p>
-      </div>
-
-      <GlassCard className="p-4 md:p-5">
-        {isLoadingPreview ? (
-          <div className="space-y-3">
-            {/* Skeleton fotos - compacto */}
-            <div className="-mx-4 -mt-4 flex gap-2 overflow-hidden rounded-t-xl bg-slate-100 p-2.5 dark:bg-slate-800 md:-mx-5 md:-mt-5 md:p-3">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-200 dark:bg-slate-700 md:h-20 md:w-20">
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                    animate={{ x: ['-100%', '100%'] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="space-y-2 pt-1">
-              <div className="h-4 w-2/3 rounded-lg bg-slate-200 dark:bg-slate-700" />
-              <div className="h-3 w-full rounded-lg bg-slate-100 dark:bg-slate-800" />
-            </div>
-            <div className="h-14 rounded-lg bg-slate-100 dark:bg-slate-800" />
+      <GlassCard className="p-6 md:p-8">
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white md:text-2xl">
+              Escolha o estilo do seu site
+            </h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Selecione o visual que mais combina com o seu negócio
+            </p>
           </div>
-        ) : preview ? (
-          <div className="space-y-3 md:space-y-4">
-            {/* Fotos - compacto */}
-            {preview.photos.length > 0 && (
-              <div className="-mx-4 -mt-4 rounded-t-xl bg-gradient-to-b from-slate-100 to-slate-50 px-2.5 pb-2.5 pt-2 dark:from-slate-800 dark:to-slate-800/50 md:-mx-5 md:-mt-5 md:px-3 md:pb-3">
-                <div className="mb-1.5 flex items-center justify-between md:mb-2">
-                  <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 md:text-xs">
-                    <IconPhoto className="mr-1 inline h-3 w-3" />
-                    {preview.photos.length} {preview.photos.length === 1 ? 'foto' : 'fotos'}
-                  </p>
-                  {preview.photos.length > 1 && (
-                    <p className="hidden text-[10px] text-slate-400 dark:text-slate-500 sm:block md:text-xs">
-                      Clique para escolher capa
-                    </p>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {STYLE_OPTIONS.map((style) => {
+              const isSelected = selectedStyle === style.id
+              return (
+                <motion.button
+                  key={style.id}
+                  type="button"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => onStyleChange(style.id, style.palette)}
+                  className={cn(
+                    'group cursor-pointer overflow-hidden rounded-xl border-2 text-left transition-all duration-200',
+                    isSelected
+                      ? 'border-primary ring-2 ring-primary/20 shadow-lg'
+                      : 'border-slate-200/60 hover:border-slate-300 dark:border-slate-700/60 dark:hover:border-slate-600'
                   )}
-                </div>
-                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide md:gap-2">
-                  {preview.photos.map((photo, i) => {
-                    const isSelected = selectedCoverIndex === i
-                    return (
-                      <motion.button
-                        key={i}
-                        type="button"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.02 }}
-                        onClick={() => onSelectCover(i)}
-                        className={cn(
-                          "group relative shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 transition-all duration-200",
-                          isSelected
-                            ? "border-primary shadow-lg shadow-primary/20"
-                            : "border-transparent opacity-60 hover:opacity-100"
-                        )}
-                      >
-                        <img
-                          src={photo}
-                          alt={`Foto ${i + 1}`}
-                          className="h-16 w-16 object-cover md:h-20 md:w-20"
-                        />
-                        {isSelected && (
-                          <div className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent" />
-                        )}
-                        {isSelected && (
-                          <div className="absolute bottom-1 left-1 flex items-center gap-0.5 rounded bg-primary px-1 py-0.5 text-[8px] font-semibold text-white shadow-sm md:text-[9px]">
-                            <IconCheck className="h-2 w-2 md:h-2.5 md:w-2.5" />
-                            Capa
-                          </div>
-                        )}
-                      </motion.button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Info do negócio + Contatos lado a lado no desktop */}
-            <div className="grid gap-3 md:grid-cols-2 md:gap-4">
-              {/* Info do negócio */}
-              <div className="flex items-start justify-between gap-2 md:gap-3">
-                <div className="min-w-0 flex-1 space-y-1">
-                  {/*preview.category && (
-                    <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary md:text-xs">
-                      {preview.category}
-                    </span>
-                  )*/}
-                  <div>
-                    <label className="mb-1 block text-[10px] font-medium text-slate-500 dark:text-slate-400 md:text-xs">
-                      Nome do negócio
-                    </label>
-                    <input
-                      type="text"
-                      value={editedName}
-                      onChange={(e) => onNameChange(e.target.value)}
-                      className="w-full rounded-md border border-slate-200/60 bg-white/80 px-2.5 py-1.5 text-sm font-semibold text-slate-900 transition-colors focus:border-primary/40 focus:outline-none focus:ring-1 focus:ring-primary/20 dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-white"
+                >
+                  <div
+                    className="relative flex h-32 flex-col items-center justify-center gap-2 p-4"
+                    style={{ backgroundColor: style.palette.primary }}
+                  >
+                    <div
+                      className="h-3 w-24 rounded-full opacity-80"
+                      style={{ backgroundColor: style.palette.accent }}
                     />
-                    <p className="mt-0.5 text-[10px] text-slate-400">Edite se o nome estiver muito longo</p>
-                  </div>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 md:text-xs">
-                    {preview.address}
-                  </p>
-                </div>
-
-                {preview.rating && (
-                  <div className="shrink-0 text-center">
-                    <div className="flex items-center gap-1 rounded-lg bg-amber-50 px-2 py-1 dark:bg-amber-950/30">
-                      <IconStarFilled className="h-3.5 w-3.5 text-amber-500 md:h-4 md:w-4" />
-                      <span className="text-sm font-semibold text-amber-700 dark:text-amber-400 md:text-base">
-                        {preview.rating.toFixed(1)}
-                      </span>
+                    <div className="h-2 w-32 rounded-full bg-white/30" />
+                    <div className="h-2 w-20 rounded-full bg-white/20" />
+                    <div
+                      className="mt-2 h-7 w-28 rounded-md flex items-center justify-center"
+                      style={{ backgroundColor: style.palette.accent }}
+                    >
+                      <span className="text-[10px] font-semibold text-white">Saiba mais</span>
                     </div>
-                    {preview.reviewsCount && (
-                      <p className="mt-0.5 text-[9px] text-slate-500 md:text-[10px]">
-                        {preview.reviewsCount} avaliações
-                      </p>
+                    {isSelected && (
+                      <div className="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-sm">
+                        <IconCheck className="h-4 w-4 text-primary" />
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
 
-              {/* Seção de Contatos - compacta */}
-              <div className="space-y-2 rounded-lg border border-amber-200/60 bg-amber-50/50 p-2.5 dark:border-amber-900/40 dark:bg-amber-950/20 md:p-3">
-                <div className="flex items-center gap-2">
-                  <IconAlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-                  <p className="text-xs font-medium text-amber-800 dark:text-amber-200">
-                    Verifique seus contatos
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  {/* WhatsApp */}
-                  <div className="space-y-1">
-                    <label className="flex items-center gap-1 text-[10px] font-medium text-slate-700 dark:text-slate-300 md:text-xs">
-                      <IconBrandWhatsapp className="h-3 w-3 text-emerald-600" />
-                      WhatsApp
-                    </label>
-                    <PatternFormat
-                      format="(##) #####-####"
-                      mask="_"
-                      value={editedWhatsapp}
-                      onValueChange={(values) => onWhatsappChange(values.value)}
-                      className={cn(
-                        "flex h-9 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-base ring-offset-background transition-colors md:h-9 md:text-sm",
-                        "placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500/20",
-                        "dark:border-slate-700 dark:bg-slate-800 dark:placeholder:text-slate-500 dark:focus:border-emerald-500"
-                      )}
-                      placeholder="(11) 99999-9999"
-                    />
+                  <div className="bg-white p-3 dark:bg-slate-800">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                      {style.name}
+                    </p>
+                    <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                      {style.description}
+                    </p>
+                    <div className="mt-2 flex items-center gap-1.5">
+                      {[style.palette.primary, style.palette.secondary, style.palette.accent].map((color, i) => (
+                        <div
+                          key={i}
+                          className="h-4 w-4 rounded-full border border-slate-200/60 dark:border-slate-600"
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                    </div>
                   </div>
-
-                  {/* Telefone (Ligação) */}
-                  <div className="space-y-1">
-                    <label className="flex items-center gap-1 text-[10px] font-medium text-slate-700 dark:text-slate-300 md:text-xs">
-                      <IconPhone className="h-3 w-3 text-blue-600" />
-                      Telefone
-                    </label>
-                    <PatternFormat
-                      format="(##) #####-####"
-                      mask="_"
-                      value={editedPhone}
-                      onValueChange={(values) => onPhoneChange(values.value)}
-                      className={cn(
-                        "flex h-9 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-base ring-offset-background transition-colors md:h-9 md:text-sm",
-                        "placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500/20",
-                        "dark:border-slate-700 dark:bg-slate-800 dark:placeholder:text-slate-500 dark:focus:border-blue-500"
-                      )}
-                      placeholder="(11) 99999-9999"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Reviews em Carrossel */}
-            {preview.topReviews.length > 0 && (
-              <div className="space-y-1.5 md:space-y-2">
-                <p className="flex items-center gap-1.5 text-[10px] font-medium text-slate-700 dark:text-slate-300 md:text-xs">
-                  <IconStar className="h-3 w-3 text-amber-500 md:h-3.5 md:w-3.5" />
-                  Avaliações que vamos destacar ({preview.topReviews.length})
-                </p>
-
-                <div className="relative -mx-4 md:-mx-5">
-                  <div className="flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-hide snap-x snap-mandatory md:px-5">
-                    {preview.topReviews.map((review, i) => (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.05 + Math.min(i * 0.03, 0.3) }}
-                        className={cn(
-                          "flex-shrink-0 snap-center",
-                          review.text
-                            ? "min-w-[200px] max-w-[200px] md:min-w-[220px] md:max-w-[220px]"
-                            : "min-w-[140px] max-w-[140px] md:min-w-[160px] md:max-w-[160px]",
-                          "rounded-lg border border-slate-200/60 bg-white/80 p-2.5",
-                          "dark:border-slate-700/60 dark:bg-slate-800/50"
-                        )}
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <ReviewAvatar photoUrl={review.photoUrl} author={review.author} size="sm" />
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-[10px] font-medium text-slate-800 dark:text-slate-200 md:text-xs">
-                              {review.author}
-                            </p>
-                            <div className="flex">
-                              {[...Array(5)].map((_, j) => (
-                                <IconStarFilled
-                                  key={j}
-                                  className={cn(
-                                    'h-2.5 w-2.5',
-                                    j < review.rating ? 'text-amber-400' : 'text-slate-200 dark:text-slate-700'
-                                  )}
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        {review.text && (
-                          <p className="mt-1.5 text-[10px] leading-relaxed text-slate-600 line-clamp-2 dark:text-slate-400 md:text-xs">
-                            &ldquo;{review.text}&rdquo;
-                          </p>
-                        )}
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Personalização visual */}
-            <ConfirmVisualPrefs
-              businessName={editedName || place.name}
-              primaryColor={primaryColor}
-              onPrimaryColorChange={onPrimaryColorChange}
-              termGender={termGender}
-              onTermGenderChange={onTermGenderChange}
-              termNumber={termNumber}
-              onTermNumberChange={onTermNumberChange}
-            />
-
-            {/* Success message - inline compacto */}
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-200/60 bg-emerald-50/50 px-3 py-2 dark:border-emerald-900/40 dark:bg-emerald-950/20">
-              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-emerald-500/20 md:h-6 md:w-6">
-                <IconCheck className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <p className="text-xs text-emerald-800 dark:text-emerald-200 md:text-sm">
-                <span className="font-medium">Pronto para importar!</span>
-                <span className="ml-1 text-emerald-700 dark:text-emerald-300">Nossa IA vai otimizar para SEO.</span>
-              </p>
-            </div>
+                </motion.button>
+              )
+            })}
           </div>
-        ) : (
-          <div className="space-y-4 md:space-y-5">
-            <div className="rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-slate-700/60 dark:bg-slate-800/50 md:p-5">
-              <div className="flex items-start gap-3 md:gap-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary md:h-12 md:w-12 md:rounded-xl">
-                  <IconMapPin className="h-5 w-5 md:h-6 md:w-6" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-base font-semibold text-slate-900 dark:text-white md:text-lg">
-                    {place.name}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 md:text-sm">
-                    {place.address}
-                  </p>
-                </div>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-2 md:gap-3">
-              {[
-                { icon: IconStar, label: 'Avaliações' },
-                { icon: IconPhoto, label: 'Fotos' },
-                { icon: IconMapPin, label: 'Localização' },
-                { icon: IconSparkles, label: 'Dados do negócio' },
-              ].map((item, index) => (
-                <motion.div
-                  key={item.label}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center gap-2 rounded-lg bg-slate-100/80 px-3 py-2.5 text-xs text-slate-600 dark:bg-slate-800/50 dark:text-slate-300 md:gap-2.5 md:rounded-xl md:px-4 md:py-3 md:text-sm"
-                >
-                  <item.icon className="h-3.5 w-3.5 text-primary md:h-4 md:w-4" />
-                  {item.label}
-                </motion.div>
-              ))}
-            </div>
+          <Button
+            onClick={onContinue}
+            className="h-12 w-full cursor-pointer gap-2 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+          >
+            <IconArrowRight className="h-4 w-4" />
+            Continuar
+          </Button>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={onBack}
+              className="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer transition-colors"
+            >
+              <IconArrowLeft className="mr-1 inline h-3.5 w-3.5" />
+              Voltar
+            </button>
           </div>
-        )}
-
-        <div className="mt-4 flex gap-2 border-t border-slate-200/60 pt-4 dark:border-slate-700/60 md:mt-6 md:gap-3 md:pt-6">
-          <Button
-            variant="outline"
-            onClick={onBack}
-            className="h-10 flex-1 cursor-pointer gap-1.5 border-slate-200/60 text-sm dark:border-slate-700/60 md:h-12 md:gap-2"
-          >
-            <IconEdit className="h-3.5 w-3.5 md:h-4 md:w-4" />
-            Alterar
-          </Button>
-          <Button
-            onClick={onConfirm}
-            disabled={isLoadingPreview}
-            className="h-10 flex-1 cursor-pointer gap-1.5 text-sm shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30 md:h-12 md:gap-2"
-          >
-            {isLoadingPreview ? (
-              <IconLoader2 className="h-3.5 w-3.5 animate-spin md:h-4 md:w-4" />
-            ) : (
-              <IconRocket className="h-3.5 w-3.5 md:h-4 md:w-4" />
-            )}
-            Criar meu site
-          </Button>
         </div>
       </GlassCard>
     </motion.div>
   )
 }
 
-function ReviewAvatar({ photoUrl, author, size = 'md' }: { photoUrl: string | null; author: string; size?: 'sm' | 'md' }) {
-  const [hasError, setHasError] = useState(false)
-  const initials = author.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+// ─── ContactsStep ────────────────────────────────────────────────────────────
 
-  const sizeClasses = size === 'sm'
-    ? 'h-8 w-8'
-    : 'h-10 w-10'
-
-  const textSizeClass = size === 'sm' ? 'text-xs' : 'text-sm'
-
-  if (!photoUrl || hasError) {
-    return (
-      <div className={cn("flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5", sizeClasses)}>
-        <span className={cn("font-medium text-primary", textSizeClass)}>{initials}</span>
-      </div>
-    )
-  }
-
+function ContactsStep({
+  editedWhatsapp,
+  editedPhone,
+  onWhatsappChange,
+  onPhoneChange,
+  preview,
+  onConfirm,
+  onBack,
+}: {
+  editedWhatsapp: string
+  editedPhone: string
+  onWhatsappChange: (value: string) => void
+  onPhoneChange: (value: string) => void
+  preview: PlacePreview | null
+  onConfirm: () => void
+  onBack: () => void
+}) {
   return (
-    <img
-      src={photoUrl}
-      alt={author}
-      className={cn("shrink-0 rounded-full object-cover", sizeClasses)}
-      onError={() => setHasError(true)}
-    />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className="w-full max-w-lg px-4"
+    >
+      <GlassCard className="p-6 md:p-8">
+        <div className="space-y-6">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white md:text-2xl">
+              Confirme seus contatos
+            </h2>
+            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+              Seus clientes vão usar esses dados para falar com você
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <IconBrandWhatsapp className="h-4 w-4 text-emerald-600" />
+              WhatsApp
+            </label>
+            <PatternFormat
+              format="(##) #####-####"
+              mask="_"
+              value={editedWhatsapp}
+              onValueChange={(values) => onWhatsappChange(values.value)}
+              className={cn(
+                'flex h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base ring-offset-background transition-colors',
+                'placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20',
+                'dark:border-slate-700 dark:bg-slate-800 dark:placeholder:text-slate-500 dark:focus:border-emerald-500'
+              )}
+              placeholder="(11) 99999-9999"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+              <IconPhone className="h-4 w-4 text-blue-600" />
+              Telefone
+              <span className="text-xs font-normal text-slate-400">(opcional)</span>
+            </label>
+            <PatternFormat
+              format="(##) #####-####"
+              mask="_"
+              value={editedPhone}
+              onValueChange={(values) => onPhoneChange(values.value)}
+              className={cn(
+                'flex h-11 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-base ring-offset-background transition-colors',
+                'placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20',
+                'dark:border-slate-700 dark:bg-slate-800 dark:placeholder:text-slate-500 dark:focus:border-blue-500'
+              )}
+              placeholder="(11) 99999-9999"
+            />
+          </div>
+
+          {preview?.openingHours && preview.openingHours.length > 0 && (
+            <div className="space-y-2">
+              <label className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+                <IconClock className="h-4 w-4 text-slate-500" />
+                Horário de funcionamento
+              </label>
+              <div className="rounded-lg border border-slate-200/60 bg-slate-50/50 p-3 dark:border-slate-700/60 dark:bg-slate-800/30">
+                <div className="grid gap-1">
+                  {preview.openingHours.map((hours, i) => (
+                    <p key={i} className="text-xs text-slate-600 dark:text-slate-400">
+                      {hours}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <Button
+            onClick={onConfirm}
+            className="h-12 w-full cursor-pointer gap-2 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+          >
+            <IconRocket className="h-4 w-4" />
+            Criar meu site
+          </Button>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={onBack}
+              className="text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer transition-colors"
+            >
+              <IconArrowLeft className="mr-1 inline h-3.5 w-3.5" />
+              Voltar
+            </button>
+          </div>
+        </div>
+      </GlassCard>
+    </motion.div>
   )
 }
+
+// ─── CreatingStep ────────────────────────────────────────────────────────────
 
 function CreatingStep({
   place,
@@ -1388,7 +1155,6 @@ function CreatingStep({
       transition={{ duration: 0.4, ease: 'easeOut' }}
       className="w-full max-w-2xl px-4"
     >
-      {/* Header compacto */}
       <div className="mb-3 text-center md:mb-4">
         <motion.div
           animate={{ rotate: 360 }}
@@ -1406,19 +1172,15 @@ function CreatingStep({
       </div>
 
       <GlassCard className="p-4 md:p-5">
-        {/* Nome do negócio - compacto */}
         <div className="mb-3 rounded-lg border border-slate-200/60 bg-slate-50/50 px-3 py-2 dark:border-slate-700/60 dark:bg-slate-800/50 md:mb-4">
           <p className="text-center text-sm font-medium text-slate-700 dark:text-slate-200">
             {place.name}
           </p>
         </div>
 
-        {/* Layout lado a lado no desktop */}
         <div className="grid gap-4 md:grid-cols-2">
-          {/* Skeleton preview */}
           <SiteSkeletonPreview />
 
-          {/* Steps - grid em ambos mobile e desktop */}
           <div className="grid grid-cols-3 gap-2 md:grid-cols-2 md:gap-2">
             {HUMANIZED_LOGS.map((log, index) => (
               <motion.div
@@ -1470,197 +1232,11 @@ function CreatingStep({
   )
 }
 
-function CompleteStep({ place, storeSlug }: { place: PlaceResult; storeSlug: string }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="w-full max-w-md px-4 text-center"
-    >
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-        className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-xl shadow-emerald-500/30 md:mb-5 md:h-20 md:w-20"
-      >
-        <IconCheck className="h-8 w-8 text-white md:h-10 md:w-10" />
-      </motion.div>
-
-      <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
-        Seu site está ativo!
-      </h1>
-
-      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 md:mt-3 md:text-base">
-        O site de {place.name} já pode ser acessado por seus clientes
-      </p>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="mt-6 flex flex-col gap-3 md:mt-8"
-      >
-        <Link href={`/painel/${storeSlug}`}>
-          <Button
-            size="lg"
-            className="h-12 w-full gap-2 cursor-pointer text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 md:h-14 md:gap-3 md:text-lg"
-          >
-            <IconBuildingStore className="h-5 w-5 md:h-6 md:w-6" />
-            Ir para o painel
-          </Button>
-        </Link>
-
-        <Link href={getStoreUrl(storeSlug)} target="_blank">
-          <Button
-            variant="outline"
-            size="lg"
-            className="h-12 w-full gap-2 cursor-pointer border-slate-200 bg-white text-base font-medium text-slate-700 transition-all hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white md:h-14"
-          >
-            <IconEye className="h-4 w-4 md:h-5 md:w-5" />
-            Ver prévia do site
-          </Button>
-        </Link>
-      </motion.div>
-
-      <p className="mt-4 text-xs text-slate-400 dark:text-slate-500 md:mt-5">
-        Você poderá editar tudo depois no painel
-      </p>
-    </motion.div>
-  )
-}
-
-function ConfirmVisualPrefs({
-  businessName,
-  primaryColor,
-  onPrimaryColorChange,
-  termGender,
-  onTermGenderChange,
-  termNumber,
-  onTermNumberChange,
-}: {
-  businessName: string
-  primaryColor: string
-  onPrimaryColorChange: (v: string) => void
-  termGender: 'MASCULINE' | 'FEMININE'
-  onTermGenderChange: (v: 'MASCULINE' | 'FEMININE') => void
-  termNumber: 'SINGULAR' | 'PLURAL'
-  onTermNumberChange: (v: 'SINGULAR' | 'PLURAL') => void
-}) {
-  const shortName = businessName.length > 16 ? businessName.slice(0, 16) + '…' : businessName
-
-  const genderOptions = [
-    { value: 'FEMININE' as const, article: 'A', label: `A ${shortName}` },
-    { value: 'MASCULINE' as const, article: 'O', label: `O ${shortName}` },
-  ]
-
-  const numberOptions = [
-    {
-      value: 'SINGULAR' as const,
-      label: termGender === 'FEMININE' ? `A ${shortName}` : `O ${shortName}`,
-    },
-    {
-      value: 'PLURAL' as const,
-      label: termGender === 'FEMININE' ? `As ${shortName}` : `Os ${shortName}`,
-    },
-  ]
-
-  function handleHexInput(raw: string) {
-    const val = raw.startsWith('#') ? raw : `#${raw}`
-    onPrimaryColorChange(val)
-  }
-
-  return (
-    <div className="space-y-3 rounded-lg border border-slate-100 bg-slate-50/50 p-3 dark:border-slate-700/40 dark:bg-slate-800/30">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 md:text-xs">
-        Personalização
-      </p>
-
-      {/* Color */}
-      <div>
-        <p className="mb-1.5 text-[10px] font-medium text-slate-600 dark:text-slate-300 md:text-xs">Cor principal</p>
-        <div className="flex items-center gap-2">
-          <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-slate-200/60 dark:border-slate-600/60">
-            <input
-              type="color"
-              value={primaryColor}
-              onChange={(e) => onPrimaryColorChange(e.target.value)}
-              className="absolute inset-0 h-full w-full cursor-pointer border-0 bg-transparent p-0 opacity-0"
-            />
-            <div className="h-full w-full rounded-lg" style={{ backgroundColor: primaryColor }} />
-          </div>
-          <div className="h-8 flex-1 rounded-lg border border-slate-200/60 shadow-sm" style={{ backgroundColor: primaryColor }} />
-          <input
-            type="text"
-            value={primaryColor}
-            onChange={(e) => handleHexInput(e.target.value)}
-            maxLength={7}
-            spellCheck={false}
-            className="w-20 rounded-lg border border-slate-200/60 bg-white/80 px-2 py-1.5 font-mono text-[10px] text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/30 dark:border-slate-600/60 dark:bg-slate-800/60 dark:text-slate-200 md:text-xs"
-            placeholder="#3b82f6"
-          />
-        </div>
-      </div>
-
-      {/* Gender */}
-      <div>
-        <p className="mb-1.5 text-[10px] font-medium text-slate-600 dark:text-slate-300 md:text-xs">
-          Como é referenciado?
-        </p>
-        <div className="grid grid-cols-2 gap-1.5">
-          {genderOptions.map(({ value, article, label }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => onTermGenderChange(value)}
-              className={cn(
-                'flex flex-col items-start rounded-lg border px-2.5 py-2 text-left transition-all',
-                termGender === value
-                  ? 'border-primary/40 bg-primary/10 text-primary'
-                  : 'border-slate-200/60 bg-white/60 text-slate-500 hover:border-slate-300 dark:border-slate-700/50 dark:bg-slate-800/40 dark:text-slate-400'
-              )}
-            >
-              <span className="text-sm font-bold leading-none">{article}</span>
-              <span className="mt-0.5 truncate text-[10px] font-medium">{label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Number */}
-      <div>
-        <p className="mb-1.5 text-[10px] font-medium text-slate-600 dark:text-slate-300 md:text-xs">
-          Singular ou plural?
-        </p>
-        <div className="grid grid-cols-2 gap-1.5">
-          {numberOptions.map(({ value, label }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => onTermNumberChange(value)}
-              className={cn(
-                'flex flex-col items-start rounded-lg border px-2.5 py-2 text-left transition-all',
-                termNumber === value
-                  ? 'border-primary/40 bg-primary/10 text-primary'
-                  : 'border-slate-200/60 bg-white/60 text-slate-500 hover:border-slate-300 dark:border-slate-700/50 dark:bg-slate-800/40 dark:text-slate-400'
-              )}
-            >
-              <span className="text-[9px] font-semibold uppercase tracking-wide opacity-60">
-                {value === 'SINGULAR' ? 'Singular' : 'Plural'}
-              </span>
-              <span className="mt-0.5 truncate text-[10px] font-medium">{label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
+// ─── Shared UI ───────────────────────────────────────────────────────────────
 
 function SiteSkeletonPreview() {
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200/60 bg-white shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-      {/* Header image skeleton - compacto */}
       <div className="relative h-14 bg-gradient-to-r from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700 md:h-16">
         <motion.div
           className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
@@ -1668,7 +1244,6 @@ function SiteSkeletonPreview() {
           transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
         />
       </div>
-      {/* Content skeleton - compacto */}
       <div className="space-y-1.5 p-2.5 md:space-y-2 md:p-3">
         <div className="h-3 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
         <div className="h-2 w-1/2 rounded bg-slate-100 dark:bg-slate-800 md:h-2.5" />
@@ -1684,45 +1259,10 @@ function SiteSkeletonPreview() {
 function GlassCard({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={cn(
-      "rounded-2xl border border-slate-200/40 bg-white/70 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50",
+      'rounded-2xl border border-slate-200/40 bg-white/70 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50',
       className
     )}>
       {children}
-    </div>
-  )
-}
-
-function ConfettiEffect() {
-  return (
-    <div className="pointer-events-none fixed inset-0 z-50">
-      {[...Array(50)].map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{
-            opacity: 1,
-            x: '50vw',
-            y: '50vh',
-            scale: 0,
-          }}
-          animate={{
-            opacity: 0,
-            x: `${Math.random() * 100}vw`,
-            y: `${Math.random() * 100}vh`,
-            scale: Math.random() * 2 + 1,
-            rotate: Math.random() * 360,
-          }}
-          transition={{
-            duration: Math.random() * 2 + 1,
-            ease: 'easeOut',
-          }}
-          className={cn(
-            'absolute h-3 w-3 rounded-sm',
-            ['bg-primary/60', 'bg-emerald-500/60', 'bg-amber-500/60', 'bg-rose-500/60'][
-            Math.floor(Math.random() * 4)
-            ]
-          )}
-        />
-      ))}
     </div>
   )
 }

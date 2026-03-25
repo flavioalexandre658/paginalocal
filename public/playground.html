@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PGL — Design Playground</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Oswald:wght@400;500;600;700&family=Roboto:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=Poppins:wght@300;400;500;600;700&family=Lora:wght@400;700&family=Montserrat:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;700&family=DM+Serif+Display&family=Source+Sans+3:wght@300;400;600&family=Raleway:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+--primary:#0f1923;--secondary:#1e3a5f;--accent:#ea580c;
+--bg:#f8fafc;--surface:#f1f5f9;--text:#0f172a;--text-muted:#64748b;
+--font-heading:'Oswald',sans-serif;--font-body:'Roboto',sans-serif;--font-accent:'Playfair Display',serif;
+--heading-transform:uppercase;--heading-weight:700;--heading-tracking:-0.01em;
+--body-weight:300;--label-size:0.7rem;--label-tracking:0.15em;--label-weight:500;
+--btn-radius:0px;--btn-padding:16px 36px;--card-radius:0px;--transition-speed:0.4s;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);color:var(--text);background:#f5f5f5;-webkit-font-smoothing:antialiased;font-weight:var(--body-weight)}
+
+/* Layout */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:360px;background:#fff;border-right:1px solid #e5e7eb;overflow-y:auto;flex-shrink:0}
+.preview{flex:1;overflow-y:auto;background:var(--bg)}
+
+/* Sidebar */
+.sidebar-header{padding:20px 24px;border-bottom:1px solid #e5e7eb;background:#fafafa}
+.sidebar-header h1{font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:#111}
+.sidebar-header p{font-size:11px;color:#888;margin-top:2px}
+
+.section{padding:16px 24px;border-bottom:1px solid #f3f4f6}
+.section-title{font-family:'Inter',sans-serif;font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px}
+
+.btn-simulate{width:100%;padding:12px;background:#7c3aed;color:#fff;border:none;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;border-radius:8px;transition:all 0.2s;letter-spacing:0.02em}
+.btn-simulate:hover{background:#6d28d9;transform:translateY(-1px)}
+
+/* Style pills */
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{padding:6px 12px;font-size:11px;font-weight:500;font-family:'Inter',sans-serif;border:1px solid #e5e7eb;border-radius:6px;cursor:pointer;transition:all 0.2s;background:#fff;color:#6b7280}
+.pill.active{background:#111;color:#fff;border-color:#111}
+.pill.compatible{background:#ecfdf5;color:#059669;border-color:#a7f3d0}
+
+/* Color picker row */
+.color-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.color-row input[type=color]{width:36px;height:36px;border:none;border-radius:6px;cursor:pointer;background:none}
+.color-row .label{font-size:12px;font-weight:500;color:#374151;flex:1}
+.color-row .hex{font-size:10px;color:#9ca3af;font-family:'SF Mono','Fira Code',monospace}
+
+/* Font select */
+select{width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;font-family:'Inter',sans-serif;color:#374151;background:#fff}
+
+/* Variant grid */
+.variant-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+.variant-row .block-name{font-size:11px;font-weight:500;color:#374151}
+.variant-btns{display:flex;gap:3px}
+.variant-btn{width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;border:1px solid #e5e7eb;border-radius:4px;cursor:pointer;background:#fff;color:#6b7280;transition:all 0.15s;font-family:'Inter',sans-serif}
+.variant-btn.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+.variant-btn:hover{border-color:#7c3aed}
+
+/* Order list */
+.order-item{display:flex;align-items:center;gap:8px;padding:4px 8px;margin-bottom:3px;border-radius:4px;font-size:11px}
+.order-item.required{background:#ecfdf5}
+.order-item .num{font-size:9px;font-family:'SF Mono',monospace;color:#9ca3af;width:16px}
+.order-item .name{font-weight:500}
+.order-item.required .name{color:#059669}
+.order-item .tag{margin-left:auto;font-size:9px;color:#9ca3af}
+
+/* Token debug cards */
+.token-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 24px 24px}
+.token-card{background:#fff;border:1px solid #f3f4f6;border-radius:8px;padding:10px}
+.token-card .var-name{font-size:9px;color:#9ca3af;font-family:'SF Mono',monospace;margin-bottom:4px}
+.token-card .var-val{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#111;font-family:'SF Mono',monospace}
+.token-card .swatch{width:14px;height:14px;border-radius:3px;border:1px solid #e5e7eb}
+
+/* ========== PREVIEW SECTIONS ========== */
+.preview-label{display:inline-block;font-size:9px;font-weight:600;color:#7c3aed;text-transform:uppercase;letter-spacing:0.1em;background:#f3e8ff;padding:3px 8px;border-radius:3px;margin:0 0 12px 24px}
+
+/* Hero */
+.hero-preview{position:relative;min-height:55vh;display:flex;align-items:flex-end;overflow:hidden;background:var(--primary)}
+.hero-preview .overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,0.7) 0%,rgba(0,0,0,0.3) 100%)}
+.hero-preview .grain{position:absolute;inset:0;opacity:0.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.hero-preview .content{position:relative;z-index:2;max-width:1200px;margin:0 auto;padding:0 24px 48px;width:100%}
+.hero-preview h1{font-family:var(--font-heading);font-size:clamp(2.5rem,5vw,4rem);font-weight:var(--heading-weight);line-height:1.0;letter-spacing:var(--heading-tracking);color:#fff;text-transform:var(--heading-transform)}
+.hero-preview h1 em{font-family:var(--font-accent);font-style:italic;color:var(--accent);text-transform:none;font-weight:700}
+.hero-preview .sub{margin-top:16px;font-size:0.95rem;line-height:1.7;color:rgba(255,255,255,0.55);max-width:440px;font-weight:var(--body-weight)}
+.hero-preview .ctas{margin-top:28px;display:flex;gap:12px;flex-wrap:wrap}
+.hero-btn-primary{padding:var(--btn-padding);font-size:0.82rem;font-weight:500;letter-spacing:0.06em;border:none;cursor:pointer;color:#fff;background:var(--accent);border-radius:var(--btn-radius);transition:all var(--transition-speed);text-transform:var(--heading-transform);font-family:var(--font-body)}
+.hero-btn-secondary{padding:var(--btn-padding);font-size:0.82rem;font-weight:500;letter-spacing:0.06em;border:1px solid rgba(255,255,255,0.15);cursor:pointer;color:rgba(255,255,255,0.8);background:transparent;border-radius:var(--btn-radius);transition:all var(--transition-speed);text-transform:var(--heading-transform);font-family:var(--font-body)}
+
+/* Services */
+.services-preview{max-width:1200px;margin:0 auto;padding:0 24px}
+.services-preview h2{font-family:var(--font-heading);font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:var(--heading-weight);line-height:1.05;letter-spacing:var(--heading-tracking);text-transform:var(--heading-transform);margin-bottom:40px}
+.services-preview h2 em{font-family:var(--font-accent);font-style:italic;color:var(--accent);text-transform:none;font-weight:700}
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:rgba(0,0,0,0.04);border-radius:var(--card-radius);overflow:hidden}
+.svc-card{background:#fff;padding:40px 32px;transition:all var(--transition-speed);cursor:default}
+.svc-card:hover{background:var(--primary);color:#fff}
+.svc-card:hover .svc-num{color:var(--accent)}
+.svc-card:hover .svc-desc{color:rgba(255,255,255,0.7)}
+.svc-card:hover .svc-line{background:var(--accent)}
+.svc-num{font-family:var(--font-heading);font-size:2.5rem;font-weight:700;color:rgba(0,0,0,0.04);line-height:1;margin-bottom:16px;transition:color var(--transition-speed)}
+.svc-card h3{font-family:var(--font-heading);font-size:1rem;font-weight:600;letter-spacing:0.03em;text-transform:var(--heading-transform);margin-bottom:8px;transition:color var(--transition-speed)}
+.svc-line{width:28px;height:2px;background:var(--accent);margin-bottom:12px;transition:background var(--transition-speed)}
+.svc-desc{font-size:0.85rem;line-height:1.7;color:var(--text-muted);font-weight:var(--body-weight);transition:color var(--transition-speed)}
+
+/* Stats */
+.stats-preview{max-width:1200px;margin:0 auto;padding:0 24px}
+.stats-preview h2{font-family:var(--font-heading);font-size:clamp(1.8rem,3.5vw,2.5rem);font-weight:var(--heading-weight);text-transform:var(--heading-transform);letter-spacing:var(--heading-tracking);text-align:center;margin-bottom:32px}
+.stats-preview h2 em{font-family:var(--font-accent);font-style:italic;color:var(--accent);text-transform:none;font-weight:700}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat-card{background:#fff;border:1px solid rgba(0,0,0,0.05);border-radius:var(--card-radius);padding:24px;text-align:center}
+.stat-val{font-family:var(--font-heading);font-size:1.8rem;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+.stat-label{margin-top:4px;font-size:var(--label-size);font-weight:var(--label-weight);text-transform:uppercase;letter-spacing:var(--label-tracking);color:var(--text-muted)}
+
+/* CTA */
+.cta-preview{position:relative;height:320px;display:flex;align-items:center;justify-content:center;background:var(--primary);overflow:hidden}
+.cta-preview .pattern{position:absolute;inset:0;opacity:0.03;background-image:linear-gradient(rgba(255,255,255,.15) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.15) 1px,transparent 1px);background-size:60px 60px}
+.cta-preview .inner{position:relative;z-index:2;text-align:center;max-width:600px;padding:0 24px}
+.cta-preview h2{font-family:var(--font-heading);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:var(--heading-weight);text-transform:var(--heading-transform);letter-spacing:var(--heading-tracking);color:#fff;line-height:1.08;margin-bottom:12px}
+.cta-preview h2 em{font-family:var(--font-accent);font-style:italic;color:var(--accent);text-transform:none;font-weight:700}
+.cta-preview p{font-size:0.95rem;line-height:1.7;color:rgba(255,255,255,0.5);font-weight:var(--body-weight);margin-bottom:28px}
+
+/* Decision flow */
+.flow{max-width:1200px;margin:0 auto;padding:0 24px}
+.flow-title{font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:#111;margin-bottom:24px}
+.flow-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.flow-card{background:#fff;border:1px solid #f3f4f6;border-radius:12px;padding:20px;position:relative;overflow:hidden}
+.flow-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent)}
+.flow-card h4{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px}
+.flow-card .value{font-family:'SF Mono','Fira Code',monospace;font-size:13px;font-weight:600;color:#111;margin-bottom:4px}
+.flow-card .desc{font-size:11px;color:#6b7280;line-height:1.5}
+.flow-arrow{font-size:20px;color:#d1d5db;display:flex;align-items:center;justify-content:center}
+
+@media(max-width:900px){
+.app{flex-direction:column}
+.sidebar{width:100%;height:auto;max-height:50vh}
+.svc-grid{grid-template-columns:1fr}
+.stats-grid{grid-template-columns:1fr 1fr}
+.flow-grid{grid-template-columns:1fr}
+.token-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- SIDEBAR -->
+<div class="sidebar">
+<div class="sidebar-header">
+<h1>PGL Design Playground</h1>
+<p>Visualize como a IA seleciona cada decisao de design</p>
+</div>
+
+<div class="section">
+<button class="btn-simulate" onclick="simulateAI()">Simular Selecao da IA</button>
+</div>
+
+<div class="section">
+<div class="section-title">Style (designTokens.style)</div>
+<div class="pills" id="style-pills"></div>
+</div>
+
+<div class="section">
+<div class="section-title">Palette</div>
+<div class="color-row">
+<input type="color" id="c-primary" value="#0f1923" onchange="updateColor('primary',this.value)">
+<span class="label">Primary</span>
+<span class="hex" id="hex-primary">#0f1923</span>
+</div>
+<div class="color-row">
+<input type="color" id="c-secondary" value="#1e3a5f" onchange="updateColor('secondary',this.value)">
+<span class="label">Secondary</span>
+<span class="hex" id="hex-secondary">#1e3a5f</span>
+</div>
+<div class="color-row">
+<input type="color" id="c-accent" value="#ea580c" onchange="updateColor('accent',this.value)">
+<span class="label">Accent</span>
+<span class="hex" id="hex-accent">#ea580c</span>
+</div>
+</div>
+
+<div class="section">
+<div class="section-title">Font Pairing</div>
+<select id="font-select" onchange="updateFont(this.value)">
+<option value="oswald+roboto">Oswald + Roboto</option>
+<option value="inter+merriweather">Inter + Merriweather</option>
+<option value="poppins+lora">Poppins + Lora</option>
+<option value="montserrat+opensans">Montserrat + Open Sans</option>
+<option value="playfair+source-sans">Playfair Display + Source Sans</option>
+<option value="dm-sans+dm-serif">DM Sans + DM Serif Display</option>
+<option value="raleway+roboto">Raleway + Roboto</option>
+<option value="space-grotesk+inter">Space Grotesk + Inter</option>
+</select>
+</div>
+
+<div class="section">
+<div class="section-title">Border Radius</div>
+<div class="pills" id="radius-pills"></div>
+</div>
+
+<div class="section">
+<div class="section-title">Variantes dos Blocos</div>
+<div id="variant-list"></div>
+</div>
+
+<div class="section">
+<div class="section-title">Ordem das Secoes (IA decide)</div>
+<div id="order-list"></div>
+</div>
+</div>
+
+<!-- PREVIEW -->
+<div class="preview" id="preview">
+
+<!-- Decision Flow -->
+<div style="padding:32px 0">
+<div class="flow">
+<div class="flow-title">Fluxo de Decisao da IA</div>
+<div class="flow-grid">
+<div class="flow-card">
+<h4>1. Nicho</h4>
+<div class="value" id="flow-niche">Lava Car</div>
+<div class="desc">A IA identifica o nicho do negocio e seleciona styles compativeis</div>
+</div>
+<div class="flow-card">
+<h4>2. Style</h4>
+<div class="value" id="flow-style">industrial</div>
+<div class="desc">Selecionado aleatoriamente entre os compativeis com o nicho</div>
+</div>
+<div class="flow-card">
+<h4>3. Palette</h4>
+<div class="value" id="flow-palette">#0f1923 + #ea580c</div>
+<div class="desc">Cores geradas pela IA baseadas no nicho e style</div>
+</div>
+<div class="flow-card">
+<h4>4. Font Pairing</h4>
+<div class="value" id="flow-font">Oswald + Roboto</div>
+<div class="desc">Combinacao de fontes sugerida pelo nicho/style</div>
+</div>
+<div class="flow-card">
+<h4>5. Variantes</h4>
+<div class="value" id="flow-variants">hero:1, services:3...</div>
+<div class="desc">Cada bloco recebe uma variante aleatoria para originalidade</div>
+</div>
+<div class="flow-card">
+<h4>6. Accent Treatment</h4>
+<div class="value" id="flow-accent">Serif Italic</div>
+<div class="desc">Palavra-destaque muda visual conforme o style selecionado</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Hero Section -->
+<span class="preview-label">Hero</span>
+<div class="hero-preview" id="hero-section">
+<div class="overlay"></div>
+<div class="grain"></div>
+<div class="content">
+<h1>Seu carro <em>impecavel</em> em Santa Ines</h1>
+<p class="sub">Lavagem completa, polimento e higienizacao com acabamento profissional.</p>
+<div class="ctas">
+<button class="hero-btn-primary">Agende pelo WhatsApp</button>
+<button class="hero-btn-secondary">Ver servicos</button>
+</div>
+</div>
+</div>
+
+<!-- Services -->
+<div style="padding:80px 0">
+<span class="preview-label">Services</span>
+<div class="services-preview">
+<h2>Servicos de <em>estetica automotiva</em></h2>
+<div class="svc-grid">
+<div class="svc-card"><div class="svc-num">01</div><h3>Lavagem Completa</h3><div class="svc-line"></div><p class="svc-desc">Limpeza externa detalhada com produtos profissionais. Rodas, vidros e carroceria com brilho garantido.</p></div>
+<div class="svc-card"><div class="svc-num">02</div><h3>Polimento Automotivo</h3><div class="svc-line"></div><p class="svc-desc">Remocao de riscos leves e restauracao do brilho original da pintura com tecnica profissional.</p></div>
+<div class="svc-card"><div class="svc-num">03</div><h3>Cera Brilho</h3><div class="svc-line"></div><p class="svc-desc">Camada protetora que realca a cor e protege contra raios UV e chuva acida.</p></div>
+<div class="svc-card"><div class="svc-num">04</div><h3>Higienizacao Interna</h3><div class="svc-line"></div><p class="svc-desc">Limpeza profunda de bancos, carpetes e painel. Elimina odores e bacterias.</p></div>
+</div>
+</div>
+</div>
+
+<!-- Stats -->
+<div style="padding:60px 0;background:var(--surface)">
+<span class="preview-label">Stats</span>
+<div class="stats-preview">
+<h2>Numeros que <em>falam</em></h2>
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-val">5.0</div><div class="stat-label">Estrelas no Google</div></div>
+<div class="stat-card"><div class="stat-val">120+</div><div class="stat-label">Avaliacoes</div></div>
+<div class="stat-card"><div class="stat-val">6</div><div class="stat-label">Servicos</div></div>
+<div class="stat-card"><div class="stat-val">3</div><div class="stat-label">Anos</div></div>
+</div>
+</div>
+</div>
+
+<!-- CTA -->
+<span class="preview-label">CTA</span>
+<div class="cta-preview">
+<div class="pattern"></div>
+<div class="inner">
+<h2>Pronto para o proximo <em>nivel</em>?</h2>
+<p>Mande uma mensagem e agende o melhor horario para voce.</p>
+<button class="hero-btn-primary">Chamar no WhatsApp</button>
+</div>
+</div>
+
+<!-- CSS Variables Debug -->
+<div style="padding:40px 0">
+<span class="preview-label">CSS Variables Aplicadas</span>
+<div class="token-grid" id="token-grid"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+// ===== DATA =====
+const STYLES = ['industrial','elegant','warm','bold','minimal'];
+const RADII = ['none','sm','md','lg','full'];
+const BLOCKS = {
+  hero:[1,2,3,4,5],services:[1,2,3,4],about:[1,2,3],testimonials:[1,2,3],
+  gallery:[1,2,3,4],faq:[1,2],contact:[1,2,3],cta:[1,2,3],
+  stats:[1,2],hours:[1,2],'whatsapp-float':[1,2]
+};
+const REQUIRED = ['hero','services','contact','whatsapp-float'];
+const OPTIONAL = ['about','testimonials','gallery','faq','hours','location','team','stats','cta'];
+
+const PALETTES = {
+  industrial:{primary:'#0f1923',secondary:'#1e3a5f',accent:'#ea580c'},
+  elegant:{primary:'#581c87',secondary:'#7c3aed',accent:'#d4a574'},
+  warm:{primary:'#9a3412',secondary:'#78350f',accent:'#f97316'},
+  bold:{primary:'#111111',secondary:'#1f2937',accent:'#84cc16'},
+  minimal:{primary:'#1e293b',secondary:'#334155',accent:'#3b82f6'},
+};
+
+const FONTS = {
+  'oswald+roboto':{heading:"'Oswald'",body:"'Roboto'",accent:"'Playfair Display'"},
+  'inter+merriweather':{heading:"'Inter'",body:"'Merriweather'",accent:"'Merriweather'"},
+  'poppins+lora':{heading:"'Poppins'",body:"'Lora'",accent:"'Lora'"},
+  'montserrat+opensans':{heading:"'Montserrat'",body:"'Open Sans'",accent:"'Playfair Display'"},
+  'playfair+source-sans':{heading:"'Playfair Display'",body:"'Source Sans 3'",accent:"'Playfair Display'"},
+  'dm-sans+dm-serif':{heading:"'DM Sans'",body:"'DM Serif Display'",accent:"'DM Serif Display'"},
+  'raleway+roboto':{heading:"'Raleway'",body:"'Roboto'",accent:"'Playfair Display'"},
+  'space-grotesk+inter':{heading:"'Space Grotesk'",body:"'Inter'",accent:"'DM Serif Display'"},
+};
+
+const STYLE_VARS = {
+  industrial:{transform:'uppercase',weight:700,tracking:'-0.01em',bodyWeight:300,btnRadius:'0px',cardRadius:'0px',speed:'0.4s',accentTreatment:'Serif Italic'},
+  elegant:{transform:'none',weight:600,tracking:'-0.02em',bodyWeight:400,btnRadius:'999px',cardRadius:'16px',speed:'0.5s',accentTreatment:'Wavy Underline'},
+  warm:{transform:'none',weight:600,tracking:'-0.01em',bodyWeight:400,btnRadius:'12px',cardRadius:'12px',speed:'0.35s',accentTreatment:'Bold Color'},
+  bold:{transform:'uppercase',weight:800,tracking:'-0.02em',bodyWeight:500,btnRadius:'4px',cardRadius:'4px',speed:'0.25s',accentTreatment:'BG Highlight'},
+  minimal:{transform:'none',weight:400,tracking:'-0.03em',bodyWeight:300,btnRadius:'0px',cardRadius:'0px',speed:'0.6s',accentTreatment:'Thin Border'},
+};
+
+let state = {style:'industrial',font:'oswald+roboto',radius:'sm',variants:{},order:[]};
+
+// ===== INIT =====
+function init(){
+  renderStylePills();
+  renderRadiusPills();
+  renderVariants();
+  renderOrder();
+  updateAll();
+}
+
+function renderStylePills(){
+  const el=document.getElementById('style-pills');
+  el.innerHTML=STYLES.map(s=>`<button class="pill ${s===state.style?'active':''}" onclick="setStyle('${s}')">${s}</button>`).join('');
+}
+
+function renderRadiusPills(){
+  const el=document.getElementById('radius-pills');
+  el.innerHTML=RADII.map(r=>`<button class="pill ${r===state.radius?'active':''}" onclick="setRadius('${r}')">${r}</button>`).join('');
+}
+
+function renderVariants(){
+  const el=document.getElementById('variant-list');
+  el.innerHTML=Object.entries(BLOCKS).map(([bt,vars])=>{
+    const sel=state.variants[bt]||1;
+    return `<div class="variant-row"><span class="block-name">${bt}</span><div class="variant-btns">${
+      vars.map(v=>`<button class="variant-btn ${v===sel?'active':''}" onclick="setVariant('${bt}',${v})">${v}</button>`).join('')
+    }</div></div>`;
+  }).join('');
+}
+
+function renderOrder(){
+  const el=document.getElementById('order-list');
+  const all=[...REQUIRED,...OPTIONAL.slice(0,4)];
+  el.innerHTML=all.map((b,i)=>{
+    const req=REQUIRED.includes(b);
+    return `<div class="order-item ${req?'required':''}"><span class="num">${i+1}</span><span class="name">${b}</span><span class="tag">${req?'obrigatorio':'opcional'}</span></div>`;
+  }).join('');
+}
+
+// ===== ACTIONS =====
+function setStyle(s){
+  state.style=s;
+  const p=PALETTES[s];
+  document.getElementById('c-primary').value=p.primary;
+  document.getElementById('c-secondary').value=p.secondary;
+  document.getElementById('c-accent').value=p.accent;
+  updateAll();
+}
+
+function setRadius(r){state.radius=r;updateAll();}
+function setVariant(bt,v){state.variants[bt]=v;renderVariants();}
+
+function updateColor(which,val){
+  document.getElementById('hex-'+which).textContent=val;
+  document.documentElement.style.setProperty('--'+which,val);
+}
+
+function updateFont(val){
+  state.font=val;
+  const f=FONTS[val];
+  document.documentElement.style.setProperty('--font-heading',f.heading+',sans-serif');
+  document.documentElement.style.setProperty('--font-body',f.body+',sans-serif');
+  document.documentElement.style.setProperty('--font-accent',f.accent+',serif');
+  updateFlowCards();
+  renderTokens();
+}
+
+function updateAll(){
+  const s=state.style;
+  const p=PALETTES[s]||PALETTES.industrial;
+  const sv=STYLE_VARS[s]||STYLE_VARS.industrial;
+
+  // Update CSS vars
+  const r=document.documentElement;
+  r.style.setProperty('--primary',p.primary);
+  r.style.setProperty('--secondary',p.secondary);
+  r.style.setProperty('--accent',p.accent);
+  r.style.setProperty('--heading-transform',sv.transform);
+  r.style.setProperty('--heading-weight',sv.weight);
+  r.style.setProperty('--heading-tracking',sv.tracking);
+  r.style.setProperty('--body-weight',sv.bodyWeight);
+  r.style.setProperty('--btn-radius',sv.btnRadius);
+  r.style.setProperty('--card-radius',sv.cardRadius);
+  r.style.setProperty('--transition-speed',sv.speed);
+
+  // Update color inputs
+  document.getElementById('c-primary').value=p.primary;
+  document.getElementById('c-secondary').value=p.secondary;
+  document.getElementById('c-accent').value=p.accent;
+  document.getElementById('hex-primary').textContent=p.primary;
+  document.getElementById('hex-secondary').textContent=p.secondary;
+  document.getElementById('hex-accent').textContent=p.accent;
+
+  renderStylePills();
+  renderRadiusPills();
+  updateFlowCards();
+  renderTokens();
+}
+
+function updateFlowCards(){
+  const sv=STYLE_VARS[state.style];
+  const f=FONTS[state.font];
+  const p=PALETTES[state.style];
+  document.getElementById('flow-style').textContent=state.style;
+  document.getElementById('flow-palette').textContent=`${p.primary} + ${p.accent}`;
+  document.getElementById('flow-font').textContent=state.font.replace('+',' + ');
+  document.getElementById('flow-accent').textContent=sv.accentTreatment;
+
+  const vStr=Object.entries(state.variants).slice(0,3).map(([k,v])=>`${k}:${v}`).join(', ')+'...';
+  document.getElementById('flow-variants').textContent=vStr;
+}
+
+function renderTokens(){
+  const sv=STYLE_VARS[state.style];
+  const p=PALETTES[state.style];
+  const f=FONTS[state.font];
+  const tokens=[
+    {name:'--primary',val:p.primary,color:true},
+    {name:'--accent',val:p.accent,color:true},
+    {name:'--font-heading',val:f.heading.replace(/'/g,'')},
+    {name:'--font-body',val:f.body.replace(/'/g,'')},
+    {name:'--heading-weight',val:String(sv.weight)},
+    {name:'--heading-transform',val:sv.transform},
+    {name:'--btn-radius',val:sv.btnRadius},
+    {name:'--card-radius',val:sv.cardRadius},
+  ];
+  document.getElementById('token-grid').innerHTML=tokens.map(t=>`
+    <div class="token-card">
+      <div class="var-name">${t.name}</div>
+      <div class="var-val">${t.color?`<div class="swatch" style="background:${t.val}"></div>`:''}${t.val}</div>
+    </div>
+  `).join('');
+}
+
+function simulateAI(){
+  // Random style
+  const s=STYLES[Math.floor(Math.random()*STYLES.length)];
+  state.style=s;
+
+  // Random font
+  const fontKeys=Object.keys(FONTS);
+  state.font=fontKeys[Math.floor(Math.random()*fontKeys.length)];
+  document.getElementById('font-select').value=state.font;
+  const f=FONTS[state.font];
+  document.documentElement.style.setProperty('--font-heading',f.heading+',sans-serif');
+  document.documentElement.style.setProperty('--font-body',f.body+',sans-serif');
+  document.documentElement.style.setProperty('--font-accent',f.accent+',serif');
+
+  // Random radius
+  state.radius=RADII[Math.floor(Math.random()*RADII.length)];
+
+  // Random variants
+  Object.entries(BLOCKS).forEach(([bt,vars])=>{
+    state.variants[bt]=vars[Math.floor(Math.random()*vars.length)];
+  });
+
+  renderVariants();
+  updateAll();
+
+  // Flash animation
+  document.getElementById('preview').style.opacity='0.5';
+  setTimeout(()=>{document.getElementById('preview').style.opacity='1'},200);
+}
+
+init();
+</script>
+</body>
+</html>

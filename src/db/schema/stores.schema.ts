@@ -62,6 +62,10 @@ export const store = pgTable('store', {
   latitude: decimal('latitude', { precision: 10, scale: 8 }),
   longitude: decimal('longitude', { precision: 11, scale: 8 }),
 
+  email: varchar('email', { length: 255 }),
+  website: text('website'),
+  differential: text('differential'),
+
   googlePlaceId: varchar('google_place_id', { length: 255 }).unique(),
   googleRating: decimal('google_rating', { precision: 2, scale: 1 }),
   googleReviewsCount: integer('google_reviews_count').default(0),
@@ -70,6 +74,8 @@ export const store = pgTable('store', {
   faviconUrl: text('favicon_url'),
   coverUrl: text('cover_url'),
   primaryColor: varchar('primary_color', { length: 7 }).default('#3b82f6'),
+  secondaryColor: varchar('secondary_color', { length: 7 }),
+  accentColor: varchar('accent_color', { length: 7 }),
   heroBackgroundColor: varchar('hero_background_color', { length: 7 }).default('#1e293b'),
   buttonColor: varchar('button_color', { length: 7 }).default('#22c55e'),
   openingHours: jsonb('opening_hours'),
@@ -88,6 +94,8 @@ export const store = pgTable('store', {
 
   showWhatsappButton: boolean('show_whatsapp_button').default(true).notNull(),
   showCallButton: boolean('show_call_button').default(true).notNull(),
+
+  monthlyRevenue: varchar('monthly_revenue', { length: 30 }),
 
   instagramUrl: text('instagram_url'),
   facebookUrl: text('facebook_url'),
@@ -126,4 +134,9 @@ export const store = pgTable('store', {
   isActive: boolean('is_active').default(false).notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
+
+  // Blueprint gerado por IA v2
+  siteBlueprintV2: jsonb('site_blueprint_v2'),
+  siteBlueprintV2GeneratedAt: timestamp('site_blueprint_v2_generated_at'),
+  useV2Renderer: boolean('use_v2_renderer').default(false).notNull(),
 })

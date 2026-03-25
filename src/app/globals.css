@@ -223,7 +223,159 @@ html {
 }
 
 /* ============================================
-   Client Site Animations
+   PGL Style System — CSS Variables per Style
+   ============================================ */
+
+[data-style="industrial"] {
+  --heading-transform: uppercase;
+  --heading-weight: 700;
+  --heading-tracking: -0.01em;
+  --body-weight: 300;
+  --body-tracking: normal;
+  --label-transform: uppercase;
+  --label-tracking: 0.15em;
+  --label-weight: 500;
+  --label-size: 0.7rem;
+  --btn-transform: uppercase;
+  --btn-tracking: 0.08em;
+  --btn-weight: 500;
+  --btn-radius: 0px;
+  --btn-padding: 16px 36px;
+  --card-radius: 0px;
+  --card-border: none;
+  --section-radius: 0px;
+  --transition-speed: 0.4s;
+}
+
+[data-style="elegant"] {
+  --heading-transform: none;
+  --heading-weight: 600;
+  --heading-tracking: -0.02em;
+  --body-weight: 400;
+  --body-tracking: 0.005em;
+  --label-transform: uppercase;
+  --label-tracking: 0.12em;
+  --label-weight: 400;
+  --label-size: 0.72rem;
+  --btn-transform: none;
+  --btn-tracking: 0.04em;
+  --btn-weight: 500;
+  --btn-radius: 999px;
+  --btn-padding: 14px 32px;
+  --card-radius: 16px;
+  --card-border: 0.5px solid rgba(0,0,0,0.06);
+  --section-radius: 16px;
+  --transition-speed: 0.5s;
+}
+
+[data-style="warm"] {
+  --heading-transform: none;
+  --heading-weight: 600;
+  --heading-tracking: -0.01em;
+  --body-weight: 400;
+  --body-tracking: normal;
+  --label-transform: uppercase;
+  --label-tracking: 0.1em;
+  --label-weight: 500;
+  --label-size: 0.72rem;
+  --btn-transform: none;
+  --btn-tracking: 0.03em;
+  --btn-weight: 500;
+  --btn-radius: 12px;
+  --btn-padding: 14px 28px;
+  --card-radius: 12px;
+  --card-border: 0.5px solid rgba(0,0,0,0.06);
+  --section-radius: 12px;
+  --transition-speed: 0.35s;
+}
+
+[data-style="bold"] {
+  --heading-transform: uppercase;
+  --heading-weight: 800;
+  --heading-tracking: -0.02em;
+  --body-weight: 500;
+  --body-tracking: normal;
+  --label-transform: uppercase;
+  --label-tracking: 0.15em;
+  --label-weight: 600;
+  --label-size: 0.7rem;
+  --btn-transform: uppercase;
+  --btn-tracking: 0.1em;
+  --btn-weight: 600;
+  --btn-radius: 4px;
+  --btn-padding: 18px 40px;
+  --card-radius: 4px;
+  --card-border: 2px solid transparent;
+  --section-radius: 4px;
+  --transition-speed: 0.25s;
+}
+
+[data-style="minimal"] {
+  --heading-transform: none;
+  --heading-weight: 400;
+  --heading-tracking: -0.03em;
+  --body-weight: 300;
+  --body-tracking: 0.005em;
+  --label-transform: uppercase;
+  --label-tracking: 0.15em;
+  --label-weight: 400;
+  --label-size: 0.68rem;
+  --btn-transform: none;
+  --btn-tracking: 0.04em;
+  --btn-weight: 400;
+  --btn-radius: 0px;
+  --btn-padding: 12px 28px;
+  --card-radius: 0px;
+  --card-border: none;
+  --section-radius: 0px;
+  --transition-speed: 0.6s;
+}
+
+/* ============================================
+   PGL Premium Animation System
+   ============================================ */
+
+@keyframes pgl-fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pgl-fade-right {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pgl-fade-left {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pgl-scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pgl-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.pgl-fade-up { animation: pgl-fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.pgl-fade-right { animation: pgl-fade-right 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.pgl-fade-left { animation: pgl-fade-left 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.pgl-scale-in { animation: pgl-scale-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.pgl-float { animation: pgl-float 4s ease-in-out infinite; }
+
+[data-delay="1"] { animation-delay: 0.1s; }
+[data-delay="2"] { animation-delay: 0.2s; }
+[data-delay="3"] { animation-delay: 0.3s; }
+[data-delay="4"] { animation-delay: 0.4s; }
+[data-delay="5"] { animation-delay: 0.5s; }
+[data-delay="6"] { animation-delay: 0.6s; }
+[data-delay="7"] { animation-delay: 0.7s; }
+
+/* ============================================
+   Client Site Animations (legacy)
    ============================================ */
 
 /* Fade in up animation */
@@ -336,9 +488,14 @@ html {
   .animate-fade-in,
   .animate-scale-in,
   .animate-slide-in-left,
-  .animate-slide-in-right {
-    animation: none;
-    opacity: 1;
-    transform: none;
+  .animate-slide-in-right,
+  .pgl-fade-up,
+  .pgl-fade-right,
+  .pgl-fade-left,
+  .pgl-scale-in,
+  .pgl-float {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

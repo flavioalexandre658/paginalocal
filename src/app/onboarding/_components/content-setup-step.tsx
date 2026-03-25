@@ -427,6 +427,7 @@ function ProductForm({
     const [name, setName] = useState('')
     const [price, setPrice] = useState('')
     const [imagePreview, setImagePreview] = useState<{ file: File; url: string } | null>(null)
+    const [createdProducts, setCreatedProducts] = useState<{ name: string; price: string }[]>([])
     const { executeAsync, isExecuting } = useAction(createProductAction)
     const { executeAsync: uploadImage, isExecuting: isUploading } = useAction(uploadEntityImageAction)
 
@@ -477,62 +478,102 @@ function ProductForm({
         }
 
         if (result?.data) {
+            setCreatedProducts(prev => [...prev, { name: name.trim(), price }])
             toast.success('Produto adicionado!')
-            onSuccess()
+            setName('')
+            setPrice('')
+            handleImageRemove()
         }
     }
 
     const isBusy = isExecuting || isUploading
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Nome do produto
-                </label>
-                <Input
-                    placeholder="Ex: Camiseta Básica, Bolo de Chocolate..."
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
-                    disabled={isBusy}
-                    autoFocus
+        <div className="space-y-4">
+            {createdProducts.length > 0 && (
+                <div className="space-y-2 mb-4">
+                    {createdProducts.map((product, i) => (
+                        <div key={i} className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm dark:border-emerald-800 dark:bg-emerald-900/20">
+                            <span className="font-medium text-emerald-800 dark:text-emerald-300">{product.name}</span>
+                            <span className="text-emerald-600 dark:text-emerald-400">R$ {product.price}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Nome do produto
+                    </label>
+                    <Input
+                        placeholder="Ex: Camiseta Básica, Bolo de Chocolate..."
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
+                        disabled={isBusy}
+                        autoFocus
+                    />
+                </div>
+
+                <div>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Preço (R$)
+                    </label>
+                    <Input
+                        placeholder="29,90"
+                        value={price}
+                        onChange={e => setPrice(e.target.value)}
+                        className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
+                        disabled={isBusy}
+                    />
+                </div>
+
+                <MiniDropZone
+                    label="Foto do produto"
+                    preview={imagePreview}
+                    onSelect={handleImageSelect}
+                    onRemove={handleImageRemove}
                 />
-            </div>
 
-            <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Preço (R$)
-                </label>
-                <Input
-                    placeholder="29,90"
-                    value={price}
-                    onChange={e => setPrice(e.target.value)}
-                    className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
-                    disabled={isBusy}
-                />
-            </div>
+                <div className="flex gap-3">
+                    <Button
+                        type="submit"
+                        disabled={isBusy || !name.trim() || !price}
+                        variant="outline"
+                        className="h-11 flex-1 gap-2 cursor-pointer"
+                    >
+                        {isBusy ? (
+                            <IconLoader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <IconPackage className="h-4 w-4" />
+                        )}
+                        {createdProducts.length === 0 ? 'Adicionar produto' : '+ Adicionar outro'}
+                    </Button>
 
-            <MiniDropZone
-                label="Foto do produto"
-                preview={imagePreview}
-                onSelect={handleImageSelect}
-                onRemove={handleImageRemove}
-            />
+                    {createdProducts.length > 0 && (
+                        <Button
+                            type="button"
+                            onClick={onSuccess}
+                            className="h-11 flex-1 gap-2 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+                        >
+                            <IconArrowRight className="h-4 w-4" />
+                            Continuar
+                        </Button>
+                    )}
+                </div>
+            </form>
 
-            <Button
-                type="submit"
-                disabled={isBusy || !name.trim() || !price}
-                className="h-11 w-full gap-2 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
-            >
-                {isBusy ? (
-                    <IconLoader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                    <IconArrowRight className="h-4 w-4" />
-                )}
-                Adicionar produto
-            </Button>
-        </form>
+            {createdProducts.length === 0 && (
+                <button
+                    type="button"
+                    onClick={onSuccess}
+                    className="w-full text-center text-sm text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                    Pular — a IA vai sugerir produtos
+                </button>
+            )}
+        </div>
     )
 }
 
@@ -548,6 +589,7 @@ function PlanForm({
     const [name, setName] = useState('')
     const [price, setPrice] = useState('')
     const [features, setFeatures] = useState('')
+    const [createdPlans, setCreatedPlans] = useState<{ name: string; price: string }[]>([])
     const { executeAsync, isExecuting } = useAction(createPricingPlanAction)
 
     async function handleSubmit(e: React.FormEvent) {
@@ -571,7 +613,7 @@ function PlanForm({
             priceInCents,
             interval: 'MONTHLY',
             features: featuresList.length > 0 ? featuresList : undefined,
-            isHighlighted: true,
+            isHighlighted: createdPlans.length === 0,
             ctaMode: 'WHATSAPP',
         })
 
@@ -581,67 +623,107 @@ function PlanForm({
         }
 
         if (result?.data) {
+            setCreatedPlans(prev => [...prev, { name: name.trim(), price }])
             toast.success('Plano criado!')
-            onSuccess()
+            setName('')
+            setPrice('')
+            setFeatures('')
         }
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Nome do plano
-                </label>
-                <Input
-                    placeholder="Ex: Plano Mensal, Pacote Premium..."
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                    className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
-                    disabled={isExecuting}
-                    autoFocus
-                />
-            </div>
+        <div className="space-y-4">
+            {createdPlans.length > 0 && (
+                <div className="space-y-2 mb-4">
+                    {createdPlans.map((plan, i) => (
+                        <div key={i} className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm dark:border-emerald-800 dark:bg-emerald-900/20">
+                            <span className="font-medium text-emerald-800 dark:text-emerald-300">{plan.name}</span>
+                            <span className="text-emerald-600 dark:text-emerald-400">R$ {plan.price}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
 
-            <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Preço mensal (R$)
-                </label>
-                <Input
-                    placeholder="99,90"
-                    value={price}
-                    onChange={e => setPrice(e.target.value)}
-                    className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
-                    disabled={isExecuting}
-                />
-            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Nome do plano
+                    </label>
+                    <Input
+                        placeholder="Ex: Plano Mensal, Pacote Premium..."
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
+                        disabled={isExecuting}
+                        autoFocus
+                    />
+                </div>
 
-            <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Benefícios{' '}
-                    <span className="font-normal text-slate-400">(um por linha, opcional)</span>
-                </label>
-                <textarea
-                    placeholder={"Acesso ilimitado\nSuporte prioritário\nMaterial exclusivo"}
-                    value={features}
-                    onChange={e => setFeatures(e.target.value)}
-                    rows={3}
-                    className="w-full resize-none rounded-md border border-slate-200/50 bg-white/50 px-3 py-2.5 text-sm transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
-                    disabled={isExecuting}
-                />
-            </div>
+                <div>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Preço mensal (R$)
+                    </label>
+                    <Input
+                        placeholder="99,90"
+                        value={price}
+                        onChange={e => setPrice(e.target.value)}
+                        className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
+                        disabled={isExecuting}
+                    />
+                </div>
 
-            <Button
-                type="submit"
-                disabled={isExecuting || !name.trim() || !price}
-                className="h-11 w-full gap-2 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
-            >
-                {isExecuting ? (
-                    <IconLoader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                    <IconArrowRight className="h-4 w-4" />
-                )}
-                Criar plano
-            </Button>
-        </form>
+                <div>
+                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Benefícios{' '}
+                        <span className="font-normal text-slate-400">(um por linha, opcional)</span>
+                    </label>
+                    <textarea
+                        placeholder={"Acesso ilimitado\nSuporte prioritário\nMaterial exclusivo"}
+                        value={features}
+                        onChange={e => setFeatures(e.target.value)}
+                        rows={3}
+                        className="w-full resize-none rounded-md border border-slate-200/50 bg-white/50 px-3 py-2.5 text-sm transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
+                        disabled={isExecuting}
+                    />
+                </div>
+
+                <div className="flex gap-3">
+                    <Button
+                        type="submit"
+                        disabled={isExecuting || !name.trim() || !price}
+                        variant="outline"
+                        className="h-11 flex-1 gap-2 cursor-pointer"
+                    >
+                        {isExecuting ? (
+                            <IconLoader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <IconCreditCard className="h-4 w-4" />
+                        )}
+                        {createdPlans.length === 0 ? 'Criar plano' : '+ Adicionar outro'}
+                    </Button>
+
+                    {createdPlans.length > 0 && (
+                        <Button
+                            type="button"
+                            onClick={onSuccess}
+                            className="h-11 flex-1 gap-2 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+                        >
+                            <IconArrowRight className="h-4 w-4" />
+                            Continuar
+                        </Button>
+                    )}
+                </div>
+            </form>
+
+            {createdPlans.length === 0 && (
+                <button
+                    type="button"
+                    onClick={onSuccess}
+                    className="w-full text-center text-sm text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                    Pular — a IA vai sugerir planos
+                </button>
+            )}
+        </div>
     )
 }

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PGL — Onboarding Flow Playground</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#0f172a;-webkit-font-smoothing:antialiased}
+.app{max-width:1200px;margin:0 auto;padding:24px}
+h1{font-size:1.5rem;font-weight:700;margin-bottom:4px}
+.subtitle{color:#64748b;font-size:0.9rem;margin-bottom:32px}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;margin-bottom:24px;background:#e2e8f0;padding:4px;border-radius:12px;width:fit-content}
+.tab{padding:10px 24px;border:none;background:transparent;font-size:0.85rem;font-weight:600;color:#64748b;cursor:pointer;border-radius:8px;transition:all 0.2s}
+.tab.active{background:#fff;color:#0f172a;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+
+/* Flow container */
+.flow{display:flex;gap:20px;align-items:flex-start}
+.steps-rail{width:280px;flex-shrink:0}
+.step-card{padding:14px 16px;border-radius:10px;border:2px solid transparent;cursor:pointer;transition:all 0.2s;margin-bottom:8px;background:#fff}
+.step-card:hover{border-color:#e2e8f0}
+.step-card.active{border-color:#7c3aed;background:#faf5ff}
+.step-card.done{border-color:#10b981;background:#f0fdf4}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:0.75rem;font-weight:700;color:#fff;margin-right:10px}
+.step-card .step-num{background:#94a3b8}
+.step-card.active .step-num{background:#7c3aed}
+.step-card.done .step-num{background:#10b981}
+.step-name{font-size:0.85rem;font-weight:600}
+.step-desc{font-size:0.75rem;color:#94a3b8;margin-top:2px;margin-left:34px}
+.step-connector{width:2px;height:12px;background:#e2e8f0;margin:0 0 0 27px}
+
+/* Detail panel */
+.detail{flex:1;background:#fff;border-radius:16px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,0.06);min-height:500px}
+.detail h2{font-size:1.2rem;font-weight:700;margin-bottom:4px}
+.detail .tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:0.7rem;font-weight:600;margin-bottom:16px}
+.tag.step-tag{background:#f3e8ff;color:#7c3aed}
+.tag.action-tag{background:#fef3c7;color:#92400e}
+.tag.component-tag{background:#e0f2fe;color:#0369a1}
+
+.detail-section{margin-top:20px;padding-top:16px;border-top:1px solid #f1f5f9}
+.detail-section h3{font-size:0.8rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px}
+
+/* UI Preview */
+.ui-preview{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin-top:12px}
+.ui-preview .field{margin-bottom:12px}
+.ui-preview label{display:block;font-size:0.75rem;font-weight:600;color:#64748b;margin-bottom:4px}
+.ui-preview input,.ui-preview select{width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:0.85rem;background:#fff}
+.ui-preview .btn{padding:12px 24px;border:none;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;width:100%;margin-top:8px}
+.btn-primary{background:#7c3aed;color:#fff}
+.btn-outline{background:#fff;color:#64748b;border:1px solid #e2e8f0}
+
+/* Style cards */
+.style-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.style-card{border:2px solid #e2e8f0;border-radius:10px;padding:12px;cursor:pointer;transition:all 0.2s;text-align:center}
+.style-card:hover{border-color:#7c3aed}
+.style-card.selected{border-color:#7c3aed;background:#faf5ff}
+.style-mockup{height:60px;border-radius:6px;margin-bottom:8px;display:flex;align-items:flex-end;padding:8px;position:relative;overflow:hidden}
+.style-mockup .mock-text{color:#fff;font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;position:relative;z-index:1}
+.style-mockup::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.5),transparent)}
+.style-name{font-size:0.8rem;font-weight:600;color:#0f172a}
+.style-dots{display:flex;gap:4px;justify-content:center;margin-top:6px}
+.style-dot{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,0.1)}
+
+/* Progress logs */
+.logs{margin-top:12px}
+.log{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;margin-bottom:4px;font-size:0.82rem;transition:all 0.3s}
+.log.done{background:#f0fdf4;color:#166534}
+.log.current{background:#eff6ff;color:#1e40af}
+.log.pending{background:#f8fafc;color:#94a3b8}
+.log-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;flex-shrink:0}
+.log.done .log-icon{background:#10b981;color:#fff}
+.log.current .log-icon{background:#3b82f6;color:#fff}
+.log.pending .log-icon{background:#e2e8f0;color:#94a3b8}
+
+/* Mode cards */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.mode-card{border:2px solid #e2e8f0;border-radius:10px;padding:14px;cursor:pointer;transition:all 0.2s}
+.mode-card:hover{border-color:#7c3aed}
+.mode-card.selected{border-color:#7c3aed;background:#faf5ff}
+.mode-card .mode-name{font-size:0.85rem;font-weight:700}
+.mode-card .mode-desc{font-size:0.72rem;color:#64748b;margin-top:4px}
+.mode-card .mode-examples{font-size:0.68rem;color:#94a3b8;margin-top:6px;font-style:italic}
+
+/* Sub-steps */
+.sub-progress{display:flex;gap:4px;margin-bottom:16px}
+.sub-bar{height:4px;border-radius:2px;flex:1;background:#e2e8f0;transition:all 0.3s}
+.sub-bar.active{background:#7c3aed}
+.sub-bar.done{background:#10b981}
+
+/* Content setup */
+.plan-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;margin-bottom:6px;font-size:0.82rem}
+.plan-item .name{font-weight:600;color:#166534}
+.plan-item .price{color:#15803d}
+
+/* Image setup */
+.upload-zone{border:2px dashed #e2e8f0;border-radius:12px;padding:24px;text-align:center;color:#94a3b8;font-size:0.82rem;margin-bottom:12px;transition:all 0.2s}
+.upload-zone:hover{border-color:#7c3aed;color:#7c3aed;background:#faf5ff}
+
+/* Data flow */
+.data-flow{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.data-chip{padding:4px 10px;background:#f1f5f9;border-radius:6px;font-size:0.72rem;font-weight:500;color:#475569}
+.data-chip.highlight{background:#fef3c7;color:#92400e}
+
+@media(max-width:800px){
+  .flow{flex-direction:column}
+  .steps-rail{width:100%}
+  .style-grid{grid-template-columns:1fr 1fr}
+  .mode-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>PGL — Onboarding Flow</h1>
+<p class="subtitle">Playground interativo do fluxo de cadastro</p>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchPath('google')">Google Places</button>
+  <button class="tab" onclick="switchPath('manual')">Cadastro Manual</button>
+</div>
+
+<div class="flow">
+  <!-- Steps Rail -->
+  <div class="steps-rail" id="steps-rail"></div>
+  <!-- Detail Panel -->
+  <div class="detail" id="detail-panel"></div>
+</div>
+</div>
+
+<script>
+const GOOGLE_STEPS = [
+  {id:'choose',name:'Escolher Método',desc:'Google ou Manual',tag:'step'},
+  {id:'mode',name:'Tipo de Negócio',desc:'Local, Catálogo, Planos ou Híbrido',tag:'step'},
+  {id:'search',name:'Buscar no Google',desc:'Encontrar o negócio no Maps',tag:'step'},
+  {id:'confirm',name:'Confirmar Dados',desc:'3 sub-steps: dados, visual, contatos',tag:'step'},
+  {id:'creating-1',name:'Importando Dados',desc:'Google Maps → Avaliações → Fotos → SEO',tag:'action'},
+  {id:'image-setup',name:'Imagens e Logo',desc:'Upload de logo, ícone e hero',tag:'step'},
+  {id:'content-setup',name:'Planos / Produtos',desc:'Se não for LOCAL_BUSINESS',tag:'step'},
+  {id:'creating-2',name:'Gerando Site v2',desc:'Layout → Design → Seções → Finalizar',tag:'action'},
+  {id:'complete',name:'Site Pronto!',desc:'Pronto para ativar',tag:'step'},
+];
+
+const MANUAL_STEPS = [
+  {id:'mode',name:'Tipo de Negócio',desc:'Local, Catálogo, Planos ou Híbrido',tag:'step'},
+  {id:'form',name:'Preencher Dados',desc:'Nome, categoria, cidade, diferencial',tag:'step'},
+  {id:'creating-1',name:'Gerando Conteúdo',desc:'IA analisa e cria textos',tag:'action'},
+  {id:'image-setup',name:'Imagens e Logo',desc:'Upload de logo, ícone e hero',tag:'step'},
+  {id:'content-setup',name:'Planos / Produtos',desc:'Se não for LOCAL_BUSINESS',tag:'step'},
+  {id:'creating-2',name:'Gerando Site v2',desc:'Layout → Design → Seções → Finalizar',tag:'action'},
+  {id:'complete',name:'Site Pronto!',desc:'Pronto para ativar',tag:'step'},
+];
+
+const DETAILS = {
+  choose: {
+    title:'Escolher Método de Cadastro',
+    content:`
+      <span class="tag component-tag">ChoosePathStep</span>
+      <p style="margin:12px 0;font-size:0.9rem;color:#475569">O usuário escolhe entre importar automaticamente do Google ou criar manualmente.</p>
+      <div class="ui-preview">
+        <div style="display:flex;gap:12px">
+          <div style="flex:1;padding:20px;border:2px solid #7c3aed;border-radius:12px;text-align:center;background:#faf5ff">
+            <div style="font-size:1.5rem;margin-bottom:8px">🔍</div>
+            <div style="font-weight:700;font-size:0.85rem">Importar do Google</div>
+            <div style="font-size:0.72rem;color:#64748b;margin-top:4px">Automático, rápido</div>
+          </div>
+          <div style="flex:1;padding:20px;border:2px solid #e2e8f0;border-radius:12px;text-align:center">
+            <div style="font-size:1.5rem;margin-bottom:8px">✏️</div>
+            <div style="font-weight:700;font-size:0.85rem">Criar Manualmente</div>
+            <div style="font-size:0.72rem;color:#64748b;margin-top:4px">Preencher dados</div>
+          </div>
+        </div>
+      </div>
+    `
+  },
+  mode: {
+    title:'Tipo de Negócio',
+    content:`
+      <span class="tag component-tag">ModeSelectionStep</span>
+      <p style="margin:12px 0;font-size:0.9rem;color:#475569">Define quais seções o site terá e quais blocos são obrigatórios.</p>
+      <div class="mode-grid">
+        <div class="mode-card selected">
+          <div class="mode-name">🏪 Negócio Local</div>
+          <div class="mode-desc">Serviços com foco em localização</div>
+          <div class="mode-examples">Oficina, Barbearia, Clínica</div>
+        </div>
+        <div class="mode-card">
+          <div class="mode-name">🛍️ Catálogo</div>
+          <div class="mode-desc">Produtos com coleções</div>
+          <div class="mode-examples">Loja de Roupas, Pet Shop</div>
+        </div>
+        <div class="mode-card">
+          <div class="mode-name">💳 Planos</div>
+          <div class="mode-desc">Tabela de preços</div>
+          <div class="mode-examples">Academia, SaaS</div>
+        </div>
+        <div class="mode-card">
+          <div class="mode-name">🔄 Híbrido</div>
+          <div class="mode-desc">Serviços + Produtos + Planos</div>
+          <div class="mode-examples">Pet Shop completo</div>
+        </div>
+      </div>
+      <div class="detail-section">
+        <h3>Impacto na Geração</h3>
+        <div class="data-flow">
+          <span class="data-chip">requiredBlocks</span>
+          <span class="data-chip">optionalBlocks</span>
+          <span class="data-chip">minSections</span>
+          <span class="data-chip">maxSections</span>
+          <span class="data-chip highlight">setup-content steps</span>
+        </div>
+      </div>
+    `
+  },
+  search: {
+    title:'Buscar Negócio no Google',
+    content:`
+      <span class="tag component-tag">SearchStep</span>
+      <span class="tag action-tag">searchPlacesAction</span>
+      <div class="ui-preview" style="margin-top:12px">
+        <div class="field">
+          <label>Busque seu negócio</label>
+          <input type="text" placeholder="Ex: Barbearia do Zé, São Paulo" value="Acqua Park Prazeres da Serra">
+        </div>
+        <div style="margin-top:12px;padding:12px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;display:flex;gap:12px;align-items:center">
+          <div style="width:48px;height:48px;background:#e2e8f0;border-radius:8px;flex-shrink:0"></div>
+          <div>
+            <div style="font-weight:600;font-size:0.85rem">Acqua Park Prazeres da Serra</div>
+            <div style="font-size:0.72rem;color:#64748b">Jiquiriçá, BA · ⭐ 5.0 · 5 avaliações</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-section">
+        <h3>Dados Extraídos</h3>
+        <div class="data-flow">
+          <span class="data-chip">placeId</span>
+          <span class="data-chip">name</span>
+          <span class="data-chip">address</span>
+          <span class="data-chip">rating</span>
+          <span class="data-chip">reviewsCount</span>
+          <span class="data-chip">photoUrl</span>
+          <span class="data-chip">category</span>
+        </div>
+      </div>
+    `
+  },
+  confirm: {
+    title:'Confirmar Dados (3 Sub-Steps)',
+    content:`
+      <span class="tag component-tag">ConfirmStep</span>
+      <div class="sub-progress" style="margin-top:12px">
+        <div class="sub-bar active"></div>
+        <div class="sub-bar"></div>
+        <div class="sub-bar"></div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:8px">Sub-Step 1: Confirme seu negócio</h3>
+        <div class="ui-preview">
+          <div style="height:120px;background:linear-gradient(135deg,#0f1923,#1e3a5f);border-radius:8px;margin-bottom:12px;display:flex;align-items:flex-end;padding:12px">
+            <span style="color:#fff;font-size:0.75rem;font-weight:600">ACQUA PARK PRAZERES DA SERRA</span>
+          </div>
+          <div style="font-size:0.82rem;color:#64748b">⭐ 5.0 · 5 avaliações · Jiquiriçá, BA</div>
+          <button class="btn btn-primary" style="margin-top:12px">Confirmar e continuar</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:20px">
+        <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:8px">Sub-Step 2: Escolha o visual</h3>
+        <div class="style-grid">
+          <div class="style-card selected">
+            <div class="style-mockup" style="background:#0f1923"><span class="mock-text">Industrial</span></div>
+            <div class="style-name">Industrial</div>
+            <div class="style-dots"><div class="style-dot" style="background:#0f1923"></div><div class="style-dot" style="background:#1e3a5f"></div><div class="style-dot" style="background:#ea580c"></div></div>
+          </div>
+          <div class="style-card">
+            <div class="style-mockup" style="background:#581c87"><span class="mock-text">Elegante</span></div>
+            <div class="style-name">Elegante</div>
+            <div class="style-dots"><div class="style-dot" style="background:#581c87"></div><div class="style-dot" style="background:#7c3aed"></div><div class="style-dot" style="background:#d4a574"></div></div>
+          </div>
+          <div class="style-card">
+            <div class="style-mockup" style="background:#9a3412"><span class="mock-text">Acolhedor</span></div>
+            <div class="style-name">Acolhedor</div>
+            <div class="style-dots"><div class="style-dot" style="background:#9a3412"></div><div class="style-dot" style="background:#78350f"></div><div class="style-dot" style="background:#f97316"></div></div>
+          </div>
+          <div class="style-card">
+            <div class="style-mockup" style="background:#111"><span class="mock-text">Impactante</span></div>
+            <div class="style-name">Impactante</div>
+            <div class="style-dots"><div class="style-dot" style="background:#111"></div><div class="style-dot" style="background:#1f2937"></div><div class="style-dot" style="background:#84cc16"></div></div>
+          </div>
+          <div class="style-card">
+            <div class="style-mockup" style="background:#1e293b"><span class="mock-text">Minimalista</span></div>
+            <div class="style-name">Minimalista</div>
+            <div class="style-dots"><div class="style-dot" style="background:#1e293b"></div><div class="style-dot" style="background:#334155"></div><div class="style-dot" style="background:#3b82f6"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:8px">Sub-Step 3: Contatos</h3>
+        <div class="ui-preview">
+          <div class="field"><label>WhatsApp</label><input value="(73) 98829-0366"></div>
+          <div class="field"><label>Telefone (opcional)</label><input value="(73) 98829-0366"></div>
+          <div style="font-size:0.75rem;color:#64748b;margin-top:8px">📅 Sáb-Dom: 09:00 - 17:00</div>
+          <button class="btn btn-primary" style="margin-top:12px">Criar meu site</button>
+        </div>
+      </div>
+    `
+  },
+  'creating-1': {
+    title:'Importando Dados (Fase 1)',
+    content:`
+      <span class="tag action-tag">createStoreFromGoogleAction</span>
+      <p style="margin:12px 0;font-size:0.9rem;color:#475569">A store é criada no banco com dados do Google. Logs param no índice 4 (SEO).</p>
+      <div class="logs">
+        <div class="log done"><div class="log-icon">✓</div>Conectando com o Google Maps...</div>
+        <div class="log done"><div class="log-icon">✓</div>Analisando suas avaliações...</div>
+        <div class="log done"><div class="log-icon">✓</div>Importando suas melhores fotos...</div>
+        <div class="log done"><div class="log-icon">✓</div>Redigindo títulos persuasivos com IA...</div>
+        <div class="log current"><div class="log-icon">⏳</div>Gerando descrições para SEO...</div>
+        <div class="log pending"><div class="log-icon">○</div>Desenhando o layout...</div>
+        <div class="log pending"><div class="log-icon">○</div>Escolhendo cores e fontes...</div>
+        <div class="log pending"><div class="log-icon">○</div>Montando as seções...</div>
+        <div class="log pending"><div class="log-icon">○</div>Finalizando!</div>
+      </div>
+      <div class="detail-section">
+        <h3>O que acontece no backend</h3>
+        <div class="data-flow">
+          <span class="data-chip">buildStoreFromGoogle()</span>
+          <span class="data-chip">INSERT store</span>
+          <span class="data-chip">INSERT testimonials</span>
+          <span class="data-chip">INSERT services</span>
+          <span class="data-chip highlight">Download + S3 fotos</span>
+          <span class="data-chip">addDomainToVercel()</span>
+        </div>
+        <p style="margin-top:8px;font-size:0.78rem;color:#94a3b8">⚠️ isV2Phase = false. Logs limitados ao índice 4.</p>
+      </div>
+    `
+  },
+  'image-setup': {
+    title:'Imagens e Logo',
+    content:`
+      <span class="tag component-tag">ImageSetupStep</span>
+      <p style="margin:12px 0;font-size:0.9rem;color:#475569">Opcional — o usuário pode adicionar logo, ícone do navegador e imagem de destaque. Pode pular.</p>
+      <div class="ui-preview">
+        <div class="upload-zone">
+          📸 Arraste uma imagem de destaque<br><span style="font-size:0.72rem">Aparece no topo do site (1920×1080)</span>
+        </div>
+        <div class="upload-zone">
+          🎨 Logo e ícone do navegador<br><span style="font-size:0.72rem">PNG com fundo transparente</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-outline" style="flex:1">Pular</button>
+          <button class="btn btn-primary" style="flex:1">Continuar</button>
+        </div>
+      </div>
+      <div class="detail-section">
+        <h3>Dados salvos no DB</h3>
+        <div class="data-flow">
+          <span class="data-chip">storeImage (role: hero)</span>
+          <span class="data-chip">store.logoUrl</span>
+          <span class="data-chip">store.faviconUrl</span>
+        </div>
+      </div>
+    `
+  },
+  'content-setup': {
+    title:'Planos / Produtos',
+    content:`
+      <span class="tag component-tag">ContentSetupStep</span>
+      <p style="margin:12px 0;font-size:0.9rem;color:#475569">Aparece SOMENTE se o modo NÃO for LOCAL_BUSINESS. Permite criar planos e/ou produtos.</p>
+
+      <div style="margin-bottom:16px">
+        <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:8px">Se SERVICE_PRICING / HYBRID → Criar Planos</h3>
+        <div class="ui-preview">
+          <div class="plan-item"><span class="name">Plano Básico</span><span class="price">R$ 49,90</span></div>
+          <div class="plan-item"><span class="name">Plano Premium</span><span class="price">R$ 99,90</span></div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-outline" style="flex:1">+ Adicionar outro</button>
+            <button class="btn btn-primary" style="flex:1">Continuar</button>
+          </div>
+          <button style="width:100%;margin-top:8px;background:none;border:none;color:#94a3b8;font-size:0.78rem;cursor:pointer">Pular — a IA vai sugerir planos</button>
+        </div>
+      </div>
+
+      <div>
+        <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:8px">Se PRODUCT_CATALOG / HYBRID → Criar Produtos</h3>
+        <div class="ui-preview">
+          <div class="plan-item"><span class="name">Ingresso Adulto</span><span class="price">R$ 40,00</span></div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-outline" style="flex:1">+ Adicionar outro</button>
+            <button class="btn btn-primary" style="flex:1">Continuar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Dados salvos no DB</h3>
+        <div class="data-flow">
+          <span class="data-chip highlight">store_pricing_plan</span>
+          <span class="data-chip highlight">store_product</span>
+          <span class="data-chip">store_product_collection</span>
+        </div>
+      </div>
+    `
+  },
+  'creating-2': {
+    title:'Gerando Site v2 (Fase 2)',
+    content:`
+      <span class="tag action-tag">generateSiteAfterOnboarding</span>
+      <p style="margin:12px 0;font-size:0.9rem;color:#475569">Volta para a mesma tela de progresso. Continua dos logs 5-8. Gera o blueprint v2 completo.</p>
+      <div class="logs">
+        <div class="log done"><div class="log-icon">✓</div>Conectando com o Google Maps...</div>
+        <div class="log done"><div class="log-icon">✓</div>Analisando suas avaliações...</div>
+        <div class="log done"><div class="log-icon">✓</div>Importando suas melhores fotos...</div>
+        <div class="log done"><div class="log-icon">✓</div>Redigindo títulos com IA...</div>
+        <div class="log done"><div class="log-icon">✓</div>Gerando descrições para SEO...</div>
+        <div class="log done"><div class="log-icon">✓</div>Desenhando o layout do seu site...</div>
+        <div class="log done"><div class="log-icon">✓</div>Escolhendo cores e fontes ideais...</div>
+        <div class="log current"><div class="log-icon">⏳</div>Montando as seções do site...</div>
+        <div class="log pending"><div class="log-icon">○</div>Finalizando seu site!</div>
+      </div>
+      <div class="detail-section">
+        <h3>Pipeline v2</h3>
+        <div class="data-flow">
+          <span class="data-chip">buildPrompt(ctx)</span>
+          <span class="data-chip highlight">Claude Opus / Sonnet</span>
+          <span class="data-chip">normalizeAndValidate()</span>
+          <span class="data-chip">Unsplash fallback (S3)</span>
+          <span class="data-chip">SiteBlueprintSchema.parse()</span>
+          <span class="data-chip">store.siteBlueprintV2 = JSON</span>
+        </div>
+        <p style="margin-top:8px;font-size:0.78rem;color:#94a3b8">⚠️ isV2Phase = true. Logs começam no índice 5.</p>
+      </div>
+    `
+  },
+  complete: {
+    title:'Site Pronto! 🎉',
+    content:`
+      <span class="tag component-tag">CompleteStep</span>
+      <div class="ui-preview" style="text-align:center;margin-top:12px">
+        <div style="font-size:3rem;margin-bottom:12px">🎉</div>
+        <div style="font-size:1.1rem;font-weight:700">Seu site está pronto!</div>
+        <div style="font-size:0.85rem;color:#64748b;margin:8px 0">ACQUA PARK PRAZERES DA SERRA</div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button class="btn btn-primary" style="flex:1">Ver meu site</button>
+          <button class="btn btn-outline" style="flex:1">Ir para o painel</button>
+        </div>
+        <p style="margin-top:12px;font-size:0.75rem;color:#94a3b8">Site criado com isActive: false. Ativação após pagamento.</p>
+      </div>
+    `
+  },
+  form: {
+    title:'Preencher Dados Manualmente',
+    content:`
+      <span class="tag component-tag">FormStep</span>
+      <span class="tag action-tag">React Hook Form + Zod</span>
+      <div class="ui-preview" style="margin-top:12px">
+        <div class="field"><label>Nome do negócio</label><input placeholder="Ex: Barbearia do Zé"></div>
+        <div class="field"><label>Categoria</label><select><option>Selecione...</option><option>Barbearia</option><option>Restaurante</option><option>Academia</option></select></div>
+        <div class="field"><label>Localização</label><input placeholder="Buscar cidade..."></div>
+        <div class="field"><label>Diferencial (10-300 caracteres)</label><input placeholder="O que torna seu negócio especial?"></div>
+        <div class="field"><label>WhatsApp</label><input placeholder="(00) 00000-0000"></div>
+        <button class="btn btn-primary">Criar meu site</button>
+      </div>
+      <div class="detail-section">
+        <h3>Validação Zod</h3>
+        <div class="data-flow">
+          <span class="data-chip">name: min(2) max(100)</span>
+          <span class="data-chip">categoryId: uuid</span>
+          <span class="data-chip">differential: min(10) max(300)</span>
+          <span class="data-chip">whatsapp: regex 10-11 digits</span>
+        </div>
+      </div>
+    `
+  },
+};
+
+let currentPath = 'google';
+let activeStep = null;
+
+function switchPath(path) {
+  currentPath = path;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  activeStep = null;
+  renderSteps();
+  renderDetail(currentPath === 'google' ? 'choose' : 'mode');
+}
+
+function renderSteps() {
+  const steps = currentPath === 'google' ? GOOGLE_STEPS : MANUAL_STEPS;
+  const rail = document.getElementById('steps-rail');
+  rail.innerHTML = steps.map((s, i) => `
+    <div class="step-card ${activeStep === s.id ? 'active' : ''}" onclick="selectStep('${s.id}')">
+      <span class="step-num">${i + 1}</span>
+      <span class="step-name">${s.name}</span>
+      <div class="step-desc">${s.desc}</div>
+    </div>
+    ${i < steps.length - 1 ? '<div class="step-connector"></div>' : ''}
+  `).join('');
+}
+
+function selectStep(id) {
+  activeStep = id;
+  renderSteps();
+  renderDetail(id);
+}
+
+function renderDetail(id) {
+  const detail = DETAILS[id];
+  if (!detail) return;
+  const panel = document.getElementById('detail-panel');
+  panel.innerHTML = `<h2>${detail.title}</h2>${detail.content}`;
+}
+
+// Init
+renderSteps();
+renderDetail('choose');
+</script>
+</body>
+</html>

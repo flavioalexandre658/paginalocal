@@ -23,6 +23,7 @@ import { notifyStoreActivated } from '@/lib/google-indexing'
 import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
 import { generateCitySlug } from '@/lib/utils'
 import { getDefaultSectionsForMode } from '@/lib/store-sections'
+import { inferSiteType } from '@/lib/infer-site-type'
 
 async function generateUniqueServiceSlugForStore(storeId: string, name: string): Promise<string> {
   const baseSlug = generateSlug(name)
@@ -51,8 +52,9 @@ const BRAZILIAN_STATES = [
 
 const createStoreManualSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100),
-  categoryId: z.string().uuid('Categoria inválida'),
-  categoryName: z.string().min(1, 'Nome da categoria é obrigatório'),
+  businessType: z.string().min(1, 'Tipo de negócio é obrigatório').max(100),
+  categoryId: z.string().uuid('Categoria inválida').optional(),
+  categoryName: z.string().min(1, 'Nome da categoria é obrigatório').optional(),
   city: z.string().min(2, 'Cidade é obrigatória').max(100),
   state: z.enum(BRAZILIAN_STATES, { message: 'UF inválida' }),
   address: z.string().optional(),
@@ -61,10 +63,14 @@ const createStoreManualSchema = z.object({
   latitude: z.number().optional(),
   longitude: z.number().optional(),
   neighborhoods: z.array(z.string()).optional(),
-  differential: z.string().min(10, 'Descreva seu diferencial (mínimo 10 caracteres)').max(300),
+  differential: z.string().max(500).optional(),
   whatsapp: z.string().regex(/^\d{10,11}$/, 'WhatsApp inválido (apenas números, 10 ou 11 dígitos)'),
-  mode: z.enum(['LOCAL_BUSINESS', 'PRODUCT_CATALOG', 'SERVICE_PRICING', 'HYBRID']).default('LOCAL_BUSINESS'),
+  monthlyRevenue: z.string().max(30).optional(),
+  mode: z.enum(['LOCAL_BUSINESS', 'PRODUCT_CATALOG', 'SERVICE_PRICING', 'HYBRID']).optional(),
   primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  secondaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  selectedStyle: z.string().optional(),
   termGender: z.enum(['MASCULINE', 'FEMININE']).optional(),
   termNumber: z.enum(['SINGULAR', 'PLURAL']).optional(),
 })
@@ -149,8 +155,9 @@ export const createStoreManualAction = authActionClient
 
     const {
       name,
-      categoryId,
-      categoryName,
+      businessType,
+      categoryId: inputCategoryId,
+      categoryName: inputCategoryName,
       city,
       state,
       address: inputAddress,
@@ -159,15 +166,48 @@ export const createStoreManualAction = authActionClient
       latitude,
       longitude,
       neighborhoods: inputNeighborhoods,
-      differential,
+      differential: inputDifferential,
       whatsapp,
+      monthlyRevenue,
       primaryColor,
+      secondaryColor,
+      accentColor,
+      selectedStyle,
       termGender: inputTermGender,
       termNumber: inputTermNumber,
     } = parsedInput
 
     const displayName = name.trim()
-    const categoryFormatted = categoryName === 'Outro' ? 'Serviços' : categoryName
+
+    let categoryId = inputCategoryId
+    let categoryName = inputCategoryName || businessType
+
+    if (!categoryId && businessType) {
+      const { classifyBusinessCategory } = await import('@/lib/ai')
+      const classifiedCategory = await classifyBusinessCategory({
+        businessName: `${displayName} - ${businessType}`,
+        primaryType: businessType,
+      })
+      if (classifiedCategory) {
+        const matchedCategory = await db.query.category.findFirst({
+          where: (c, { eq }) => eq(c.name, classifiedCategory),
+        })
+        if (matchedCategory) {
+          categoryId = matchedCategory.id
+          categoryName = matchedCategory.name
+        }
+      }
+      if (!categoryId) {
+        const fallbackCategory = await db.query.category.findFirst({
+          where: (c, { eq }) => eq(c.slug, 'outro'),
+        })
+        categoryId = fallbackCategory?.id
+        categoryName = categoryName || 'Outro'
+      }
+    }
+
+    const categoryFormatted = categoryName === 'Outro' ? businessType || 'Serviços' : (categoryName || businessType)
+    const differential = inputDifferential || categoryFormatted
 
     const baseSlug = generateOptimizedSlug(categoryFormatted, displayName, city)
 
@@ -250,6 +290,7 @@ export const createStoreManualAction = authActionClient
         latitude: latitude?.toString(),
         longitude: longitude?.toString(),
         creationSource: 'MANUAL_CREATION',
+        monthlyRevenue: monthlyRevenue || null,
         heroTitle: truncate(marketingCopy?.heroTitle || heroTitle, 100),
         heroSubtitle: truncate(marketingCopy?.heroSubtitle || heroSubtitle, 200),
         description: marketingCopy?.aboutSection || aboutSection,
@@ -257,14 +298,15 @@ export const createStoreManualAction = authActionClient
         seoDescription,
         faq: finalFAQ,
         neighborhoods: finalNeighborhoods,
-        mode: parsedInput.mode,
-        sections: getDefaultSectionsForMode(parsedInput.mode),
+        mode: parsedInput.mode ?? inferSiteType(categoryFormatted, displayName).siteType,
+        sections: getDefaultSectionsForMode(parsedInput.mode ?? inferSiteType(categoryFormatted, displayName).siteType),
         templateId: 'default',
         templateConfig: null,
         termGender: inputTermGender ?? marketingCopy?.termGender ?? 'FEMININE',
         termNumber: inputTermNumber ?? marketingCopy?.termNumber ?? 'SINGULAR',
         primaryColor: primaryColor ?? '#3b82f6',
-        isActive: shouldActivateStore,
+        differential,
+        isActive: false,
       })
       .returning()
 
@@ -299,66 +341,8 @@ export const createStoreManualAction = authActionClient
       console.error('[Manual Creation] Erro ao criar subdomínio na Vercel:', error)
     }
 
-    // ===== Generate institutional pages =====
-    let pagesGenerated = false
-    try {
-      const aiPageInput: MarketingCopyInput = {
-        businessName: newStore.name,
-        category: newStore.category,
-        city: newStore.city,
-        state: newStore.state,
-        googleAbout: differential || undefined,
-      }
-
-      const institutionalPages = await generateInstitutionalPages(aiPageInput)
-
-      await db.insert(storePage).values([
-        {
-          storeId: newStore.id,
-          type: 'ABOUT' as const,
-          slug: 'sobre-nos',
-          title: institutionalPages.about.title,
-          content: institutionalPages.about.content,
-          seoTitle: institutionalPages.about.seoTitle,
-          seoDescription: institutionalPages.about.seoDescription,
-        },
-        {
-          storeId: newStore.id,
-          type: 'CONTACT' as const,
-          slug: 'contato',
-          title: institutionalPages.contact.title,
-          content: institutionalPages.contact.content,
-          seoTitle: institutionalPages.contact.seoTitle,
-          seoDescription: institutionalPages.contact.seoDescription,
-        },
-      ])
-
-      pagesGenerated = true
-      console.log(`[Manual Creation] Páginas institucionais geradas para "${newStore.name}"`)
-    } catch (error) {
-      console.error('[Manual Creation] Erro ao gerar páginas institucionais:', error)
-    }
-
-    const pageSlugs = pagesGenerated ? ['sobre-nos', 'contato'] : undefined
-    if (shouldActivateStore) {
-      notifyStoreActivated(newStore.slug, newStore.customDomain, undefined, pageSlugs).catch((error) => {
-        console.error('[Manual Creation] Erro ao notificar Google Indexing API:', error)
-      })
-
-      // Revalida o sitemap e páginas de categoria
-      await revalidateSitemap()
-
-      // Busca o slug da categoria e revalida páginas de categoria/cidade
-      const [categoryData] = await db
-        .select({ slug: category.slug })
-        .from(category)
-        .where(eq(category.name, newStore.category))
-        .limit(1)
-
-      if (categoryData) {
-        await revalidateCategoryPages(categoryData.slug, generateCitySlug(newStore.city))
-      }
-    }
+    // V2: Páginas institucionais e indexação são feitas após o blueprint v2 ser gerado
+    // Store começa inativa — só é ativada após pagamento
 
     return {
       store: newStore,

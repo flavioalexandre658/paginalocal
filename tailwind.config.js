@@ -16,6 +16,11 @@ module.exports = {
 			}
 		},
 		extend: {
+			fontFamily: {
+				heading: ['var(--pgl-font-heading)', 'sans-serif'],
+				body: ['var(--pgl-font-body)', 'sans-serif'],
+				accent: ['var(--pgl-font-accent)', 'serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

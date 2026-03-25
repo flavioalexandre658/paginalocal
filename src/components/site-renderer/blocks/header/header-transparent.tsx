@@ -1,0 +1,167 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
+import { PglButton } from "../../shared/pgl-button";
+import type { DesignTokens } from "@/types/ai-generation";
+
+interface Props {
+  content: Record<string, unknown>;
+  tokens: DesignTokens;
+  isDark?: boolean;
+}
+
+const NAV_ITEMS = [
+  { label: "Servicos", href: "#servicos" },
+  { label: "Sobre", href: "#sobre" },
+  { label: "Contato", href: "#contato" },
+  { label: "FAQ", href: "#faq" },
+];
+
+export function HeaderTransparent({ content, tokens }: Props) {
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const storeName =
+    typeof content.storeName === "string" ? content.storeName : "";
+  const logoUrl =
+    typeof content.logoUrl === "string" && content.logoUrl ? content.logoUrl : null;
+  const ctaText =
+    typeof content.ctaText === "string" ? content.ctaText : null;
+  const ctaLink =
+    typeof content.ctaLink === "string" ? content.ctaLink : "#contato";
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
+  return (
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        scrolled ? "backdrop-blur-md py-3" : "py-5"
+      )}
+      style={{
+        backgroundColor: scrolled
+          ? `${tokens.palette.primary}f2`
+          : "transparent",
+      }}
+      role="banner"
+    >
+      <nav
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between"
+        role="navigation"
+        aria-label="Navegacao principal"
+      >
+        {/* Logo */}
+        <a href="/" className="relative z-50 shrink-0">
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoUrl}
+              alt="Logo"
+              className="max-h-10 w-auto object-contain"
+            />
+          ) : (
+            <span
+              className="text-lg font-bold tracking-tight"
+              style={{ fontFamily: "var(--pgl-font-heading)", color: "#fff" }}
+            >
+              {storeName}
+            </span>
+          )}
+        </a>
+
+        {/* Desktop nav */}
+        <ul className="hidden md:flex items-center gap-8">
+          {NAV_ITEMS.map((item) => (
+            <li key={item.href}>
+              <a
+                href={item.href}
+                className="text-sm font-medium uppercase tracking-wider text-white/80 hover:text-white transition-colors duration-200 underline-offset-4 hover:underline decoration-white/30"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        {/* Desktop CTA */}
+        {ctaText && (
+          <div className="hidden md:block">
+            <PglButton href={ctaLink} tokens={tokens} isDark>
+              {ctaText}
+            </PglButton>
+          </div>
+        )}
+
+        {/* Hamburger — mobile */}
+        <button
+          className="md:hidden relative z-50 w-10 h-10 flex flex-col items-center justify-center gap-1.5"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={menuOpen}
+        >
+          <span
+            className={cn(
+              "block w-6 h-px bg-white transition-all duration-300 origin-center",
+              menuOpen && "rotate-45 translate-y-[3.5px]"
+            )}
+          />
+          <span
+            className={cn(
+              "block w-6 h-px bg-white transition-all duration-300",
+              menuOpen && "opacity-0"
+            )}
+          />
+          <span
+            className={cn(
+              "block w-6 h-px bg-white transition-all duration-300 origin-center",
+              menuOpen && "-rotate-45 -translate-y-[3.5px]"
+            )}
+          />
+        </button>
+
+        {/* Mobile menu */}
+        <div
+          className={cn(
+            "fixed inset-0 z-40 flex flex-col items-center justify-center gap-8 transition-all duration-300 md:hidden",
+            menuOpen
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          )}
+          style={{ backgroundColor: `${tokens.palette.primary}f5` }}
+        >
+          <ul className="flex flex-col items-center gap-6">
+            {NAV_ITEMS.map((item) => (
+              <li key={item.href}>
+                <a
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className="text-lg font-medium uppercase tracking-wider text-white/90 hover:text-white transition-colors"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          {ctaText && (
+            <PglButton href={ctaLink} tokens={tokens} isDark>
+              {ctaText}
+            </PglButton>
+          )}
+        </div>
+      </nav>
+    </header>
+  );
+}

@@ -19,6 +19,7 @@ import type { MarketingCopyInput } from '@/lib/ai'
 import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
 import { generateCitySlug } from '@/lib/utils'
 import { getDefaultSectionsForMode } from '@/lib/store-sections'
+import { inferSiteType } from '@/lib/infer-site-type'
 import {
   buildStoreFromGoogle,
   generateSlugFromName,
@@ -31,14 +32,13 @@ import {
 const createStoreFromGoogleSchema = z.object({
   googlePlaceId: z.string().min(1),
   searchTerm: z.string().min(1),
-  selectedCoverIndex: z.number().int().min(0).optional(),
   whatsappOverride: z.string().optional(),
   phoneOverride: z.string().optional(),
   nameOverride: z.string().min(2).max(100).optional(),
-  mode: z.enum(['LOCAL_BUSINESS', 'PRODUCT_CATALOG', 'SERVICE_PRICING', 'HYBRID']).default('LOCAL_BUSINESS'),
   primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  termGender: z.enum(['MASCULINE', 'FEMININE']).optional(),
-  termNumber: z.enum(['SINGULAR', 'PLURAL']).optional(),
+  secondaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  selectedStyle: z.enum(['industrial', 'elegant', 'warm', 'bold', 'minimal']).optional(),
 })
 
 // ===== Main Action =====
@@ -65,11 +65,8 @@ export const createStoreFromGoogleAction = authActionClient
     const {
       googlePlaceId,
       searchTerm,
-      selectedCoverIndex = 0,
       nameOverride,
       primaryColor,
-      termGender: inputTermGender,
-      termNumber: inputTermNumber,
     } = parsedInput
 
     const existingStore = await db.query.store.findFirst({
@@ -85,7 +82,7 @@ export const createStoreFromGoogleAction = authActionClient
     const result = await buildStoreFromGoogle(googlePlaceId, {
       phoneOverride: parsedInput.phoneOverride,
       whatsappOverride: parsedInput.whatsappOverride,
-      selectedCoverIndex,
+      selectedCoverIndex: 0,
       searchTerm,
     })
 
@@ -101,6 +98,14 @@ export const createStoreFromGoogleAction = authActionClient
       slug = `${baseSlug}-${counter}`
       counter++
     }
+
+    // ===== Infer site type from category =====
+    const { siteType: inferredMode } = inferSiteType(
+      result.category.name,
+      result.displayName,
+      result.description || ''
+    )
+    console.log(`[Google Import] Inferred site type: ${inferredMode} for "${result.category.name}"`)
 
     // ===== Create store =====
     const finalDisplayName = nameOverride?.trim() || result.displayName
@@ -133,14 +138,17 @@ export const createStoreFromGoogleAction = authActionClient
         seoDescription: truncate(result.seoDescription, 160),
         faq: result.faq,
         neighborhoods: result.neighborhoods,
-        mode: parsedInput.mode,
-        sections: getDefaultSectionsForMode(parsedInput.mode),
+        mode: inferredMode,
+        sections: getDefaultSectionsForMode(inferredMode),
         templateId: 'default',
         templateConfig: null,
-        termGender: inputTermGender ?? result.termGender,
-        termNumber: inputTermNumber ?? result.termNumber,
+        termGender: result.termGender,
+        termNumber: result.termNumber,
         primaryColor: primaryColor ?? '#3b82f6',
-        isActive: shouldActivateStore,
+        secondaryColor: parsedInput.secondaryColor ?? null,
+        accentColor: parsedInput.accentColor ?? null,
+        website: result.placeDetails.websiteUri ?? null,
+        isActive: false,
       })
       .returning()
 
@@ -207,11 +215,7 @@ export const createStoreFromGoogleAction = authActionClient
 
     if (photos && photos.length > 0) {
       const allPhotos = [...photos]
-      const coverPhotoIndex = selectedCoverIndex < allPhotos.length ? selectedCoverIndex : 0
-      if (coverPhotoIndex > 0 && coverPhotoIndex < allPhotos.length) {
-        const [selectedPhoto] = allPhotos.splice(coverPhotoIndex, 1)
-        allPhotos.unshift(selectedPhoto)
-      }
+      // Use first photo as cover by default
 
       const altVariations = [
         'Fachada', 'Ambiente interno', 'Equipe', 'Estrutura', 'Atendimento',
@@ -283,62 +287,8 @@ export const createStoreFromGoogleAction = authActionClient
       console.error('[Google Import] Erro ao criar subdomínio na Vercel:', error)
     }
 
-    // ===== Generate institutional pages =====
-    let pagesGenerated = false
-    try {
-      const aiInput: MarketingCopyInput = {
-        businessName: result.displayName,
-        category: result.category.name,
-        city: newStore.city,
-        state: newStore.state,
-        rating: result.placeDetails.rating,
-        reviewCount: result.placeDetails.userRatingCount,
-        googleAbout: result.placeDetails.editorialSummary?.text,
-        address: newStore.address,
-      }
-
-      const institutionalPages = await generateInstitutionalPages(aiInput)
-
-      await db.insert(storePage).values([
-        {
-          storeId: newStore.id,
-          type: 'ABOUT' as const,
-          slug: 'sobre-nos',
-          title: institutionalPages.about.title,
-          content: institutionalPages.about.content,
-          seoTitle: institutionalPages.about.seoTitle,
-          seoDescription: institutionalPages.about.seoDescription,
-        },
-        {
-          storeId: newStore.id,
-          type: 'CONTACT' as const,
-          slug: 'contato',
-          title: institutionalPages.contact.title,
-          content: institutionalPages.contact.content,
-          seoTitle: institutionalPages.contact.seoTitle,
-          seoDescription: institutionalPages.contact.seoDescription,
-        },
-      ])
-
-      pagesGenerated = true
-      console.log(`[Google Import] Páginas institucionais geradas para "${result.displayName}"`)
-    } catch (error) {
-      console.error('[Google Import] Erro ao gerar páginas institucionais:', error)
-    }
-
-    // ===== Revalidate if active =====
-    const pageSlugs = pagesGenerated ? ['sobre-nos', 'contato'] : undefined
-    if (shouldActivateStore) {
-      notifyStoreActivated(newStore.slug, newStore.customDomain, undefined, pageSlugs).catch((error) => {
-        console.error('[Google Import] Erro ao notificar Google Indexing API:', error)
-      })
-
-      await revalidateSitemap()
-
-      if (result.category.slug) {
-        await revalidateCategoryPages(result.category.slug, generateCitySlug(newStore.city))
-      }
-    }
+    // V2: Páginas institucionais e indexação são feitas após o blueprint v2 ser gerado
+    // Store começa inativa — só é ativada após pagamento
 
     return {
       store: newStore,
@@ -353,6 +303,6 @@ export const createStoreFromGoogleAction = authActionClient
       imagesProcessed,
       heroImageUrl,
       subdomainCreated,
-      isActive: shouldActivateStore,
+      isActive: false,
     }
   })

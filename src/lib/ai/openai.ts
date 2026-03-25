@@ -22,13 +22,13 @@ const openai = new OpenAI({
 
 async function callOpenAI(systemPrompt: string, userPrompt: string, maxTokens: number = 4000, temperature: number = 0.7): Promise<string> {
   const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-5.4-nano',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
     ],
     temperature,
-    max_tokens: maxTokens,
+    max_completion_tokens: maxTokens,
   })
 
   return completion.choices[0]?.message?.content || ''

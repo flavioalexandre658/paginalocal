@@ -17,6 +17,8 @@ import { SiteFooter } from './_components/site-footer'
 import { ProductsSection } from './_components/products-section'
 import { PricingPlansSection } from './_components/pricing-plans-section'
 import { generateFAQJsonLd } from '@/lib/faq-json-ld'
+import type { SiteBlueprint } from '@/types/ai-generation'
+import { SiteV2Renderer } from './_components/site-v2-renderer'
 
 const StatsSection = dynamic(() => import('./_components/stats-section').then(m => m.StatsSection))
 const TestimonialsSection = dynamic(() => import('./_components/testimonials-section').then(m => m.TestimonialsSection))
@@ -380,6 +382,11 @@ export default async function StorePage({ params }: PageProps) {
 
       <DraftInterceptor isDraft={!storeData.isActive} />
 
+      {/* V2 Blueprint rendering */}
+      {storeData.siteBlueprintV2 ? (
+        <SiteV2Renderer blueprint={storeData.siteBlueprintV2 as unknown as SiteBlueprint} />
+      ) : (
+
       <main className={''}>
         {activeSections.map((section) => {
           switch (section.type) {
@@ -594,39 +601,45 @@ export default async function StorePage({ params }: PageProps) {
         </section>
       </main>
 
-      <SiteFooter
-        storeName={storeData.name}
-        city={storeData.city}
-        state={storeData.state}
-        category={storeData.category}
-        categorySlug={storeData.category.toLowerCase().replace(/\s+/g, '-')}
-        hasServices={services.length > 0}
-        hasFaq={faq.length > 0}
-        instagramUrl={storeData.instagramUrl}
-        facebookUrl={storeData.facebookUrl}
-        googleBusinessUrl={storeData.googleBusinessUrl}
-        highlightText={storeData.highlightText}
-        storeSlug={storeData.slug}
-        services={services.map(s => ({ name: s.name, slug: s.slug || '' }))}
-        institutionalPages={institutionalPages}
-        logoUrl={storeData.logoUrl}
-      />
+      )}
 
-      <FloatingContact
-        store={{
-          id: storeData.id,
-          name: storeData.name,
-          slug: storeData.slug,
-          whatsapp: storeData.whatsapp,
-          phone: storeData.phone,
-          whatsappDefaultMessage: storeData.whatsappDefaultMessage,
-          isActive: storeData.isActive,
-          showWhatsappButton: storeData.showWhatsappButton,
-          showCallButton: storeData.showCallButton,
-          buttonColor: storeData.buttonColor,
-        }}
-        isOwner={isOwner}
-      />
+      {!storeData.siteBlueprintV2 && (
+        <SiteFooter
+          storeName={storeData.name}
+          city={storeData.city}
+          state={storeData.state}
+          category={storeData.category}
+          categorySlug={storeData.category.toLowerCase().replace(/\s+/g, '-')}
+          hasServices={services.length > 0}
+          hasFaq={faq.length > 0}
+          instagramUrl={storeData.instagramUrl}
+          facebookUrl={storeData.facebookUrl}
+          googleBusinessUrl={storeData.googleBusinessUrl}
+          highlightText={storeData.highlightText}
+          storeSlug={storeData.slug}
+          services={services.map(s => ({ name: s.name, slug: s.slug || '' }))}
+          institutionalPages={institutionalPages}
+          logoUrl={storeData.logoUrl}
+        />
+      )}
+
+      {!storeData.siteBlueprintV2 && (
+        <FloatingContact
+          store={{
+            id: storeData.id,
+            name: storeData.name,
+            slug: storeData.slug,
+            whatsapp: storeData.whatsapp,
+            phone: storeData.phone,
+            whatsappDefaultMessage: storeData.whatsappDefaultMessage,
+            isActive: storeData.isActive,
+            showWhatsappButton: storeData.showWhatsappButton,
+            showCallButton: storeData.showCallButton,
+            buttonColor: storeData.buttonColor,
+          }}
+          isOwner={isOwner}
+        />
+      )}
     </>
   )
 }

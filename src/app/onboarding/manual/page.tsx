@@ -2,83 +2,53 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { useAction } from 'next-safe-action/hooks'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   IconArrowLeft,
-  IconArrowRight,
-  IconBuildingStore,
-  IconCheck,
   IconLoader2,
   IconMapPin,
-  IconPhone,
-  IconRocket,
   IconSparkles,
   IconFileText,
-  IconStar,
+  IconRocket,
+  IconCheck,
   IconSearch,
-  IconEye,
-  IconShoppingCart,
-  IconCreditCard,
+  IconBuildingStore,
+  IconCategory,
+  IconCoin,
+  IconChartBar,
+  IconUsers,
+  IconWorld,
+  IconFlag,
+  IconId,
+  IconLetterCase,
+  IconBrandWhatsapp,
 } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
-
+import { PatternFormat } from 'react-number-format'
 import { createStoreManualAction } from '@/actions/stores/create-store-manual.action'
-import { ContentSetupStep } from '@/app/onboarding/_components/content-setup-step'
-import { ImageSetupStep } from '@/app/onboarding/_components/image-setup-step'
-import { getCategoriesAction } from '@/actions/categories/get-categories.action'
+import { generateSiteAfterOnboarding } from '@/actions/ai/generate-site-after-onboarding'
 import {
   searchLocationAction,
   getLocationDetailsAction,
-  getNearbyNeighborhoodsAction,
   type LocationDetails,
 } from '@/actions/utils/search-location.action'
 import { usePlanLimitRedirect } from '@/hooks/use-plan-limit-redirect'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '@/components/ui/form'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { cn, getStoreUrl } from '@/lib/utils'
-import { PatternFormat } from 'react-number-format'
+import { cn } from '@/lib/utils'
 
-const BRAZILIAN_STATES = [
-  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
-  'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
-  'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
-] as const
+// ─── Types & Constants ───────────────────────────────────────────────────────
 
-interface Category {
-  id: string
-  name: string
-  slug: string
-  icon: string | null
-  description: string | null
-  suggestedServices: string[] | null
-  createdAt: Date | null
-}
+type ManualStep = 'business-type' | 'revenue' | 'location' | 'name-contact' | 'summary' | 'creating'
+
+const STEPS: ManualStep[] = ['business-type', 'revenue', 'location', 'name-contact', 'summary', 'creating']
 
 interface LocationPrediction {
   placeId: string
@@ -87,107 +57,121 @@ interface LocationPrediction {
   secondaryText: string
 }
 
-const formSchema = z.object({
-  name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100),
-  categoryId: z.string().uuid('Selecione uma categoria'),
-  locationQuery: z.string().min(1, 'Selecione uma localização'),
-  differential: z.string().min(10, 'Descreva seu diferencial (mínimo 10 caracteres)').max(300),
-  whatsapp: z.string().min(14, 'WhatsApp é obrigatório'),
-  primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
-  termGender: z.enum(['MASCULINE', 'FEMININE']),
-  termNumber: z.enum(['SINGULAR', 'PLURAL']),
-})
-
-type FormData = z.infer<typeof formSchema>
-
-type ManualStep = 'mode-selection' | 'form' | 'creating' | 'image-setup' | 'setup-content' | 'complete'
-type StoreMode = 'LOCAL_BUSINESS' | 'PRODUCT_CATALOG' | 'SERVICE_PRICING' | 'HYBRID'
+const REVENUE_OPTIONS = [
+  'Estou começando',
+  'Até R$ 5.000',
+  'R$ 5.000 a R$ 15.000',
+  'R$ 15.000 a R$ 50.000',
+  'Acima de R$ 50.000',
+  'Prefiro não informar',
+]
 
 const HUMANIZED_LOGS = [
   { icon: IconSparkles, text: 'Analisando seu negócio...' },
   { icon: IconMapPin, text: 'Buscando bairros próximos...' },
-  { icon: IconStar, text: 'Gerando conteúdo otimizado com IA...' },
+  { icon: IconSparkles, text: 'Gerando conteúdo com IA...' },
   { icon: IconFileText, text: 'Criando descrições para SEO...' },
-  { icon: IconRocket, text: 'Finalizando sua página...' },
+  { icon: IconSparkles, text: 'Desenhando o layout...' },
+  { icon: IconSparkles, text: 'Escolhendo cores e fontes...' },
+  { icon: IconSparkles, text: 'Montando as seções...' },
+  { icon: IconRocket, text: 'Finalizando seu site!' },
 ]
+
+const fadeVariants = {
+  initial: { opacity: 0, y: 24 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -24 },
+}
+
+// ─── Main Page ───────────────────────────────────────────────────────────────
 
 export default function ManualOnboardingPage() {
   const router = useRouter()
-  const [step, setStep] = useState<ManualStep>('mode-selection')
-  const [selectedMode, setSelectedMode] = useState<StoreMode>('LOCAL_BUSINESS')
+  const [step, setStep] = useState<ManualStep>('business-type')
   const [currentLogIndex, setCurrentLogIndex] = useState(0)
-  const [showConfetti, setShowConfetti] = useState(false)
-  const [createdStore, setCreatedStore] = useState<{ slug: string; name: string; id?: string; isActive?: boolean } | null>(null)
-  const [categories, setCategories] = useState<Category[]>([])
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true)
 
+  // Form data
+  const [businessType, setBusinessType] = useState('')
+  const [monthlyRevenue, setMonthlyRevenue] = useState('')
+  const [name, setName] = useState('')
+  const [whatsapp, setWhatsapp] = useState('')
+  const [differential, setDifferential] = useState('')
+
+  // Location
+  const [locationQuery, setLocationQuery] = useState('')
   const [locationPredictions, setLocationPredictions] = useState<LocationPrediction[]>([])
   const [isSearchingLocation, setIsSearchingLocation] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState<LocationDetails | null>(null)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
-
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const { executeAsync: createStore, isExecuting } = useAction(createStoreManualAction)
-  const { executeAsync: getCategories } = useAction(getCategoriesAction)
+  const { executeAsync: generateSiteV2 } = useAction(generateSiteAfterOnboarding)
   const { executeAsync: searchLocation } = useAction(searchLocationAction)
   const { executeAsync: getLocationDetails } = useAction(getLocationDetailsAction)
-  const { executeAsync: getNearbyNeighborhoods } = useAction(getNearbyNeighborhoodsAction)
   const { handleActionError } = usePlanLimitRedirect()
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      categoryId: '',
-      locationQuery: '',
-      differential: '',
-      whatsapp: '',
-      primaryColor: '#3b82f6',
-      termGender: 'FEMININE' as const,
-      termNumber: 'SINGULAR' as const,
-    },
-  })
+  const currentIndex = STEPS.indexOf(step)
 
+  // Animate logs during creating step
   useEffect(() => {
-    async function loadCategories() {
-      const result = await getCategories()
-      if (result?.data) {
-        setCategories(result.data)
-      }
-      setIsLoadingCategories(false)
-    }
-    loadCategories()
-  }, [getCategories])
-
-  useEffect(() => {
-    if (step === 'creating') {
-      const interval = setInterval(() => {
-        setCurrentLogIndex(prev => {
-          if (prev < HUMANIZED_LOGS.length - 1) return prev + 1
-          return prev
-        })
-      }, 1200)
-      return () => clearInterval(interval)
-    }
+    if (step !== 'creating') return
+    const interval = setInterval(() => {
+      setCurrentLogIndex(prev => (prev < HUMANIZED_LOGS.length - 1 ? prev + 1 : prev))
+    }, 2500)
+    return () => clearInterval(interval)
   }, [step])
 
+  // Auto-detect location on mount
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const res = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}&language=pt-BR`
+          )
+          const data = await res.json()
+          if (data.results?.[0]) {
+            const components = data.results[0].address_components
+            const city = components?.find((c: { types: string[] }) => c.types.includes('administrative_area_level_2'))?.long_name
+            const state = components?.find((c: { types: string[] }) => c.types.includes('administrative_area_level_1'))?.short_name
+            if (city && state) {
+              setLocationQuery(`${city}, ${state}`)
+              setSelectedLocation({
+                placeId: data.results[0].place_id || '',
+                city,
+                state,
+                fullAddress: data.results[0].formatted_address,
+                street: '',
+                streetNumber: '',
+                neighborhood: components?.find((c: { types: string[] }) => c.types.includes('sublocality_level_1'))?.long_name || '',
+                zipCode: components?.find((c: { types: string[] }) => c.types.includes('postal_code'))?.long_name || '',
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                locationScope: 'city',
+              })
+            }
+          }
+        } catch {
+          // Silently fail
+        }
+      },
+      () => { /* denied or unavailable */ },
+      { timeout: 5000 }
+    )
+  }, [])
+
+  // Location search
   const handleLocationSearch = useCallback(async (query: string) => {
-    if (query.length < 3) {
-      setLocationPredictions([])
-      return
-    }
-
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current)
-    }
-
+    setLocationQuery(query)
+    setSelectedLocation(null)
+    if (query.length < 3) { setLocationPredictions([]); return }
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
     searchTimeoutRef.current = setTimeout(async () => {
       setIsSearchingLocation(true)
       const result = await searchLocation({ query })
-      if (result?.data) {
-        setLocationPredictions(result.data)
-      }
+      if (result?.data) setLocationPredictions(result.data)
       setIsSearchingLocation(false)
     }, 300)
   }, [searchLocation])
@@ -195,79 +179,58 @@ export default function ManualOnboardingPage() {
   const handleLocationSelect = useCallback(async (prediction: LocationPrediction) => {
     setIsSearchingLocation(true)
     setIsPopoverOpen(false)
-
     const result = await getLocationDetails({ placeId: prediction.placeId })
-
     if (result?.data) {
       setSelectedLocation(result.data)
       const { city, state, locationScope } = result.data
-      let displayValue = ''
-      if (locationScope === 'country') {
-        displayValue = 'Todo o Brasil'
-      } else if (locationScope === 'state') {
-        displayValue = `Todo o ${city}, ${state}`
-      } else {
-        displayValue = `${city}, ${state}`
-      }
-      form.setValue('locationQuery', displayValue)
+      if (locationScope === 'country') setLocationQuery('Todo o Brasil')
+      else if (locationScope === 'state') setLocationQuery(`Todo o ${city}, ${state}`)
+      else setLocationQuery(`${city}, ${state}`)
     } else {
       toast.error('Erro ao buscar detalhes da localização')
     }
-
     setIsSearchingLocation(false)
     setLocationPredictions([])
-  }, [getLocationDetails, form])
+  }, [getLocationDetails])
 
-  async function onSubmit(data: FormData) {
-    if (!selectedLocation) {
-      toast.error('Selecione uma localização válida')
-      return
-    }
+  // Navigation
+  function goNext() {
+    const i = STEPS.indexOf(step)
+    if (i < STEPS.length - 1) setStep(STEPS[i + 1])
+  }
+
+  function goBack() {
+    const i = STEPS.indexOf(step)
+    if (i > 0) setStep(STEPS[i - 1])
+  }
+
+  // Handle create
+  async function handleCreate() {
+    if (!selectedLocation) return
 
     setStep('creating')
     setCurrentLogIndex(0)
 
-    const whatsappClean = data.whatsapp.replace(/\D/g, '')
-    const selectedCategory = categories.find(c => c.id === data.categoryId)
-
-    let neighborhoods: string[] = []
-    if (selectedLocation.latitude && selectedLocation.longitude) {
-      const neighborhoodsResult = await getNearbyNeighborhoods({
-        latitude: selectedLocation.latitude,
-        longitude: selectedLocation.longitude,
-        city: selectedLocation.city,
-      })
-      if (neighborhoodsResult?.data) {
-        neighborhoods = neighborhoodsResult.data
-      }
-    }
+    const whatsappClean = whatsapp.replace(/\D/g, '')
 
     const result = await createStore({
-      name: data.name,
-      categoryId: data.categoryId,
-      categoryName: selectedCategory?.name || 'Outro',
+      name: name.trim(),
+      businessType: businessType.trim(),
       city: selectedLocation.city,
-      state: selectedLocation.state as typeof BRAZILIAN_STATES[number],
+      state: selectedLocation.state as 'SP' | 'RJ' | 'MG' | 'BA' | 'PR' | 'RS' | 'SC' | 'GO' | 'PE' | 'CE' | 'PA' | 'MA' | 'AM' | 'ES' | 'PB' | 'RN' | 'AL' | 'PI' | 'SE' | 'RO' | 'TO' | 'AC' | 'AP' | 'RR' | 'MT' | 'MS' | 'DF' | 'BR',
+      whatsapp: whatsappClean,
+      monthlyRevenue: monthlyRevenue || undefined,
+      differential: differential.trim() || undefined,
       address: selectedLocation.fullAddress || undefined,
       neighborhood: selectedLocation.neighborhood || undefined,
-      zipCode: selectedLocation.zipCode || undefined,
       latitude: selectedLocation.latitude || undefined,
       longitude: selectedLocation.longitude || undefined,
-      neighborhoods: neighborhoods.length > 0 ? neighborhoods : undefined,
-      differential: data.differential,
-      whatsapp: whatsappClean,
-      mode: selectedMode,
-      primaryColor: data.primaryColor,
-      termGender: data.termGender,
-      termNumber: data.termNumber,
     })
 
     if (result?.serverError) {
       const isLimitError = handleActionError(result.serverError)
-      if (!isLimitError) {
-        toast.error(result.serverError)
-      }
-      setStep('form')
+      if (!isLimitError) toast.error(result.serverError)
+      setStep('summary')
       return
     }
 
@@ -276,297 +239,279 @@ export default function ManualOnboardingPage() {
         (field) => (field as { _errors?: string[] })?._errors ?? []
       )
       toast.error(errors[0] || 'Erro de validação')
-      setStep('form')
+      setStep('summary')
       return
     }
 
     if (result?.data) {
-      setCreatedStore({
-        slug: result.data.slug,
-        name: result.data.name,
-        id: result.data.store.id,
-        isActive: result.data.isActive,
-      })
-      toast.success('Site criado! Adicione imagens para personalizar.')
-      setStep('image-setup')
+      try {
+        await generateSiteV2({ storeId: result.data.store.id })
+      } catch {
+        // Generation errors are non-blocking
+      }
+      router.push(`/site/${result.data.slug}`)
     } else {
       toast.error('Erro inesperado ao criar site')
-      setStep('form')
-    }
-  }
-
-  function handleImageSetupComplete() {
-    if (!createdStore) return
-    if (selectedMode !== 'LOCAL_BUSINESS') {
-      setStep('setup-content')
-    } else if (createdStore.isActive) {
-      setStep('complete')
-      setShowConfetti(true)
-    } else {
-      router.push(getStoreUrl(createdStore.slug))
+      setStep('summary')
     }
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+      <AnimatePresence mode="wait">
+        {step === 'business-type' && (
+          <BusinessTypeStep
+            key="business-type"
+            value={businessType}
+            onChange={setBusinessType}
+            onNext={goNext}
+          />
+        )}
 
-      {showConfetti && <ConfettiEffect />}
+        {step === 'revenue' && (
+          <RevenueStep
+            key="revenue"
+            selected={monthlyRevenue}
+            onSelect={(v) => { setMonthlyRevenue(v); goNext() }}
+            onBack={goBack}
+            onNext={goNext}
+          />
+        )}
 
-      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 py-12">
-        <AnimatePresence mode="wait">
-          {step === 'mode-selection' && (
-            <ModeSelectionStep
-              key="mode-selection"
-              onSelectMode={(mode) => {
-                setSelectedMode(mode)
-                setStep('form')
-              }}
-              onBack={() => {
-                window.location.href = '/onboarding'
-              }}
+        {step === 'location' && (
+          <LocationStep
+            key="location"
+            locationQuery={locationQuery}
+            locationPredictions={locationPredictions}
+            isSearchingLocation={isSearchingLocation}
+            selectedLocation={selectedLocation}
+            isPopoverOpen={isPopoverOpen}
+            setIsPopoverOpen={setIsPopoverOpen}
+            onLocationSearch={handleLocationSearch}
+            onLocationSelect={handleLocationSelect}
+            onBack={goBack}
+            onNext={goNext}
+          />
+        )}
+
+        {step === 'name-contact' && (
+          <NameContactStep
+            key="name-contact"
+            name={name}
+            setName={setName}
+            whatsapp={whatsapp}
+            setWhatsapp={setWhatsapp}
+            onBack={goBack}
+            onNext={goNext}
+          />
+        )}
+
+        {step === 'summary' && (
+          <SummaryStep
+            key="summary"
+            name={name}
+            businessType={businessType}
+            city={selectedLocation?.city || ''}
+            differential={differential}
+            setDifferential={setDifferential}
+            isExecuting={isExecuting}
+            onBack={goBack}
+            onSubmit={handleCreate}
+          />
+        )}
+
+        {step === 'creating' && (
+          <CreatingStep
+            key="creating"
+            businessName={name}
+            currentLogIndex={currentLogIndex}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Progress dots */}
+      {step !== 'creating' && (
+        <div className="fixed bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-2">
+          {STEPS.filter(s => s !== 'creating').map((s, i) => (
+            <div
+              key={s}
+              className={cn(
+                'h-2 rounded-full transition-all duration-300',
+                i <= currentIndex ? 'w-6 bg-primary' : 'w-2 bg-slate-200 dark:bg-slate-700'
+              )}
             />
-          )}
-
-          {step === 'form' && (
-            <FormStep
-              key="form"
-              form={form}
-              onSubmit={onSubmit}
-              isExecuting={isExecuting}
-              categories={categories}
-              isLoadingCategories={isLoadingCategories}
-              locationPredictions={locationPredictions}
-              isSearchingLocation={isSearchingLocation}
-              selectedLocation={selectedLocation}
-              isPopoverOpen={isPopoverOpen}
-              setIsPopoverOpen={setIsPopoverOpen}
-              onLocationSearch={handleLocationSearch}
-              onLocationSelect={handleLocationSelect}
-            />
-          )}
-
-          {step === 'creating' && (
-            <CreatingStep
-              key="creating"
-              businessName={form.getValues('name')}
-              currentLogIndex={currentLogIndex}
-            />
-          )}
-
-          {step === 'image-setup' && createdStore?.id && (
-            <ImageSetupStep
-              key="image-setup"
-              storeId={createdStore.id}
-              onComplete={handleImageSetupComplete}
-            />
-          )}
-
-          {step === 'setup-content' && createdStore?.id && (
-            <ContentSetupStep
-              key="setup-content"
-              storeId={createdStore.id}
-              storeName={createdStore.name}
-              mode={selectedMode}
-              onComplete={() => {
-                if (createdStore.isActive) {
-                  setStep('complete')
-                  setShowConfetti(true)
-                } else {
-                  router.push(getStoreUrl(createdStore.slug))
-                }
-              }}
-            />
-          )}
-
-          {step === 'complete' && createdStore && (
-            <CompleteStep
-              key="complete"
-              storeName={createdStore.name}
-              storeSlug={createdStore.slug}
-            />
-          )}
-        </AnimatePresence>
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
 
-function ModeSelectionStep({
-  onSelectMode,
+// ─── Step Layout Wrapper ─────────────────────────────────────────────────────
+
+function StepLayout({
+  children,
   onBack,
+  icons,
+  iconColors,
+  title,
 }: {
-  onSelectMode: (mode: StoreMode) => void
-  onBack: () => void
+  children: React.ReactNode
+  onBack?: () => void
+  icons: [React.ComponentType<{ className?: string }>, React.ComponentType<{ className?: string }>, React.ComponentType<{ className?: string }>]
+  iconColors: string
+  title: string
 }) {
-  const modes: Array<{
-    mode: StoreMode
-    title: string
-    description: string
-    examples: string[]
-    icon: typeof IconMapPin
-    isRecommended?: boolean
-  }> = [
-      {
-        mode: 'LOCAL_BUSINESS',
-        title: 'Negócio Local',
-        description: 'Serviços profissionais com foco em localização',
-        examples: ['Oficina', 'Barbearia', 'Consultório'],
-        icon: IconMapPin,
-        isRecommended: true,
-      },
-      {
-        mode: 'PRODUCT_CATALOG',
-        title: 'Loja / Catálogo',
-        description: 'Venda produtos com catálogo e coleções',
-        examples: ['Loja de Roupas', 'Pet Shop', 'Floricultura'],
-        icon: IconShoppingCart,
-      },
-      {
-        mode: 'SERVICE_PRICING',
-        title: 'Planos e Preços',
-        description: 'Ofereça planos com tabela de preços',
-        examples: ['Academia', 'SaaS', 'Consultoria'],
-        icon: IconCreditCard,
-      },
-      {
-        mode: 'HYBRID',
-        title: 'Híbrido',
-        description: 'Serviços + Produtos + Planos',
-        examples: ['Pet Shop completo', 'Academia com loja'],
-        icon: IconSparkles,
-      },
-    ]
+  const [Icon1, Icon2, Icon3] = icons
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="w-full max-w-2xl"
+      variants={fadeVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="flex min-h-screen w-full flex-col items-center justify-center px-4 py-16"
     >
-      <button
-        onClick={onBack}
-        className="mb-4 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-      >
-        <IconArrowLeft className="h-4 w-4" />
-        Voltar
-      </button>
+      {/* Back button */}
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="fixed left-4 top-6 z-20 flex items-center gap-1 text-sm text-slate-400 transition-colors hover:text-slate-700"
+        >
+          <IconArrowLeft className="h-4 w-4" />
+        </button>
+      )}
 
-      <div className="mb-6 text-center md:mb-8">
+      <div className="w-full max-w-md">
+        {/* Gradient icon */}
         <motion.div
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.1 }}
-          className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
+          className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
         >
-          <IconBuildingStore className="h-6 w-6 text-primary" />
+          <Icon1 className="h-6 w-6 text-primary" />
         </motion.div>
-        <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-          Que tipo de site você quer criar?
+
+        {/* Title */}
+        <h1 className="mb-6 text-center text-xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-2xl">
+          {title}
         </h1>
-        <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
-          Escolha o formato ideal para o seu negócio
-        </p>
+
+        {/* GlassCard wrapper */}
+        <div className="rounded-2xl border border-slate-200/40 bg-white/70 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50">
+          {children}
+        </div>
       </div>
-
-      <div className="grid gap-3 md:grid-cols-2 md:gap-4">
-        {modes.map((modeConfig, index) => (
-          <motion.button
-            key={modeConfig.mode}
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 + index * 0.1, duration: 0.35 }}
-            onClick={() => onSelectMode(modeConfig.mode)}
-            className={cn(
-              'group relative cursor-pointer overflow-hidden rounded-2xl border-2 bg-white/70 p-5 text-left backdrop-blur-sm transition-all duration-300 md:p-6',
-              modeConfig.isRecommended
-                ? 'border-primary/20 hover:-translate-y-1 hover:border-primary/40 hover:bg-white hover:shadow-xl hover:shadow-primary/10'
-                : 'border-slate-200/60 hover:-translate-y-1 hover:border-slate-300/80 hover:bg-white hover:shadow-lg hover:shadow-slate-200/30',
-              'dark:border-slate-700/60 dark:bg-slate-800/70 dark:hover:bg-slate-800'
-            )}
-          >
-            {modeConfig.isRecommended && (
-              <div className="absolute right-3 top-3 md:right-4 md:top-4">
-                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-semibold text-primary md:text-xs">
-                  <IconSparkles className="h-3 w-3" />
-                  Recomendado
-                </span>
-              </div>
-            )}
-
-            <div className={cn(
-              'absolute inset-0 bg-gradient-to-br transition-all duration-300',
-              modeConfig.isRecommended
-                ? 'from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/3 group-hover:to-transparent'
-                : 'from-transparent via-transparent to-transparent'
-            )} />
-
-            <div className="relative">
-              <div className={cn(
-                'mb-3 flex h-11 w-11 items-center justify-center rounded-xl shadow-md transition-transform duration-300 group-hover:scale-110 md:h-12 md:w-12',
-                modeConfig.isRecommended
-                  ? 'bg-gradient-to-br from-primary/20 to-primary/5 shadow-primary/10'
-                  : 'bg-slate-100 dark:bg-slate-700/60'
-              )}>
-                <modeConfig.icon className={cn(
-                  'h-5 w-5 md:h-6 md:w-6',
-                  modeConfig.isRecommended ? 'text-primary' : 'text-slate-500 dark:text-slate-400'
-                )} />
-              </div>
-
-              <h2 className={cn(
-                'mb-1.5 text-base font-semibold dark:text-white md:text-lg',
-                modeConfig.isRecommended ? 'pr-16 md:pr-20' : ''
-              )}>
-                {modeConfig.title}
-              </h2>
-              <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400 md:text-sm">
-                {modeConfig.description}
-              </p>
-
-              <div className="mt-4 flex flex-wrap gap-1.5 md:gap-2">
-                {modeConfig.examples.map((example) => (
-                  <span
-                    key={example}
-                    className="inline-flex items-center rounded-md bg-slate-100/80 px-2 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-700/60 dark:text-slate-300 md:text-xs"
-                  >
-                    {example}
-                  </span>
-                ))}
-              </div>
-
-              <div className={cn(
-                'mt-4 flex items-center gap-1.5 text-xs font-medium transition-all group-hover:gap-2.5 md:text-sm',
-                modeConfig.isRecommended ? 'text-primary' : 'text-slate-500 group-hover:text-slate-700 dark:text-slate-400 dark:group-hover:text-slate-200'
-              )}>
-                Selecionar
-                <IconArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </div>
-            </div>
-          </motion.button>
-        ))}
-      </div>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="mt-6 text-center text-sm text-slate-400"
-      >
-        Você poderá alterar depois
-      </motion.p>
     </motion.div>
   )
 }
 
-function FormStep({
-  form,
-  onSubmit,
-  isExecuting,
-  categories,
-  isLoadingCategories,
+// ─── Step 1: Business Type ───────────────────────────────────────────────────
+
+function BusinessTypeStep({
+  value,
+  onChange,
+  onNext,
+}: {
+  value: string
+  onChange: (v: string) => void
+  onNext: () => void
+}) {
+  return (
+    <StepLayout
+      icons={[IconBuildingStore, IconCategory, IconSparkles]}
+      iconColors="text-primary"
+      title="Qual é o tipo do seu negócio?"
+    >
+      <div className="space-y-4">
+        <Input
+          autoFocus
+          placeholder="Ex: Barbearia, Restaurante, Academia..."
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter' && value.trim().length >= 2) onNext() }}
+          className="h-12 rounded-lg border-slate-200 bg-white text-base placeholder:text-slate-400 focus:border-slate-400 focus:ring-0"
+        />
+        <Button
+          disabled={value.trim().length < 2}
+          onClick={onNext}
+          className="h-12 w-full cursor-pointer gap-2 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+        >
+          Próximo
+        </Button>
+      </div>
+
+      <div className="mt-6 text-center">
+        <Link
+          href="/onboarding"
+          className="text-sm text-slate-400 transition-colors hover:text-slate-600"
+        >
+          Voltar ao início
+        </Link>
+      </div>
+    </StepLayout>
+  )
+}
+
+// ─── Step 2: Revenue ─────────────────────────────────────────────────────────
+
+function RevenueStep({
+  selected,
+  onSelect,
+  onBack,
+  onNext,
+}: {
+  selected: string
+  onSelect: (v: string) => void
+  onBack: () => void
+  onNext: () => void
+}) {
+  return (
+    <StepLayout
+      onBack={onBack}
+      icons={[IconCoin, IconChartBar, IconUsers]}
+      iconColors="text-primary"
+      title="Qual seu faturamento mensal atual?"
+    >
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          {REVENUE_OPTIONS.map(option => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onSelect(option)}
+              className={cn(
+                'cursor-pointer rounded-lg border-2 px-4 py-3 text-sm transition-all hover:border-primary/40 hover:bg-primary/5',
+                selected === option
+                  ? 'border-primary bg-primary/5 font-semibold text-primary'
+                  : 'border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-400'
+              )}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+
+        <Button
+          disabled={!selected}
+          onClick={onNext}
+          className="h-12 w-full cursor-pointer gap-2 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+        >
+          Próximo
+        </Button>
+      </div>
+    </StepLayout>
+  )
+}
+
+// ─── Step 3: Location ────────────────────────────────────────────────────────
+
+function LocationStep({
+  locationQuery,
   locationPredictions,
   isSearchingLocation,
   selectedLocation,
@@ -574,277 +519,252 @@ function FormStep({
   setIsPopoverOpen,
   onLocationSearch,
   onLocationSelect,
+  onBack,
+  onNext,
 }: {
-  form: ReturnType<typeof useForm<FormData>>
-  onSubmit: (data: FormData) => void
-  isExecuting: boolean
-  categories: Category[]
-  isLoadingCategories: boolean
+  locationQuery: string
   locationPredictions: LocationPrediction[]
   isSearchingLocation: boolean
   selectedLocation: LocationDetails | null
   isPopoverOpen: boolean
-  setIsPopoverOpen: (open: boolean) => void
-  onLocationSearch: (query: string) => void
-  onLocationSelect: (prediction: LocationPrediction) => void
+  setIsPopoverOpen: (v: boolean) => void
+  onLocationSearch: (q: string) => void
+  onLocationSelect: (p: LocationPrediction) => void
+  onBack: () => void
+  onNext: () => void
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="w-full max-w-lg"
+    <StepLayout
+      onBack={onBack}
+      icons={[IconMapPin, IconWorld, IconFlag]}
+      iconColors="text-indigo-500"
+      title="Onde fica seu negócio?"
     >
-      <button
-        onClick={() => window.history.back()}
-        className="mb-6 inline-flex items-center gap-2 text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-      >
-        <IconArrowLeft className="h-4 w-4" />
-        Voltar
-      </button>
+      <div className="space-y-4">
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+          <PopoverTrigger asChild>
+            <div className="relative">
+              <Input
+                autoFocus
+                placeholder="Digite cidade ou bairro..."
+                value={locationQuery}
+                className={cn(
+                  'h-12 rounded-lg border-slate-200 bg-white pr-10 text-base placeholder:text-slate-400 focus:border-slate-400 focus:ring-0',
+                  selectedLocation && 'border-emerald-400'
+                )}
+                onChange={e => {
+                  onLocationSearch(e.target.value)
+                  if (!isPopoverOpen && e.target.value.length >= 3) setIsPopoverOpen(true)
+                }}
+                onFocus={() => {
+                  if (locationQuery.length >= 3) setIsPopoverOpen(true)
+                }}
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                {isSearchingLocation ? (
+                  <IconLoader2 className="h-4 w-4 animate-spin text-slate-400" />
+                ) : selectedLocation ? (
+                  <IconCheck className="h-4 w-4 text-emerald-500" />
+                ) : (
+                  <IconSearch className="h-4 w-4 text-slate-400" />
+                )}
+              </div>
+            </div>
+          </PopoverTrigger>
+          <PopoverContent
+            className="w-[var(--radix-popover-trigger-width)] p-0"
+            align="start"
+            onOpenAutoFocus={e => e.preventDefault()}
+          >
+            {locationPredictions.length > 0 ? (
+              <div className="max-h-[300px] overflow-auto py-1">
+                {locationPredictions.map(prediction => (
+                  <button
+                    key={prediction.placeId}
+                    type="button"
+                    className="flex w-full cursor-pointer items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-slate-50"
+                    onClick={() => onLocationSelect(prediction)}
+                  >
+                    <IconMapPin className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                    <div>
+                      <p className="font-medium text-slate-900">{prediction.mainText}</p>
+                      <p className="text-sm text-slate-500">{prediction.secondaryText}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="px-3 py-4 text-center text-sm text-slate-500">
+                {isSearchingLocation ? 'Buscando...' : 'Digite para buscar'}
+              </div>
+            )}
+          </PopoverContent>
+        </Popover>
 
-      <div className="mb-8 text-center">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
-        >
-          <IconBuildingStore className="h-10 w-10 text-primary" />
-        </motion.div>
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl">
-          Criar site manualmente
-        </h1>
-        <p className="mt-3 text-slate-500 dark:text-slate-400">
-          Preencha as informações e nossa IA criará seu site
+        {selectedLocation && (
+          <p className="flex items-center gap-2 text-sm text-emerald-600">
+            <IconCheck className="h-4 w-4" />
+            {selectedLocation.locationScope === 'country'
+              ? 'Atendimento em todo o Brasil'
+              : selectedLocation.locationScope === 'state'
+                ? `Atendimento em todo o ${selectedLocation.city}, ${selectedLocation.state}`
+                : selectedLocation.fullAddress || `${selectedLocation.city}, ${selectedLocation.state}`}
+          </p>
+        )}
+
+        <p className="text-center text-xs text-slate-400">
+          Idioma do site: Portugues
         </p>
+
+        <Button
+          disabled={!selectedLocation}
+          onClick={onNext}
+          className="h-12 w-full cursor-pointer gap-2 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+        >
+          Próximo
+        </Button>
       </div>
-
-      <GlassCard>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 dark:text-slate-300">
-                    Nome do negócio
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Ex: Borracharia do Zé"
-                      className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 dark:text-slate-300">
-                    Categoria do negócio
-                  </FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="h-11 cursor-pointer border-slate-200/50 bg-white/50 transition-all focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50">
-                        <SelectValue placeholder={isLoadingCategories ? 'Carregando...' : 'Selecione uma categoria'} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id} className="cursor-pointer">
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="locationQuery"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 dark:text-slate-300">
-                    <span className="flex items-center gap-2">
-                      <IconMapPin className="h-4 w-4" />
-                      Localização
-                    </span>
-                  </FormLabel>
-                  <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            placeholder="Digite cidade ou bairro..."
-                            className={cn(
-                              "h-11 border-slate-200/50 bg-white/50 pr-10 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50",
-                              selectedLocation && "border-emerald-500/50 bg-emerald-50/30 dark:bg-emerald-950/20"
-                            )}
-                            {...field}
-                            onChange={(e) => {
-                              field.onChange(e)
-                              onLocationSearch(e.target.value)
-                              if (selectedLocation) {
-                                setIsPopoverOpen(true)
-                              }
-                            }}
-                            onFocus={() => {
-                              if (field.value.length >= 3) {
-                                setIsPopoverOpen(true)
-                              }
-                            }}
-                          />
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            {isSearchingLocation ? (
-                              <IconLoader2 className="h-4 w-4 animate-spin text-slate-400" />
-                            ) : selectedLocation ? (
-                              <IconCheck className="h-4 w-4 text-emerald-500" />
-                            ) : (
-                              <IconSearch className="h-4 w-4 text-slate-400" />
-                            )}
-                          </div>
-                        </div>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="w-[var(--radix-popover-trigger-width)] p-0"
-                      align="start"
-                      onOpenAutoFocus={(e) => e.preventDefault()}
-                    >
-                      {locationPredictions.length > 0 ? (
-                        <div className="max-h-[300px] overflow-auto py-1">
-                          {locationPredictions.map((prediction) => (
-                            <button
-                              key={prediction.placeId}
-                              type="button"
-                              className="flex w-full cursor-pointer items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
-                              onClick={() => onLocationSelect(prediction)}
-                            >
-                              <IconMapPin className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-                              <div>
-                                <p className="font-medium text-slate-900 dark:text-white">
-                                  {prediction.mainText}
-                                </p>
-                                <p className="text-sm text-slate-500">
-                                  {prediction.secondaryText}
-                                </p>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="px-3 py-4 text-center text-sm text-slate-500">
-                          {isSearchingLocation ? 'Buscando...' : 'Digite para buscar'}
-                        </div>
-                      )}
-                    </PopoverContent>
-                  </Popover>
-                  {selectedLocation && (
-                    <p className="mt-2 flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
-                      <IconCheck className="h-4 w-4" />
-                      {selectedLocation.locationScope === 'country'
-                        ? 'Atendimento em todo o Brasil'
-                        : selectedLocation.locationScope === 'state'
-                          ? `Atendimento em todo o ${selectedLocation.city}, ${selectedLocation.state}`
-                          : selectedLocation.fullAddress || `${selectedLocation.city}, ${selectedLocation.state}`}
-                    </p>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="whatsapp"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 dark:text-slate-300">
-                    <span className="flex items-center gap-2">
-                      <IconPhone className="h-4 w-4" />
-                      WhatsApp
-                    </span>
-                  </FormLabel>
-                  <FormControl>
-                    <PatternFormat
-                      format="(##) #####-####"
-                      mask="_"
-                      value={field.value}
-                      onValueChange={(values) => field.onChange(values.formattedValue)}
-                      customInput={Input}
-                      placeholder="(11) 99999-9999"
-                      className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="differential"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-slate-700 dark:text-slate-300">
-                    O que te diferencia?
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Ex: Atendimento 24h, socorro na rodovia, mais de 20 anos de experiência..."
-                      className="min-h-[100px] resize-none border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
-                      {...field}
-                    />
-                  </FormControl>
-                  <p className="mt-1 text-xs text-slate-400">
-                    {field.value.length}/300 caracteres
-                  </p>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <VisualPrefsFields form={form} />
-
-            <Button
-              type="submit"
-              disabled={isExecuting || isLoadingCategories || !selectedLocation}
-              className="h-12 w-full gap-2 cursor-pointer text-base shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
-            >
-              {isExecuting ? (
-                <IconLoader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <IconRocket className="h-5 w-5" />
-              )}
-              Criar meu site
-            </Button>
-          </form>
-        </Form>
-      </GlassCard>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="mt-6 text-center text-sm text-slate-400"
-      >
-        Nossa IA vai criar textos otimizados para SEO baseados no seu negócio
-      </motion.p>
-    </motion.div>
+    </StepLayout>
   )
 }
+
+// ─── Step 4: Name & Contact ──────────────────────────────────────────────────
+
+function NameContactStep({
+  name,
+  setName,
+  whatsapp,
+  setWhatsapp,
+  onBack,
+  onNext,
+}: {
+  name: string
+  setName: (v: string) => void
+  whatsapp: string
+  setWhatsapp: (v: string) => void
+  onBack: () => void
+  onNext: () => void
+}) {
+  const canContinue = name.trim().length >= 2 && whatsapp.replace(/\D/g, '').length >= 10
+
+  return (
+    <StepLayout
+      onBack={onBack}
+      icons={[IconId, IconUsers, IconLetterCase]}
+      iconColors="text-primary"
+      title="Qual o nome do seu negócio?"
+    >
+      <div className="space-y-4">
+        <Input
+          autoFocus
+          placeholder="Nome do negócio"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          className="h-12 rounded-lg border-slate-200 bg-white text-base placeholder:text-slate-400 focus:border-slate-400 focus:ring-0"
+        />
+
+        <div className="relative">
+          <IconBrandWhatsapp className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+          <PatternFormat
+            format="(##) #####-####"
+            mask="_"
+            value={whatsapp}
+            onValueChange={values => setWhatsapp(values.formattedValue)}
+            customInput={Input}
+            placeholder="(11) 99999-9999"
+            className="h-12 rounded-lg border-slate-200 bg-white pl-10 text-base placeholder:text-slate-400 focus:border-slate-400 focus:ring-0"
+          />
+        </div>
+
+        <Button
+          disabled={!canContinue}
+          onClick={onNext}
+          onKeyDown={e => { if (e.key === 'Enter' && canContinue) onNext() }}
+          className="h-12 w-full cursor-pointer gap-2 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+        >
+          Próximo
+        </Button>
+      </div>
+    </StepLayout>
+  )
+}
+
+// ─── Step 5: Summary ─────────────────────────────────────────────────────────
+
+function SummaryStep({
+  name,
+  businessType,
+  city,
+  differential,
+  setDifferential,
+  isExecuting,
+  onBack,
+  onSubmit,
+}: {
+  name: string
+  businessType: string
+  city: string
+  differential: string
+  setDifferential: (v: string) => void
+  isExecuting: boolean
+  onBack: () => void
+  onSubmit: () => void
+}) {
+  const detailScore = Math.min(differential.trim().length / 120, 1)
+
+  return (
+    <StepLayout
+      onBack={onBack}
+      icons={[IconSparkles, IconLetterCase, IconFlag]}
+      iconColors="text-primary"
+      title="Resumo"
+    >
+      <div className="space-y-5">
+        <p className="text-center text-sm text-slate-600">
+          Voce esta criando <span className="font-semibold">{name}</span>, um negocio de{' '}
+          <span className="font-semibold">{businessType}</span> em{' '}
+          <span className="font-semibold">{city}</span>.
+        </p>
+
+        <textarea
+          rows={4}
+          value={differential}
+          onChange={e => setDifferential(e.target.value)}
+          placeholder="Conte mais sobre seus servicos, publico-alvo ou qualquer detalhe..."
+          className="w-full resize-none rounded-lg border border-slate-200/50 bg-white/50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-primary/30 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50 dark:text-white"
+        />
+
+        {/* Detail progress bar */}
+        <div className="space-y-1.5">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-300"
+              style={{ width: `${detailScore * 100}%` }}
+            />
+          </div>
+          <p className="text-center text-xs text-slate-400">
+            Adicione mais detalhes para a IA gerar resultados melhores
+          </p>
+        </div>
+
+        <Button
+          disabled={isExecuting}
+          onClick={onSubmit}
+          className="h-12 w-full cursor-pointer gap-2 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+        >
+          {isExecuting ? (
+            <IconLoader2 className="mr-2 h-5 w-5 animate-spin" />
+          ) : (
+            <IconRocket className="mr-2 h-5 w-5" />
+          )}
+          Criar meu site
+        </Button>
+      </div>
+    </StepLayout>
+  )
+}
+
+// ─── Step 6: Creating ────────────────────────────────────────────────────────
 
 function CreatingStep({
   businessName,
@@ -855,338 +775,91 @@ function CreatingStep({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="w-full max-w-xl"
+      variants={fadeVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="flex min-h-screen w-full flex-col items-center justify-center px-4 py-16"
     >
-      <div className="mb-8 text-center">
+      <div className="w-full max-w-md">
+        {/* Gradient icon */}
         <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-          className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
+          initial={{ scale: 0.8 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
         >
-          <IconSparkles className="h-10 w-10 text-primary" />
+          <IconSparkles className="h-7 w-7 text-primary animate-pulse" />
         </motion.div>
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">
+
+        <h1 className="mb-2 text-center text-xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-2xl">
           Criando seu site
         </h1>
-        <p className="mt-3 text-slate-500 dark:text-slate-400">
-          Nossa IA está trabalhando na sua página
+        <p className="mb-8 text-center text-sm text-slate-500 dark:text-slate-400">
+          Nossa IA está montando a página de <span className="font-medium text-slate-700 dark:text-slate-200">{businessName || 'seu negócio'}</span>
         </p>
-      </div>
 
-      <GlassCard>
-        <div className="mb-6 rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-slate-700/60 dark:bg-slate-800/50">
-          <p className="text-center font-medium text-slate-700 dark:text-slate-200">
-            {businessName || 'Seu negócio'}
-          </p>
+        {/* Skeleton preview in GlassCard */}
+        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-200/40 bg-white/70 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70">
+          <div className="relative h-20 bg-slate-100">
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent"
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+            />
+          </div>
+          <div className="space-y-2.5 p-4">
+            <div className="h-3 w-3/4 rounded bg-slate-100" />
+            <div className="h-2.5 w-1/2 rounded bg-slate-50" />
+            <div className="mt-3 flex gap-2">
+              <div className="h-7 w-20 rounded bg-slate-100" />
+              <div className="h-7 w-16 rounded bg-slate-50" />
+            </div>
+          </div>
         </div>
 
-        <SiteSkeletonPreview />
-
-        <div className="mt-6 space-y-3">
+        {/* Log items */}
+        <div className="space-y-2">
           {HUMANIZED_LOGS.map((log, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -16 }}
               animate={{
                 opacity: index <= currentLogIndex ? 1 : 0.3,
                 x: 0,
               }}
-              transition={{ delay: index * 0.1, duration: 0.3 }}
+              transition={{ delay: index * 0.08, duration: 0.3 }}
               className={cn(
-                'flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors',
+                'flex items-center gap-3 rounded-lg px-3 py-2 transition-colors',
                 index < currentLogIndex && 'bg-emerald-50/50 dark:bg-emerald-950/20',
                 index === currentLogIndex && 'bg-primary/5 dark:bg-primary/10'
               )}
             >
-              <div
-                className={cn(
-                  'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                  index < currentLogIndex && 'bg-emerald-500 text-white',
-                  index === currentLogIndex && 'bg-primary text-white',
-                  index > currentLogIndex && 'bg-slate-100 text-slate-400 dark:bg-slate-800'
-                )}
-              >
+              <div className={cn(
+                'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
+                index < currentLogIndex && 'bg-emerald-500 text-white',
+                index === currentLogIndex && 'bg-primary text-white',
+                index > currentLogIndex && 'bg-slate-100 text-slate-400 dark:bg-slate-800'
+              )}>
                 {index < currentLogIndex ? (
-                  <IconCheck className="h-4 w-4" />
+                  <IconCheck className="h-3.5 w-3.5" />
                 ) : index === currentLogIndex ? (
-                  <IconLoader2 className="h-4 w-4 animate-spin" />
+                  <IconLoader2 className="h-3.5 w-3.5 animate-spin" />
                 ) : (
-                  <log.icon className="h-4 w-4" />
+                  <log.icon className="h-3.5 w-3.5" />
                 )}
               </div>
-              <span
-                className={cn(
-                  'flex-1 pt-1 text-sm leading-snug transition-colors',
-                  index <= currentLogIndex
-                    ? 'text-slate-700 dark:text-slate-200'
-                    : 'text-slate-400 dark:text-slate-500'
-                )}
-              >
+              <span className={cn(
+                'text-sm',
+                index <= currentLogIndex ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'
+              )}>
                 {log.text}
               </span>
             </motion.div>
           ))}
         </div>
-      </GlassCard>
+      </div>
     </motion.div>
-  )
-}
-
-function CompleteStep({
-  storeName,
-  storeSlug,
-}: {
-  storeName: string
-  storeSlug: string
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="w-full max-w-md px-4 text-center"
-    >
-      <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-        className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-xl shadow-emerald-500/30 md:mb-5 md:h-20 md:w-20"
-      >
-        <IconCheck className="h-8 w-8 text-white md:h-10 md:w-10" />
-      </motion.div>
-
-      <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
-        Seu site está ativo!
-      </h1>
-
-      <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 md:mt-3 md:text-base">
-        O site de {storeName} já pode ser acessado por seus clientes
-      </p>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="mt-6 flex flex-col gap-3 md:mt-8"
-      >
-        <Link href={`/painel/${storeSlug}`}>
-          <Button
-            size="lg"
-            className="h-12 w-full gap-2 cursor-pointer text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-105 hover:shadow-xl hover:shadow-primary/30 md:h-14 md:gap-3 md:text-lg"
-          >
-            <IconBuildingStore className="h-5 w-5 md:h-6 md:w-6" />
-            Ir para o painel
-          </Button>
-        </Link>
-
-        <Link href={getStoreUrl(storeSlug)} target="_blank">
-          <Button
-            variant="outline"
-            size="lg"
-            className="h-12 w-full gap-2 cursor-pointer border-slate-200 bg-white text-base font-medium text-slate-700 transition-all hover:bg-slate-50 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:text-white md:h-14"
-          >
-            <IconEye className="h-4 w-4 md:h-5 md:w-5" />
-            Ver prévia do site
-          </Button>
-        </Link>
-      </motion.div>
-
-      <p className="mt-4 text-xs text-slate-400 dark:text-slate-500 md:mt-5">
-        Você poderá editar tudo depois no painel
-      </p>
-    </motion.div>
-  )
-}
-
-function SiteSkeletonPreview() {
-  return (
-    <div className="overflow-hidden rounded-xl border border-slate-200/60 bg-white shadow-sm dark:border-slate-700/60 dark:bg-slate-900">
-      <div className="relative h-24 bg-gradient-to-r from-slate-200 to-slate-100 dark:from-slate-800 dark:to-slate-700">
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-          animate={{ x: ['-100%', '100%'] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-        />
-      </div>
-      <div className="p-4 space-y-3">
-        <div className="h-4 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
-        <div className="h-3 w-1/2 rounded bg-slate-100 dark:bg-slate-800" />
-        <div className="mt-4 flex gap-2">
-          <div className="h-8 w-24 rounded-lg bg-primary/20" />
-          <div className="h-8 w-20 rounded-lg bg-slate-100 dark:bg-slate-800" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function VisualPrefsFields({ form }: { form: ReturnType<typeof useForm<FormData>> }) {
-  const primaryColor = form.watch('primaryColor')
-  const termGender = form.watch('termGender')
-  const termNumber = form.watch('termNumber')
-  const businessName = form.watch('name') || 'seu negócio'
-
-  const shortName = businessName.length > 18 ? businessName.slice(0, 18) + '…' : businessName
-
-  const genderOptions = [
-    { value: 'FEMININE' as const, article: 'A', label: `A ${shortName}` },
-    { value: 'MASCULINE' as const, article: 'O', label: `O ${shortName}` },
-  ]
-
-  const numberOptions = [
-    {
-      value: 'SINGULAR' as const,
-      label: termGender === 'FEMININE' ? `A ${shortName}` : `O ${shortName}`,
-    },
-    {
-      value: 'PLURAL' as const,
-      label: termGender === 'FEMININE' ? `As ${shortName}` : `Os ${shortName}`,
-    },
-  ]
-
-  function handleHexInput(raw: string) {
-    const val = raw.startsWith('#') ? raw : `#${raw}`
-    form.setValue('primaryColor', val)
-  }
-
-  return (
-    <div className="space-y-4 rounded-xl border border-slate-100 bg-slate-50/50 p-4 dark:border-slate-700/40 dark:bg-slate-800/30">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500">
-        Personalização
-      </p>
-
-      {/* Color picker */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-          Cor principal do site
-        </label>
-        <div className="flex items-center gap-2">
-          <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-slate-200/60 dark:border-slate-600/60">
-            <input
-              type="color"
-              value={primaryColor}
-              onChange={(e) => form.setValue('primaryColor', e.target.value)}
-              className="absolute inset-0 h-full w-full cursor-pointer border-0 bg-transparent p-0 opacity-0"
-            />
-            <div className="h-full w-full rounded-lg" style={{ backgroundColor: primaryColor }} />
-          </div>
-          <div
-            className="h-10 flex-1 rounded-lg border border-slate-200/60 shadow-sm dark:border-slate-600/60"
-            style={{ backgroundColor: primaryColor }}
-          />
-          <input
-            type="text"
-            value={primaryColor}
-            onChange={(e) => handleHexInput(e.target.value)}
-            maxLength={7}
-            spellCheck={false}
-            className="w-24 rounded-lg border border-slate-200/60 bg-white/80 px-2.5 py-2 font-mono text-xs text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/30 dark:border-slate-600/60 dark:bg-slate-800/60 dark:text-slate-200"
-            placeholder="#3b82f6"
-          />
-        </div>
-        <p className="mt-1.5 text-xs text-slate-400">
-          Clique no quadrado ou digite o código hex
-        </p>
-      </div>
-
-      {/* Gender */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-          Como o negócio é referenciado?
-        </label>
-        <div className="grid grid-cols-2 gap-2">
-          {genderOptions.map(({ value, article, label }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => form.setValue('termGender', value)}
-              className={cn(
-                'flex flex-col items-start rounded-lg border px-3 py-2.5 text-left transition-all',
-                termGender === value
-                  ? 'border-primary/40 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/20'
-                  : 'border-slate-200/60 bg-white/60 text-slate-500 hover:border-slate-300/80 dark:border-slate-700/50 dark:bg-slate-800/40 dark:text-slate-400'
-              )}
-            >
-              <span className="text-base font-bold leading-none">{article}</span>
-              <span className="mt-1 truncate text-[11px] font-medium">{label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Number */}
-      <div>
-        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
-          Singular ou plural?
-        </label>
-        <div className="grid grid-cols-2 gap-2">
-          {numberOptions.map(({ value, label }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => form.setValue('termNumber', value)}
-              className={cn(
-                'flex flex-col items-start rounded-lg border px-3 py-2.5 text-left transition-all',
-                termNumber === value
-                  ? 'border-primary/40 bg-primary/10 text-primary dark:border-primary/30 dark:bg-primary/20'
-                  : 'border-slate-200/60 bg-white/60 text-slate-500 hover:border-slate-300/80 dark:border-slate-700/50 dark:bg-slate-800/40 dark:text-slate-400'
-              )}
-            >
-              <span className="text-[10px] font-semibold uppercase tracking-wide opacity-60">
-                {value === 'SINGULAR' ? 'Singular' : 'Plural'}
-              </span>
-              <span className="mt-0.5 truncate text-[11px] font-medium">{label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function GlassCard({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-2xl border border-slate-200/40 bg-white/70 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50">
-      {children}
-    </div>
-  )
-}
-
-function ConfettiEffect() {
-  return (
-    <div className="pointer-events-none fixed inset-0 z-50">
-      {[...Array(50)].map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{
-            opacity: 1,
-            x: '50vw',
-            y: '50vh',
-            scale: 0,
-          }}
-          animate={{
-            opacity: 0,
-            x: `${Math.random() * 100}vw`,
-            y: `${Math.random() * 100}vh`,
-            scale: Math.random() * 2 + 1,
-            rotate: Math.random() * 360,
-          }}
-          transition={{
-            duration: Math.random() * 2 + 1,
-            ease: 'easeOut',
-          }}
-          className={cn(
-            'absolute h-3 w-3 rounded-sm',
-            ['bg-primary/60', 'bg-emerald-500/60', 'bg-amber-500/60', 'bg-rose-500/60'][
-            Math.floor(Math.random() * 4)
-            ]
-          )}
-        />
-      ))}
-    </div>
   )
 }
