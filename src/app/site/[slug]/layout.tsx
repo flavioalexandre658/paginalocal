@@ -5,7 +5,6 @@ import { store } from '@/db/schema'
 import { eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { SiteHeader } from './_components/site-header'
-import { DraftBanner } from '@/components/site/draft-banner'
 import { getSiteFontUrl, getSiteFontFamily } from '@/lib/font-loader'
 import { auth } from '@/lib/auth'
 
@@ -122,12 +121,7 @@ export default async function SiteLayout({ children, params }: LayoutProps) {
       >
         <TrackingScripts storeSlug={slug} />
 
-        {isDraft && isOwner && <DraftBanner isOwner={isOwner} />}
-
         <div className="relative z-10 flex min-h-screen flex-col">
-          {/* Spacer to push content below the fixed DraftBanner (owner only) */}
-          {isDraft && isOwner && <div className="h-10 shrink-0 sm:h-11" />}
-
           {showHeader && data && (!isDraft || isOwner) && (
             <SiteHeader
               storeName={data.name}

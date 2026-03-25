@@ -28,7 +28,7 @@ export function HeroCentered({ content, tokens }: Props) {
 
   return (
     <section
-      className="relative min-h-screen flex items-center overflow-hidden"
+      className="relative min-h-screen flex items-center pt-20 overflow-hidden"
       style={{ backgroundColor: tokens.palette.primary }}
     >
       {/* Background image */}
