@@ -18,14 +18,44 @@ import { EditorPageRenderer } from "./editor-page-renderer";
  *    them from escaping the preview container.
  */
 const PREVIEW_CSS = `
+  /* Contain fixed/sticky elements inside the preview scroll container */
   .editor-preview .fixed {
     position: absolute !important;
   }
+
+  /* ─── TEXT hover: solid blue outline (inline editing) ─── */
   .editor-preview [data-pgl-hover] {
-    outline: 2px solid rgba(59, 130, 246, 0.35) !important;
-    outline-offset: 4px;
-    border-radius: 4px;
+    outline: 2px solid rgba(59, 130, 246, 0.4) !important;
+    outline-offset: 3px;
+    border-radius: 3px;
     cursor: text;
+  }
+
+  /* ─── COMPONENT hover: subtle ring (popup editing) ─── */
+  .editor-preview [data-pgl-component-hover] {
+    outline: 2px solid rgba(59, 130, 246, 0.3) !important;
+    outline-offset: 4px;
+    cursor: default;
+  }
+
+  /* Editing state: text cursor */
+  .editor-preview [data-pgl-editing] {
+    cursor: text;
+  }
+
+  /* Prevent text selection while browsing */
+  .editor-preview {
+    user-select: none;
+  }
+
+  /* Allow selection only inside active editing element */
+  .editor-preview [data-pgl-editing] {
+    user-select: text;
+  }
+
+  /* Prevent links/buttons from their default cursor */
+  .editor-preview a, .editor-preview button {
+    cursor: default;
   }
 `;
 

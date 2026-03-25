@@ -7,6 +7,7 @@ import { EditorSidebar } from "./editor-sidebar";
 import { EditorPreview } from "./editor-preview";
 import { SectionEditDrawer } from "./section-edit-drawer";
 import { InlineTextEditor } from "./inline-text-editor";
+import { ComponentEditOverlay } from "./component-edit-overlay";
 import { UnsavedChangesGuard } from "./unsaved-changes-guard";
 
 interface Props {
@@ -34,6 +35,7 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName }:
 
       <SectionEditDrawer />
       <InlineTextEditor />
+      <ComponentEditOverlay />
     </EditorProvider>
   );
 }

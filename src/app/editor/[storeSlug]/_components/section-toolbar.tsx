@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { IconChevronUp, IconChevronDown, IconPencil, IconEye, IconEyeOff, IconTrash } from "@tabler/icons-react";
+import {
+  IconChevronUp,
+  IconChevronDown,
+  IconPencil,
+  IconTrash,
+  IconEye,
+  IconEyeOff,
+  IconLayoutGrid,
+} from "@tabler/icons-react";
 import type { SectionBlock } from "@/types/ai-generation";
 import { useEditor } from "../_lib/editor-context";
 import {
@@ -29,50 +37,66 @@ export function SectionToolbar({ section }: Props) {
 
   return (
     <>
+      {/* Dark pill toolbar at bottom-center of section */}
       <div
-        className="absolute right-4 top-4 z-30 flex items-center gap-0.5 rounded-lg bg-white p-1 shadow-lg ring-1 ring-slate-200"
+        data-editor-ui
+        className="pointer-events-auto absolute bottom-3 left-1/2 z-40 flex -translate-x-1/2 items-center gap-0.5 rounded-full bg-gray-900/90 px-3 py-1.5 shadow-xl backdrop-blur-sm"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Design button */}
         <ToolbarButton
-          icon={<IconChevronUp className="h-4 w-4" />}
+          icon={<IconLayoutGrid className="h-3.5 w-3.5" />}
+          label="Design"
+          onClick={() => {/* TODO: open design panel */}}
+        />
+
+        {/* Edit button */}
+        <ToolbarButton
+          icon={<IconPencil className="h-3.5 w-3.5" />}
+          label="Editar"
+          onClick={() => dispatch({ type: "OPEN_DRAWER" })}
+        />
+
+        <Separator />
+
+        {/* Move up */}
+        <IconButton
+          icon={<IconChevronUp className="h-3.5 w-3.5" />}
           title="Mover para cima"
           onClick={() => dispatch({ type: "MOVE_SECTION", sectionId: section.id, direction: "up" })}
         />
-        <ToolbarButton
-          icon={<IconChevronDown className="h-4 w-4" />}
+
+        {/* Move down */}
+        <IconButton
+          icon={<IconChevronDown className="h-3.5 w-3.5" />}
           title="Mover para baixo"
           onClick={() => dispatch({ type: "MOVE_SECTION", sectionId: section.id, direction: "down" })}
         />
 
-        <div className="mx-0.5 h-5 w-px bg-slate-200" />
-
-        <ToolbarButton
-          icon={<IconPencil className="h-4 w-4" />}
-          title="Editar conteudo"
-          onClick={() => dispatch({ type: "OPEN_DRAWER" })}
-        />
-        <ToolbarButton
-          icon={section.visible ? <IconEye className="h-4 w-4" /> : <IconEyeOff className="h-4 w-4" />}
-          title={section.visible ? "Ocultar secao" : "Mostrar secao"}
+        {/* Visibility toggle */}
+        <IconButton
+          icon={section.visible ? <IconEye className="h-3.5 w-3.5" /> : <IconEyeOff className="h-3.5 w-3.5" />}
+          title={section.visible ? "Ocultar seção" : "Mostrar seção"}
           onClick={() => dispatch({ type: "TOGGLE_SECTION_VISIBILITY", sectionId: section.id })}
         />
 
-        <div className="mx-0.5 h-5 w-px bg-slate-200" />
+        <Separator />
 
-        <ToolbarButton
-          icon={<IconTrash className="h-4 w-4" />}
-          title="Excluir secao"
+        {/* Delete */}
+        <IconButton
+          icon={<IconTrash className="h-3.5 w-3.5" />}
+          title="Excluir seção"
           onClick={() => setShowDelete(true)}
-          variant="danger"
+          danger
         />
       </div>
 
       <AlertDialog open={showDelete} onOpenChange={setShowDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir secao</AlertDialogTitle>
+            <AlertDialogTitle>Excluir seção</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir a secao &quot;{label}&quot;? Esta acao pode ser desfeita com Ctrl+Z.
+              Tem certeza que deseja excluir a seção &quot;{label}&quot;? Esta ação pode ser desfeita com Ctrl+Z.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -90,25 +114,49 @@ export function SectionToolbar({ section }: Props) {
   );
 }
 
+function Separator() {
+  return <div className="mx-1 h-4 w-px bg-white/20" />;
+}
+
 function ToolbarButton({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+function IconButton({
   icon,
   title,
   onClick,
-  variant,
+  danger,
 }: {
   icon: React.ReactNode;
   title: string;
   onClick: () => void;
-  variant?: "danger";
+  danger?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
       title={title}
       className={
-        variant === "danger"
-          ? "rounded-md p-1.5 text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600"
-          : "rounded-md p-1.5 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+        danger
+          ? "rounded-full p-1.5 text-white/60 transition-colors hover:bg-red-500/30 hover:text-red-400"
+          : "rounded-full p-1.5 text-white/60 transition-colors hover:bg-white/15 hover:text-white"
       }
     >
       {icon}

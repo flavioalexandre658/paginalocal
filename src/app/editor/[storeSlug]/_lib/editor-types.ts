@@ -6,19 +6,23 @@ export interface EditorState {
   blueprint: SiteBlueprint;
   activePageId: string;
   selectedSectionId: string | null;
+  hoveredSectionId: string | null;
   drawerOpen: boolean;
   isDirty: boolean;
   isSaving: boolean;
   viewportMode: ViewportMode;
   undoStack: SiteBlueprint[];
   redoStack: SiteBlueprint[];
+  isInlineEditing: boolean;
 }
 
 export type EditorAction =
   | { type: "SET_ACTIVE_PAGE"; pageId: string }
   | { type: "SELECT_SECTION"; sectionId: string | null }
+  | { type: "HOVER_SECTION"; sectionId: string | null }
   | { type: "OPEN_DRAWER" }
   | { type: "CLOSE_DRAWER" }
+  | { type: "SET_INLINE_EDITING"; value: boolean }
   | {
       type: "UPDATE_SECTION_CONTENT";
       sectionId: string;

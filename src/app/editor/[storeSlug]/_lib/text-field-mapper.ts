@@ -1,68 +1,110 @@
 /**
- * Maps a clicked text string back to its field path in the section content.
+ * Maps clicked text to blueprint fields using BLOCK_EDIT_MAP for precision.
  *
- * Given a section's content object and the textContent of a clicked DOM element,
- * finds the field path (e.g. "headline", "items.0.name") whose value matches.
- *
- * For StyledHeadline texts that use *accent* markers, we strip the markers
- * before comparing since the rendered text won't include asterisks.
+ * Instead of blindly searching all content, we consult the map to know
+ * exactly which fields are text vs button vs image, then only search
+ * the relevant fields. This prevents mismatches (e.g., a button label
+ * accidentally matching a headline).
  */
 
-function stripAccentMarkers(text: string): string {
-  return text.replace(/\*/g, "");
+import type { BlockType } from "@/types/ai-generation";
+import { BLOCK_EDIT_MAP, type EditMode, type EditableField } from "./block-edit-map";
+
+function stripMarkers(text: string): string {
+  return text.replace(/\*/g, "").replace(/~/g, "");
 }
 
-function normalizeText(text: string): string {
+function normalize(text: string): string {
   return text.replace(/\s+/g, " ").trim();
 }
 
-interface MatchResult {
+export interface FieldMatch {
   fieldPath: string;
   currentValue: string;
+  field: EditableField;
 }
 
-export function findFieldByText(
-  content: Record<string, unknown>,
-  clickedText: string
-): MatchResult | null {
-  const needle = normalizeText(clickedText);
-  if (!needle || needle.length < 2) return null;
+/**
+ * Resolve a wildcard pattern (e.g. "items.*.name") against real content,
+ * returning all concrete paths and their string values.
+ */
+function resolveWildcard(
+  obj: unknown,
+  parts: string[],
+  currentPath: string
+): Array<{ path: string; value: string }> {
+  if (parts.length === 0) {
+    if (typeof obj === "string") {
+      return [{ path: currentPath, value: obj }];
+    }
+    return [];
+  }
 
-  // Check top-level string fields
-  for (const [key, value] of Object.entries(content)) {
-    if (typeof value === "string") {
-      const cleaned = normalizeText(stripAccentMarkers(value));
-      if (cleaned === needle || cleaned.includes(needle) || needle.includes(cleaned)) {
-        return { fieldPath: key, currentValue: value };
+  const [head, ...rest] = parts;
+
+  if (head === "*") {
+    if (Array.isArray(obj)) {
+      const results: Array<{ path: string; value: string }> = [];
+      for (let i = 0; i < obj.length; i++) {
+        results.push(
+          ...resolveWildcard(obj[i], rest, currentPath ? `${currentPath}.${i}` : `${i}`)
+        );
       }
+      return results;
+    }
+    return [];
+  }
+
+  if (typeof obj !== "object" || obj === null) return [];
+  const record = obj as Record<string, unknown>;
+  const nextPath = currentPath ? `${currentPath}.${head}` : head;
+  return resolveWildcard(record[head], rest, nextPath);
+}
+
+/**
+ * Find a field matching the clicked text, filtered by edit mode.
+ *
+ * Only searches fields that match the given mode (text, button, image).
+ * This is the primary matching function used by the editor.
+ */
+export function findFieldByMode(
+  content: Record<string, unknown>,
+  clickedText: string,
+  blockType: BlockType,
+  mode: EditMode
+): FieldMatch | null {
+  const needle = normalize(clickedText);
+  if (!needle) return null;
+
+  const fields = BLOCK_EDIT_MAP[blockType];
+  if (!fields) return null;
+
+  const modeFields = fields.filter((f) => f.mode === mode);
+  const needleLow = needle.toLowerCase();
+
+  // Resolve all field values once
+  const allResolved: Array<{ field: typeof modeFields[number]; path: string; value: string; cleanedLow: string }> = [];
+  for (const field of modeFields) {
+    const parts = field.path.split(".");
+    const resolved = resolveWildcard(content, parts, "");
+    for (const { path, value } of resolved) {
+      const cleanedLow = normalize(stripMarkers(value)).toLowerCase();
+      allResolved.push({ field, path, value, cleanedLow });
     }
   }
 
-  // Check string arrays (e.g. paragraphs)
-  for (const [key, value] of Object.entries(content)) {
-    if (Array.isArray(value)) {
-      for (let i = 0; i < value.length; i++) {
-        const item = value[i];
+  // Pass 1: EXACT match (prevents "Visitante" matching title "visitantes dizem")
+  for (const r of allResolved) {
+    if (r.cleanedLow === needleLow) {
+      return { fieldPath: r.path, currentValue: r.value, field: r.field };
+    }
+  }
 
-        // Simple string array (paragraphs)
-        if (typeof item === "string") {
-          const cleaned = normalizeText(stripAccentMarkers(item));
-          if (cleaned === needle || cleaned.includes(needle) || needle.includes(cleaned)) {
-            return { fieldPath: `${key}.${i}`, currentValue: item };
-          }
-        }
-
-        // Object array (items, members, plans, etc.)
-        if (typeof item === "object" && item !== null) {
-          for (const [subKey, subValue] of Object.entries(item as Record<string, unknown>)) {
-            if (typeof subValue === "string") {
-              const cleaned = normalizeText(stripAccentMarkers(subValue));
-              if (cleaned === needle || cleaned.includes(needle) || needle.includes(cleaned)) {
-                return { fieldPath: `${key}.${i}.${subKey}`, currentValue: subValue };
-              }
-            }
-          }
-        }
+  // Pass 2: includes — only for longer texts (min 15 chars) to avoid false positives
+  if (needleLow.length >= 15) {
+    for (const r of allResolved) {
+      if (r.cleanedLow.includes(needleLow) || needleLow.includes(r.cleanedLow)) {
+        return { fieldPath: r.path, currentValue: r.value, field: r.field };
       }
     }
   }
@@ -71,13 +113,83 @@ export function findFieldByText(
 }
 
 /**
+ * Fallback: search ALL content fields recursively (no map filtering).
+ * Used when the map-based search doesn't find a match.
+ */
+export function findFieldByText(
+  content: Record<string, unknown>,
+  clickedText: string
+): { fieldPath: string; currentValue: string } | null {
+  const needle = normalize(clickedText).toLowerCase();
+  if (!needle || needle.length < 1) return null;
+
+  // Pass 1: exact match only
+  function searchExact(value: unknown, pathPrefix: string): { fieldPath: string; currentValue: string } | null {
+    if (typeof value === "string") {
+      const cleaned = normalize(stripMarkers(value)).toLowerCase();
+      if (cleaned === needle) {
+        return { fieldPath: pathPrefix, currentValue: value };
+      }
+      return null;
+    }
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        const r = searchExact(value[i], `${pathPrefix}.${i}`);
+        if (r) return r;
+      }
+      return null;
+    }
+    if (typeof value === "object" && value !== null) {
+      for (const [key, sub] of Object.entries(value as Record<string, unknown>)) {
+        if (key === "highlighted" || key === "ctaType" || key === "icon" || key === "rating") continue;
+        const r = searchExact(sub, pathPrefix ? `${pathPrefix}.${key}` : key);
+        if (r) return r;
+      }
+    }
+    return null;
+  }
+
+  for (const [key, value] of Object.entries(content)) {
+    const r = searchExact(value, key);
+    if (r) return r;
+  }
+
+  // Pass 2: includes (fallback for long texts only)
+  function search(value: unknown, pathPrefix: string): { fieldPath: string; currentValue: string } | null {
+    if (typeof value === "string") {
+      const cleaned = normalize(stripMarkers(value)).toLowerCase();
+      if (needle.length >= 15 && (cleaned.includes(needle) || needle.includes(cleaned))) {
+        return { fieldPath: pathPrefix, currentValue: value };
+      }
+      return null;
+    }
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        const r = search(value[i], `${pathPrefix}.${i}`);
+        if (r) return r;
+      }
+      return null;
+    }
+    if (typeof value === "object" && value !== null) {
+      for (const [key, sub] of Object.entries(value as Record<string, unknown>)) {
+        if (key === "highlighted" || key === "ctaType" || key === "icon" || key === "rating") continue;
+        const r = search(sub, pathPrefix ? `${pathPrefix}.${key}` : key);
+        if (r) return r;
+      }
+    }
+    return null;
+  }
+
+  for (const [key, value] of Object.entries(content)) {
+    const r = search(value, key);
+    if (r) return r;
+  }
+  return null;
+}
+
+/**
  * Updates a value at a dot-separated path in the content object.
  * Returns a new content object (immutable).
- *
- * Examples:
- *   setFieldByPath(content, "headline", "New title")
- *   setFieldByPath(content, "items.0.name", "New name")
- *   setFieldByPath(content, "paragraphs.1", "New paragraph")
  */
 export function setFieldByPath(
   content: Record<string, unknown>,
@@ -85,41 +197,26 @@ export function setFieldByPath(
   newValue: string
 ): Record<string, unknown> {
   const parts = fieldPath.split(".");
-  const result = { ...content };
+  return setDeep(content, parts, newValue) as Record<string, unknown>;
+}
 
-  if (parts.length === 1) {
-    result[parts[0]] = newValue;
-    return result;
+function setDeep(obj: unknown, parts: string[], newValue: string): unknown {
+  if (parts.length === 0) return newValue;
+
+  const [head, ...rest] = parts;
+
+  if (Array.isArray(obj)) {
+    const idx = parseInt(head);
+    if (isNaN(idx)) return obj;
+    const arr = [...obj];
+    arr[idx] = setDeep(arr[idx], rest, newValue);
+    return arr;
   }
 
-  // Deep clone the path
-  let current: Record<string, unknown> = result;
-  for (let i = 0; i < parts.length - 1; i++) {
-    const key = parts[i];
-    const nextKey = parts[i + 1];
-    const isArrayIndex = /^\d+$/.test(nextKey);
-
-    if (Array.isArray(current[key])) {
-      current[key] = [...(current[key] as unknown[])];
-      const arr = current[key] as unknown[];
-      const idx = parseInt(parts[i + 1]);
-
-      if (i + 2 === parts.length) {
-        // Last segment — set the value
-        arr[idx] = newValue;
-        return result;
-      } else {
-        // Clone the object at this index and continue
-        arr[idx] = { ...(arr[idx] as Record<string, unknown>) };
-        current = arr[idx] as Record<string, unknown>;
-        i++; // skip the index part
-      }
-    } else if (typeof current[key] === "object" && current[key] !== null) {
-      current[key] = { ...(current[key] as Record<string, unknown>) };
-      current = current[key] as Record<string, unknown>;
-    }
+  if (typeof obj === "object" && obj !== null) {
+    const record = obj as Record<string, unknown>;
+    return { ...record, [head]: setDeep(record[head], rest, newValue) };
   }
 
-  current[parts[parts.length - 1]] = newValue;
-  return result;
+  return newValue;
 }

@@ -24,12 +24,14 @@ export function EditorProvider({ children, initialBlueprint, storeId }: EditorPr
     blueprint: initialBlueprint,
     activePageId: homepage?.id ?? "",
     selectedSectionId: null,
+    hoveredSectionId: null,
     drawerOpen: false,
     isDirty: false,
     isSaving: false,
     viewportMode: "desktop",
     undoStack: [],
     redoStack: [],
+    isInlineEditing: false,
   };
 
   const [state, dispatch] = useReducer(editorReducer, initialState);

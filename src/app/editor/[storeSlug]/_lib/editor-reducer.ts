@@ -21,6 +21,9 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
     case "SELECT_SECTION":
       return { ...state, selectedSectionId: action.sectionId };
 
+    case "HOVER_SECTION":
+      return { ...state, hoveredSectionId: action.sectionId };
+
     case "OPEN_DRAWER":
       return { ...state, drawerOpen: true };
 
@@ -110,6 +113,9 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
     case "SET_VIEWPORT":
       return { ...state, viewportMode: action.mode };
+
+    case "SET_INLINE_EDITING":
+      return { ...state, isInlineEditing: action.value };
 
     case "UNDO": {
       if (state.undoStack.length === 0) return state;

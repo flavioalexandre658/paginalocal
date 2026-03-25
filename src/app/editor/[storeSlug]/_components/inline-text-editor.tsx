@@ -2,16 +2,54 @@
 
 import { useEffect, useRef } from "react";
 import { useEditor } from "../_lib/editor-context";
-import { findFieldByText, setFieldByPath } from "../_lib/text-field-mapper";
+import { findFieldByMode, findFieldByText, setFieldByPath } from "../_lib/text-field-mapper";
+import { findSectionForElement } from "../_lib/section-matcher";
+import type { BlockType } from "@/types/ai-generation";
 
-/** Tags that contain editable text */
-const TEXT_TAGS = new Set(["H1", "H2", "H3", "H4", "H5", "H6", "P", "LI", "SPAN", "A"]);
+/** Block-level text tags: prefer outermost (H1 > SPAN → we want H1) */
+const BLOCK_TEXT_TAGS = new Set(["H1", "H2", "H3", "H4", "H5", "H6", "P", "BLOCKQUOTE"]);
+
+/** Inline text tags: prefer innermost */
+const INLINE_TEXT_TAGS = new Set(["SPAN", "LI"]);
+
 /** Tags to never make editable */
-const SKIP_TAGS = new Set(["BUTTON", "INPUT", "TEXTAREA", "SVG", "PATH", "IMG", "IFRAME", "NAV"]);
+const SKIP_TAGS = new Set(["BUTTON", "INPUT", "TEXTAREA", "SVG", "PATH", "IMG", "IFRAME", "NAV", "SELECT"]);
+
+/** Block-level tags that disqualify a DIV from being a "leaf" */
+const BLOCK_CHILDREN = new Set([
+  "DIV", "P", "H1", "H2", "H3", "H4", "H5", "H6", "UL", "OL",
+  "TABLE", "SECTION", "ARTICLE", "HEADER", "FOOTER", "FORM", "BLOCKQUOTE",
+]);
 
 /**
- * Walk up from clicked element to find the best text element to edit.
- * Prefers the outermost text container (h1 over span inside h1).
+ * Check if a DIV/TD/TH is a "leaf text element" — contains only text
+ * and inline elements, no block-level children.
+ *
+ * Examples:
+ *   <div>5.0</div>                    → leaf ✓
+ *   <div>JOSAFÁ SAMPAIO</div>         → leaf ✓
+ *   <div><em>serra</em> text</div>    → leaf ✓ (em is inline)
+ *   <div><h1>title</h1><p>text</p></div> → NOT leaf ✗ (has block children)
+ */
+function isLeafText(el: HTMLElement): boolean {
+  const tag = el.tagName;
+  if (tag !== "DIV" && tag !== "TD" && tag !== "TH" && tag !== "LABEL") return false;
+
+  const children = el.children;
+  for (let i = 0; i < children.length; i++) {
+    if (BLOCK_CHILDREN.has(children[i].tagName)) return false;
+  }
+  return true;
+}
+
+/**
+ * Walk UP from clicked element to find the best text element to edit.
+ *
+ * Rules:
+ * - Block tags (H1-H6, P): always take outermost
+ * - Inline tags (SPAN, LI): take innermost (first match)
+ * - Leaf DIV/TD/TH: take innermost only if no block children
+ * - SKIP_TAGS: stop, but return any text element found inside
  */
 function findEditableElement(target: HTMLElement): HTMLElement | null {
   let el: HTMLElement | null = target;
@@ -20,33 +58,44 @@ function findEditableElement(target: HTMLElement): HTMLElement | null {
   while (el) {
     if (el.hasAttribute("data-pgl-editing")) return null;
     if (el.classList.contains("group/section")) break;
+    if (el.hasAttribute("data-editor-ui")) return null;
 
-    if (SKIP_TAGS.has(el.tagName)) return null;
+    if (SKIP_TAGS.has(el.tagName)) {
+      if (best) break;
+      return null;
+    }
 
-    if (TEXT_TAGS.has(el.tagName)) {
-      const text = el.textContent?.trim();
-      if (text && text.length > 1) {
-        best = el;
+    // CTA-styled A tags → handled by ComponentEditOverlay
+    if (el.tagName === "A") {
+      const computed = window.getComputedStyle(el);
+      const py = parseFloat(computed.paddingTop) + parseFloat(computed.paddingBottom);
+      const px = parseFloat(computed.paddingLeft) + parseFloat(computed.paddingRight);
+      const hasBg = computed.backgroundColor !== "rgba(0, 0, 0, 0)" && computed.backgroundColor !== "transparent";
+      const hasBorder = computed.borderWidth !== "0px" && computed.borderStyle !== "none";
+      if ((py > 12 || px > 16) && (hasBg || hasBorder)) {
+        if (best) break;
+        return null;
       }
     }
+
+    const text = el.textContent?.trim();
+    const hasText = text && text.length >= 1;
+
+    if (BLOCK_TEXT_TAGS.has(el.tagName) && hasText) {
+      // Block tags: take outermost (keep overwriting)
+      best = el;
+    } else if (INLINE_TEXT_TAGS.has(el.tagName) && hasText && !best) {
+      // Inline tags: take innermost only
+      best = el;
+    } else if (isLeafText(el) && hasText && !best) {
+      // Leaf DIV/TD/TH: take innermost only (no container DIVs!)
+      best = el;
+    }
+
     el = el.parentElement;
   }
 
   return best;
-}
-
-/** Find the section ID from a DOM element by walking up to section wrapper */
-function findSectionId(el: HTMLElement): string | null {
-  let current: HTMLElement | null = el;
-  while (current) {
-    if (current.classList.contains("group/section")) {
-      // The section wrapper has a data attribute or we can match by position
-      // Since we don't have data-section-id, we'll return null and match differently
-      return null;
-    }
-    current = current.parentElement;
-  }
-  return null;
 }
 
 export function InlineTextEditor() {
@@ -65,10 +114,10 @@ export function InlineTextEditor() {
     const previewContainer = document.querySelector(".editor-preview");
     if (!previewContainer) return;
 
-    // --- Hover: show outline on text elements ---
     function handleMouseOver(e: Event) {
       if (activeElRef.current) return;
       const target = e.target as HTMLElement;
+      if (target.closest("[data-editor-ui]")) return;
       const el = findEditableElement(target);
       if (el) {
         el.setAttribute("data-pgl-hover", "true");
@@ -84,12 +133,13 @@ export function InlineTextEditor() {
       }
     }
 
-    // --- Click handler ---
     function handleClick(e: Event) {
       const mouseEvent = e as MouseEvent;
       const target = mouseEvent.target as HTMLElement;
 
-      // If clicking outside active element, just save and stop
+      if (target.closest("[data-editor-ui]")) return;
+
+      // If clicking outside active element, save and stop
       if (activeElRef.current && !activeElRef.current.contains(target)) {
         mouseEvent.stopPropagation();
         mouseEvent.preventDefault();
@@ -97,81 +147,89 @@ export function InlineTextEditor() {
         return;
       }
 
-      // If already editing, let the click work normally (cursor positioning)
       if (activeElRef.current) return;
 
       const el = findEditableElement(target);
       if (!el) return;
 
       const text = el.textContent?.trim();
-      if (!text || text.length < 2) return;
+      if (!text) return;
 
-      // Find the section wrapper this element belongs to
-      let sectionWrapper: HTMLElement | null = el;
-      while (sectionWrapper && !sectionWrapper.classList.contains("group/section")) {
-        sectionWrapper = sectionWrapper.parentElement;
-      }
-      if (!sectionWrapper) return;
-
-      // Find the section by matching the wrapper's index in the DOM
       const currentState = stateRef.current;
       const activePage = currentState.blueprint.pages.find(
         (p) => p.id === currentState.activePageId
       );
       if (!activePage) return;
 
-      // Get all section wrappers in order
-      const allWrappers = previewContainer!.querySelectorAll(".group\\/section");
-      let wrapperIndex = -1;
-      allWrappers.forEach((w, i) => {
-        if (w === sectionWrapper) wrapperIndex = i;
-      });
+      const sectionMatch = findSectionForElement(el, previewContainer!, activePage);
+      if (!sectionMatch) return;
 
-      if (wrapperIndex === -1) return;
+      const blockType = sectionMatch.section.blockType as BlockType;
 
-      // Match by order — sorted sections correspond to DOM order
-      const sortedSections = [...activePage.sections].sort((a, b) => a.order - b.order);
-      const section = sortedSections[wrapperIndex];
-      if (!section) return;
+      let fieldMatch = findFieldByMode(sectionMatch.content, text, blockType, "text");
+      if (!fieldMatch) {
+        const fallback = findFieldByText(sectionMatch.content, text);
+        if (fallback) {
+          fieldMatch = { ...fallback, field: { path: fallback.fieldPath, mode: "text", label: "" } };
+        }
+      }
+      if (!fieldMatch) return;
 
-      const content = section.content as Record<string, unknown>;
-      const match = findFieldByText(content, text);
-      if (!match) return;
-
-      // Stop event from selecting the section or doing anything else
       mouseEvent.stopPropagation();
       mouseEvent.preventDefault();
 
-      // Select the section in the sidebar
-      dispatchRef.current({ type: "SELECT_SECTION", sectionId: section.id });
+      // Save click coordinates — we'll need them after React re-renders
+      const clickX = mouseEvent.clientX;
+      const clickY = mouseEvent.clientY;
 
-      // Activate editing
-      activeElRef.current = el;
-      originalValueRef.current = match.currentValue;
+      // Store field info BEFORE dispatch (dispatch may cause re-render that
+      // replaces DOM nodes, making `el` stale)
+      originalValueRef.current = fieldMatch.currentValue;
       fieldInfoRef.current = {
-        sectionId: section.id,
-        fieldPath: match.fieldPath,
+        sectionId: sectionMatch.section.id,
+        fieldPath: fieldMatch.fieldPath,
       };
 
-      el.contentEditable = "true";
-      el.setAttribute("data-pgl-editing", "true");
-      el.removeAttribute("data-pgl-hover");
-      el.style.outline = "2px solid rgb(59, 130, 246)";
-      el.style.outlineOffset = "4px";
-      el.style.borderRadius = "4px";
-      el.focus();
+      // Dispatch state changes — this may re-render components and replace DOM nodes
+      dispatchRef.current({ type: "SELECT_SECTION", sectionId: sectionMatch.section.id });
+      dispatchRef.current({ type: "SET_INLINE_EDITING", value: true });
 
-      // Place cursor at click position
-      requestAnimationFrame(() => {
+      // Defer contentEditable activation to AFTER React finishes re-rendering.
+      // Some components (like faq-two-columns) define sub-components inline,
+      // causing React to unmount/remount DOM nodes on re-render. We need to
+      // re-find the element in the updated DOM.
+      setTimeout(() => {
+        const preview = previewContainer as HTMLElement;
+        preview.style.userSelect = "auto";
+        preview.style.setProperty("-webkit-user-select", "auto");
+
+        // Re-find the element at the click position in the (possibly new) DOM
+        const newTarget = document.elementFromPoint(clickX, clickY) as HTMLElement | null;
+        if (!newTarget) return;
+
+        const newEl = findEditableElement(newTarget);
+        if (!newEl) return;
+
+        activeElRef.current = newEl;
+        newEl.contentEditable = "true";
+        newEl.setAttribute("data-pgl-editing", "true");
+        newEl.removeAttribute("data-pgl-hover");
+        newEl.style.outline = "2px solid rgb(59, 130, 246)";
+        newEl.style.outlineOffset = "4px";
+        newEl.style.borderRadius = "4px";
+        newEl.style.cursor = "text";
+        newEl.focus();
+
+        // Place caret at click position
         if (document.caretRangeFromPoint) {
-          const range = document.caretRangeFromPoint(mouseEvent.clientX, mouseEvent.clientY);
+          const range = document.caretRangeFromPoint(clickX, clickY);
           if (range) {
             const sel = window.getSelection();
             sel?.removeAllRanges();
             sel?.addRange(range);
           }
         }
-      });
+      }, 50);
     }
 
     function save() {
@@ -184,7 +242,7 @@ export function InlineTextEditor() {
       if (el && fieldInfo) {
         const newText = el.textContent?.trim() ?? "";
         const originalRaw = originalValueRef.current;
-        const originalClean = originalRaw.replace(/\*/g, "");
+        const originalClean = originalRaw.replace(/\*/g, "").replace(/~/g, "");
 
         if (newText !== originalClean && newText.length > 0) {
           const newValue = preserveAccentMarkers(originalRaw, newText);
@@ -223,9 +281,19 @@ export function InlineTextEditor() {
       el.style.outline = "";
       el.style.outlineOffset = "";
       el.style.borderRadius = "";
+      el.style.cursor = "";
+
+      // Restore user-select: none on preview container
+      const preview = document.querySelector(".editor-preview") as HTMLElement | null;
+      if (preview) {
+        preview.style.userSelect = "none";
+        preview.style.setProperty("-webkit-user-select", "none");
+      }
 
       activeElRef.current = null;
       fieldInfoRef.current = null;
+
+      dispatchRef.current({ type: "SET_INLINE_EDITING", value: false });
     }
 
     function handleKeyDown(e: Event) {
@@ -235,9 +303,17 @@ export function InlineTextEditor() {
       if (keyEvent.key === "Escape") {
         const el = activeElRef.current;
         if (el) {
-          el.textContent = originalValueRef.current.replace(/\*/g, "");
+          el.textContent = originalValueRef.current.replace(/\*/g, "").replace(/~/g, "");
         }
         deactivate();
+      }
+
+      if (keyEvent.key === "Enter") {
+        const el = activeElRef.current;
+        if (el && ["H1", "H2", "H3", "H4", "H5", "H6"].includes(el.tagName)) {
+          keyEvent.preventDefault();
+          save();
+        }
       }
     }
 
