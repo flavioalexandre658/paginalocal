@@ -37,12 +37,16 @@ export function PricingCards({ content, tokens }: Props) {
             tokens={tokens}
             as="h2"
             className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]"
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
               style={{ color: tokens.palette.textMuted }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -132,6 +136,8 @@ export function PricingCards({ content, tokens }: Props) {
                 <p
                   className="text-[0.7rem] font-medium uppercase tracking-[0.12em] mb-3"
                   style={{ color: tokens.palette.textMuted }}
+                  data-pgl-path={`plans.${index}.name`}
+                  data-pgl-edit="text"
                 >
                   {plan.name}
                 </p>
@@ -146,6 +152,8 @@ export function PricingCards({ content, tokens }: Props) {
                     fontFamily: "var(--pgl-font-heading)",
                     color: tokens.palette.text,
                   }}
+                  data-pgl-path={`plans.${index}.price`}
+                  data-pgl-edit="text"
                 >
                   {plan.price}
                 </p>
@@ -153,6 +161,8 @@ export function PricingCards({ content, tokens }: Props) {
                   <p
                     className="text-[0.875rem] font-light"
                     style={{ color: tokens.palette.textMuted }}
+                    data-pgl-path={`plans.${index}.description`}
+                    data-pgl-edit="text"
                   >
                     {plan.description}
                   </p>
@@ -208,6 +218,8 @@ export function PricingCards({ content, tokens }: Props) {
                 variant={plan.highlighted || isBold ? "primary" : "secondary"}
                 tokens={tokens}
                 className="w-full justify-center"
+                data-pgl-path={`plans.${index}.ctaText`}
+                data-pgl-edit="button"
               >
                 {plan.ctaText}
               </PglButton>

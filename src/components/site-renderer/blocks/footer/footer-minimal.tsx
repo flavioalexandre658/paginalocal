@@ -66,7 +66,7 @@ export function FooterMinimal({ content, tokens }: Props) {
             className="text-xs"
             style={{ color: tokens.palette.textMuted }}
           >
-            <span>
+            <span data-pgl-path="copyrightText" data-pgl-edit="text">
               {copyrightText ||
                 `\u00a9 ${new Date().getFullYear()} ${storeName}`}
             </span>

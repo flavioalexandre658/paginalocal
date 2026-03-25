@@ -72,11 +72,15 @@ export function HeaderMinimal({ content, tokens }: Props) {
                 src={logoUrl}
                 alt="Logo"
                 className="max-h-10 w-auto object-contain"
+                data-pgl-path="logoUrl"
+                data-pgl-edit="image"
               />
             ) : (
               <span
                 className="text-lg font-bold tracking-tight"
                 style={{ fontFamily: "var(--pgl-font-heading)", color: "#fff" }}
+                data-pgl-path="storeName"
+                data-pgl-edit="text"
               >
                 {storeName}
               </span>
@@ -156,7 +160,7 @@ export function HeaderMinimal({ content, tokens }: Props) {
 
         {ctaText && (
           <div className="mt-12 pgl-fade-up" data-delay="5">
-            <PglButton href={ctaLink} tokens={tokens} isDark>
+            <PglButton href={ctaLink} tokens={tokens} isDark data-pgl-path="ctaText" data-pgl-edit="button">
               {ctaText}
             </PglButton>
           </div>

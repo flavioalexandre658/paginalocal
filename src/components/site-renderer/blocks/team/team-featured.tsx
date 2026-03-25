@@ -41,12 +41,16 @@ export function TeamFeatured({ content, tokens }: Props) {
             tokens={tokens}
             as="h2"
             className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]"
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
               style={{ color: tokens.palette.textMuted }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -93,6 +97,8 @@ export function TeamFeatured({ content, tokens }: Props) {
                     src={featured.image}
                     alt={featured.name}
                     className="w-full h-full object-cover"
+                    data-pgl-path="members.0.image"
+                    data-pgl-edit="image"
                   />
                 </div>
                 {/* Decorative accent offset - only for industrial/default */}
@@ -143,6 +149,8 @@ export function TeamFeatured({ content, tokens }: Props) {
                 fontFamily: "var(--pgl-font-heading)",
                 color: tokens.palette.text,
               }}
+              data-pgl-path="members.0.name"
+              data-pgl-edit="text"
             >
               {featured.name}
             </h3>
@@ -161,6 +169,8 @@ export function TeamFeatured({ content, tokens }: Props) {
                     }
                   : {}),
               }}
+              data-pgl-path="members.0.role"
+              data-pgl-edit="text"
             >
               {featured.role}
             </p>
@@ -168,6 +178,8 @@ export function TeamFeatured({ content, tokens }: Props) {
               <p
                 className="text-[0.925rem] font-light leading-[1.85] mt-4 max-w-prose"
                 style={{ color: tokens.palette.textMuted }}
+                data-pgl-path="members.0.bio"
+                data-pgl-edit="text"
               >
                 {featured.bio}
               </p>
@@ -212,6 +224,8 @@ export function TeamFeatured({ content, tokens }: Props) {
                           src={member.image}
                           alt={member.name}
                           className="w-full h-full object-cover"
+                          data-pgl-path={`members.${index + 1}.image`}
+                          data-pgl-edit="image"
                         />
                       </div>
                     ) : (
@@ -234,12 +248,16 @@ export function TeamFeatured({ content, tokens }: Props) {
                           fontFamily: "var(--pgl-font-heading)",
                           color: tokens.palette.text,
                         }}
+                        data-pgl-path={`members.${index + 1}.name`}
+                        data-pgl-edit="text"
                       >
                         {member.name}
                       </h3>
                       <p
                         className="text-[0.65rem] font-medium tracking-[0.08em] mt-0.5"
                         style={{ color: tokens.palette.accent }}
+                        data-pgl-path={`members.${index + 1}.role`}
+                        data-pgl-edit="text"
                       >
                         {member.role}
                       </p>
@@ -269,6 +287,8 @@ export function TeamFeatured({ content, tokens }: Props) {
                           src={member.image}
                           alt={member.name}
                           className="w-full h-full object-cover"
+                          data-pgl-path={`members.${index + 1}.image`}
+                          data-pgl-edit="image"
                         />
                       </div>
                     ) : (
@@ -304,6 +324,8 @@ export function TeamFeatured({ content, tokens }: Props) {
                         fontFamily: "var(--pgl-font-heading)",
                         color: tokens.palette.text,
                       }}
+                      data-pgl-path={`members.${index + 1}.name`}
+                      data-pgl-edit="text"
                     >
                       {member.name}
                     </h3>
@@ -322,6 +344,8 @@ export function TeamFeatured({ content, tokens }: Props) {
                             }
                           : {}),
                       }}
+                      data-pgl-path={`members.${index + 1}.role`}
+                      data-pgl-edit="text"
                     >
                       {member.role}
                     </p>
@@ -329,6 +353,8 @@ export function TeamFeatured({ content, tokens }: Props) {
                       <p
                         className="text-[0.8rem] font-light line-clamp-3 mt-2"
                         style={{ color: tokens.palette.textMuted }}
+                        data-pgl-path={`members.${index + 1}.bio`}
+                        data-pgl-edit="text"
                       >
                         {member.bio}
                       </p>

@@ -35,12 +35,16 @@ export function FeaturedHorizontalScroll({ content, tokens, isDark }: Props) {
               "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]",
               isDark ? "text-white" : undefined,
             )}
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up text-sm md:text-base leading-[1.8] font-light"
               style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -74,6 +78,8 @@ export function FeaturedHorizontalScroll({ content, tokens, isDark }: Props) {
                       alt={item.name}
                       className="w-full h-full object-cover group-hover:scale-[1.03]"
                       style={{ transition: `transform var(--transition-speed, 0.4s)` }}
+                      data-pgl-path={`items.${index}.image`}
+                      data-pgl-edit="image"
                     />
                   </>
                 ) : (
@@ -117,6 +123,8 @@ export function FeaturedHorizontalScroll({ content, tokens, isDark }: Props) {
                     fontFamily: "var(--pgl-font-heading)",
                     color: isDark ? "#fff" : tokens.palette.text,
                   }}
+                  data-pgl-path={`items.${index}.name`}
+                  data-pgl-edit="text"
                 >
                   {item.name}
                 </h3>
@@ -124,6 +132,8 @@ export function FeaturedHorizontalScroll({ content, tokens, isDark }: Props) {
                   <p
                     className="text-sm md:text-base font-light line-clamp-2"
                     style={{ color: isDark ? "rgba(255,255,255,0.45)" : tokens.palette.textMuted }}
+                    data-pgl-path={`items.${index}.description`}
+                    data-pgl-edit="text"
                   >
                     {item.description}
                   </p>
@@ -136,6 +146,8 @@ export function FeaturedHorizontalScroll({ content, tokens, isDark }: Props) {
                         isBold && "text-[1.15rem] !font-extrabold",
                       )}
                       style={{ color: tokens.palette.primary }}
+                      data-pgl-path={`items.${index}.price`}
+                      data-pgl-edit="text"
                     >
                       {item.price}
                     </span>

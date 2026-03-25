@@ -22,10 +22,10 @@ export function ContactMinimalCard({ content, tokens }: Props) {
   const isBold = style === "bold";
 
   const contactItems = [
-    c.address && { icon: MapPin, label: "Endereço", value: c.address },
-    c.phone && { icon: Phone, label: "Telefone", value: c.phone },
-    c.email && { icon: Mail, label: "E-mail", value: c.email },
-  ].filter(Boolean) as { icon: any; label: string; value: string }[];
+    c.address && { icon: MapPin, label: "Endereço", value: c.address, field: "address" },
+    c.phone && { icon: Phone, label: "Telefone", value: c.phone, field: "phone" },
+    c.email && { icon: Mail, label: "E-mail", value: c.email, field: "email" },
+  ].filter(Boolean) as { icon: any; label: string; value: string; field: string }[];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -47,11 +47,15 @@ export function ContactMinimalCard({ content, tokens }: Props) {
                 ? "text-4xl md:text-5xl"
                 : "text-3xl md:text-4xl"
             )}
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="text-[0.925rem] leading-[1.7] font-light max-w-md mx-auto"
               style={{ color: tokens.palette.textMuted }}
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -86,6 +90,8 @@ export function ContactMinimalCard({ content, tokens }: Props) {
                 <div
                   className="text-[0.875rem] font-normal"
                   style={{ color: tokens.palette.text }}
+                  data-pgl-path={item.field}
+                  data-pgl-edit="text"
                 >
                   {item.value}
                 </div>
@@ -100,6 +106,8 @@ export function ContactMinimalCard({ content, tokens }: Props) {
             <PglButton
               href={`https://wa.me/${c.whatsapp.replace(/\D/g, "")}`}
               tokens={tokens}
+              data-pgl-path="whatsapp"
+              data-pgl-edit="text"
             >
               Falar no WhatsApp
             </PglButton>
@@ -121,6 +129,8 @@ export function ContactMinimalCard({ content, tokens }: Props) {
                   color: tokens.palette.text,
                   transition: `opacity var(--transition-speed)`,
                 }}
+                data-pgl-path="phone"
+                data-pgl-edit="text"
               >
                 {c.phone}
               </a>
@@ -133,6 +143,8 @@ export function ContactMinimalCard({ content, tokens }: Props) {
                   color: tokens.palette.textMuted,
                   transition: `opacity var(--transition-speed)`,
                 }}
+                data-pgl-path="email"
+                data-pgl-edit="text"
               >
                 {c.email}
               </a>

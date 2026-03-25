@@ -105,6 +105,8 @@ export function HeroGradientBold({ content, tokens }: Props) {
               (isIndustrial || isBold) && "normal-case",
               isElegant && "italic"
             )}
+            data-pgl-path="headline"
+            data-pgl-edit="text"
           />
 
           {/* Subheadline — always light on dark */}
@@ -118,6 +120,8 @@ export function HeroGradientBold({ content, tokens }: Props) {
                   : "text-white/55"
             )}
             data-delay="2"
+            data-pgl-path="subheadline"
+            data-pgl-edit="text"
           >
             {c.subheadline}
           </p>
@@ -127,7 +131,7 @@ export function HeroGradientBold({ content, tokens }: Props) {
             className="pgl-fade-up mt-10 flex flex-wrap gap-4 justify-center"
             data-delay="3"
           >
-            <PglButton href={c.ctaLink || "#contact"} tokens={tokens} isDark>
+            <PglButton href={c.ctaLink || "#contact"} tokens={tokens} isDark data-pgl-path="ctaText" data-pgl-edit="button">
               {c.ctaText}
             </PglButton>
             {c.secondaryCtaText && (
@@ -136,6 +140,8 @@ export function HeroGradientBold({ content, tokens }: Props) {
                 variant="secondary"
                 tokens={tokens}
                 isDark
+                data-pgl-path="secondaryCtaText"
+                data-pgl-edit="button"
               >
                 {c.secondaryCtaText}
               </PglButton>
@@ -162,6 +168,8 @@ export function HeroGradientBold({ content, tokens }: Props) {
                 src={c.backgroundImage}
                 alt={c.headline.replace(/\*/g, "")}
                 className="w-full h-auto object-cover"
+                data-pgl-path="backgroundImage"
+                data-pgl-edit="image"
               />
             </div>
           )}

@@ -36,6 +36,8 @@ export function HoursTable({ content, tokens }: Props) {
           text={c.title}
           tokens={tokens}
           className="text-3xl md:text-4xl lg:text-5xl"
+          data-pgl-path="title"
+          data-pgl-edit="text"
         />
       </div>
 
@@ -131,6 +133,8 @@ export function HoursTable({ content, tokens }: Props) {
             className="mt-5 text-xs leading-[1.7] font-light pgl-fade-up"
             style={{ color: tokens.palette.textMuted }}
             data-delay="5"
+            data-pgl-path="note"
+            data-pgl-edit="text"
           >
             {c.note}
           </p>

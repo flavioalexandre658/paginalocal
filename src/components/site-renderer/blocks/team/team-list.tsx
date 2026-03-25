@@ -33,12 +33,16 @@ export function TeamList({ content, tokens }: Props) {
             tokens={tokens}
             as="h2"
             className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]"
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
               style={{ color: tokens.palette.textMuted }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -92,6 +96,8 @@ export function TeamList({ content, tokens }: Props) {
                     src={member.image}
                     alt={member.name}
                     className="w-full h-full object-cover"
+                    data-pgl-path={`members.${index}.image`}
+                    data-pgl-edit="image"
                   />
                 </div>
               ) : (
@@ -134,6 +140,8 @@ export function TeamList({ content, tokens }: Props) {
                     fontFamily: "var(--pgl-font-heading)",
                     color: tokens.palette.text,
                   }}
+                  data-pgl-path={`members.${index}.name`}
+                  data-pgl-edit="text"
                 >
                   {member.name}
                 </h3>
@@ -152,6 +160,8 @@ export function TeamList({ content, tokens }: Props) {
                         }
                       : {}),
                   }}
+                  data-pgl-path={`members.${index}.role`}
+                  data-pgl-edit="text"
                 >
                   {member.role}
                 </p>
@@ -159,6 +169,8 @@ export function TeamList({ content, tokens }: Props) {
                   <p
                     className="text-[0.875rem] font-light leading-relaxed mt-2 max-w-prose"
                     style={{ color: tokens.palette.textMuted }}
+                    data-pgl-path={`members.${index}.bio`}
+                    data-pgl-edit="text"
                   >
                     {member.bio}
                   </p>

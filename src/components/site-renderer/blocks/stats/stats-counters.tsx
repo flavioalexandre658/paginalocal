@@ -21,7 +21,9 @@ export function StatsCounters({ content, tokens }: Props) {
   if (!parsed.success) return null;
   const c = parsed.data;
 
-  const validItems = c.items.filter((item) => isValidStat(item.value));
+  const validItems = c.items
+    .map((item, idx) => ({ ...item, _idx: idx }))
+    .filter((item) => isValidStat(item.value));
   if (validItems.length < 2) return null;
 
   const style = tokens.style;
@@ -39,6 +41,8 @@ export function StatsCounters({ content, tokens }: Props) {
                   fontFamily: "var(--pgl-font-heading)",
                   color: tokens.palette.primary,
                 }}
+                data-pgl-path={`items.${item._idx}.value`}
+                data-pgl-edit="text"
               >
                 {item.value}
               </span>
@@ -50,6 +54,8 @@ export function StatsCounters({ content, tokens }: Props) {
                   textTransform: "var(--label-transform, uppercase)" as unknown as undefined,
                   letterSpacing: "var(--label-tracking, 0.08em)" as unknown as undefined,
                 }}
+                data-pgl-path={`items.${item._idx}.label`}
+                data-pgl-edit="text"
               >
                 {item.label}
               </span>
@@ -73,6 +79,8 @@ export function StatsCounters({ content, tokens }: Props) {
                   fontFamily: "var(--pgl-font-heading)",
                   color: tokens.palette.text,
                 }}
+                data-pgl-path={`items.${item._idx}.value`}
+                data-pgl-edit="text"
               >
                 {item.value}
               </span>
@@ -83,6 +91,8 @@ export function StatsCounters({ content, tokens }: Props) {
                   fontSize: "var(--label-size, 0.7rem)",
                   letterSpacing: "var(--label-tracking, 0.06em)" as unknown as undefined,
                 }}
+                data-pgl-path={`items.${item._idx}.label`}
+                data-pgl-edit="text"
               >
                 {item.label}
               </span>
@@ -125,6 +135,8 @@ export function StatsCounters({ content, tokens }: Props) {
                     fontFamily: "var(--pgl-font-heading)",
                     color: tokens.palette.primary,
                   }}
+                  data-pgl-path={`items.${item._idx}.value`}
+                  data-pgl-edit="text"
                 >
                   {item.value}
                 </div>
@@ -136,6 +148,8 @@ export function StatsCounters({ content, tokens }: Props) {
                     textTransform: "var(--label-transform, uppercase)" as unknown as undefined,
                     letterSpacing: "var(--label-tracking, 0.08em)" as unknown as undefined,
                   }}
+                  data-pgl-path={`items.${item._idx}.label`}
+                  data-pgl-edit="text"
                 >
                   {item.label}
                 </div>
@@ -189,6 +203,8 @@ export function StatsCounters({ content, tokens }: Props) {
                     fontFamily: "var(--pgl-font-heading)",
                     color: tokens.palette.accent,
                   }}
+                  data-pgl-path={`items.${item._idx}.value`}
+                  data-pgl-edit="text"
                 >
                   {item.value}
                 </div>
@@ -200,6 +216,8 @@ export function StatsCounters({ content, tokens }: Props) {
                     textTransform: "var(--label-transform, uppercase)" as unknown as undefined,
                     letterSpacing: "var(--label-tracking, 0.08em)" as unknown as undefined,
                   }}
+                  data-pgl-path={`items.${item._idx}.label`}
+                  data-pgl-edit="text"
                 >
                   {item.label}
                 </div>
@@ -248,6 +266,8 @@ export function StatsCounters({ content, tokens }: Props) {
                   fontFamily: "var(--pgl-font-heading)",
                   color: tokens.palette.primary,
                 }}
+                data-pgl-path={`items.${item._idx}.value`}
+                data-pgl-edit="text"
               >
                 {item.value}
               </div>
@@ -259,6 +279,8 @@ export function StatsCounters({ content, tokens }: Props) {
                   textTransform: "var(--label-transform, uppercase)" as unknown as undefined,
                   letterSpacing: "var(--label-tracking, 0.08em)" as unknown as undefined,
                 }}
+                data-pgl-path={`items.${item._idx}.label`}
+                data-pgl-edit="text"
               >
                 {item.label}
               </div>

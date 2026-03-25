@@ -57,11 +57,15 @@ export function HeaderSplit({ content, tokens }: Props) {
               src={logoUrl}
               alt="Logo"
               className="max-h-10 w-auto object-contain"
+              data-pgl-path="logoUrl"
+              data-pgl-edit="image"
             />
           ) : (
             <span
               className="text-lg font-bold tracking-tight"
               style={{ fontFamily: "var(--pgl-font-heading)", color: tokens.palette.text }}
+              data-pgl-path="storeName"
+              data-pgl-edit="text"
             >
               {storeName}
             </span>
@@ -95,7 +99,7 @@ export function HeaderSplit({ content, tokens }: Props) {
         {/* Right: CTA — desktop */}
         <div className="hidden md:flex items-center">
           {ctaText ? (
-            <PglButton href={ctaLink} tokens={tokens}>
+            <PglButton href={ctaLink} tokens={tokens} data-pgl-path="ctaText" data-pgl-edit="button">
               {ctaText}
             </PglButton>
           ) : (
@@ -158,7 +162,7 @@ export function HeaderSplit({ content, tokens }: Props) {
           ))}
           {ctaText && (
             <li className="mt-2">
-              <PglButton href={ctaLink} tokens={tokens}>
+              <PglButton href={ctaLink} tokens={tokens} data-pgl-path="ctaText" data-pgl-edit="button">
                 {ctaText}
               </PglButton>
             </li>

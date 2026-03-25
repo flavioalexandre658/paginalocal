@@ -45,12 +45,16 @@ export function ServicesIconGrid({ content, tokens }: Props) {
             tokens={tokens}
             className="pgl-fade-up text-2xl md:text-3xl lg:text-5xl leading-[1.05]"
             accentClassName="normal-case"
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
               style={{ color: mutedColor }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -85,12 +89,16 @@ export function ServicesIconGrid({ content, tokens }: Props) {
                         fontFamily: "var(--pgl-font-heading)",
                         color: textColor,
                       }}
+                      data-pgl-path={`items.${i}.name`}
+                      data-pgl-edit="text"
                     >
                       {item.name}
                     </h3>
                     <p
                       className="text-[0.875rem] leading-[1.75] font-light"
                       style={{ color: mutedColor }}
+                      data-pgl-path={`items.${i}.description`}
+                      data-pgl-edit="text"
                     >
                       {item.description}
                     </p>
@@ -98,6 +106,8 @@ export function ServicesIconGrid({ content, tokens }: Props) {
                       <div
                         className="mt-3 text-lg font-semibold tabular-nums"
                         style={{ color: tokens.palette.accent }}
+                        data-pgl-path={`items.${i}.price`}
+                        data-pgl-edit="text"
                       >
                         {item.price}
                       </div>
@@ -183,6 +193,8 @@ export function ServicesIconGrid({ content, tokens }: Props) {
                     color: textColor,
                     transition: `color var(--transition-speed, 0.4s)`,
                   }}
+                  data-pgl-path={`items.${i}.name`}
+                  data-pgl-edit="text"
                 >
                   {item.name}
                 </h3>
@@ -206,6 +218,8 @@ export function ServicesIconGrid({ content, tokens }: Props) {
                     color: mutedColor,
                     transition: `color var(--transition-speed, 0.4s)`,
                   }}
+                  data-pgl-path={`items.${i}.description`}
+                  data-pgl-edit="text"
                 >
                   {item.description}
                 </p>
@@ -221,6 +235,8 @@ export function ServicesIconGrid({ content, tokens }: Props) {
                       color: tokens.palette.accent,
                       transition: `color var(--transition-speed, 0.4s)`,
                     }}
+                    data-pgl-path={`items.${i}.price`}
+                    data-pgl-edit="text"
                   >
                     {item.price}
                   </div>
@@ -234,6 +250,8 @@ export function ServicesIconGrid({ content, tokens }: Props) {
                       variant="secondary"
                       tokens={tokens}
                       className="text-[0.8rem]"
+                      data-pgl-path={`items.${i}.ctaText`}
+                      data-pgl-edit="button"
                     >
                       {item.ctaText ?? "Saiba mais"}
                     </PglButton>

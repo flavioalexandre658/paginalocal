@@ -39,12 +39,16 @@ export function CatalogListCategorized({ content, tokens, isDark }: Props) {
               "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]",
               isDark ? "text-white" : undefined,
             )}
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up text-sm md:text-base leading-[1.8] font-light"
               style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -83,9 +87,8 @@ export function CatalogListCategorized({ content, tokens, isDark }: Props) {
         )}
 
         {/* Active category content */}
-        {c.categories
-          .filter((cat) => c.categories.length === 1 || cat.name === activeTab)
-          .map((cat, catIndex) => (
+        {c.categories.map((cat, catIndex) =>
+          (c.categories.length !== 1 && cat.name !== activeTab) ? null : (
             <div key={catIndex}>
               {/* Featured row */}
               <div
@@ -106,6 +109,8 @@ export function CatalogListCategorized({ content, tokens, isDark }: Props) {
                       src={cat.image}
                       alt={cat.name}
                       className="w-full h-full object-cover"
+                      data-pgl-path={`categories.${catIndex}.image`}
+                      data-pgl-edit="image"
                     />
                   </div>
                 )}
@@ -119,6 +124,8 @@ export function CatalogListCategorized({ content, tokens, isDark }: Props) {
                       fontFamily: "var(--pgl-font-heading)",
                       color: isDark ? "#fff" : tokens.palette.text,
                     }}
+                    data-pgl-path={`categories.${catIndex}.name`}
+                    data-pgl-edit="text"
                   >
                     {cat.name}
                   </h3>
@@ -126,6 +133,8 @@ export function CatalogListCategorized({ content, tokens, isDark }: Props) {
                     <p
                       className="text-sm md:text-base font-light leading-relaxed mt-2"
                       style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
+                      data-pgl-path={`categories.${catIndex}.description`}
+                      data-pgl-edit="text"
                     >
                       {cat.description}
                     </p>
@@ -146,6 +155,8 @@ export function CatalogListCategorized({ content, tokens, isDark }: Props) {
                       variant="secondary"
                       tokens={tokens}
                       isDark={isDark}
+                      data-pgl-path="ctaText"
+                      data-pgl-edit="button"
                     >
                       {c.ctaText}
                     </PglButton>
@@ -153,7 +164,8 @@ export function CatalogListCategorized({ content, tokens, isDark }: Props) {
                 </div>
               </div>
             </div>
-          ))}
+          )
+        )}
       </div>
     </div>
   );

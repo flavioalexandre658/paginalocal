@@ -57,11 +57,15 @@ export function HeaderSolid({ content, tokens }: Props) {
               src={logoUrl}
               alt="Logo"
               className="max-h-10 w-auto object-contain"
+              data-pgl-path="logoUrl"
+              data-pgl-edit="image"
             />
           ) : (
             <span
               className="text-lg font-bold tracking-tight"
               style={{ fontFamily: "var(--pgl-font-heading)", color: "#fff" }}
+              data-pgl-path="storeName"
+              data-pgl-edit="text"
             >
               {storeName}
             </span>
@@ -85,7 +89,7 @@ export function HeaderSolid({ content, tokens }: Props) {
         {/* Desktop CTA */}
         {ctaText && (
           <div className="hidden md:block">
-            <PglButton href={ctaLink} tokens={tokens} isDark>
+            <PglButton href={ctaLink} tokens={tokens} isDark data-pgl-path="ctaText" data-pgl-edit="button">
               {ctaText}
             </PglButton>
           </div>
@@ -141,7 +145,7 @@ export function HeaderSolid({ content, tokens }: Props) {
           ))}
           {ctaText && (
             <li className="mt-2">
-              <PglButton href={ctaLink} tokens={tokens} isDark>
+              <PglButton href={ctaLink} tokens={tokens} isDark data-pgl-path="ctaText" data-pgl-edit="button">
                 {ctaText}
               </PglButton>
             </li>

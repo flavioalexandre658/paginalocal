@@ -33,6 +33,8 @@ export function LocationMapDirections({ content, tokens }: Props) {
               ? "text-4xl md:text-5xl lg:text-6xl"
               : "text-3xl md:text-4xl lg:text-5xl"
           )}
+          data-pgl-path="title"
+          data-pgl-edit="text"
         />
       </div>
 
@@ -88,6 +90,8 @@ export function LocationMapDirections({ content, tokens }: Props) {
               <div
                 className="text-[0.875rem] font-normal"
                 style={{ color: tokens.palette.text }}
+                data-pgl-path="address"
+                data-pgl-edit="text"
               >
                 {c.address}
               </div>
@@ -98,6 +102,8 @@ export function LocationMapDirections({ content, tokens }: Props) {
             <p
               className="text-[0.925rem] leading-[1.7] font-light mb-8"
               style={{ color: tokens.palette.textMuted }}
+              data-pgl-path="instructions"
+              data-pgl-edit="text"
             >
               {c.instructions}
             </p>

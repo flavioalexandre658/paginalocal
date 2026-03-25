@@ -55,11 +55,15 @@ export function HeaderCentered({ content, tokens }: Props) {
                 src={logoUrl}
                 alt="Logo"
                 className="max-h-12 w-auto object-contain"
+                data-pgl-path="logoUrl"
+                data-pgl-edit="image"
               />
             ) : (
               <span
                 className="text-xl font-bold tracking-tight"
                 style={{ fontFamily: "var(--pgl-font-heading)", color: tokens.palette.text }}
+                data-pgl-path="storeName"
+                data-pgl-edit="text"
               >
                 {storeName}
               </span>
@@ -69,7 +73,7 @@ export function HeaderCentered({ content, tokens }: Props) {
           {/* CTA — absolute right on desktop */}
           {ctaText && (
             <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2">
-              <PglButton href={ctaLink} tokens={tokens}>
+              <PglButton href={ctaLink} tokens={tokens} data-pgl-path="ctaText" data-pgl-edit="button">
                 {ctaText}
               </PglButton>
             </div>
@@ -167,7 +171,7 @@ export function HeaderCentered({ content, tokens }: Props) {
           ))}
           {ctaText && (
             <li className="mt-2">
-              <PglButton href={ctaLink} tokens={tokens}>
+              <PglButton href={ctaLink} tokens={tokens} data-pgl-path="ctaText" data-pgl-edit="button">
                 {ctaText}
               </PglButton>
             </li>

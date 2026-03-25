@@ -31,12 +31,16 @@ export function CatalogMasonryShowcase({ content, tokens, isDark }: Props) {
               "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]",
               isDark ? "text-white" : undefined,
             )}
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up text-sm md:text-base leading-[1.8] font-light"
               style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -84,6 +88,8 @@ export function CatalogMasonryShowcase({ content, tokens, isDark }: Props) {
                         alt={category.name}
                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.05]"
                         style={{ transition: `transform var(--transition-speed, 0.4s)` }}
+                        data-pgl-path={`categories.${index}.image`}
+                        data-pgl-edit="image"
                       />
                     </>
                   ) : (
@@ -138,6 +144,8 @@ export function CatalogMasonryShowcase({ content, tokens, isDark }: Props) {
                         isBold && "!font-extrabold",
                       )}
                       style={{ fontFamily: "var(--pgl-font-heading)" }}
+                      data-pgl-path={`categories.${index}.name`}
+                      data-pgl-edit="text"
                     >
                       {category.name}
                     </h3>
@@ -147,6 +155,8 @@ export function CatalogMasonryShowcase({ content, tokens, isDark }: Props) {
                           "text-white/60 font-light line-clamp-2 mt-1",
                           isFirst ? "text-sm" : "text-xs",
                         )}
+                        data-pgl-path={`categories.${index}.description`}
+                        data-pgl-edit="text"
                       >
                         {category.description}
                       </p>

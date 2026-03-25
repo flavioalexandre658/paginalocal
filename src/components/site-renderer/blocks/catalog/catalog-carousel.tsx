@@ -44,6 +44,8 @@ export function CatalogCarousel({ content, tokens, isDark }: Props) {
               "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]",
               isDark ? "text-white" : undefined,
             )}
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           <div className="flex items-center justify-end gap-3">
             {c.subtitle && (
@@ -51,6 +53,8 @@ export function CatalogCarousel({ content, tokens, isDark }: Props) {
                 className="pgl-fade-up text-sm md:text-base leading-[1.8] font-light flex-1"
                 style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
                 data-delay="1"
+                data-pgl-path="subtitle"
+                data-pgl-edit="text"
               >
                 {c.subtitle}
               </p>
@@ -115,6 +119,8 @@ export function CatalogCarousel({ content, tokens, isDark }: Props) {
                         alt={category.name}
                         className="w-full h-full object-cover group-hover:scale-[1.03]"
                         style={{ transition: `transform var(--transition-speed, 0.4s)` }}
+                        data-pgl-path={`categories.${index}.image`}
+                        data-pgl-edit="image"
                       />
                     </>
                   ) : (
@@ -142,6 +148,8 @@ export function CatalogCarousel({ content, tokens, isDark }: Props) {
                       fontFamily: "var(--pgl-font-heading)",
                       color: isDark ? "#fff" : tokens.palette.text,
                     }}
+                    data-pgl-path={`categories.${index}.name`}
+                    data-pgl-edit="text"
                   >
                     {category.name}
                   </h3>
@@ -149,6 +157,8 @@ export function CatalogCarousel({ content, tokens, isDark }: Props) {
                     <p
                       className="text-sm md:text-base font-light line-clamp-2 mt-1"
                       style={{ color: isDark ? "rgba(255,255,255,0.45)" : tokens.palette.textMuted }}
+                      data-pgl-path={`categories.${index}.description`}
+                      data-pgl-edit="text"
                     >
                       {category.description}
                     </p>
@@ -170,6 +180,8 @@ export function CatalogCarousel({ content, tokens, isDark }: Props) {
                       tokens={tokens}
                       isDark={isDark}
                       className="w-full"
+                      data-pgl-path="ctaText"
+                      data-pgl-edit="button"
                     >
                       {c.ctaText}
                     </PglButton>

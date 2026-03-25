@@ -51,6 +51,8 @@ export function TestimonialsFeatured({ content, tokens }: Props) {
           text={c.title}
           tokens={tokens}
           className="text-3xl md:text-4xl lg:text-5xl"
+          data-pgl-path="title"
+          data-pgl-edit="text"
         />
       </div>
 
@@ -133,6 +135,8 @@ export function TestimonialsFeatured({ content, tokens }: Props) {
                 ? { borderColor: `${tokens.palette.accent}40` }
                 : {}),
             }}
+            data-pgl-path="items.0.text"
+            data-pgl-edit="text"
           >
             {featured.text}
           </blockquote>
@@ -175,11 +179,18 @@ export function TestimonialsFeatured({ content, tokens }: Props) {
                   textTransform: "var(--label-transform, uppercase)" as unknown as undefined,
                   letterSpacing: "var(--label-tracking, 0.05em)" as unknown as undefined,
                 }}
+                data-pgl-path="items.0.author"
+                data-pgl-edit="text"
               >
                 {featured.author}
               </div>
               {featured.role && (
-                <div className="text-xs mt-0.5" style={{ color: tokens.palette.textMuted }}>
+                <div
+                  className="text-xs mt-0.5"
+                  style={{ color: tokens.palette.textMuted }}
+                  data-pgl-path="items.0.role"
+                  data-pgl-edit="text"
+                >
                   {featured.role}
                 </div>
               )}

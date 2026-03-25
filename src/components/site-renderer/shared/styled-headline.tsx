@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import type { DesignTokens } from "@/types/ai-generation";
 
-interface Props {
+interface Props extends React.HTMLAttributes<HTMLHeadingElement> {
   text: string;
   tokens: DesignTokens;
   as?: "h1" | "h2" | "h3";
@@ -11,23 +11,20 @@ interface Props {
   accentClassName?: string;
 }
 
-/**
- * Renders headline with accent word treatment that varies by designTokens.style.
- * Text between *asterisks* gets the style-specific treatment.
- * Uses CSS variables from [data-style] for typography.
- */
 export function StyledHeadline({
   text,
   tokens,
   as: Tag = "h2",
   className,
   accentClassName,
+  ...rest
 }: Props) {
   const parts = text.split(/\*([^*]+)\*/);
 
   return (
     <Tag
       className={className}
+      {...rest}
       style={{
         textTransform: "var(--heading-transform, uppercase)" as unknown as undefined,
         fontWeight: "var(--heading-weight, 700)" as unknown as undefined,

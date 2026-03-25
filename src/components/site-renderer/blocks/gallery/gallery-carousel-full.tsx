@@ -61,12 +61,16 @@ export function GalleryCarouselFull({ content, tokens }: Props) {
             tokens={tokens}
             className="pgl-fade-up text-3xl md:text-4xl lg:text-5xl leading-[1.05]"
             accentClassName="normal-case"
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
               style={{ color: mutedColor }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -89,6 +93,8 @@ export function GalleryCarouselFull({ content, tokens }: Props) {
             className="w-full h-full object-cover"
             style={{ transition: `transform var(--transition-speed)` }}
             key={currentIndex}
+            data-pgl-path={`images.${currentIndex}.url`}
+            data-pgl-edit="image"
           />
 
           {/* Counter badge */}
@@ -129,6 +135,8 @@ export function GalleryCarouselFull({ content, tokens }: Props) {
                   "text-white text-sm font-light",
                   isBold && "text-base font-semibold"
                 )}
+                data-pgl-path={`images.${currentIndex}.caption`}
+                data-pgl-edit="text"
               >
                 {current.caption}
               </p>

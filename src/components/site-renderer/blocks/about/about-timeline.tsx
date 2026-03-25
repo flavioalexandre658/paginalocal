@@ -83,6 +83,8 @@ export function AboutTimeline({ content, tokens }: Props) {
                 tokens={tokens}
                 className="pgl-fade-up text-2xl md:text-3xl lg:text-[2.8rem] leading-[1.08]"
                 accentClassName="normal-case"
+                data-pgl-path="title"
+                data-pgl-edit="text"
               />
             </div>
 
@@ -91,6 +93,8 @@ export function AboutTimeline({ content, tokens }: Props) {
                 className="pgl-fade-up mt-4 text-[0.95rem] leading-[1.8] font-light"
                 style={{ color: subtitleColor }}
                 data-delay="1"
+                data-pgl-path="subtitle"
+                data-pgl-edit="text"
               >
                 {c.subtitle}
               </p>
@@ -104,6 +108,8 @@ export function AboutTimeline({ content, tokens }: Props) {
                 key={i}
                 className="text-[0.925rem] leading-[1.85] font-light max-w-[500px]"
                 style={{ color: mutedColor }}
+                data-pgl-path={`paragraphs.${i}`}
+                data-pgl-edit="text"
               >
                 {p}
               </p>
@@ -172,6 +178,8 @@ export function AboutTimeline({ content, tokens }: Props) {
                         fontFamily: "var(--pgl-font-heading)",
                         color: textColor,
                       }}
+                      data-pgl-path={`highlights.${i}.value`}
+                      data-pgl-edit="text"
                     >
                       {h.value}
                     </div>
@@ -188,6 +196,8 @@ export function AboutTimeline({ content, tokens }: Props) {
                         isMinimal && "mt-2",
                       )}
                       style={{ color: highlightLabelColor, opacity: 0.6 }}
+                      data-pgl-path={`highlights.${i}.label`}
+                      data-pgl-edit="text"
                     >
                       {h.label}
                     </div>

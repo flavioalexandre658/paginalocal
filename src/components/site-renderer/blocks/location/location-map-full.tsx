@@ -32,6 +32,8 @@ export function LocationMapFull({ content, tokens }: Props) {
               ? "text-4xl md:text-5xl lg:text-6xl"
               : "text-3xl md:text-4xl lg:text-5xl"
           )}
+          data-pgl-path="title"
+          data-pgl-edit="text"
         />
       </div>
 
@@ -81,6 +83,8 @@ export function LocationMapFull({ content, tokens }: Props) {
               <div
                 className="text-[0.825rem] font-normal"
                 style={{ color: tokens.palette.text }}
+                data-pgl-path="address"
+                data-pgl-edit="text"
               >
                 {c.address}
               </div>

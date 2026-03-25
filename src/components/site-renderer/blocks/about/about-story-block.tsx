@@ -61,6 +61,8 @@ export function AboutStoryBlock({ content, tokens }: Props) {
                 src={c.image}
                 alt={c.title.replace(/\*/g, "")}
                 tokens={tokens}
+                data-pgl-path="image"
+                data-pgl-edit="image"
               />
             ) : (
               <div
@@ -100,6 +102,8 @@ export function AboutStoryBlock({ content, tokens }: Props) {
                   tokens={tokens}
                   className="pgl-fade-up text-2xl md:text-3xl lg:text-[2.8rem] leading-[1.08]"
                   accentClassName="normal-case"
+                  data-pgl-path="title"
+                  data-pgl-edit="text"
                 />
               </div>
 
@@ -109,6 +113,8 @@ export function AboutStoryBlock({ content, tokens }: Props) {
                   className="pgl-fade-up mt-4 text-[0.95rem] leading-[1.8] font-light"
                   style={{ color: subtitleColor }}
                   data-delay="1"
+                  data-pgl-path="subtitle"
+                  data-pgl-edit="text"
                 >
                   {c.subtitle}
                 </p>
@@ -121,6 +127,8 @@ export function AboutStoryBlock({ content, tokens }: Props) {
                     key={i}
                     className="text-[0.925rem] leading-[1.85] font-light max-w-[500px]"
                     style={{ color: mutedColor }}
+                    data-pgl-path={`paragraphs.${i}`}
+                    data-pgl-edit="text"
                   >
                     {p}
                   </p>
@@ -143,12 +151,16 @@ export function AboutStoryBlock({ content, tokens }: Props) {
                         fontFamily: "var(--pgl-font-heading)",
                         color: textColor,
                       }}
+                      data-pgl-path={`highlights.${i}.value`}
+                      data-pgl-edit="text"
                     >
                       {h.value}
                     </div>
                     <div
                       className="mt-1 text-[0.65rem] uppercase tracking-[0.1em] font-normal"
                       style={{ color: highlightLabelColor, opacity: 0.6 }}
+                      data-pgl-path={`highlights.${i}.label`}
+                      data-pgl-edit="text"
                     >
                       {h.label}
                     </div>

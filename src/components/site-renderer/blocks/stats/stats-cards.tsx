@@ -22,7 +22,9 @@ export function StatsCards({ content, tokens }: Props) {
   if (!parsed.success) return null;
   const c = parsed.data;
 
-  const validItems = c.items.filter((item) => isValidStat(item.value));
+  const validItems = c.items
+    .map((item, idx) => ({ ...item, _idx: idx }))
+    .filter((item) => isValidStat(item.value));
   if (validItems.length < 2) return null;
 
   const style = tokens.style;
@@ -35,6 +37,8 @@ export function StatsCards({ content, tokens }: Props) {
             text={c.title}
             tokens={tokens}
             className="text-3xl md:text-4xl lg:text-5xl"
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
         </div>
       )}
@@ -129,6 +133,8 @@ export function StatsCards({ content, tokens }: Props) {
                         ? tokens.palette.text
                         : tokens.palette.primary,
                 }}
+                data-pgl-path={`items.${item._idx}.value`}
+                data-pgl-edit="text"
               >
                 {item.value}
               </div>
@@ -147,6 +153,8 @@ export function StatsCards({ content, tokens }: Props) {
                       }
                     : {}),
                 }}
+                data-pgl-path={`items.${item._idx}.label`}
+                data-pgl-edit="text"
               >
                 {item.label}
               </div>

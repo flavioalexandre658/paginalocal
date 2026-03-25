@@ -53,12 +53,16 @@ export function ServicesAccordion({ content, tokens }: Props) {
               tokens={tokens}
               className="pgl-fade-up text-2xl md:text-3xl lg:text-5xl leading-[1.05]"
               accentClassName="normal-case"
+              data-pgl-path="title"
+              data-pgl-edit="text"
             />
             {c.subtitle && (
               <p
                 className="pgl-fade-up mt-5 text-[0.925rem] leading-[1.7] font-light"
                 style={{ color: mutedColor }}
                 data-delay="1"
+                data-pgl-path="subtitle"
+                data-pgl-edit="text"
               >
                 {c.subtitle}
               </p>
@@ -121,6 +125,8 @@ export function ServicesAccordion({ content, tokens }: Props) {
                               transition: `color var(--transition-speed, 0.4s)`,
                             } as React.CSSProperties
                           }
+                          data-pgl-path={`items.${i}.name`}
+                          data-pgl-edit="text"
                         >
                           {item.name}
                         </h3>
@@ -129,6 +135,8 @@ export function ServicesAccordion({ content, tokens }: Props) {
                         <span
                           className="text-sm font-semibold tabular-nums shrink-0 ml-4"
                           style={{ color: tokens.palette.accent }}
+                          data-pgl-path={`items.${i}.price`}
+                          data-pgl-edit="text"
                         >
                           {item.price}
                         </span>
@@ -147,6 +155,8 @@ export function ServicesAccordion({ content, tokens }: Props) {
                       <p
                         className="text-[0.875rem] leading-[1.8] font-light max-w-[540px]"
                         style={{ color: mutedColor }}
+                        data-pgl-path={`items.${i}.description`}
+                        data-pgl-edit="text"
                       >
                         {item.description}
                       </p>
@@ -157,6 +167,8 @@ export function ServicesAccordion({ content, tokens }: Props) {
                             variant="secondary"
                             tokens={tokens}
                             className="text-[0.8rem]"
+                            data-pgl-path={`items.${i}.ctaText`}
+                            data-pgl-edit="button"
                           >
                             {item.ctaText ?? "Saiba mais"}
                           </PglButton>

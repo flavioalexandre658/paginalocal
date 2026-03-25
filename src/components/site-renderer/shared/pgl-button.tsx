@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import type { DesignTokens } from "@/types/ai-generation";
 
-interface Props {
+interface Props extends Omit<React.HTMLAttributes<HTMLElement>, "style"> {
   children: React.ReactNode;
   href?: string;
   variant?: "primary" | "secondary";
@@ -19,6 +19,7 @@ export function PglButton({
   tokens,
   className,
   isDark = false,
+  ...rest
 }: Props) {
   const s = tokens.style;
   const isPrimary = variant === "primary";
@@ -72,6 +73,7 @@ export function PglButton({
         className
       )}
       style={style}
+      {...rest}
     >
       {children}
       {s === "minimal" && variant === "secondary" && (

@@ -23,22 +23,21 @@ const PREVIEW_CSS = `
     position: absolute !important;
   }
 
-  /* ─── TEXT hover: solid blue outline (inline editing) ─── */
-  .editor-preview [data-pgl-hover] {
+  /* Hover on editable elements (set via data-pgl-hover attribute) */
+  .editor-preview [data-pgl-hover][data-pgl-edit="text"] {
     outline: 2px solid rgba(59, 130, 246, 0.4) !important;
     outline-offset: 3px;
     border-radius: 3px;
     cursor: text;
   }
-
-  /* ─── COMPONENT hover: subtle ring (popup editing) ─── */
-  .editor-preview [data-pgl-component-hover] {
+  .editor-preview [data-pgl-hover][data-pgl-edit="button"],
+  .editor-preview [data-pgl-hover][data-pgl-edit="image"] {
     outline: 2px solid rgba(59, 130, 246, 0.3) !important;
     outline-offset: 4px;
-    cursor: default;
+    cursor: pointer;
   }
 
-  /* Editing state: text cursor */
+  /* Active editing state */
   .editor-preview [data-pgl-editing] {
     cursor: text;
   }
@@ -48,12 +47,12 @@ const PREVIEW_CSS = `
     user-select: none;
   }
 
-  /* Allow selection only inside active editing element */
+  /* Allow selection inside active editing element */
   .editor-preview [data-pgl-editing] {
     user-select: text;
   }
 
-  /* Prevent links/buttons from their default cursor */
+  /* Default cursor for links/buttons in editor */
   .editor-preview a, .editor-preview button {
     cursor: default;
   }

@@ -44,11 +44,15 @@ export function FaqAccordion({ content, tokens }: Props) {
               text={c.title}
               tokens={tokens}
               className="text-3xl md:text-4xl lg:text-5xl leading-[1.05]"
+              data-pgl-path="title"
+              data-pgl-edit="text"
             />
             {c.subtitle && (
               <p
                 className="mt-4 text-[0.925rem] leading-[1.7] font-light"
                 style={{ color: tokens.palette.textMuted }}
+                data-pgl-path="subtitle"
+                data-pgl-edit="text"
               >
                 {c.subtitle}
               </p>
@@ -70,11 +74,15 @@ export function FaqAccordion({ content, tokens }: Props) {
               text={c.title}
               tokens={tokens}
               className="text-3xl md:text-4xl lg:text-5xl leading-[1.05]"
+              data-pgl-path="title"
+              data-pgl-edit="text"
             />
             {c.subtitle && (
               <p
                 className="mt-4 text-[0.925rem] leading-[1.7] font-light max-w-2xl"
                 style={{ color: tokens.palette.textMuted }}
+                data-pgl-path="subtitle"
+                data-pgl-edit="text"
               >
                 {c.subtitle}
               </p>
@@ -119,6 +127,8 @@ export function FaqAccordion({ content, tokens }: Props) {
                           "--accent": tokens.palette.accent,
                         } as React.CSSProperties
                       }
+                      data-pgl-path={`items.${i}.question`}
+                      data-pgl-edit="text"
                     >
                       {item.question}
                     </span>
@@ -147,6 +157,8 @@ export function FaqAccordion({ content, tokens }: Props) {
                       <p
                         className="px-6 pb-5 text-[0.875rem] leading-[1.8] font-light max-w-[540px]"
                         style={{ color: tokens.palette.textMuted }}
+                        data-pgl-path={`items.${i}.answer`}
+                        data-pgl-edit="text"
                       >
                         {item.answer}
                       </p>
@@ -188,6 +200,8 @@ export function FaqAccordion({ content, tokens }: Props) {
                         "--accent": tokens.palette.accent,
                       } as React.CSSProperties
                     }
+                    data-pgl-path={`items.${i}.question`}
+                    data-pgl-edit="text"
                   >
                     {item.question}
                   </span>
@@ -216,6 +230,8 @@ export function FaqAccordion({ content, tokens }: Props) {
                     <p
                       className="pb-5 text-[0.875rem] leading-[1.8] font-light max-w-[540px]"
                       style={{ color: tokens.palette.textMuted }}
+                      data-pgl-path={`items.${i}.answer`}
+                      data-pgl-edit="text"
                     >
                       {item.answer}
                     </p>

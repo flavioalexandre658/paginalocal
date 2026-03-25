@@ -84,6 +84,8 @@ export function HoursVisual({ content, tokens }: Props) {
           text={c.title}
           tokens={tokens}
           className="text-3xl md:text-4xl lg:text-5xl"
+          data-pgl-path="title"
+          data-pgl-edit="text"
         />
       </div>
 
@@ -170,6 +172,8 @@ export function HoursVisual({ content, tokens }: Props) {
           className="mt-6 text-xs leading-[1.7] font-light max-w-md pgl-fade-up"
           style={{ color: tokens.palette.textMuted }}
           data-delay="5"
+          data-pgl-path="note"
+          data-pgl-edit="text"
         >
           {c.note}
         </p>

@@ -89,6 +89,8 @@ export function HeroSplitImage({ content, tokens }: Props) {
                 (isIndustrial || isBold) && "normal-case",
                 isElegant && "italic"
               )}
+              data-pgl-path="headline"
+              data-pgl-edit="text"
             />
 
             {/* Subheadline — always light on dark */}
@@ -102,13 +104,15 @@ export function HeroSplitImage({ content, tokens }: Props) {
                     : "text-white/55"
               )}
               data-delay="2"
+              data-pgl-path="subheadline"
+              data-pgl-edit="text"
             >
               {c.subheadline}
             </p>
 
             {/* CTAs */}
             <div className="pgl-fade-up mt-10 flex flex-wrap gap-4" data-delay="3">
-              <PglButton href={c.ctaLink || "#contact"} tokens={tokens} isDark>
+              <PglButton href={c.ctaLink || "#contact"} tokens={tokens} isDark data-pgl-path="ctaText" data-pgl-edit="button">
                 {c.ctaText}
               </PglButton>
               {c.secondaryCtaText && (
@@ -117,6 +121,8 @@ export function HeroSplitImage({ content, tokens }: Props) {
                   variant="secondary"
                   tokens={tokens}
                   isDark
+                  data-pgl-path="secondaryCtaText"
+                  data-pgl-edit="button"
                 >
                   {c.secondaryCtaText}
                 </PglButton>
@@ -148,6 +154,8 @@ export function HeroSplitImage({ content, tokens }: Props) {
                     src={c.backgroundImage}
                     alt={c.headline.replace(/\*/g, "")}
                     className="w-full h-full object-cover"
+                    data-pgl-path="backgroundImage"
+                    data-pgl-edit="image"
                   />
                 </div>
                 {/* Decorative accent shape — industrial/bold only */}

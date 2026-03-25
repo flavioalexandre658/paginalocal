@@ -96,12 +96,16 @@ export function GalleryMasonry({ content, tokens }: Props) {
             tokens={tokens}
             className="pgl-fade-up text-3xl md:text-4xl lg:text-5xl leading-[1.05]"
             accentClassName="normal-case"
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
               style={{ color: mutedColor }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -131,6 +135,8 @@ export function GalleryMasonry({ content, tokens }: Props) {
                 )}
                 style={{ transition: `transform var(--transition-speed)` }}
                 loading="lazy"
+                data-pgl-path={`images.${index}.url`}
+                data-pgl-edit="image"
               />
               {/* Hover overlay */}
               {!isMinimal && (
@@ -148,6 +154,8 @@ export function GalleryMasonry({ content, tokens }: Props) {
                           "text-white text-xs font-light uppercase tracking-[0.08em]",
                           isBold && "text-sm font-semibold"
                         )}
+                        data-pgl-path={`images.${index}.caption`}
+                        data-pgl-edit="text"
                       >
                         {image.caption}
                       </p>

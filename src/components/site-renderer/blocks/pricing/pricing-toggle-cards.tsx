@@ -54,12 +54,16 @@ function PricingToggleCardsInner({
               "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]",
               isDark ? "text-white" : undefined,
             )}
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
               style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -174,6 +178,8 @@ function PricingToggleCardsInner({
                   <p
                     className="text-[0.7rem] font-medium uppercase tracking-[0.12em] mb-3"
                     style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
+                    data-pgl-path={`plans.${index}.name`}
+                    data-pgl-edit="text"
                   >
                     {plan.name}
                   </p>
@@ -188,6 +194,8 @@ function PricingToggleCardsInner({
                       fontFamily: "var(--pgl-font-heading)",
                       color: isDark ? "#fff" : tokens.palette.text,
                     }}
+                    data-pgl-path={`plans.${index}.price`}
+                    data-pgl-edit="text"
                   >
                     {displayPrice}
                   </p>
@@ -195,6 +203,8 @@ function PricingToggleCardsInner({
                     <p
                       className="text-[0.875rem] font-light"
                       style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
+                      data-pgl-path={`plans.${index}.description`}
+                      data-pgl-edit="text"
                     >
                       {plan.description}
                     </p>
@@ -259,6 +269,8 @@ function PricingToggleCardsInner({
                   tokens={tokens}
                   isDark={isDark}
                   className="w-full justify-center"
+                  data-pgl-path={`plans.${index}.ctaText`}
+                  data-pgl-edit="button"
                 >
                   {plan.ctaText}
                 </PglButton>

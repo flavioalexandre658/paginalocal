@@ -53,11 +53,15 @@ export function TestimonialsGrid({ content, tokens }: Props) {
           text={c.title}
           tokens={tokens}
           className="text-3xl md:text-4xl lg:text-5xl"
+          data-pgl-path="title"
+          data-pgl-edit="text"
         />
         {c.subtitle && (
           <p
             className="mt-4 text-[0.95rem] leading-[1.8] font-light max-w-2xl mx-auto"
             style={{ color: tokens.palette.textMuted }}
+            data-pgl-path="subtitle"
+            data-pgl-edit="text"
           >
             {c.subtitle}
           </p>
@@ -168,6 +172,8 @@ export function TestimonialsGrid({ content, tokens }: Props) {
                     ? { borderColor: `${tokens.palette.accent}40` }
                     : {}),
                 }}
+                data-pgl-path={`items.${i}.text`}
+                data-pgl-edit="text"
               >
                 {item.text}
               </blockquote>
@@ -195,11 +201,18 @@ export function TestimonialsGrid({ content, tokens }: Props) {
                       textTransform: "var(--label-transform, uppercase)" as unknown as undefined,
                       letterSpacing: "var(--label-tracking, 0.05em)" as unknown as undefined,
                     }}
+                    data-pgl-path={`items.${i}.author`}
+                    data-pgl-edit="text"
                   >
                     {item.author}
                   </div>
                   {item.role && (
-                    <div className="text-xs mt-0.5" style={{ color: tokens.palette.textMuted }}>
+                    <div
+                      className="text-xs mt-0.5"
+                      style={{ color: tokens.palette.textMuted }}
+                      data-pgl-path={`items.${i}.role`}
+                      data-pgl-edit="text"
+                    >
                       {item.role}
                     </div>
                   )}

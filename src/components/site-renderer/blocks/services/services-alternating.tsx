@@ -45,12 +45,16 @@ export function ServicesAlternating({ content, tokens }: Props) {
             tokens={tokens}
             className="pgl-fade-up text-2xl md:text-3xl lg:text-5xl leading-[1.05]"
             accentClassName="normal-case"
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up mt-5 text-[0.95rem] leading-[1.8] font-light max-w-xl"
               style={{ color: mutedColor }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -91,6 +95,8 @@ export function ServicesAlternating({ content, tokens }: Props) {
                           src={item.image}
                           alt={item.name}
                           className="w-full aspect-[4/3] object-cover"
+                          data-pgl-path={`items.${i}.image`}
+                          data-pgl-edit="image"
                           style={{
                             transition: `transform var(--transition-speed, 0.4s)`,
                           }}
@@ -155,6 +161,8 @@ export function ServicesAlternating({ content, tokens }: Props) {
                         fontFamily: "var(--pgl-font-heading)",
                         color: textColor,
                       }}
+                      data-pgl-path={`items.${i}.name`}
+                      data-pgl-edit="text"
                     >
                       {item.name}
                     </h3>
@@ -170,6 +178,8 @@ export function ServicesAlternating({ content, tokens }: Props) {
                     <p
                       className="text-[0.9rem] leading-[1.8] font-light max-w-md"
                       style={{ color: mutedColor }}
+                      data-pgl-path={`items.${i}.description`}
+                      data-pgl-edit="text"
                     >
                       {item.description}
                     </p>
@@ -178,6 +188,8 @@ export function ServicesAlternating({ content, tokens }: Props) {
                       <div
                         className="text-lg font-semibold tabular-nums"
                         style={{ color: tokens.palette.accent }}
+                        data-pgl-path={`items.${i}.price`}
+                        data-pgl-edit="text"
                       >
                         {item.price}
                       </div>
@@ -189,6 +201,8 @@ export function ServicesAlternating({ content, tokens }: Props) {
                         variant="secondary"
                         tokens={tokens}
                         className="text-[0.82rem]"
+                        data-pgl-path={`items.${i}.ctaText`}
+                        data-pgl-edit="button"
                       >
                         {item.ctaText ?? "Saiba mais"}
                       </PglButton>

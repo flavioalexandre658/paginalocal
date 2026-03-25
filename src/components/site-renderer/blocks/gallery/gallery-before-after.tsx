@@ -185,12 +185,16 @@ export function GalleryBeforeAfter({ content, tokens }: Props) {
             tokens={tokens}
             className="pgl-fade-up text-3xl md:text-4xl lg:text-5xl leading-[1.05]"
             accentClassName="normal-case"
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
               style={{ color: mutedColor }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -256,6 +260,8 @@ export function GalleryBeforeAfter({ content, tokens }: Props) {
                           )}
                           style={{ transition: `transform var(--transition-speed)` }}
                           loading="lazy"
+                          data-pgl-path={`images.${index + 2}.url`}
+                          data-pgl-edit="image"
                         />
                       </div>
                     ))}
@@ -285,13 +291,19 @@ export function GalleryBeforeAfter({ content, tokens }: Props) {
                     hoverScale
                   )}
                   style={{ transition: `transform var(--transition-speed)` }}
+                  data-pgl-path={`images.${index}.url`}
+                  data-pgl-edit="image"
                 />
                 {image.caption && (
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-6 py-5">
-                    <p className={cn(
-                      "text-white text-sm font-light",
-                      isBold && "text-base font-semibold"
-                    )}>
+                    <p
+                      className={cn(
+                        "text-white text-sm font-light",
+                        isBold && "text-base font-semibold"
+                      )}
+                      data-pgl-path={`images.${index}.caption`}
+                      data-pgl-edit="text"
+                    >
                       {image.caption}
                     </p>
                   </div>

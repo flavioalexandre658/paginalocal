@@ -33,12 +33,16 @@ export function MenuCategorizedList({ content, tokens }: Props) {
             tokens={tokens}
             as="h2"
             className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]"
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
               style={{ color: tokens.palette.textMuted }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -60,6 +64,8 @@ export function MenuCategorizedList({ content, tokens }: Props) {
                   isBold && "text-[0.8rem] !font-bold",
                 )}
                 style={{ color: tokens.palette.accent }}
+                data-pgl-path={`categories.${catIndex}.name`}
+                data-pgl-edit="text"
               >
                 {category.name}
               </span>
@@ -116,6 +122,8 @@ export function MenuCategorizedList({ content, tokens }: Props) {
                           fontFamily: "var(--pgl-font-heading)",
                           color: tokens.palette.text,
                         }}
+                        data-pgl-path={`categories.${catIndex}.items.${itemIndex}.name`}
+                        data-pgl-edit="text"
                       >
                         {item.name}
                       </h3>
@@ -135,6 +143,8 @@ export function MenuCategorizedList({ content, tokens }: Props) {
                       <p
                         className="text-[0.8rem] font-light mt-0.5"
                         style={{ color: tokens.palette.textMuted }}
+                        data-pgl-path={`categories.${catIndex}.items.${itemIndex}.description`}
+                        data-pgl-edit="text"
                       >
                         {item.description}
                       </p>
@@ -146,6 +156,8 @@ export function MenuCategorizedList({ content, tokens }: Props) {
                       isBold && "text-[1rem] !font-bold",
                     )}
                     style={{ color: tokens.palette.primary }}
+                    data-pgl-path={`categories.${catIndex}.items.${itemIndex}.price`}
+                    data-pgl-edit="text"
                   >
                     {item.price}
                   </span>

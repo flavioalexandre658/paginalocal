@@ -39,12 +39,16 @@ export function PricingComparison({ content, tokens }: Props) {
             tokens={tokens}
             as="h2"
             className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]"
+            data-pgl-path="title"
+            data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
               className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
               style={{ color: tokens.palette.textMuted }}
               data-delay="1"
+              data-pgl-path="subtitle"
+              data-pgl-edit="text"
             >
               {c.subtitle}
             </p>
@@ -111,6 +115,8 @@ export function PricingComparison({ content, tokens }: Props) {
                         fontFamily: "var(--pgl-font-heading)",
                         color: tokens.palette.text,
                       }}
+                      data-pgl-path={`plans.${index}.name`}
+                      data-pgl-edit="text"
                     >
                       {plan.name}
                     </div>
@@ -120,6 +126,8 @@ export function PricingComparison({ content, tokens }: Props) {
                         isBold ? "text-[1.4rem] font-extrabold" : "text-[1.15rem]",
                       )}
                       style={{ color: tokens.palette.primary }}
+                      data-pgl-path={`plans.${index}.price`}
+                      data-pgl-edit="text"
                     >
                       {plan.price}
                     </div>
@@ -188,6 +196,8 @@ export function PricingComparison({ content, tokens }: Props) {
                       href={plan.ctaType === "whatsapp" ? "https://wa.me/" : "#"}
                       variant={plan.highlighted || isBold ? "primary" : "secondary"}
                       tokens={tokens}
+                      data-pgl-path={`plans.${index}.ctaText`}
+                      data-pgl-edit="button"
                     >
                       {plan.ctaText}
                     </PglButton>
@@ -269,6 +279,8 @@ export function PricingComparison({ content, tokens }: Props) {
                   <p
                     className="text-[0.7rem] font-medium uppercase tracking-[0.12em]"
                     style={{ color: tokens.palette.textMuted }}
+                    data-pgl-path={`plans.${index}.name`}
+                    data-pgl-edit="text"
                   >
                     {plan.name}
                   </p>
@@ -278,6 +290,8 @@ export function PricingComparison({ content, tokens }: Props) {
                       isBold ? "text-3xl font-extrabold" : "text-2xl",
                     )}
                     style={{ color: tokens.palette.primary }}
+                    data-pgl-path={`plans.${index}.price`}
+                    data-pgl-edit="text"
                   >
                     {plan.price}
                   </p>
@@ -324,6 +338,8 @@ export function PricingComparison({ content, tokens }: Props) {
                 variant={plan.highlighted || isBold ? "primary" : "secondary"}
                 tokens={tokens}
                 className="w-full justify-center"
+                data-pgl-path={`plans.${index}.ctaText`}
+                data-pgl-edit="button"
               >
                 {plan.ctaText}
               </PglButton>
