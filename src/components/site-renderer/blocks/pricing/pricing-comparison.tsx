@@ -32,7 +32,6 @@ export function PricingComparison({ content, tokens }: Props) {
   return (
     <div className="relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 mb-10 md:mb-16 items-end">
           <StyledHeadline
             text={c.title}
@@ -55,7 +54,7 @@ export function PricingComparison({ content, tokens }: Props) {
           )}
         </div>
 
-        {/* Desktop comparison table */}
+        <div data-pgl-path="plans" data-pgl-edit="pricing" className="pt-4">
         <div
           className={cn(
             "pgl-fade-up hidden md:block overflow-x-auto",
@@ -86,8 +85,8 @@ export function PricingComparison({ content, tokens }: Props) {
                   <th
                     key={index}
                     className={cn(
-                      "text-center py-5 px-4",
-                      plan.highlighted && "relative",
+                      "text-center px-4",
+                      plan.highlighted ? "pt-2 pb-5" : "py-5",
                     )}
                     style={
                       plan.highlighted
@@ -97,7 +96,7 @@ export function PricingComparison({ content, tokens }: Props) {
                   >
                     {plan.highlighted && (
                       <span
-                        className="absolute -top-3 left-1/2 -translate-x-1/2 text-[0.6rem] font-medium tracking-[0.08em] uppercase px-3 py-1 text-white whitespace-nowrap"
+                        className="mb-2 inline-block text-[0.6rem] font-medium tracking-[0.08em] uppercase px-3 py-1 text-white whitespace-nowrap"
                         style={{
                           backgroundColor: tokens.palette.accent,
                           borderRadius: "var(--btn-radius)",
@@ -115,8 +114,6 @@ export function PricingComparison({ content, tokens }: Props) {
                         fontFamily: "var(--pgl-font-heading)",
                         color: tokens.palette.text,
                       }}
-                      data-pgl-path={`plans.${index}.name`}
-                      data-pgl-edit="text"
                     >
                       {plan.name}
                     </div>
@@ -126,8 +123,6 @@ export function PricingComparison({ content, tokens }: Props) {
                         isBold ? "text-[1.4rem] font-extrabold" : "text-[1.15rem]",
                       )}
                       style={{ color: tokens.palette.primary }}
-                      data-pgl-path={`plans.${index}.price`}
-                      data-pgl-edit="text"
                     >
                       {plan.price}
                     </div>
@@ -179,7 +174,6 @@ export function PricingComparison({ content, tokens }: Props) {
                 </tr>
               ))}
 
-              {/* CTA row */}
               <tr>
                 <td className="py-6 pr-6" />
                 {c.plans.map((plan, index) => (
@@ -196,8 +190,6 @@ export function PricingComparison({ content, tokens }: Props) {
                       href={plan.ctaType === "whatsapp" ? "https://wa.me/" : "#"}
                       variant={plan.highlighted || isBold ? "primary" : "secondary"}
                       tokens={tokens}
-                      data-pgl-path={`plans.${index}.ctaText`}
-                      data-pgl-edit="button"
                     >
                       {plan.ctaText}
                     </PglButton>
@@ -208,7 +200,6 @@ export function PricingComparison({ content, tokens }: Props) {
           </table>
         </div>
 
-        {/* Mobile: stacked cards */}
         <div className="md:hidden space-y-4">
           {c.plans.map((plan, index) => (
             <div
@@ -279,8 +270,6 @@ export function PricingComparison({ content, tokens }: Props) {
                   <p
                     className="text-[0.7rem] font-medium uppercase tracking-[0.12em]"
                     style={{ color: tokens.palette.textMuted }}
-                    data-pgl-path={`plans.${index}.name`}
-                    data-pgl-edit="text"
                   >
                     {plan.name}
                   </p>
@@ -290,8 +279,6 @@ export function PricingComparison({ content, tokens }: Props) {
                       isBold ? "text-3xl font-extrabold" : "text-2xl",
                     )}
                     style={{ color: tokens.palette.primary }}
-                    data-pgl-path={`plans.${index}.price`}
-                    data-pgl-edit="text"
                   >
                     {plan.price}
                   </p>
@@ -338,13 +325,12 @@ export function PricingComparison({ content, tokens }: Props) {
                 variant={plan.highlighted || isBold ? "primary" : "secondary"}
                 tokens={tokens}
                 className="w-full justify-center"
-                data-pgl-path={`plans.${index}.ctaText`}
-                data-pgl-edit="button"
               >
                 {plan.ctaText}
               </PglButton>
             </div>
           ))}
+        </div>
         </div>
       </div>
     </div>

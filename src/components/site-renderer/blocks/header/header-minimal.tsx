@@ -9,16 +9,11 @@ interface Props {
   content: Record<string, unknown>;
   tokens: DesignTokens;
   isDark?: boolean;
+  navigation?: { label: string; href: string; isExternal?: boolean }[];
 }
 
-const NAV_ITEMS = [
-  { label: "Servicos", href: "#servicos" },
-  { label: "Sobre", href: "#sobre" },
-  { label: "Contato", href: "#contato" },
-  { label: "FAQ", href: "#faq" },
-];
-
-export function HeaderMinimal({ content, tokens }: Props) {
+export function HeaderMinimal({ content, tokens, navigation }: Props) {
+  const navItems = navigation || [];
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -48,6 +43,8 @@ export function HeaderMinimal({ content, tokens }: Props) {
   return (
     <>
       <header
+        data-pgl-edit="nav"
+        data-pgl-path="nav"
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
           scrolled ? "backdrop-blur-md py-3" : "py-5"
@@ -72,15 +69,11 @@ export function HeaderMinimal({ content, tokens }: Props) {
                 src={logoUrl}
                 alt="Logo"
                 className="max-h-10 w-auto object-contain"
-                data-pgl-path="logoUrl"
-                data-pgl-edit="image"
               />
             ) : (
               <span
                 className="text-lg font-bold tracking-tight"
                 style={{ fontFamily: "var(--pgl-font-heading)", color: "#fff" }}
-                data-pgl-path="storeName"
-                data-pgl-edit="text"
               >
                 {storeName}
               </span>
@@ -135,7 +128,7 @@ export function HeaderMinimal({ content, tokens }: Props) {
         />
 
         <ul className="flex flex-col items-center gap-8">
-          {NAV_ITEMS.map((item, i) => (
+          {navItems.map((item, i) => (
             <li
               key={item.href}
               className={cn(
@@ -160,7 +153,7 @@ export function HeaderMinimal({ content, tokens }: Props) {
 
         {ctaText && (
           <div className="mt-12 pgl-fade-up" data-delay="5">
-            <PglButton href={ctaLink} tokens={tokens} isDark data-pgl-path="ctaText" data-pgl-edit="button">
+            <PglButton href={ctaLink} tokens={tokens} isDark>
               {ctaText}
             </PglButton>
           </div>

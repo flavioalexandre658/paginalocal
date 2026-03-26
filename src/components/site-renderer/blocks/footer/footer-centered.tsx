@@ -18,6 +18,8 @@ export function FooterCentered({ content, tokens }: Props) {
 
   return (
     <footer
+      data-pgl-edit="footer"
+      data-pgl-path="footer"
       className="relative overflow-hidden"
       style={{ backgroundColor: tokens.palette.primary }}
     >
@@ -88,7 +90,7 @@ export function FooterCentered({ content, tokens }: Props) {
             className="pt-8 w-full text-center text-xs text-white/15"
             style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
           >
-            <span data-pgl-path="copyrightText" data-pgl-edit="text">
+            <span>
               {copyrightText ||
                 `\u00a9 ${new Date().getFullYear()} ${storeName}`}
             </span>

@@ -19,21 +19,48 @@ interface Props {
 
 export function SectionFieldRenderer({ blockType, content, onChange }: Props) {
   const fields = FIELD_DEFINITIONS[blockType];
-  if (!fields) return <p className="text-sm text-slate-400">Sem campos para este tipo de bloco.</p>;
+  if (!fields) {
+    return (
+      <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+        Sem campos editaveis para este tipo de bloco.
+      </div>
+    );
+  }
 
   function handleFieldChange(key: string, value: unknown) {
     onChange({ ...content, [key]: value });
   }
 
+  const simpleFields = fields.filter((f) => f.type !== "array" && f.type !== "record");
+  const complexFields = fields.filter((f) => f.type === "array" || f.type === "record");
+
   return (
-    <div className="space-y-4">
-      {fields.map((field) => (
-        <FieldSwitch
-          key={field.key}
-          field={field}
-          value={content[field.key]}
-          onChange={(val) => handleFieldChange(field.key, val)}
-        />
+    <div className="space-y-6">
+      {simpleFields.length > 0 && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {simpleFields.map((field) => {
+            const isFullWidth = field.type === "textarea" || field.type === "image";
+            return (
+              <div key={field.key} className={isFullWidth ? "sm:col-span-2" : ""}>
+                <FieldSwitch
+                  field={field}
+                  value={content[field.key]}
+                  onChange={(val) => handleFieldChange(field.key, val)}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {complexFields.map((field) => (
+        <div key={field.key} className="border-t border-border pt-5">
+          <FieldSwitch
+            field={field}
+            value={content[field.key]}
+            onChange={(val) => handleFieldChange(field.key, val)}
+          />
+        </div>
       ))}
     </div>
   );
@@ -76,7 +103,6 @@ function FieldSwitch({
   }
 }
 
-/** Key-value editor for record fields (e.g. hours schedule) */
 function RecordField({
   field,
   value,
@@ -94,15 +120,17 @@ function RecordField({
 
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium text-slate-700">{field.label}</label>
+      <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {field.label}
+      </label>
       <div className="space-y-2">
         {entries.map(([key, val]) => (
-          <div key={key} className="flex items-center gap-2">
-            <span className="w-24 shrink-0 text-xs font-medium text-slate-500">{key}</span>
+          <div key={key} className="flex items-center gap-3">
+            <span className="w-28 shrink-0 text-sm font-medium text-foreground">{key}</span>
             <Input
               value={val}
               onChange={(e) => updateEntry(key, e.target.value)}
-              className="h-8 text-sm"
+              className="h-9"
             />
           </div>
         ))}

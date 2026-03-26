@@ -97,8 +97,8 @@ export function ServicesAccordion({ content, tokens }: Props) {
                   }}
                   data-delay={i + 1}
                 >
-                  <AccordionTrigger className="flex justify-between items-center w-full py-4 md:py-6 hover:no-underline group/trigger">
-                    <div className="flex items-center justify-between w-full pr-4">
+                  <AccordionTrigger className="flex justify-between items-center w-full px-4 py-5 md:py-6 hover:no-underline group/trigger">
+                    <div className="flex items-center justify-between w-full pr-2">
                       <div className="flex items-center gap-3 md:gap-4">
                         {isMinimal ? (
                           <div
@@ -144,7 +144,7 @@ export function ServicesAccordion({ content, tokens }: Props) {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <div className="pb-4 md:pb-6 pl-7 md:pl-9">
+                    <div className="pb-5 md:pb-6 px-4 pl-11 md:pl-12">
                       {/* Accent line */}
                       {!isMinimal && (
                         <div

@@ -16,6 +16,8 @@ export function FooterMinimal({ content, tokens }: Props) {
 
   return (
     <footer
+      data-pgl-edit="footer"
+      data-pgl-path="footer"
       className="border-t"
       style={{ borderColor: `${tokens.palette.primary}10` }}
     >
@@ -66,7 +68,7 @@ export function FooterMinimal({ content, tokens }: Props) {
             className="text-xs"
             style={{ color: tokens.palette.textMuted }}
           >
-            <span data-pgl-path="copyrightText" data-pgl-edit="text">
+            <span>
               {copyrightText ||
                 `\u00a9 ${new Date().getFullYear()} ${storeName}`}
             </span>

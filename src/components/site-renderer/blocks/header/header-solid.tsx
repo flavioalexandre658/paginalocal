@@ -9,16 +9,11 @@ interface Props {
   content: Record<string, unknown>;
   tokens: DesignTokens;
   isDark?: boolean;
+  navigation?: { label: string; href: string; isExternal?: boolean }[];
 }
 
-const NAV_ITEMS = [
-  { label: "Servicos", href: "#servicos" },
-  { label: "Sobre", href: "#sobre" },
-  { label: "Contato", href: "#contato" },
-  { label: "FAQ", href: "#faq" },
-];
-
-export function HeaderSolid({ content, tokens }: Props) {
+export function HeaderSolid({ content, tokens, navigation }: Props) {
+  const navItems = navigation || [];
   const [menuOpen, setMenuOpen] = useState(false);
 
   const storeName =
@@ -40,6 +35,8 @@ export function HeaderSolid({ content, tokens }: Props) {
 
   return (
     <header
+      data-pgl-edit="nav"
+      data-pgl-path="nav"
       className="relative z-40 py-4"
       style={{ backgroundColor: tokens.palette.primary }}
       role="banner"
@@ -57,15 +54,11 @@ export function HeaderSolid({ content, tokens }: Props) {
               src={logoUrl}
               alt="Logo"
               className="max-h-10 w-auto object-contain"
-              data-pgl-path="logoUrl"
-              data-pgl-edit="image"
             />
           ) : (
             <span
               className="text-lg font-bold tracking-tight"
               style={{ fontFamily: "var(--pgl-font-heading)", color: "#fff" }}
-              data-pgl-path="storeName"
-              data-pgl-edit="text"
             >
               {storeName}
             </span>
@@ -74,7 +67,7 @@ export function HeaderSolid({ content, tokens }: Props) {
 
         {/* Desktop nav */}
         <ul className="hidden md:flex items-center gap-8">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <li key={item.href}>
               <a
                 href={item.href}
@@ -89,7 +82,7 @@ export function HeaderSolid({ content, tokens }: Props) {
         {/* Desktop CTA */}
         {ctaText && (
           <div className="hidden md:block">
-            <PglButton href={ctaLink} tokens={tokens} isDark data-pgl-path="ctaText" data-pgl-edit="button">
+            <PglButton href={ctaLink} tokens={tokens} isDark>
               {ctaText}
             </PglButton>
           </div>
@@ -132,7 +125,7 @@ export function HeaderSolid({ content, tokens }: Props) {
         style={{ backgroundColor: tokens.palette.primary }}
       >
         <ul className="flex flex-col items-center gap-4 py-6">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <li key={item.href}>
               <a
                 href={item.href}
@@ -145,7 +138,7 @@ export function HeaderSolid({ content, tokens }: Props) {
           ))}
           {ctaText && (
             <li className="mt-2">
-              <PglButton href={ctaLink} tokens={tokens} isDark data-pgl-path="ctaText" data-pgl-edit="button">
+              <PglButton href={ctaLink} tokens={tokens} isDark>
                 {ctaText}
               </PglButton>
             </li>

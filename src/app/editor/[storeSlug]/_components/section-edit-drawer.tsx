@@ -1,11 +1,16 @@
 "use client";
 
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalBody,
+  ModalFooter,
+  ModalFooterActions,
+} from "@/components/ui/modal-blocks";
+import { Button } from "@/components/ui/button";
 import { useEditor } from "../_lib/editor-context";
 import { BLOCK_TYPE_LABELS } from "../_lib/block-type-labels";
 import { SectionFieldRenderer } from "./section-field-renderer";
@@ -28,37 +33,50 @@ export function SectionEditDrawer() {
     });
   }
 
+  function handleClose() {
+    dispatch({ type: "CLOSE_DRAWER" });
+  }
+
   const blockLabel = selectedSection
     ? BLOCK_TYPE_LABELS[selectedSection.blockType as BlockType] ?? selectedSection.blockType
     : "";
 
   return (
-    <Sheet
+    <Modal
       open={isOpen}
       onOpenChange={(open) => {
-        if (!open) dispatch({ type: "CLOSE_DRAWER" });
+        if (!open) handleClose();
       }}
     >
-      <SheetContent side="right" className="w-96 overflow-y-auto sm:max-w-[384px]">
-        <SheetHeader className="mb-6">
-          <SheetTitle className="text-base">
-            {blockLabel}
-            {selectedSection && (
-              <span className="ml-2 text-xs font-normal text-slate-400">
-                Variante {selectedSection.variant}
-              </span>
-            )}
-          </SheetTitle>
-        </SheetHeader>
+      <ModalContent size="lg">
+        <ModalHeader>
+          <ModalTitle>Editar {blockLabel}</ModalTitle>
+          {selectedSection && (
+            <ModalDescription>
+              Variante {selectedSection.variant}
+            </ModalDescription>
+          )}
+        </ModalHeader>
 
-        {selectedSection && (
-          <SectionFieldRenderer
-            blockType={selectedSection.blockType as BlockType}
-            content={selectedSection.content as Record<string, unknown>}
-            onChange={handleContentChange}
-          />
-        )}
-      </SheetContent>
-    </Sheet>
+        <ModalBody>
+          {selectedSection && (
+            <SectionFieldRenderer
+              blockType={selectedSection.blockType as BlockType}
+              content={selectedSection.content as Record<string, unknown>}
+              onChange={handleContentChange}
+            />
+          )}
+        </ModalBody>
+
+        <ModalFooter>
+          <div />
+          <ModalFooterActions>
+            <Button variant="ghost" onClick={handleClose}>
+              Fechar
+            </Button>
+          </ModalFooterActions>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 }

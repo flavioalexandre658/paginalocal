@@ -155,7 +155,7 @@ export function FaqAccordion({ content, tokens }: Props) {
                   >
                     <div className="overflow-hidden">
                       <p
-                        className="px-6 pb-5 text-[0.875rem] leading-[1.8] font-light max-w-[540px]"
+                        className="px-6 pb-6 text-[0.875rem] leading-[1.8] font-light max-w-[540px]"
                         style={{ color: tokens.palette.textMuted }}
                         data-pgl-path={`items.${i}.answer`}
                         data-pgl-edit="text"
@@ -182,7 +182,7 @@ export function FaqAccordion({ content, tokens }: Props) {
               >
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : i)}
-                  className="w-full flex items-center justify-between gap-5 py-5 text-left group"
+                  className="w-full flex items-center justify-between gap-5 px-4 py-5 text-left group"
                 >
                   <span
                     className={cn(
@@ -228,7 +228,7 @@ export function FaqAccordion({ content, tokens }: Props) {
                 >
                   <div className="overflow-hidden">
                     <p
-                      className="pb-5 text-[0.875rem] leading-[1.8] font-light max-w-[540px]"
+                      className="px-4 pb-6 text-[0.875rem] leading-[1.8] font-light max-w-[540px]"
                       style={{ color: tokens.palette.textMuted }}
                       data-pgl-path={`items.${i}.answer`}
                       data-pgl-edit="text"

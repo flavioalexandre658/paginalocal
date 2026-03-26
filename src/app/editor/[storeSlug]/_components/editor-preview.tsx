@@ -23,18 +23,43 @@ const PREVIEW_CSS = `
     position: absolute !important;
   }
 
-  /* Hover on editable elements (set via data-pgl-hover attribute) */
-  .editor-preview [data-pgl-hover][data-pgl-edit="text"] {
+  /* Hover on ANY editable element */
+  .editor-preview [data-pgl-hover] {
     outline: 2px solid rgba(59, 130, 246, 0.4) !important;
     outline-offset: 3px;
     border-radius: 3px;
+  }
+
+  /* Cursor by mode */
+  .editor-preview [data-pgl-hover][data-pgl-edit="text"] {
     cursor: text;
   }
   .editor-preview [data-pgl-hover][data-pgl-edit="button"],
-  .editor-preview [data-pgl-hover][data-pgl-edit="image"] {
-    outline: 2px solid rgba(59, 130, 246, 0.3) !important;
-    outline-offset: 4px;
+  .editor-preview [data-pgl-hover][data-pgl-edit="image"],
+  .editor-preview [data-pgl-hover][data-pgl-edit="nav"],
+  .editor-preview [data-pgl-hover][data-pgl-edit="footer"],
+  .editor-preview [data-pgl-hover][data-pgl-edit="pricing"] {
     cursor: pointer;
+  }
+
+  /* Dark overlay on component hover */
+  .editor-preview [data-pgl-hover][data-pgl-edit="image"],
+  .editor-preview [data-pgl-hover][data-pgl-edit="nav"],
+  .editor-preview [data-pgl-hover][data-pgl-edit="footer"],
+  .editor-preview [data-pgl-hover][data-pgl-edit="pricing"] {
+    position: relative;
+  }
+  .editor-preview [data-pgl-hover][data-pgl-edit="image"]::after,
+  .editor-preview [data-pgl-hover][data-pgl-edit="nav"]::after,
+  .editor-preview [data-pgl-hover][data-pgl-edit="footer"]::after,
+  .editor-preview [data-pgl-hover][data-pgl-edit="pricing"]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 1;
   }
 
   /* Active editing state */
@@ -129,6 +154,7 @@ export function EditorPreview() {
         <EditorPageRenderer
           page={activePage}
           designTokens={state.blueprint.designTokens}
+          navigation={state.blueprint.navigation}
         />
       </div>
     </div>

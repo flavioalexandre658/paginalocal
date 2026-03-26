@@ -14,7 +14,9 @@
       "Bash(find 'e:/Program Files/xampp/htdocs/work/convitede-admin' -maxdepth 3 -name *intl* -o -name middleware.ts)",
       "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
       "Skill(claude-api)",
-      "Skill(claude-api:*)"
+      "Skill(claude-api:*)",
+      "Edit(/.claude/skills/pgl-editor/**)",
+      "Edit(/.claude/skills/pgl-edit-wrapper/**)"
     ],
     "deny": [
       "Bash(rm -rf *)",

@@ -13,5 +13,5 @@ export function SiteV2Renderer({ blueprint }: Props) {
 
   if (!homepage) return null;
 
-  return <PageRenderer page={homepage} designTokens={blueprint.designTokens} />;
+  return <PageRenderer page={homepage} designTokens={blueprint.designTokens} navigation={blueprint.navigation} />;
 }

@@ -27,7 +27,6 @@ export function PricingSimpleList({ content, tokens }: Props) {
   return (
     <div className="relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 mb-10 md:mb-16 items-end">
           <StyledHeadline
             text={c.title}
@@ -50,10 +49,11 @@ export function PricingSimpleList({ content, tokens }: Props) {
           )}
         </div>
 
-        {/* Plan list */}
         <div
-          className="divide-y"
+          className="divide-y pt-4"
           style={{ borderColor: `${tokens.palette.text}0a` }}
+          data-pgl-path="plans"
+          data-pgl-edit="pricing"
         >
           {c.plans.map((plan, index) => (
             <div
@@ -68,7 +68,6 @@ export function PricingSimpleList({ content, tokens }: Props) {
                 borderColor: `${tokens.palette.text}0a`,
               }}
             >
-              {/* Highlighted accent bar */}
               {plan.highlighted && (
                 <div
                   className="absolute left-0 top-4 bottom-4 w-[3px]"
@@ -91,8 +90,6 @@ export function PricingSimpleList({ content, tokens }: Props) {
                       fontFamily: "var(--pgl-font-heading)",
                       color: tokens.palette.text,
                     }}
-                    data-pgl-path={`plans.${index}.name`}
-                    data-pgl-edit="text"
                   >
                     {plan.name}
                   </p>
@@ -112,8 +109,6 @@ export function PricingSimpleList({ content, tokens }: Props) {
                   <p
                     className="text-[0.875rem] font-light mt-1"
                     style={{ color: tokens.palette.textMuted }}
-                    data-pgl-path={`plans.${index}.description`}
-                    data-pgl-edit="text"
                   >
                     {plan.description}
                   </p>
@@ -159,8 +154,6 @@ export function PricingSimpleList({ content, tokens }: Props) {
                     isBold ? "text-3xl font-extrabold" : "text-2xl",
                   )}
                   style={{ color: tokens.palette.primary }}
-                  data-pgl-path={`plans.${index}.price`}
-                  data-pgl-edit="text"
                 >
                   {plan.price}
                 </span>
@@ -169,8 +162,6 @@ export function PricingSimpleList({ content, tokens }: Props) {
                   variant={plan.highlighted || isBold ? "primary" : "secondary"}
                   tokens={tokens}
                   className={cn(isBold && "flex-1 sm:flex-none text-center")}
-                  data-pgl-path={`plans.${index}.ctaText`}
-                  data-pgl-edit="button"
                 >
                   {plan.ctaText}
                 </PglButton>

@@ -8,7 +8,7 @@ import type { BlockType } from "@/types/ai-generation";
  * - "image"     → popup with upload / search / URL
  * - "component" → edited via the sidebar drawer only
  */
-export type EditMode = "text" | "button" | "image" | "component";
+export type EditMode = "text" | "button" | "image" | "nav" | "footer" | "pricing" | "component";
 
 export interface EditableField {
   /** Dot-path to the field. Use `*` for array indices (e.g. "items.*.name") */
@@ -42,14 +42,14 @@ export const BLOCK_EDIT_MAP: Record<BlockType, EditableField[]> = {
   ],
 
   header: [
-    { path: "storeName", mode: "text", label: "Nome da loja" },
-    { path: "logoUrl", mode: "image", label: "Logo" },
-    { path: "ctaText", mode: "button", label: "Botão CTA", linkPath: "ctaLink" },
+    { path: "storeName", mode: "nav", label: "Nome da loja" },
+    { path: "logoUrl", mode: "nav", label: "Logo" },
+    { path: "ctaText", mode: "nav", label: "Botão CTA", linkPath: "ctaLink" },
   ],
 
   footer: [
-    { path: "copyrightText", mode: "text", label: "Texto de copyright" },
-    { path: "showSocial", mode: "component", label: "Mostrar redes sociais" },
+    { path: "copyrightText", mode: "footer", label: "Copyright" },
+    { path: "showSocial", mode: "footer", label: "Redes sociais" },
   ],
 
   services: [
@@ -115,12 +115,7 @@ export const BLOCK_EDIT_MAP: Record<BlockType, EditableField[]> = {
   pricing: [
     { path: "title", mode: "text", label: "Título" },
     { path: "subtitle", mode: "text", label: "Subtítulo" },
-    { path: "plans.*.name", mode: "text", label: "Nome do plano" },
-    { path: "plans.*.price", mode: "text", label: "Preço" },
-    { path: "plans.*.description", mode: "text", label: "Descrição" },
-    { path: "plans.*.features.*", mode: "component", label: "Feature" },
-    { path: "plans.*.ctaText", mode: "button", label: "Botão do plano", linkPath: "plans.*.ctaLink", typePath: "plans.*.ctaType" },
-    { path: "plans.*.highlighted", mode: "component", label: "Plano destacado" },
+    { path: "plans", mode: "pricing", label: "Planos" },
   ],
 
   stats: [

@@ -9,16 +9,11 @@ interface Props {
   content: Record<string, unknown>;
   tokens: DesignTokens;
   isDark?: boolean;
+  navigation?: { label: string; href: string; isExternal?: boolean }[];
 }
 
-const NAV_ITEMS = [
-  { label: "Servicos", href: "#servicos" },
-  { label: "Sobre", href: "#sobre" },
-  { label: "Contato", href: "#contato" },
-  { label: "FAQ", href: "#faq" },
-];
-
-export function HeaderTransparent({ content, tokens }: Props) {
+export function HeaderTransparent({ content, tokens, navigation }: Props) {
+  const navItems = navigation || [];
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -47,6 +42,8 @@ export function HeaderTransparent({ content, tokens }: Props) {
 
   return (
     <header
+      data-pgl-edit="nav"
+      data-pgl-path="nav"
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         scrolled ? "backdrop-blur-md py-3" : "py-5"
@@ -71,15 +68,11 @@ export function HeaderTransparent({ content, tokens }: Props) {
               src={logoUrl}
               alt="Logo"
               className="max-h-10 w-auto object-contain"
-              data-pgl-path="logoUrl"
-              data-pgl-edit="image"
             />
           ) : (
             <span
               className="text-lg font-bold tracking-tight"
               style={{ fontFamily: "var(--pgl-font-heading)", color: "#fff" }}
-              data-pgl-path="storeName"
-              data-pgl-edit="text"
             >
               {storeName}
             </span>
@@ -88,7 +81,7 @@ export function HeaderTransparent({ content, tokens }: Props) {
 
         {/* Desktop nav */}
         <ul className="hidden md:flex items-center gap-8">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <li key={item.href}>
               <a
                 href={item.href}
@@ -103,7 +96,7 @@ export function HeaderTransparent({ content, tokens }: Props) {
         {/* Desktop CTA */}
         {ctaText && (
           <div className="hidden md:block">
-            <PglButton href={ctaLink} tokens={tokens} isDark data-pgl-path="ctaText" data-pgl-edit="button">
+            <PglButton href={ctaLink} tokens={tokens} isDark>
               {ctaText}
             </PglButton>
           </div>
@@ -147,7 +140,7 @@ export function HeaderTransparent({ content, tokens }: Props) {
           style={{ backgroundColor: `${tokens.palette.primary}f5` }}
         >
           <ul className="flex flex-col items-center gap-6">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <li key={item.href}>
                 <a
                   href={item.href}
@@ -160,7 +153,7 @@ export function HeaderTransparent({ content, tokens }: Props) {
             ))}
           </ul>
           {ctaText && (
-            <PglButton href={ctaLink} tokens={tokens} isDark data-pgl-path="ctaText" data-pgl-edit="button">
+            <PglButton href={ctaLink} tokens={tokens} isDark>
               {ctaText}
             </PglButton>
           )}

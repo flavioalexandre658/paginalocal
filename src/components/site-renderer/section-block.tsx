@@ -12,12 +12,14 @@ interface BlockProps {
   content: Record<string, unknown>;
   tokens: DesignTokens;
   isDark?: boolean;
+  navigation?: { label: string; href: string; isExternal?: boolean }[];
 }
 
 interface SectionBlockProps {
   block: SectionBlockType;
   designTokens: DesignTokens;
   isDark?: boolean;
+  navigation?: { label: string; href: string; isExternal?: boolean }[];
 }
 
 interface ErrorBoundaryState {
@@ -68,6 +70,7 @@ export function SectionBlock({
   block,
   designTokens,
   isDark,
+  navigation,
 }: SectionBlockProps) {
   const [LoadedComponent, setLoadedComponent] =
     useState<ComponentType<BlockProps> | null>(null);
@@ -100,6 +103,7 @@ export function SectionBlock({
           content={block.content}
           tokens={designTokens}
           isDark={isDark}
+          navigation={navigation}
         />
       </section>
     </SectionErrorBoundary>

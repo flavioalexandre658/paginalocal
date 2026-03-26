@@ -19,6 +19,7 @@ interface PageRendererProps {
   page: PageBlueprint;
   designTokens: DesignTokens;
   isPreview?: boolean;
+  navigation?: { label: string; href: string; isExternal?: boolean }[];
 }
 
 /** Pick the best section to render as dark (~65 % down the page) */
@@ -42,6 +43,7 @@ export function PageRenderer({
   page,
   designTokens,
   isPreview,
+  navigation,
 }: PageRendererProps) {
   const sortedSections = [...page.sections]
     .filter((s) => s.visible)
@@ -87,6 +89,7 @@ export function PageRenderer({
                   block={section}
                   designTokens={designTokens}
                   isDark={isDark}
+                  navigation={section.blockType === "header" ? navigation : undefined}
                 />
               </div>
             </div>

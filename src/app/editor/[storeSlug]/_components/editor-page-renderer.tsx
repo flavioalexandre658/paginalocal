@@ -29,6 +29,7 @@ const DARK_ELIGIBLE = new Set(["stats"]);
 interface Props {
   page: PageBlueprint;
   designTokens: DesignTokens;
+  navigation?: { label: string; href: string; isExternal?: boolean }[];
 }
 
 function findDarkIndex(sections: SectionBlockType[]): number {
@@ -47,7 +48,7 @@ function findDarkIndex(sections: SectionBlockType[]): number {
   return best;
 }
 
-export function EditorPageRenderer({ page, designTokens }: Props) {
+export function EditorPageRenderer({ page, designTokens, navigation }: Props) {
   // Editor shows ALL sections (including hidden), sorted by order
   const sortedSections = [...page.sections].sort((a, b) => a.order - b.order);
 
@@ -119,6 +120,7 @@ export function EditorPageRenderer({ page, designTokens }: Props) {
                   block={section}
                   designTokens={designTokens}
                   isDark={isDark}
+                  navigation={isHeader ? navigation : undefined}
                 />
               </div>
             </EditorSectionWrapper>

@@ -1,14 +1,29 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { EditPopup } from "../edit-popup";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalBody,
+  ModalFooter,
+  ModalFooterActions,
+} from "@/components/ui/modal-blocks";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useEditor } from "../../_lib/editor-context";
 import { setFieldByPath } from "../../_lib/text-field-mapper";
 
-type LinkType = "whatsapp" | "link" | "scroll" | "phone" | "email";
+const LINK_TYPES = [
+  { value: "link", label: "Link externo" },
+  { value: "whatsapp", label: "WhatsApp" },
+  { value: "phone", label: "Telefone" },
+  { value: "email", label: "Email" },
+  { value: "scroll", label: "Seção da página" },
+];
 
 interface Props {
-  anchorRect: DOMRect;
   sectionId: string;
   content: Record<string, unknown>;
   fieldPrefix: string;
@@ -18,16 +33,7 @@ interface Props {
   onClose: () => void;
 }
 
-const LINK_TYPES: { value: LinkType; label: string }[] = [
-  { value: "link", label: "Link externo" },
-  { value: "whatsapp", label: "WhatsApp" },
-  { value: "phone", label: "Telefone" },
-  { value: "email", label: "Email" },
-  { value: "scroll", label: "Seção da página" },
-];
-
 export function ButtonEditPopup({
-  anchorRect,
   sectionId,
   content,
   fieldPrefix,
@@ -58,8 +64,8 @@ export function ButtonEditPopup({
 
   const [label, setLabel] = useState(getFieldValue(textField));
   const [linkValue, setLinkValue] = useState(getFieldValue(linkField));
-  const [linkType, setLinkType] = useState<LinkType>(
-    (typeField ? getFieldValue(typeField) : "whatsapp") as LinkType || "whatsapp"
+  const [linkType, setLinkType] = useState(
+    (typeField ? getFieldValue(typeField) : "whatsapp") || "whatsapp"
   );
 
   const handleSave = useCallback(() => {
@@ -74,13 +80,14 @@ export function ButtonEditPopup({
       sectionId,
       content: updated,
     });
-  }, [content, dispatch, label, linkValue, linkType, sectionId, textField, linkField, typeField, fieldPrefix]);
+    onClose();
+  }, [content, dispatch, label, linkValue, linkType, sectionId, textField, linkField, typeField, fieldPrefix, onClose]);
 
   const placeholder =
     linkType === "whatsapp" ? "https://wa.me/5511999999999"
     : linkType === "phone" ? "+55 11 99999-9999"
     : linkType === "email" ? "contato@empresa.com"
-    : linkType === "scroll" ? "#contact"
+    : linkType === "scroll" ? "#contato"
     : "https://";
 
   const linkLabel =
@@ -91,52 +98,64 @@ export function ButtonEditPopup({
     : "URL";
 
   return (
-    <EditPopup title="Call to Action" anchorRect={anchorRect} onClose={onClose} onSave={handleSave}>
-      <div className="space-y-4">
-        {/* Link Type — pill selector */}
-        <div>
-          <p className="mb-2 text-xs font-medium text-slate-500">Tipo de link</p>
-          <div className="flex flex-wrap gap-1.5">
-            {LINK_TYPES.map((lt) => (
-              <button
-                key={lt.value}
-                onClick={() => setLinkType(lt.value)}
-                className={`rounded-full px-3 py-1 text-[11px] font-medium transition-colors ${
-                  linkType === lt.value
-                    ? "bg-slate-900 text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                {lt.label}
-              </button>
-            ))}
+    <Modal open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <ModalContent size="sm" data-editor-ui>
+        <ModalHeader>
+          <ModalTitle>Botão de ação</ModalTitle>
+        </ModalHeader>
+        <ModalBody>
+          <div className="space-y-4">
+            <div>
+              <p className="mb-2 text-xs font-medium text-muted-foreground">Tipo de link</p>
+              <div className="flex flex-wrap gap-1.5">
+                {LINK_TYPES.map((lt) => (
+                  <button
+                    key={lt.value}
+                    onClick={() => setLinkType(lt.value)}
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-[11px] font-medium transition-colors",
+                      linkType === lt.value
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-transparent text-muted-foreground hover:border-primary/50"
+                    )}
+                  >
+                    {lt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="mb-1.5 text-xs font-medium text-muted-foreground">{linkLabel}</p>
+              <input
+                type="text"
+                value={linkValue}
+                onChange={(e) => setLinkValue(e.target.value)}
+                placeholder={placeholder}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <p className="mb-1.5 text-xs font-medium text-muted-foreground">Texto do botão</p>
+              <input
+                type="text"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                placeholder="Ex: Comece agora"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            </div>
           </div>
-        </div>
-
-        {/* Link value */}
-        <div>
-          <p className="mb-1.5 text-xs font-medium text-slate-500">{linkLabel}</p>
-          <input
-            type="text"
-            value={linkValue}
-            onChange={(e) => setLinkValue(e.target.value)}
-            placeholder={placeholder}
-            className="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-300"
-          />
-        </div>
-
-        {/* Button label */}
-        <div>
-          <p className="mb-1.5 text-xs font-medium text-slate-500">Texto do botão</p>
-          <input
-            type="text"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            placeholder="Ex: Comece agora"
-            className="w-full rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-2 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-slate-300 focus:ring-1 focus:ring-slate-300"
-          />
-        </div>
-      </div>
-    </EditPopup>
+        </ModalBody>
+        <ModalFooter>
+          <div />
+          <ModalFooterActions>
+            <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+            <Button onClick={handleSave}>Salvar</Button>
+          </ModalFooterActions>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 }

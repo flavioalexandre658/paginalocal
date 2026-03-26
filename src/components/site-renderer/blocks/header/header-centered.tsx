@@ -9,16 +9,11 @@ interface Props {
   content: Record<string, unknown>;
   tokens: DesignTokens;
   isDark?: boolean;
+  navigation?: { label: string; href: string; isExternal?: boolean }[];
 }
 
-const NAV_ITEMS = [
-  { label: "Servicos", href: "#servicos" },
-  { label: "Sobre", href: "#sobre" },
-  { label: "Contato", href: "#contato" },
-  { label: "FAQ", href: "#faq" },
-];
-
-export function HeaderCentered({ content, tokens }: Props) {
+export function HeaderCentered({ content, tokens, navigation }: Props) {
+  const navItems = navigation || [];
   const [menuOpen, setMenuOpen] = useState(false);
 
   const storeName =
@@ -40,6 +35,8 @@ export function HeaderCentered({ content, tokens }: Props) {
 
   return (
     <header
+      data-pgl-edit="nav"
+      data-pgl-path="nav"
       className="relative z-40 py-4"
       style={{ backgroundColor: tokens.palette.background }}
       role="banner"
@@ -55,15 +52,11 @@ export function HeaderCentered({ content, tokens }: Props) {
                 src={logoUrl}
                 alt="Logo"
                 className="max-h-12 w-auto object-contain"
-                data-pgl-path="logoUrl"
-                data-pgl-edit="image"
               />
             ) : (
               <span
                 className="text-xl font-bold tracking-tight"
                 style={{ fontFamily: "var(--pgl-font-heading)", color: tokens.palette.text }}
-                data-pgl-path="storeName"
-                data-pgl-edit="text"
               >
                 {storeName}
               </span>
@@ -73,7 +66,7 @@ export function HeaderCentered({ content, tokens }: Props) {
           {/* CTA — absolute right on desktop */}
           {ctaText && (
             <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2">
-              <PglButton href={ctaLink} tokens={tokens} data-pgl-path="ctaText" data-pgl-edit="button">
+              <PglButton href={ctaLink} tokens={tokens}>
                 {ctaText}
               </PglButton>
             </div>
@@ -91,7 +84,7 @@ export function HeaderCentered({ content, tokens }: Props) {
             style={{ borderColor: `${tokens.palette.text}10` }}
           >
             <ul className="flex items-center justify-center gap-8">
-              {NAV_ITEMS.map((item) => (
+              {navItems.map((item) => (
                 <li key={item.href}>
                   <a
                     href={item.href}
@@ -157,7 +150,7 @@ export function HeaderCentered({ content, tokens }: Props) {
         style={{ backgroundColor: tokens.palette.background }}
       >
         <ul className="flex flex-col items-center gap-4 py-6">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <li key={item.href}>
               <a
                 href={item.href}
@@ -171,7 +164,7 @@ export function HeaderCentered({ content, tokens }: Props) {
           ))}
           {ctaText && (
             <li className="mt-2">
-              <PglButton href={ctaLink} tokens={tokens} data-pgl-path="ctaText" data-pgl-edit="button">
+              <PglButton href={ctaLink} tokens={tokens}>
                 {ctaText}
               </PglButton>
             </li>

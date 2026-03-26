@@ -20,6 +20,8 @@ export function FooterColumns({ content, tokens }: Props) {
 
   return (
     <footer
+      data-pgl-edit="footer"
+      data-pgl-path="footer"
       className="relative overflow-hidden"
       style={{ backgroundColor: tokens.palette.primary }}
     >
@@ -119,7 +121,7 @@ export function FooterColumns({ content, tokens }: Props) {
           className="pt-8 flex flex-col sm:flex-row justify-between gap-3 text-xs text-white/20"
           style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
         >
-          <span data-pgl-path="copyrightText" data-pgl-edit="text">
+          <span>
             {copyrightText ||
               `\u00a9 ${new Date().getFullYear()} ${storeName}. Todos os direitos reservados.`}
           </span>

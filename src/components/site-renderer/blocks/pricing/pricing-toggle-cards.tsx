@@ -44,7 +44,6 @@ function PricingToggleCardsInner({
   return (
     <div className="relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 mb-10 md:mb-16 items-end">
           <StyledHeadline
             text={c.title}
@@ -70,7 +69,7 @@ function PricingToggleCardsInner({
           )}
         </div>
 
-        {/* Toggle */}
+        <div data-pgl-path="plans" data-pgl-edit="pricing" className="pt-4">
         {hasAnnualPrices && (
           <div className="pgl-fade-up flex items-center justify-center gap-4 mb-10 md:mb-14" data-delay="2">
             <span
@@ -118,7 +117,6 @@ function PricingToggleCardsInner({
           </div>
         )}
 
-        {/* Cards */}
         <div
           className={cn(
             "grid grid-cols-1 gap-4 md:gap-6 items-start",
@@ -161,7 +159,6 @@ function PricingToggleCardsInner({
                         }),
                 }}
               >
-                {/* Popular badge */}
                 {plan.highlighted && !isMinimal && (
                   <span
                     className="absolute -top-3 left-1/2 -translate-x-1/2 text-[0.65rem] font-medium tracking-[0.08em] uppercase px-4 py-1.5 text-white whitespace-nowrap"
@@ -178,8 +175,6 @@ function PricingToggleCardsInner({
                   <p
                     className="text-[0.7rem] font-medium uppercase tracking-[0.12em] mb-3"
                     style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
-                    data-pgl-path={`plans.${index}.name`}
-                    data-pgl-edit="text"
                   >
                     {plan.name}
                   </p>
@@ -194,8 +189,6 @@ function PricingToggleCardsInner({
                       fontFamily: "var(--pgl-font-heading)",
                       color: isDark ? "#fff" : tokens.palette.text,
                     }}
-                    data-pgl-path={`plans.${index}.price`}
-                    data-pgl-edit="text"
                   >
                     {displayPrice}
                   </p>
@@ -203,15 +196,12 @@ function PricingToggleCardsInner({
                     <p
                       className="text-[0.875rem] font-light"
                       style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
-                      data-pgl-path={`plans.${index}.description`}
-                      data-pgl-edit="text"
                     >
                       {plan.description}
                     </p>
                   )}
                 </div>
 
-                {/* Separator */}
                 <div
                   className="h-px mb-6"
                   style={{
@@ -221,7 +211,6 @@ function PricingToggleCardsInner({
                   }}
                 />
 
-                {/* Features */}
                 <ul className="space-y-3 mb-8 flex-1">
                   {plan.features.map((feature, fIndex) => {
                     const isExcluded = feature.startsWith("~") && feature.endsWith("~");
@@ -262,21 +251,19 @@ function PricingToggleCardsInner({
                   })}
                 </ul>
 
-                {/* CTA */}
                 <PglButton
                   href={plan.ctaType === "whatsapp" ? "https://wa.me/" : "#"}
                   variant={plan.highlighted || isBold ? "primary" : "secondary"}
                   tokens={tokens}
                   isDark={isDark}
                   className="w-full justify-center"
-                  data-pgl-path={`plans.${index}.ctaText`}
-                  data-pgl-edit="button"
                 >
                   {plan.ctaText}
                 </PglButton>
               </div>
             );
           })}
+        </div>
         </div>
       </div>
     </div>
