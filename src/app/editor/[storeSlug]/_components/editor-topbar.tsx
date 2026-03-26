@@ -17,7 +17,11 @@ import {
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
   IconMenu2,
+  IconSettings,
+  IconPlayerPlay,
+  IconRocket,
 } from "@tabler/icons-react";
+import { SiteSettingsModal } from "./site-settings-modal";
 import { cn } from "@/lib/utils";
 import { useEditor } from "../_lib/editor-context";
 import type { ViewportMode } from "../_lib/editor-types";
@@ -42,6 +46,7 @@ export function EditorTopbar({
   const { executeAsync, isExecuting } = useAction(updateBlueprintAction);
   const router = useRouter();
   const [storeDropdownOpen, setStoreDropdownOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   async function handleSave() {
     dispatch({ type: "SET_SAVING", isSaving: true });
@@ -137,7 +142,7 @@ export function EditorTopbar({
                       onMouseLeave={(e) => { if (s.slug !== storeSlug) e.currentTarget.style.backgroundColor = "transparent"; }}
                       onClick={() => {
                         setStoreDropdownOpen(false);
-                        if (s.slug !== storeSlug) router.push(`/editor/${s.slug}`);
+                        if (s.slug !== storeSlug) router.push(`/negocio/${s.slug}/site`);
                       }}
                     >
                       <div
@@ -251,35 +256,55 @@ export function EditorTopbar({
           <IconArrowForwardUp className="h-4 w-4" />
         </button>
 
-        <div className="mx-1.5 hidden h-5 w-px md:block" style={{ backgroundColor: "rgba(0,0,0,0.06)" }} />
+        <div className="mx-1 hidden h-5 w-px md:block" style={{ backgroundColor: "rgba(0,0,0,0.06)" }} />
 
         <button
-          onClick={handleSave}
-          disabled={!state.isDirty || isExecuting || state.isSaving}
-          className="flex items-center gap-1.5 rounded-[8px] px-2.5 py-2 text-[13px] font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed md:px-4"
-          style={{ backgroundColor: "#171717", color: "#ffffff" }}
+          onClick={() => setSettingsOpen(true)}
+          className="rounded-[8px] p-2 transition-all duration-150"
+          style={{ color: "#737373" }}
+          title="Configuracoes"
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
         >
-          {isExecuting || state.isSaving ? (
-            <IconLoader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <IconDeviceFloppy className="h-3.5 w-3.5" />
-          )}
-          <span className="hidden md:inline">Salvar</span>
+          <IconSettings className="h-4 w-4" />
         </button>
 
         <a
           href={`/site/${storeSlug}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="ml-1 rounded-[8px] p-2 transition-all duration-150"
+          className="hidden items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[13px] font-medium transition-all duration-150 md:flex"
           style={{ color: "#737373" }}
-          title="Visualizar site"
+          title="Pre-visualizar"
           onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; }}
           onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
         >
-          <IconExternalLink className="h-4 w-4" />
+          <IconPlayerPlay style={{ width: 14, height: 14 }} />
+          <span>Preview</span>
         </a>
+
+        <button
+          onClick={handleSave}
+          disabled={!state.isDirty || isExecuting || state.isSaving}
+          className="flex items-center gap-1.5 rounded-[8px] px-2.5 py-2 text-[13px] font-semibold transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed md:px-4"
+          style={{ backgroundColor: "#22c55e", color: "#ffffff" }}
+        >
+          {isExecuting || state.isSaving ? (
+            <IconLoader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <IconRocket className="h-3.5 w-3.5" />
+          )}
+          <span className="hidden md:inline">Publicar</span>
+        </button>
       </div>
+
+      <SiteSettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        storeId={storeId}
+        storeSlug={storeSlug}
+        storeName={storeName}
+      />
     </header>
   );
 }

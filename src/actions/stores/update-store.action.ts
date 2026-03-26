@@ -57,6 +57,7 @@ const updateStoreSchema = z.object({
   fontFamily: z.string().max(50).optional().nullable(),
   highlightBadge: z.string().max(50).optional().nullable(),
   highlightText: z.string().max(500).optional().nullable(),
+  isActive: z.boolean().optional(),
 })
 
 export const updateStoreAction = authActionClient

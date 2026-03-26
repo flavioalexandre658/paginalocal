@@ -16,11 +16,15 @@
       "Skill(claude-api)",
       "Skill(claude-api:*)",
       "Edit(/.claude/skills/pgl-editor/**)",
-      "Edit(/.claude/skills/pgl-edit-wrapper/**)"
+      "Edit(/.claude/skills/pgl-edit-wrapper/**)",
+      "Edit(/.claude/skills/pgl-skeleton-loading/**)"
     ],
     "deny": [
       "Bash(rm -rf *)",
       "Bash(sudo *)"
+    ],
+    "additionalDirectories": [
+      "e:\\Program Files\\xampp\\htdocs\\work\\paginalocal\\.claude\\skills"
     ]
   }
 }

@@ -1,29 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   IconDeviceDesktop,
-  IconFileStack,
-  IconWorld,
-  IconSearch,
   IconUsers,
   IconChartBar,
   IconSettings,
   IconHelp,
   IconSparkles,
   IconChevronDown,
+  IconHome,
 } from "@tabler/icons-react";
 
-const NAV_ITEMS = [
-  { id: "website", label: "Meu Site", icon: IconDeviceDesktop },
-  { id: "pages", label: "Paginas", icon: IconFileStack },
-  { id: "domain", label: "Dominio", icon: IconWorld },
-  { id: "seo", label: "SEO", icon: IconSearch },
-  { id: "contacts", label: "Contatos", icon: IconUsers },
-  { id: "analytics", label: "Analytics", icon: IconChartBar },
-];
+function getNavItems(storeSlug: string) {
+  return [
+    { id: "home", label: "Inicio", icon: IconHome, href: `/negocio/${storeSlug}` },
+    { id: "site", label: "Meu Site", icon: IconDeviceDesktop, href: `/negocio/${storeSlug}/site` },
+    { id: "contatos", label: "Contatos", icon: IconUsers, href: `/negocio/${storeSlug}/contatos` },
+    { id: "analitica", label: "Analitica", icon: IconChartBar, href: `/negocio/${storeSlug}/analitica` },
+  ];
+}
 
 interface Props {
   collapsed: boolean;
@@ -35,15 +33,23 @@ interface Props {
   userStores?: { id: string; name: string; slug: string }[];
 }
 
-function NavItems({ expanded, onItemClick }: { expanded: boolean; onItemClick?: () => void }) {
+function NavItems({ expanded, storeSlug, onItemClick }: { expanded: boolean; storeSlug: string; onItemClick?: () => void }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const items = getNavItems(storeSlug);
+
   return (
     <div className={cn("py-2", expanded ? "px-2" : "px-1")}>
-      {NAV_ITEMS.map((item) => {
-        const isActive = item.id === "website";
+      {items.map((item) => {
+        const isActive = item.id === "site"
+          ? pathname.includes(`/negocio/${storeSlug}/site`) || pathname.includes(`/editor/${storeSlug}`)
+          : item.id === "home"
+            ? pathname === `/negocio/${storeSlug}`
+            : pathname.includes(item.href);
         return (
           <button
             key={item.id}
-            onClick={onItemClick}
+            onClick={() => { router.push(item.href); onItemClick?.(); }}
             className={cn(
               "flex w-full items-center rounded-[10px] transition-all duration-150",
               expanded ? "gap-[10px] px-3 py-2 my-0.5" : "justify-center p-2.5 my-0.5",
@@ -197,7 +203,7 @@ export function EditorSidebar({
                         setStoreListOpen(false);
                         if (s.slug !== storeSlug) {
                           onCloseMobileMenu?.();
-                          router.push(`/editor/${s.slug}`);
+                          router.push(`/negocio/${s.slug}/site`);
                         }
                       }}
                       className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
@@ -241,7 +247,7 @@ export function EditorSidebar({
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            <NavItems expanded onItemClick={onCloseMobileMenu} />
+            <NavItems expanded storeSlug={storeSlug ?? ""} onItemClick={onCloseMobileMenu} />
           </div>
 
           <UpgradeCard />
@@ -261,7 +267,7 @@ export function EditorSidebar({
       }}
     >
       <div className="flex-1 overflow-y-auto">
-        <NavItems expanded={!collapsed} />
+        <NavItems expanded={!collapsed} storeSlug={storeSlug ?? ""} />
       </div>
       {!collapsed && <UpgradeCard />}
       <FooterLinks expanded={!collapsed} />

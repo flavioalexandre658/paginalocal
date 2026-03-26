@@ -41,7 +41,7 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
 
         <div className="flex flex-1 overflow-hidden">
           <div className="hidden md:block">
-            <EditorSidebar collapsed={sidebarCollapsed} />
+            <EditorSidebar collapsed={sidebarCollapsed} storeSlug={storeSlug} />
           </div>
 
           <div
