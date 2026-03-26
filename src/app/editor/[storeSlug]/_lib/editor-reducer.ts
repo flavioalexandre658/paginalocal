@@ -114,6 +114,33 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
     case "SET_VIEWPORT":
       return { ...state, viewportMode: action.mode };
 
+    case "UPDATE_DESIGN_TOKENS": {
+      const undo = withUndo(state);
+      const blueprint = cloneBlueprint(state.blueprint);
+      const incoming = action.tokens;
+      if (incoming.palette) {
+        blueprint.designTokens.palette = { ...blueprint.designTokens.palette, ...incoming.palette };
+      }
+      if (incoming.fontPairing) blueprint.designTokens.fontPairing = incoming.fontPairing;
+      if (incoming.style) blueprint.designTokens.style = incoming.style;
+      if (incoming.borderRadius) blueprint.designTokens.borderRadius = incoming.borderRadius;
+      if (incoming.spacing) blueprint.designTokens.spacing = incoming.spacing;
+      return { ...state, ...undo, blueprint };
+    }
+
+    case "UPDATE_SECTION_VARIANT": {
+      const undo = withUndo(state);
+      const blueprint = cloneBlueprint(state.blueprint);
+      for (const page of blueprint.pages) {
+        const section = page.sections.find((s) => s.id === action.sectionId);
+        if (section) {
+          section.variant = action.variant;
+          break;
+        }
+      }
+      return { ...state, ...undo, blueprint };
+    }
+
     case "SET_INLINE_EDITING":
       return { ...state, isInlineEditing: action.value };
 

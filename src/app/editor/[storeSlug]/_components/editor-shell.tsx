@@ -8,6 +8,7 @@ import { EditorSidebar } from "./editor-sidebar";
 import { EditorPreview } from "./editor-preview";
 import { SectionEditDrawer } from "./section-edit-drawer";
 import { UnsavedChangesGuard } from "./unsaved-changes-guard";
+import { ThemesPage } from "./editor-topbar-panels/themes-page";
 
 interface Props {
   initialBlueprint: SiteBlueprint;
@@ -21,6 +22,7 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  const [themesOpen, setThemesOpen] = useState(false);
 
   return (
     <EditorProvider initialBlueprint={initialBlueprint} storeId={storeId}>
@@ -40,6 +42,9 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
           userStores={userStores}
           previewMode={previewMode}
           onTogglePreview={() => setPreviewMode(!previewMode)}
+          themesOpen={themesOpen}
+          onOpenThemes={() => { setThemesOpen(true); setPreviewMode(false); }}
+          onCloseThemes={() => setThemesOpen(false)}
         />
 
         <div className="flex flex-1 overflow-hidden">
@@ -49,17 +54,21 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
             </div>
           )}
 
-          <div
-            className="flex-1 overflow-hidden p-2"
-            style={{ backgroundColor: "#ffffff" }}
-          >
+          {themesOpen ? (
+            <ThemesPage onBack={() => setThemesOpen(false)} />
+          ) : (
             <div
-              className="h-full overflow-hidden rounded-[12px]"
-              style={{ backgroundColor: "#f5f5f4" }}
+              className="flex-1 overflow-hidden p-2"
+              style={{ backgroundColor: "#ffffff" }}
             >
-              <EditorPreview previewMode={previewMode} />
+              <div
+                className="h-full overflow-hidden rounded-[12px]"
+                style={{ backgroundColor: "#f5f5f4" }}
+              >
+                <EditorPreview previewMode={previewMode} />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

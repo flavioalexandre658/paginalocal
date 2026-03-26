@@ -1,4 +1,4 @@
-import type { SiteBlueprint } from "@/types/ai-generation";
+import type { SiteBlueprint, DesignTokens } from "@/types/ai-generation";
 
 export type ViewportMode = "desktop" | "tablet" | "mobile";
 
@@ -35,5 +35,7 @@ export type EditorAction =
   | { type: "MARK_SAVED" }
   | { type: "SET_BLUEPRINT"; blueprint: SiteBlueprint }
   | { type: "SET_VIEWPORT"; mode: ViewportMode }
+  | { type: "UPDATE_DESIGN_TOKENS"; tokens: Partial<DesignTokens> }
+  | { type: "UPDATE_SECTION_VARIANT"; sectionId: string; variant: number }
   | { type: "UNDO" }
   | { type: "REDO" };

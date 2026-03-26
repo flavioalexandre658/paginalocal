@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { BLOCK_TYPE_LABELS } from "../_lib/block-type-labels";
+import { DesignPopup } from "./popups/design-popup";
 import type { BlockType } from "@/types/ai-generation";
 
 interface Props {
@@ -32,6 +33,7 @@ interface Props {
 export function SectionToolbar({ section }: Props) {
   const { dispatch } = useEditor();
   const [showDelete, setShowDelete] = useState(false);
+  const [showDesign, setShowDesign] = useState(false);
 
   const label = BLOCK_TYPE_LABELS[section.blockType as BlockType] ?? section.blockType;
 
@@ -53,7 +55,7 @@ export function SectionToolbar({ section }: Props) {
         <ToolbarButton
           icon={<IconLayoutGrid style={{ width: 14, height: 14, marginRight: 4 }} />}
           label="Design"
-          onClick={() => {}}
+          onClick={() => { dispatch({ type: "SELECT_SECTION", sectionId: section.id }); setShowDesign(true); }}
         />
 
         <ToolbarButton
@@ -114,6 +116,12 @@ export function SectionToolbar({ section }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <DesignPopup
+        section={section}
+        open={showDesign}
+        onClose={() => setShowDesign(false)}
+      />
     </>
   );
 }
@@ -131,15 +139,7 @@ function Separator() {
   );
 }
 
-function ToolbarButton({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-}) {
+function ToolbarButton({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}

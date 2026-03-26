@@ -14,9 +14,14 @@ import {
   IconMenu2,
   IconSettings,
   IconArrowUp,
+  IconPalette,
+  IconBrush,
+  IconTypography,
 } from "@tabler/icons-react";
 import { SiteSettingsModal } from "./site-settings-modal";
 import { PublishModal } from "./publish-modal";
+import { ColorsPopup } from "./editor-topbar-panels/colors-popup";
+import { FontsPopup } from "./editor-topbar-panels/fonts-popup";
 import { cn } from "@/lib/utils";
 import { useEditor } from "../_lib/editor-context";
 import type { ViewportMode } from "../_lib/editor-types";
@@ -32,11 +37,15 @@ interface Props {
   userStores: { id: string; name: string; slug: string }[];
   previewMode: boolean;
   onTogglePreview: () => void;
+  themesOpen: boolean;
+  onOpenThemes: () => void;
+  onCloseThemes: () => void;
 }
 
 export function EditorTopbar({
   storeId, storeSlug, storeName, sidebarCollapsed, onToggleSidebar,
   mobileMenuOpen, onToggleMobileMenu, userStores, previewMode, onTogglePreview,
+  themesOpen, onOpenThemes, onCloseThemes,
 }: Props) {
   const { state, dispatch } = useEditor();
   const router = useRouter();
@@ -44,6 +53,7 @@ export function EditorTopbar({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<"general" | "domains" | "integrations" | "tracking">("general");
   const [publishOpen, setPublishOpen] = useState(false);
+  const [activePanel, setActivePanel] = useState<"colors" | "fonts" | null>(null);
 
   const viewports: { mode: ViewportMode; icon: typeof IconDeviceDesktop; label: string }[] = [
     { mode: "desktop", icon: IconDeviceDesktop, label: "Computador" },
@@ -219,114 +229,144 @@ export function EditorTopbar({
             );
           })}
         </div>
+      ) : themesOpen ? (
+        <div className="hidden md:flex items-center gap-4">
+          <span className="text-[13px] font-medium" style={{ color: "#737373" }}>Alterar seu tema</span>
+        </div>
       ) : (
         <div
-          className="hidden items-center rounded-[10px] p-[3px] md:flex"
-          style={{ backgroundColor: "#f5f5f4" }}
+          className="hidden items-center rounded-full p-[3px] md:flex"
+          style={{ border: "1px solid rgba(0,0,0,0.08)" }}
         >
-          {viewports.map(({ mode, icon: Icon, label }) => {
-            const isActive = state.viewportMode === mode;
+          {([
+            { id: "theme" as const, icon: IconPalette, label: "Tema" },
+            { id: "colors" as const, icon: IconBrush, label: "Cores" },
+            { id: "fonts" as const, icon: IconTypography, label: "Fontes" },
+          ]).map(({ id, icon: Icon, label }) => {
+            const isActive = (id === "colors" && activePanel === "colors") || (id === "fonts" && activePanel === "fonts") || (id === "theme" && themesOpen);
             return (
               <button
-                key={mode}
-                onClick={() => dispatch({ type: "SET_VIEWPORT", mode })}
-                title={label}
+                key={id}
+                onClick={() => {
+                  if (id === "theme") { onOpenThemes(); setActivePanel(null); }
+                  else { setActivePanel(activePanel === id ? null : id); }
+                }}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[13px] font-medium transition-all duration-150",
-                  isActive ? "shadow-[0_1px_3px_rgba(0,0,0,0.06)]" : "",
+                  "flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-150",
+                  isActive && "shadow-[0_1px_3px_rgba(0,0,0,0.08)]",
                 )}
                 style={{
                   backgroundColor: isActive ? "#ffffff" : "transparent",
-                  color: isActive ? "#1a1a1a" : "#a3a3a3",
+                  color: isActive ? "#1a1a1a" : "#737373",
+                  border: isActive ? "1px solid rgba(0,0,0,0.1)" : "1px solid transparent",
                 }}
+                onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.color = "#1a1a1a"; e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.03)"; } }}
+                onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.color = "#737373"; e.currentTarget.style.backgroundColor = "transparent"; } }}
               >
-                <Icon className="h-4 w-4" />
-                {isActive && <span>{label}</span>}
+                <Icon style={{ width: 15, height: 15 }} />
+                {label}
               </button>
             );
           })}
         </div>
       )}
 
-      <div className="flex items-center gap-1">
-        <button
-          onClick={() => dispatch({ type: "UNDO" })}
-          disabled={state.undoStack.length === 0}
-          className="hidden rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed md:block"
-          style={{ color: "#737373" }}
-          title="Desfazer"
-          onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
-        >
-          <IconArrowBackUp className="h-4 w-4" />
-        </button>
-        <button
-          onClick={() => dispatch({ type: "REDO" })}
-          disabled={state.redoStack.length === 0}
-          className="hidden rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed md:block"
-          style={{ color: "#737373" }}
-          title="Refazer"
-          onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
-        >
-          <IconArrowForwardUp className="h-4 w-4" />
-        </button>
+      {activePanel === "colors" && <ColorsPopup onClose={() => setActivePanel(null)} />}
+      {activePanel === "fonts" && <FontsPopup onClose={() => setActivePanel(null)} />}
 
-        <div className="mx-1 hidden h-5 w-px md:block" style={{ backgroundColor: "rgba(0,0,0,0.06)" }} />
-
-        <button
-          onClick={() => { setSettingsInitialTab("general"); setSettingsOpen(true); }}
-          className="rounded-[8px] p-2 transition-all duration-150"
-          style={{ color: "#737373" }}
-          title="Configuracoes"
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
-        >
-          <IconSettings className="h-4 w-4" />
-        </button>
-
-        <button
-          onClick={onTogglePreview}
-          className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[13px] font-medium transition-all duration-150"
-          style={{
-            backgroundColor: previewMode ? "#171717" : "transparent",
-            color: previewMode ? "#ffffff" : "#737373",
-            border: previewMode ? "none" : "1px solid rgba(0,0,0,0.06)",
-          }}
-          onMouseEnter={(e) => { if (!previewMode) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
-          onMouseLeave={(e) => { if (!previewMode) { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; } }}
-        >
-          Previa
-          <div
-            className="relative"
-            style={{ width: 32, height: 18, borderRadius: 999, backgroundColor: previewMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.1)", transition: "background 200ms" }}
+      {themesOpen ? (
+        <div className="flex items-center">
+          <button
+            onClick={onCloseThemes}
+            className="rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-150"
+            style={{ border: "1px solid rgba(0,0,0,0.15)", color: "#1a1a1a" }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f5f5f4"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
           >
-            <div
-              style={{
-                position: "absolute",
-                top: 2,
-                left: previewMode ? 16 : 2,
-                width: 14,
-                height: 14,
-                borderRadius: 999,
-                backgroundColor: previewMode ? "#ffffff" : "#a3a3a3",
-                transition: "left 200ms ease-out, background 200ms",
-              }}
-            />
-          </div>
-        </button>
+            Voltar ao editor
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => dispatch({ type: "UNDO" })}
+            disabled={state.undoStack.length === 0}
+            className="hidden rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed md:block"
+            style={{ color: "#737373" }}
+            title="Desfazer"
+            onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
+          >
+            <IconArrowBackUp className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => dispatch({ type: "REDO" })}
+            disabled={state.redoStack.length === 0}
+            className="hidden rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed md:block"
+            style={{ color: "#737373" }}
+            title="Refazer"
+            onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
+          >
+            <IconArrowForwardUp className="h-4 w-4" />
+          </button>
 
-        <button
-          onClick={() => setPublishOpen(true)}
-          className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-semibold transition-all duration-150 md:px-4"
-          style={{ backgroundColor: "#171717", color: "#ffffff" }}
-          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
-        >
-          <IconArrowUp style={{ width: 14, height: 14 }} />
-          <span className="hidden md:inline">Publicar</span>
-        </button>
-      </div>
+          <div className="mx-1 hidden h-5 w-px md:block" style={{ backgroundColor: "rgba(0,0,0,0.06)" }} />
+
+          <button
+            onClick={() => { setSettingsInitialTab("general"); setSettingsOpen(true); }}
+            className="rounded-[8px] p-2 transition-all duration-150"
+            style={{ color: "#737373" }}
+            title="Configuracoes"
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
+          >
+            <IconSettings className="h-4 w-4" />
+          </button>
+
+          <button
+            onClick={onTogglePreview}
+            className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[13px] font-medium transition-all duration-150"
+            style={{
+              backgroundColor: previewMode ? "#171717" : "transparent",
+              color: previewMode ? "#ffffff" : "#737373",
+              border: previewMode ? "none" : "1px solid rgba(0,0,0,0.06)",
+            }}
+            onMouseEnter={(e) => { if (!previewMode) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
+            onMouseLeave={(e) => { if (!previewMode) { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; } }}
+          >
+            Previa
+            <div
+              className="relative"
+              style={{ width: 32, height: 18, borderRadius: 999, backgroundColor: previewMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.1)", transition: "background 200ms" }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: 2,
+                  left: previewMode ? 16 : 2,
+                  width: 14,
+                  height: 14,
+                  borderRadius: 999,
+                  backgroundColor: previewMode ? "#ffffff" : "#a3a3a3",
+                  transition: "left 200ms ease-out, background 200ms",
+                }}
+              />
+            </div>
+          </button>
+
+          <button
+            onClick={() => setPublishOpen(true)}
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-semibold transition-all duration-150 md:px-4"
+            style={{ backgroundColor: "#171717", color: "#ffffff" }}
+            onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+          >
+            <IconArrowUp style={{ width: 14, height: 14 }} />
+            <span className="hidden md:inline">Publicar</span>
+          </button>
+        </div>
+      )}
 
       <SiteSettingsModal
         open={settingsOpen}
