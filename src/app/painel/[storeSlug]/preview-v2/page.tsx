@@ -4,8 +4,6 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { store } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
 import { PageRenderer } from "@/components/site-renderer/page-renderer";
 import { GenerateV2Button } from "./_components/generate-v2-button";
 import type { SiteBlueprint } from "@/types/ai-generation";

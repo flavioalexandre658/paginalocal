@@ -124,6 +124,7 @@ export function ImageEditPopup({
 
             {selectedUrl && !isUploading && (
               <div className="overflow-hidden rounded-[10px] border-2 border-[#171717]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={selectedUrl} alt="Selecionada" className="h-40 w-full object-cover" />
               </div>
             )}

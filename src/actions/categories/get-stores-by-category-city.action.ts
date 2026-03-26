@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { db } from '@/db'
 import { store, category } from '@/db/schema'
 import { actionClient } from '@/lib/safe-action'
-import { eq, and, desc, count, ilike } from 'drizzle-orm'
+import { eq, and, desc, count } from 'drizzle-orm'
 import { generateCitySlug } from '@/lib/utils'
 
 const getStoresByCategoryCitySchema = z.object({

@@ -111,6 +111,7 @@ export function EditorSectionWrapper({ section, style, className, children, prev
 
     container.addEventListener("scroll", onScroll, { passive: true });
     return () => container.removeEventListener("scroll", onScroll);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hoverRect !== null, env]);
 
   const save = useCallback(() => {
@@ -166,7 +167,6 @@ export function EditorSectionWrapper({ section, style, className, children, prev
 
   const openPopup = useCallback((el: HTMLElement, mode: string, path: string) => {
     const rect = el.getBoundingClientRect();
-    const content = section.content as Record<string, unknown>;
 
     if (mode === "button") {
       const blockType = section.blockType as BlockType;
@@ -202,7 +202,7 @@ export function EditorSectionWrapper({ section, style, className, children, prev
       hoverElRef.current.removeAttribute("data-pgl-hover");
       hoverElRef.current = null;
     }
-  }, [section.id, section.blockType, section.content, dispatch]);
+  }, [section.id, section.blockType, dispatch]);
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement;

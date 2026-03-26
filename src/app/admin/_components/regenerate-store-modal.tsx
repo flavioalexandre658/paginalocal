@@ -13,7 +13,6 @@ import {
   IconBuildingStore,
   IconClock,
   IconSparkles,
-  IconArrowLeft,
 } from '@tabler/icons-react'
 
 import { searchPlacesAction } from '@/actions/google/search-places.action'

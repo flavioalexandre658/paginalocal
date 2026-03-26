@@ -85,7 +85,7 @@ interface SeoTabProps {
 
 type SlugStatus = 'idle' | 'checking' | 'available' | 'taken' | 'same'
 
-export function SeoTab({ store, storeSlug }: SeoTabProps) {
+export function SeoTab({ store }: SeoTabProps) {
   const router = useRouter()
   const { executeAsync, isExecuting } = useAction(updateStoreAction)
   const { executeAsync: checkSlug } = useAction(checkSlugAvailabilityAction)

@@ -62,7 +62,7 @@ export function ProfileTab() {
     }
   }, [session, profileForm])
 
-  async function onProfileSubmit(_data: ProfileFormData) {
+  async function onProfileSubmit() {
     setIsUpdatingProfile(true)
     await new Promise(resolve => setTimeout(resolve, 1000))
     setIsUpdatingProfile(false)
@@ -120,6 +120,7 @@ export function ProfileTab() {
       >
         <div className="relative">
           {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={avatarUrl}
               alt={session?.user?.name || 'Avatar'}

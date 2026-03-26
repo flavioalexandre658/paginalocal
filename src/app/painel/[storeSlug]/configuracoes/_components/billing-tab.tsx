@@ -25,7 +25,7 @@ interface BillingTabProps {
   storeSlug: string
 }
 
-export function BillingTab({ storeSlug }: BillingTabProps) {
+export function BillingTab({}: BillingTabProps) {
   const { data: subscription, isLoading: isLoadingSubscription } = useUserSubscription()
   const { data: plans, isLoading: isLoadingPlans } = usePlans()
 

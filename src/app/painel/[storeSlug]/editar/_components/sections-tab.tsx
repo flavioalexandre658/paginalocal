@@ -306,7 +306,7 @@ function StatsEditor({ storeId, initialStats, isOpen, onToggle }: StatsEditorPro
   )
 }
 
-export function SectionsTab({ store, services: initialServices, storeSlug }: SectionsTabProps) {
+export function SectionsTab({ store, services: initialServices }: SectionsTabProps) {
   const { executeAsync, isExecuting } = useAction(updateStoreAction)
   const { executeAsync: deleteAsync } = useAction(deleteServiceAction)
   const { executeAsync: reorderAsync } = useAction(reorderServicesAction)

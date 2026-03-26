@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { z } from "zod";
 import { cn } from "@/lib/utils";
 import type { DesignTokens } from "@/types/ai-generation";
 import { MenuContentSchema } from "@/types/ai-generation";
@@ -12,11 +13,12 @@ interface Props {
   isDark?: boolean;
 }
 
-export function MenuTabs({ content, tokens }: Props) {
-  const parsed = MenuContentSchema.safeParse(content);
-  if (!parsed.success) return null;
-  const c = parsed.data;
+interface InnerProps {
+  c: z.infer<typeof MenuContentSchema>;
+  tokens: DesignTokens;
+}
 
+function MenuTabsInner({ c, tokens }: InnerProps) {
   const [activeTab, setActiveTab] = useState(c.categories[0]?.name ?? "");
 
   const style = tokens.style ?? "industrial";
@@ -176,4 +178,10 @@ export function MenuTabs({ content, tokens }: Props) {
       </div>
     </div>
   );
+}
+
+export function MenuTabs({ content, tokens }: Props) {
+  const parsed = MenuContentSchema.safeParse(content);
+  if (!parsed.success) return null;
+  return <MenuTabsInner c={parsed.data} tokens={tokens} />;
 }

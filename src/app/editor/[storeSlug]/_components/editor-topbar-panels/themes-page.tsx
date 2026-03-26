@@ -100,7 +100,7 @@ function ThemePreviewCard({ theme, isCurrent }: { theme: ThemeCard; isCurrent: b
   );
 }
 
-export function ThemesPage({ onBack }: Props) {
+export function ThemesPage({}: Props) {
   return (
     <div
       className="flex-1 overflow-y-auto"

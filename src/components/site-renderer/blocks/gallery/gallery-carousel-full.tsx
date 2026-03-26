@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { z } from "zod";
 import { cn } from "@/lib/utils";
 import type { DesignTokens } from "@/types/ai-generation";
 import { GalleryContentSchema } from "@/types/ai-generation";
@@ -12,11 +13,12 @@ interface Props {
   isDark?: boolean;
 }
 
-export function GalleryCarouselFull({ content, tokens }: Props) {
-  const parsed = GalleryContentSchema.safeParse(content);
-  if (!parsed.success) return null;
-  const c = parsed.data;
+interface InnerProps {
+  c: z.infer<typeof GalleryContentSchema>;
+  tokens: DesignTokens;
+}
 
+function GalleryCarouselFullInner({ c, tokens }: InnerProps) {
   const style = tokens.style ?? "industrial";
   const isBold = style === "bold";
 
@@ -181,4 +183,10 @@ export function GalleryCarouselFull({ content, tokens }: Props) {
       </div>
     </div>
   );
+}
+
+export function GalleryCarouselFull({ content, tokens }: Props) {
+  const parsed = GalleryContentSchema.safeParse(content);
+  if (!parsed.success) return null;
+  return <GalleryCarouselFullInner c={parsed.data} tokens={tokens} />;
 }

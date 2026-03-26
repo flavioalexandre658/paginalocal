@@ -136,7 +136,6 @@ export function GalleryTab({ store, images: initialImages }: GalleryTabProps) {
     if (result?.data?.success) {
       // Atualizar estado local: imagem selecionada vira hero, hero atual vira gallery
       setImages((prev) => {
-        const selectedImage = prev.find((img) => img.id === imageId)
         const currentHero = prev.find((img) => img.role === 'hero')
         
         return prev.map((img) => {
@@ -190,6 +189,7 @@ export function GalleryTab({ store, images: initialImages }: GalleryTabProps) {
 
           {heroUrl ? (
             <div className="relative aspect-video max-w-xl overflow-hidden rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={heroUrl}
                 alt="Imagem de destaque"
@@ -296,6 +296,7 @@ export function GalleryTab({ store, images: initialImages }: GalleryTabProps) {
                     className="group relative aspect-square overflow-hidden rounded-xl border border-slate-200/60 dark:border-slate-700/60"
                     onClick={() => setSelectedImageId(selectedImageId === image.id ? null : image.id)}
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={image.url}
                       alt={image.alt || 'Foto da galeria'}

@@ -47,6 +47,7 @@ export function FooterPremium({ tokens, globalContent, navigation, storeName }: 
                   key={i}
                   href={item.href}
                   className="block text-[0.825rem] text-white/30 font-light transition-colors duration-200 hover:text-white/70"
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   style={{ "--accent": tokens.palette.accent } as any}
                 >
                   {item.label}

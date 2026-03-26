@@ -80,6 +80,7 @@ export function ButtonEditPopup({
       content: updated,
     });
     onClose();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content, dispatch, label, linkValue, linkType, sectionId, textField, linkField, typeField, fieldPrefix, onClose]);
 
   const placeholder =

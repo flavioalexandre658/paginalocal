@@ -16,7 +16,7 @@ interface IntegrationsTabProps {
   storeSlug: string
 }
 
-export function IntegrationsTab({ storeSlug }: IntegrationsTabProps) {
+export function IntegrationsTab({}: IntegrationsTabProps) {
   const gmbIntegration = {
     id: 'google',
     name: 'Google Meu Negócio',

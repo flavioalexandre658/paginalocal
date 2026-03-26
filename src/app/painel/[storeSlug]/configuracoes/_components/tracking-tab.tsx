@@ -13,7 +13,6 @@ import {
   IconPlus,
   IconTrash,
   IconCheck,
-  IconX,
   IconAlertCircle,
 } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
@@ -140,6 +139,7 @@ export function TrackingTab({ storeSlug }: TrackingTabProps) {
 
   useEffect(() => {
     loadConfigs()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeSlug])
 
   const loadConfigs = async () => {

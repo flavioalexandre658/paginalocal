@@ -15,7 +15,6 @@ import {
   IconBrandWhatsapp,
   IconExternalLink,
   IconCreditCard,
-  IconBuildingStore,
   IconX,
   IconChevronDown,
 } from '@tabler/icons-react'
@@ -37,7 +36,6 @@ import {
 } from '@/components/ui/popover'
 import { GlassCard, GlassCardHeader, GlassCardTitle, GlassCardDescription } from '@/components/ui/glass-card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -70,10 +68,9 @@ function getInitials(name: string) {
 }
 
 function StorePicker({
-  value,
   onChange,
 }: {
-  value: string
+  value?: string
   onChange: (slug: string) => void
 }) {
   const [open, setOpen] = useState(false)
@@ -122,6 +119,7 @@ function StorePicker({
         <button
           type="button"
           role="combobox"
+          aria-controls=""
           aria-expanded={open}
           className={cn(
             'flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm transition-colors',

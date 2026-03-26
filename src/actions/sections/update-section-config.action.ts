@@ -6,7 +6,7 @@ import { authActionClient } from '@/lib/safe-action'
 import { z } from 'zod'
 import { eq, and } from 'drizzle-orm'
 import { revalidateTag } from 'next/cache'
-import type { StoreSection, SectionType } from '@/db/schema'
+import type { StoreSection } from '@/db/schema'
 
 const updateSectionConfigSchema = z.object({
   storeId: z.string().uuid(),

@@ -9,7 +9,6 @@ import {
   IconUsers,
   IconBrandWhatsapp,
   IconBuildingStore,
-  IconMail,
   IconPhone,
   IconCrown,
   IconKey,

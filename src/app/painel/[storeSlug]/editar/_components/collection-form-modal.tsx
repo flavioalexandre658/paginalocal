@@ -206,6 +206,7 @@ export function CollectionFormModal({
 
                 {imagePreview ? (
                   <div className="relative aspect-[4/3] max-w-[240px] overflow-hidden rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={imagePreview}
                       alt="Capa da coleção"

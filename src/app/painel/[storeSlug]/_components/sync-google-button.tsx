@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useAction } from 'next-safe-action/hooks'
-import { IconRefresh, IconBrandGoogle } from '@tabler/icons-react'
+import { IconRefresh } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
 
 import { syncStoreWithGoogleAction } from '@/actions/stores/sync-store-with-google.action'
@@ -33,7 +33,7 @@ export function SyncGoogleButton({ storeId }: SyncGoogleButtonProps) {
     }
 
     if (result?.data) {
-      const { rating, reviewsCount, newReviewsAdded, imagesProcessed } = result.data
+      const { rating, newReviewsAdded, imagesProcessed } = result.data
       const parts: string[] = []
 
       if (newReviewsAdded > 0) {

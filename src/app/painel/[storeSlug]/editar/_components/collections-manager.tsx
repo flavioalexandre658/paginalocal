@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useAction } from 'next-safe-action/hooks'
 import toast from 'react-hot-toast'
 import { IconPlus, IconPencil, IconTrash, IconFolders } from '@tabler/icons-react'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getCollectionsAction } from '@/actions/collections/get-collections.action'
 import { deleteCollectionAction } from '@/actions/collections/delete-collection.action'
@@ -33,6 +32,7 @@ export function CollectionsManager({ storeId }: CollectionsManagerProps) {
 
   useEffect(() => {
     loadCollections()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function loadCollections() {

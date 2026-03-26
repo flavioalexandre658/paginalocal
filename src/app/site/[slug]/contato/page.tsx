@@ -160,8 +160,6 @@ export default async function ContatoPage({ params }: PageProps) {
   }
 
   const { store: storeData, page, services, institutionalPages: activePages } = data
-  const g = getStoreGrammar(storeData.termGender, storeData.termNumber)
-
   const ctx: LocalPageCtx = {
     id: storeData.id,
     slug: storeData.slug,

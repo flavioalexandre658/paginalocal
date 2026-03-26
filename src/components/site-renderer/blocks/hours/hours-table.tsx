@@ -79,7 +79,7 @@ export function HoursTable({ content, tokens }: Props) {
                 )}
                 style={{
                   borderColor: `${tokens.palette.text}08`,
-                  // @ts-ignore
+                  // @ts-expect-error -- CSS custom property
                   "--highlight": `${tokens.palette.primary}08`,
                   ...(style === "elegant" && isToday
                     ? { borderLeft: `3px solid ${tokens.palette.accent}` }

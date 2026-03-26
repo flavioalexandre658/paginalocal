@@ -102,6 +102,7 @@ function ReviewCard({ review }: { review: Review }) {
     <div className="rounded-xl border border-slate-200/60 bg-slate-50/50 p-4 dark:border-slate-700/60 dark:bg-slate-800/30">
       <div className="flex items-start gap-3">
         {review.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={review.imageUrl}
             alt={review.authorName}

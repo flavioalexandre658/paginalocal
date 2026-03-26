@@ -36,7 +36,6 @@ interface ProductImageGalleryProps {
 
 export function ProductImageGallery({
     images,
-    productName,
     hasPromotion = false,
     className,
 }: ProductImageGalleryProps) {

@@ -7,8 +7,6 @@ import toast from "react-hot-toast";
 import {
   IconX,
   IconWorld,
-  IconPlug,
-  IconChartBar,
   IconSettings2,
   IconLoader2,
   IconTrash,
@@ -214,7 +212,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
   );
 }
 
-function GeneralTab({ storeId, storeSlug, storeName }: { storeId: string; storeSlug: string; storeName: string }) {
+function GeneralTab({ storeId, storeSlug }: { storeId: string; storeSlug: string; storeName: string }) {
   const { executeAsync: updateStore } = useAction(updateStoreAction);
   const [isPublished, setIsPublished] = useState(false);
   const [seoIndexable, setSeoIndexable] = useState(true);
@@ -619,13 +617,14 @@ function TrackingTab({ storeSlug }: { storeSlug: string }) {
   const [configs, setConfigs] = useState<{ id: string; platform: string; trackingId: string; isActive: boolean }[]>([]);
   const [editPlatform, setEditPlatform] = useState<TrackingPlatform | null>(null);
   const [editValue, setEditValue] = useState("");
-  const [loaded, setLoaded] = useState(false);
+  const [, setLoaded] = useState(false);
 
   useEffect(() => {
     fetchTracking({ storeSlug }).then((r) => {
       if (r?.data) setConfigs(r.data as typeof configs);
       setLoaded(true);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeSlug]);
 
   async function handleSave() {

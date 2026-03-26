@@ -227,14 +227,13 @@ interface BreakdownItemProps {
   onHover: (id: string | null) => void
 }
 
-function BreakdownItem({ 
-  id, 
-  icon, 
-  label, 
-  value, 
-  percentage, 
-  bgColor, 
-  barColor, 
+function BreakdownItem({
+  id,
+  icon,
+  label,
+  value,
+  percentage,
+  barColor,
   textColor,
   isHovered,
   onHover,

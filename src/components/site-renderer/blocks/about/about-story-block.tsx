@@ -33,7 +33,6 @@ export function AboutStoryBlock({ content, tokens }: Props) {
 
   const style = tokens.style;
   const isMinimal = style === "minimal";
-  const isBold = style === "bold";
 
   /* SELF_BG: about controls its own background */
   const selfDark = style === "industrial" || style === "bold";

@@ -19,10 +19,8 @@ import {
   IconEyeOff,
   IconChevronUp,
   IconChevronDown,
-  IconFolders,
 } from '@tabler/icons-react'
 import { Switch } from '@/components/ui/switch'
-import { Button } from '@/components/ui/button'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -75,8 +73,11 @@ function SessoesPageInner({
   images,
 }: {
   storeSlug: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   store: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   services: any[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   images: any[]
 }) {
   const sections = getStoreSections(store)

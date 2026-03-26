@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
 import { lead, store } from '@/db/schema'
-import { eq, and, desc, gte, lte, count, sql, ilike, or } from 'drizzle-orm'
+import { eq, and, desc, gte, lte, count, ilike, or } from 'drizzle-orm'
 
 const getLeadsPaginatedSchema = z.object({
   storeId: z.string().uuid(),

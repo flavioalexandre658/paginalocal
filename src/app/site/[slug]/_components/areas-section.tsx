@@ -1,6 +1,5 @@
 import React from "react"
 import { IconMapPin } from "@tabler/icons-react"
-import { getStoreGrammar } from "@/lib/store-terms"
 import type { TermGender, TermNumber } from "@/lib/store-terms"
 
 // ✅ novo local-seo modular
@@ -31,13 +30,10 @@ export function AreasSection({
   state,
   category,
   storeName,
-  termGender,
-  termNumber,
   mode,
   id,
   slug,
 }: AreasSectionProps) {
-  const g = getStoreGrammar(termGender, termNumber)
   if (!neighborhoods || neighborhoods.length === 0) return null
 
   const ctx: LocalPageCtx = {

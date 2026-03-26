@@ -305,6 +305,7 @@ export function ServiceFormModal({
 
                   {heroPreview ? (
                     <div className="relative aspect-video overflow-hidden rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={heroPreview}
                         alt="Imagem de destaque do serviço"

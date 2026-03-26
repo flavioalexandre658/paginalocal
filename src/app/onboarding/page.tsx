@@ -108,7 +108,7 @@ export default function OnboardingPage() {
   const [hasSearched, setHasSearched] = useState(false)
   const [selectedPlace, setSelectedPlace] = useState<PlaceResult | null>(null)
   const [currentLogIndex, setCurrentLogIndex] = useState(0)
-  const [createdStore, setCreatedStore] = useState<{ slug: string; name: string; id?: string } | null>(null)
+  const [, setCreatedStore] = useState<{ slug: string; name: string; id?: string } | null>(null)
   const [placePreview, setPlacePreview] = useState<PlacePreview | null>(null)
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
   const [hasStores, setHasStores] = useState(false)
@@ -526,7 +526,6 @@ function SearchStep({
   results,
   isSearching,
   hasSearched,
-  hasStores,
   onSearch,
   onSelectPlace,
   onBackToChoose,
@@ -809,6 +808,7 @@ function ConfirmStep({
 
             {heroPhoto && (
               <div className="flex justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={heroPhoto}
                   alt={editedName || place.name}

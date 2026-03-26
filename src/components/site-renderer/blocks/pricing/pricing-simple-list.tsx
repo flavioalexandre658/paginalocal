@@ -22,7 +22,6 @@ export function PricingSimpleList({ content, tokens }: Props) {
   const isIndustrial = style === "industrial";
   const isElegant = style === "elegant";
   const isBold = style === "bold";
-  const isMinimal = style === "minimal";
 
   return (
     <div className="relative overflow-hidden">

@@ -431,9 +431,6 @@ export const getStoreDashboardAction = authActionClient
       return priorityOrder[a.priority] - priorityOrder[b.priority]
     })
 
-    const whatsappLeadsRecent = recentLeads.filter(l => l.source?.includes('whatsapp')).length
-    const phoneLeadsRecent = recentLeads.filter(l => l.source?.includes('phone') || l.source?.includes('call')).length
-
     return {
       store: {
         id: storeData.id,

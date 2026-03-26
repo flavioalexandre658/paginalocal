@@ -354,16 +354,15 @@ function StepLayout({
   children,
   onBack,
   icons,
-  iconColors,
   title,
 }: {
   children: React.ReactNode
   onBack?: () => void
   icons: [React.ComponentType<{ className?: string }>, React.ComponentType<{ className?: string }>, React.ComponentType<{ className?: string }>]
-  iconColors: string
+  iconColors?: string
   title: string
 }) {
-  const [Icon1, Icon2, Icon3] = icons
+  const [Icon1] = icons
 
   return (
     <motion.div

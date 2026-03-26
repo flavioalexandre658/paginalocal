@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { PglButton } from "../../shared/pgl-button";
 import type { DesignTokens } from "@/types/ai-generation";
@@ -62,7 +63,7 @@ export function HeaderMinimal({ content, tokens, navigation }: Props) {
           aria-label="Navegacao principal"
         >
           {/* Logo / Store Name */}
-          <a href="/" className="relative z-50 shrink-0">
+          <Link href="/" className="relative z-50 shrink-0">
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -78,7 +79,7 @@ export function HeaderMinimal({ content, tokens, navigation }: Props) {
                 {storeName}
               </span>
             )}
-          </a>
+          </Link>
 
           {/* Hamburger button — visible on ALL breakpoints */}
           <button

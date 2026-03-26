@@ -184,8 +184,8 @@ export async function resolveBlock(
   if (!loader) return null;
 
   try {
-    const module = await loader();
-    return module.default;
+    const blockModule = await loader();
+    return blockModule.default;
   } catch {
     return null;
   }

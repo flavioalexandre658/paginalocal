@@ -540,7 +540,6 @@ export function PagesTab({
   store,
   pages: initialPages,
   services,
-  storeSlug,
 }: PagesTabProps) {
   const [pages, setPages] = useState<StorePageForEdit[]>(initialPages)
   const [openSections, setOpenSections] = useState<string[]>(['pages'])

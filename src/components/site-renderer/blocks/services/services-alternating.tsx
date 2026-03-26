@@ -19,8 +19,6 @@ export function ServicesAlternating({ content, tokens }: Props) {
 
   const style = tokens.style;
   const isMinimal = style === "minimal";
-  const isElegant = style === "elegant";
-  const isWarm = style === "warm";
   const isBold = style === "bold";
 
   /* Services are always on light bg */

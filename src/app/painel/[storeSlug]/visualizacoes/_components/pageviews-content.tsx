@@ -32,8 +32,6 @@ import {
   StatsRowSkeleton,
 } from '@/components/ui/page-blocks'
 import {
-  DataTableRoot,
-  DataTableToolbar,
   DataTableSearch,
   DataTableContent,
   DataTableEmptyState,
@@ -117,7 +115,7 @@ export function PageviewsContent({
 }: PageviewsContentProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
 
   const [pageviews, setPageviews] = useState<Pageview[]>([])
   const [totalCount, setTotalCount] = useState(0)

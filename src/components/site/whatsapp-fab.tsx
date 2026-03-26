@@ -17,8 +17,8 @@ interface WhatsAppFabProps {
   isOwner?: boolean
 }
 
-export function WhatsAppFab({ store, isOwner = false }: WhatsAppFabProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+export function WhatsAppFab({ store }: WhatsAppFabProps) {
+  const [, setIsModalOpen] = useState(false)
   const { trackClick } = useTrackClick()
   const message = getWhatsAppDefaultMessage(store.name, store.whatsappDefaultMessage)
 

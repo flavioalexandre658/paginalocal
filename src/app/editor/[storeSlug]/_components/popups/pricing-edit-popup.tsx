@@ -233,7 +233,7 @@ export function PricingEditPopup({ sectionId, content, onClose }: Props) {
                 <div className="flex items-center justify-between rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-white px-[14px] py-[12px]">
                   <div>
                     <p className="text-[14px] font-medium text-[#171717]">Plano destaque</p>
-                    <p className="text-[13px] text-[#737373]">Marcar como "Mais popular"</p>
+                    <p className="text-[13px] text-[#737373]">Marcar como &quot;Mais popular&quot;</p>
                   </div>
                   <Switch
                     checked={activePlan.highlighted}

@@ -58,6 +58,7 @@ function DropZone({
     <div className="relative">
       {preview ? (
         <div className="relative overflow-hidden rounded-xl border border-emerald-200/60 bg-emerald-50/30 dark:border-emerald-800/40 dark:bg-emerald-950/20">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={preview.preview}
             alt="preview"

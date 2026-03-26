@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { PglButton } from "../../shared/pgl-button";
 import type { DesignTokens } from "@/types/ai-generation";
@@ -47,7 +48,7 @@ export function HeaderSplit({ content, tokens, navigation }: Props) {
         aria-label="Navegacao principal"
       >
         {/* Left: Logo / Store Name */}
-        <a href="/" className="shrink-0">
+        <Link href="/" className="shrink-0">
           {logoUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -63,7 +64,7 @@ export function HeaderSplit({ content, tokens, navigation }: Props) {
               {storeName}
             </span>
           )}
-        </a>
+        </Link>
 
         {/* Center: Nav links — desktop */}
         <ul className="hidden lg:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">

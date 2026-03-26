@@ -181,6 +181,7 @@ export function TestimonialsGrid({ content, tokens }: Props) {
               <div className="flex items-center gap-3">
                 {style !== "minimal" && (
                   item.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={item.image}
                       alt={item.author}

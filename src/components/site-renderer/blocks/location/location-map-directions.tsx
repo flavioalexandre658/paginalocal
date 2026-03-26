@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { MapPin, Navigation } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { StyledHeadline } from "../../shared/styled-headline";
 import { PglButton } from "../../shared/pgl-button";
 import type { DesignTokens } from "@/types/ai-generation";

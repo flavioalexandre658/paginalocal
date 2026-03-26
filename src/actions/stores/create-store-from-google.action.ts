@@ -4,20 +4,14 @@ import { z } from 'zod'
 import { eq } from 'drizzle-orm'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
-import { store, testimonial, service, storeImage, storePage } from '@/db/schema'
+import { store, testimonial, service, storeImage } from '@/db/schema'
 import { checkCanCreateStore, getUserPlanContext } from '@/lib/plan-middleware'
 import {
-  getPhotoUrl,
   downloadGooglePhoto,
 } from '@/lib/google-places'
 import { optimizeHeroImage, optimizeGalleryImage } from '@/lib/image-optimizer'
 import { uploadToS3, generateS3Key } from '@/lib/s3'
 import { addDomainToVercel } from '@/actions/vercel/add-domain'
-import { notifyStoreActivated } from '@/lib/google-indexing'
-import { generateInstitutionalPages } from '@/lib/ai'
-import type { MarketingCopyInput } from '@/lib/ai'
-import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
-import { generateCitySlug } from '@/lib/utils'
 import { getDefaultSectionsForMode } from '@/lib/store-sections'
 import { inferSiteType } from '@/lib/infer-site-type'
 import {

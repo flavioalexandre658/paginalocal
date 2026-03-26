@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { IconPhone } from '@tabler/icons-react'
 import { getWhatsAppUrl, getPhoneUrl, getWhatsAppDefaultMessage, cn } from '@/lib/utils'
 import { useTrackClick } from '@/hooks/use-track-click'
-import { getContrastColor, isLightColor } from '@/lib/color-contrast'
+import { isLightColor } from '@/lib/color-contrast'
 
 interface ContactButtonProps {
   store: {
@@ -28,19 +28,17 @@ interface ContactButtonProps {
 export function ContactButton({
   store,
   type,
-  isOwner = false,
   variant = 'hero',
   className,
   children,
 }: ContactButtonProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [, setIsModalOpen] = useState(false)
   const { trackClick } = useTrackClick()
 
   const phoneNumber = store.phone || store.whatsapp
   const whatsappLink = getWhatsAppUrl(store.whatsapp, getWhatsAppDefaultMessage(store.name, store.whatsappDefaultMessage))
   const phoneLink = getPhoneUrl(phoneNumber)
   const btnColor = store.buttonColor || '#22c55e'
-  const btnTextColor = getContrastColor(btnColor)
   const heroBg = store.heroBackgroundColor || '#1e293b'
   const heroIsLight = isLightColor(heroBg)
 
@@ -60,8 +58,6 @@ export function ContactButton({
       touchpoint,
     })
   }
-
-  const useCustomColor = type === 'whatsapp' && store.buttonColor
 
   const phoneHeroStyle = heroIsLight
     ? 'inline-flex items-center gap-3 rounded-full border-2 border-black/20 bg-black/5 px-7 py-3.5 text-base font-bold text-slate-900 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-black/10 sm:px-9 sm:py-4 sm:text-lg'

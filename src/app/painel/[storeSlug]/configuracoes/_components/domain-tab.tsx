@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -292,9 +293,9 @@ export function DomainTab({ storeSlug }: DomainTabProps) {
               ? 'Assine o plano Pro ou Agency para usar seu próprio domínio e aumentar a autoridade do seu negócio.'
               : `Seu plano ${planName} não inclui domínio próprio. Faça upgrade para o plano Pro ou Agency.`}
           </p>
-          <a href="/planos">
+          <Link href="/planos">
             <EnhancedButton className="mt-6">Fazer upgrade</EnhancedButton>
-          </a>
+          </Link>
         </div>
       </div>
     )
@@ -570,7 +571,7 @@ export function DomainTab({ storeSlug }: DomainTabProps) {
                     <strong className="text-slate-900 dark:text-white">
                       alguns minutos até 48 horas
                     </strong>
-                    . Clique no botão "Verificar" abaixo para checar o status.
+                    . Clique no botão &quot;Verificar&quot; abaixo para checar o status.
                   </p>
 
                   <div className="flex flex-wrap gap-3">

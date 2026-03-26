@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
-import { store, service, category, storePage } from '@/db/schema'
+import { store, service } from '@/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { generateSlug } from '@/lib/utils'
 import {
@@ -15,13 +15,8 @@ import {
   type ServiceItem,
   type FAQItem,
 } from '@/lib/gemini'
-import { generateInstitutionalPages } from '@/lib/ai'
-import type { MarketingCopyInput } from '@/lib/ai'
 import { checkCanCreateStore, getUserPlanContext } from '@/lib/plan-middleware'
 import { addDomainToVercel } from '@/actions/vercel/add-domain'
-import { notifyStoreActivated } from '@/lib/google-indexing'
-import { revalidateSitemap, revalidateCategoryPages } from '@/lib/sitemap-revalidation'
-import { generateCitySlug } from '@/lib/utils'
 import { getDefaultSectionsForMode } from '@/lib/store-sections'
 import { inferSiteType } from '@/lib/infer-site-type'
 
@@ -170,9 +165,6 @@ export const createStoreManualAction = authActionClient
       whatsapp,
       monthlyRevenue,
       primaryColor,
-      secondaryColor,
-      accentColor,
-      selectedStyle,
       termGender: inputTermGender,
       termNumber: inputTermNumber,
     } = parsedInput

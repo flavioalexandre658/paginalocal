@@ -270,6 +270,7 @@ function MiniDropZone({
             </label>
             {preview ? (
                 <div className="relative h-28 w-full overflow-hidden rounded-lg border border-emerald-200/60 bg-emerald-50/30 dark:border-emerald-800/40 dark:bg-emerald-950/20">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={preview.url} alt="preview" className="h-full w-full object-cover" />
                     <button
                         type="button"

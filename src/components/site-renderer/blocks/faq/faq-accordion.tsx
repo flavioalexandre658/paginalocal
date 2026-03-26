@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { StyledHeadline } from "../../shared/styled-headline";
@@ -14,11 +15,12 @@ interface Props {
   isDark?: boolean;
 }
 
-export function FaqAccordion({ content, tokens }: Props) {
-  const parsed = FaqContentSchema.safeParse(content);
-  if (!parsed.success) return null;
-  const c = parsed.data;
+interface InnerProps {
+  c: z.infer<typeof FaqContentSchema>;
+  tokens: DesignTokens;
+}
 
+function FaqAccordionInner({ c, tokens }: InnerProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const style = tokens.style;
@@ -244,4 +246,10 @@ export function FaqAccordion({ content, tokens }: Props) {
       </div>
     </div>
   );
+}
+
+export function FaqAccordion({ content, tokens }: Props) {
+  const parsed = FaqContentSchema.safeParse(content);
+  if (!parsed.success) return null;
+  return <FaqAccordionInner c={parsed.data} tokens={tokens} />;
 }

@@ -419,6 +419,7 @@ export function ProductFormModal({
                                                 draggedIndex === index && 'opacity-50 scale-95'
                                             )}
                                         >
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
                                                 src={image.url}
                                                 alt={image.alt}

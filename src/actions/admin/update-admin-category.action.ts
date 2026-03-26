@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { adminActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
 import { category } from '@/db/schema'
-import { eq, and, ne } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { generateSlug } from '@/lib/utils'
 import { truncate } from '@/lib/store-builder'
 

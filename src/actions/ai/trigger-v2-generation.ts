@@ -3,10 +3,8 @@
 import { authActionClient } from "@/lib/safe-action";
 import { z } from "zod";
 import { db } from "@/db";
-import { store, service, testimonial, storeImage } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
 import type { BusinessContext } from "@/types/ai-generation";
-import { generateAndPersistBlueprint, type GenerationModel } from "./generate-site-v2";
+import { generateAndPersistBlueprint } from "./generate-site-v2";
 
 export const triggerV2Generation = authActionClient
   .schema(z.object({

@@ -10,7 +10,7 @@ interface Props {
   isDark?: boolean;
 }
 
-export function WhatsappCircle({ content, tokens }: Props) {
+export function WhatsappCircle({ content }: Props) {
   const parsed = WhatsappFloatContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;

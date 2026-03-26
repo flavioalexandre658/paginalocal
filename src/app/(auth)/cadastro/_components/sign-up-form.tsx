@@ -84,13 +84,6 @@ export function SignUpForm() {
     router.push(redirectUrl)
   }
 
-  const slugQuery = storeSlugParam ? `&s=${storeSlugParam}` : ''
-  const callbackURL = hasTransferPlan
-    ? `/cadastro/plano-transferencia?p=${planParam}${slugQuery}`
-    : isTransferFlow
-      ? '/cadastro/aguardando-transferencia'
-      : '/painel'
-
   return (
     <div className="space-y-6">
       <Form {...form}>

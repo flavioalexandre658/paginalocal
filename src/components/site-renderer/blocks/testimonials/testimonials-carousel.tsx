@@ -5,12 +5,15 @@ import { cn } from "@/lib/utils";
 import { StyledHeadline } from "../../shared/styled-headline";
 import type { DesignTokens } from "@/types/ai-generation";
 import { TestimonialsContentSchema } from "@/types/ai-generation";
+import { z } from "zod";
 
 interface Props {
   content: Record<string, unknown>;
   tokens: DesignTokens;
   isDark?: boolean;
 }
+
+type TestimonialsData = z.infer<typeof TestimonialsContentSchema>;
 
 function getInitials(name: string) {
   return name
@@ -35,11 +38,7 @@ function getSerifFont(fontPairing: string): string {
   return serifs[fontPairing] || "'Playfair Display', serif";
 }
 
-export function TestimonialsCarousel({ content, tokens }: Props) {
-  const parsed = TestimonialsContentSchema.safeParse(content);
-  if (!parsed.success) return null;
-  const c = parsed.data;
-
+function TestimonialsCarouselInner({ c, tokens }: { c: TestimonialsData; tokens: DesignTokens }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const serifFont = getSerifFont(tokens.fontPairing);
@@ -177,6 +176,7 @@ export function TestimonialsCarousel({ content, tokens }: Props) {
             style === "minimal" ? "justify-start pl-6" : "justify-center",
           )}>
             {item.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={item.image}
                 alt={item.author}
@@ -297,4 +297,10 @@ export function TestimonialsCarousel({ content, tokens }: Props) {
       </div>
     </div>
   );
+}
+
+export function TestimonialsCarousel({ content, tokens }: Props) {
+  const parsed = TestimonialsContentSchema.safeParse(content);
+  if (!parsed.success) return null;
+  return <TestimonialsCarouselInner c={parsed.data} tokens={tokens} />;
 }

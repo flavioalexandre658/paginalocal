@@ -49,7 +49,7 @@ interface Props {
 
 export function EditorTopbar({
   storeId, storeSlug, storeName, sidebarCollapsed, onToggleSidebar,
-  mobileMenuOpen, onToggleMobileMenu, userStores, previewMode, onTogglePreview,
+  onToggleMobileMenu, userStores, previewMode, onTogglePreview,
   themesOpen, onOpenThemes, onCloseThemes,
 }: Props) {
   const { state, dispatch } = useEditor();

@@ -119,7 +119,7 @@ export function DynamicTipsCard({ tips, allCompleted, storeSlug }: DynamicTipsCa
   )
 }
 
-function CompletedState({ storeSlug }: { storeSlug: string }) {
+function CompletedState({}: { storeSlug: string }) {
   const marketingTips = [
     {
       icon: <IconShare className="h-4 w-4" />,

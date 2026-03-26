@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { IconArrowRight } from '@tabler/icons-react'
 import { getServicePageUrl } from '@/lib/utils'
 import { getServiceIcon } from '@/lib/service-icons'
-import { getStoreGrammar } from '@/lib/store-terms'
 import type { TermGender, TermNumber } from '@/lib/store-terms'
 
 // ✅ local-seo modular
@@ -45,14 +44,10 @@ export function ServicesSection({
   category,
   city,
   state,
-  termGender,
-  termNumber,
   mode,
   id,
   slug,
 }: ServicesSectionProps) {
-  const g = getStoreGrammar(termGender, termNumber)
-
   if (!services || services.length === 0) return null
 
   const ctx: LocalPageCtx = {

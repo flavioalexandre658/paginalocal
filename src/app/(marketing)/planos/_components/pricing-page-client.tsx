@@ -3,14 +3,11 @@
 import { useState, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import Link from 'next/link'
 import { useAction } from 'next-safe-action/hooks'
 import toast from 'react-hot-toast'
 import { PageContainer } from '@/components/ui/page-container'
 import { PricingPlans } from '@/components/shared/pricing-plans'
-import { EnhancedButton } from '@/components/ui/enhanced-button'
 import {
-  IconArrowLeft,
   IconAlertCircle,
   IconBrandWhatsapp,
   IconPhone,
@@ -23,7 +20,6 @@ import {
   IconX,
   IconCheck,
 } from '@tabler/icons-react'
-import { trackWhatsAppClick } from '@/lib/tracking'
 import { createCheckoutSession } from '@/actions/subscriptions/create-checkout-session.action'
 import type { IPlan, BillingInterval } from '@/interfaces/subscription.interface'
 

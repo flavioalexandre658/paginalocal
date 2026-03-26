@@ -42,6 +42,7 @@ export async function TrackingScripts({ storeSlug }: TrackingScriptsProps) {
       <TrackingScriptsLoader configs={trackingConfigs} />
       {metaConfig && (
         <noscript>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             height="1"
             width="1"

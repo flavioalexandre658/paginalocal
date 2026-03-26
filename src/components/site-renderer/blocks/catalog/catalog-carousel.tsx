@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { z } from "zod";
 import { cn } from "@/lib/utils";
 import type { DesignTokens } from "@/types/ai-generation";
 import { CatalogContentSchema } from "@/types/ai-generation";
@@ -14,11 +15,13 @@ interface Props {
   isDark?: boolean;
 }
 
-export function CatalogCarousel({ content, tokens, isDark }: Props) {
-  const parsed = CatalogContentSchema.safeParse(content);
-  if (!parsed.success) return null;
-  const c = parsed.data;
+interface InnerProps {
+  c: z.infer<typeof CatalogContentSchema>;
+  tokens: DesignTokens;
+  isDark?: boolean;
+}
 
+function CatalogCarouselInner({ c, tokens, isDark }: InnerProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const isBold = tokens.style === "bold";
@@ -194,4 +197,10 @@ export function CatalogCarousel({ content, tokens, isDark }: Props) {
       </div>
     </div>
   );
+}
+
+export function CatalogCarousel({ content, tokens, isDark }: Props) {
+  const parsed = CatalogContentSchema.safeParse(content);
+  if (!parsed.success) return null;
+  return <CatalogCarouselInner c={parsed.data} tokens={tokens} isDark={isDark} />;
 }

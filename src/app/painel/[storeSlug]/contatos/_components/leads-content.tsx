@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import dayjs from 'dayjs'
 import 'dayjs/locale/pt-br'
 import {
@@ -21,7 +20,6 @@ import {
   IconMapPin,
   IconEye,
   IconTag,
-  IconArrowLeft,
   IconCalendar,
 } from '@tabler/icons-react'
 import {
@@ -35,10 +33,7 @@ import {
   StatsRowSkeleton,
 } from '@/components/ui/page-blocks'
 import {
-  DataTableRoot,
-  DataTableToolbar,
   DataTableSearch,
-  DataTableActions,
   DataTableContent,
   DataTableEmptyState,
   ServerPagination,
@@ -48,8 +43,6 @@ import {
   MobileCardHeader,
   MobileCardTitle,
   MobileCardContent,
-  MobileCardFooter,
-  MobileCardEmptyState,
 } from '@/components/ui/data-table-blocks'
 import {
   FilterBar,
@@ -69,7 +62,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { getLeadsPaginatedAction, getLeadsStatsAction } from '@/actions/leads/get-leads-paginated.action'
 
@@ -131,7 +123,7 @@ export function LeadsContent({
 }: LeadsContentProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [isPending, startTransition] = useTransition()
+  const [, startTransition] = useTransition()
 
   const [leads, setLeads] = useState<Lead[]>([])
   const [totalCount, setTotalCount] = useState(0)
@@ -255,11 +247,6 @@ export function LeadsContent({
 
   const handleSearchChange = (value: string) => {
     setSearch(value)
-  }
-
-  const handleSearchSubmit = () => {
-    setPage(1)
-    updateUrl({ search: search || undefined, page: '1' })
   }
 
   const clearFilters = () => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { MapPin, Phone, Clock, Mail } from "lucide-react";
+import { MapPin, Phone, Mail } from "lucide-react";
 import { StyledHeadline } from "../../shared/styled-headline";
 import { PglButton } from "../../shared/pgl-button";
 import type { DesignTokens } from "@/types/ai-generation";
@@ -26,6 +26,7 @@ export function ContactFormInfo({ content, tokens }: Props) {
     c.address && { icon: MapPin, label: "Endereço", value: c.address, field: "address" },
     c.phone && { icon: Phone, label: "Telefone", value: c.phone, field: "phone" },
     c.email && { icon: Mail, label: "E-mail", value: c.email, field: "email" },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ].filter(Boolean) as { icon: any; label: string; value: string; field: string }[];
 
   return (

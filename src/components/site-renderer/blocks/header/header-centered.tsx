@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { PglButton } from "../../shared/pgl-button";
 import type { DesignTokens } from "@/types/ai-generation";
@@ -45,7 +46,7 @@ export function HeaderCentered({ content, tokens, navigation }: Props) {
         {/* Top row: optional CTA right-aligned, logo centered */}
         <div className="relative flex items-center justify-center py-3">
           {/* Logo / Store Name — centered */}
-          <a href="/" className="shrink-0">
+          <Link href="/" className="shrink-0">
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -61,7 +62,7 @@ export function HeaderCentered({ content, tokens, navigation }: Props) {
                 {storeName}
               </span>
             )}
-          </a>
+          </Link>
 
           {/* CTA — absolute right on desktop */}
           {ctaText && (

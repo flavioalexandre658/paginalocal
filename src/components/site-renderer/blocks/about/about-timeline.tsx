@@ -34,7 +34,6 @@ export function AboutTimeline({ content, tokens }: Props) {
   const isMinimal = style === "minimal";
   const isElegant = style === "elegant";
   const isWarm = style === "warm";
-  const isBold = style === "bold";
 
   /* SELF_BG: about controls its own background */
   const selfDark = style === "industrial" || style === "bold";

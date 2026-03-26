@@ -160,6 +160,7 @@ export function TestimonialsFeatured({ content, tokens }: Props) {
             style === "minimal" ? "justify-start pl-6" : "justify-center",
           )}>
             {featured.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={featured.image}
                 alt={featured.author}

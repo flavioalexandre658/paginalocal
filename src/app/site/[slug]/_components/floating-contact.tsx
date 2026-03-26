@@ -22,7 +22,7 @@ interface FloatingContactProps {
   isOwner?: boolean
 }
 
-export function FloatingContact({ store, isOwner = false }: FloatingContactProps) {
+export function FloatingContact({ store }: FloatingContactProps) {
   const [showMobileBar, setShowMobileBar] = useState(false)
   const { trackClick } = useTrackClick()
 

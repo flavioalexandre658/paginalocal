@@ -182,7 +182,7 @@ export function StatsCounters({ content, tokens }: Props) {
               validItems.length >= 4 && "sm:grid-cols-2 md:grid-cols-4",
             )}
             style={{
-              // @ts-ignore
+              // @ts-expect-error -- CSS custom property
               "--divide-color": `${tokens.palette.text}08`,
             }}
           >

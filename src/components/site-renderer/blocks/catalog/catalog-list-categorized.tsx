@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { z } from "zod";
 import { cn } from "@/lib/utils";
 import type { DesignTokens } from "@/types/ai-generation";
 import { CatalogContentSchema } from "@/types/ai-generation";
@@ -13,11 +14,13 @@ interface Props {
   isDark?: boolean;
 }
 
-export function CatalogListCategorized({ content, tokens, isDark }: Props) {
-  const parsed = CatalogContentSchema.safeParse(content);
-  if (!parsed.success) return null;
-  const c = parsed.data;
+interface InnerProps {
+  c: z.infer<typeof CatalogContentSchema>;
+  tokens: DesignTokens;
+  isDark?: boolean;
+}
 
+function CatalogListCategorizedInner({ c, tokens, isDark }: InnerProps) {
   const [activeTab, setActiveTab] = useState(c.categories[0]?.name ?? "");
 
   const isBold = tokens.style === "bold";
@@ -169,4 +172,10 @@ export function CatalogListCategorized({ content, tokens, isDark }: Props) {
       </div>
     </div>
   );
+}
+
+export function CatalogListCategorized({ content, tokens, isDark }: Props) {
+  const parsed = CatalogContentSchema.safeParse(content);
+  if (!parsed.success) return null;
+  return <CatalogListCategorizedInner c={parsed.data} tokens={tokens} isDark={isDark} />;
 }

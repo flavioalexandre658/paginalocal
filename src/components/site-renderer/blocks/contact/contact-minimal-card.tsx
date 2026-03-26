@@ -25,6 +25,7 @@ export function ContactMinimalCard({ content, tokens }: Props) {
     c.address && { icon: MapPin, label: "Endereço", value: c.address, field: "address" },
     c.phone && { icon: Phone, label: "Telefone", value: c.phone, field: "phone" },
     c.email && { icon: Mail, label: "E-mail", value: c.email, field: "email" },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ].filter(Boolean) as { icon: any; label: string; value: string; field: string }[];
 
   return (
