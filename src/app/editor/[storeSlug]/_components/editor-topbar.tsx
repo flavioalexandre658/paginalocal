@@ -67,9 +67,9 @@ export function EditorTopbar({
   }
 
   const viewports: { mode: ViewportMode; icon: typeof IconDeviceDesktop; label: string }[] = [
-    { mode: "desktop", icon: IconDeviceDesktop, label: "Desktop" },
+    { mode: "desktop", icon: IconDeviceDesktop, label: "Computador" },
     { mode: "tablet", icon: IconDeviceTablet, label: "Tablet" },
-    { mode: "mobile", icon: IconDeviceMobile, label: "Mobile" },
+    { mode: "mobile", icon: IconDeviceMobile, label: "Celular" },
   ];
 
   const activePage = state.blueprint.pages.find((p) => p.id === state.activePageId);
@@ -218,46 +218,54 @@ export function EditorTopbar({
           className="flex items-center rounded-[10px] p-[3px]"
           style={{ backgroundColor: "#f5f5f4" }}
         >
-          {viewports.map(({ mode, icon: Icon, label }) => (
-            <button
-              key={mode}
-              onClick={() => dispatch({ type: "SET_VIEWPORT", mode })}
-              title={label}
-              className={cn(
-                "rounded-[8px] p-2 transition-all duration-150",
-                state.viewportMode === mode ? "shadow-[0_1px_3px_rgba(0,0,0,0.06)]" : "",
-              )}
-              style={{
-                backgroundColor: state.viewportMode === mode ? "#ffffff" : "transparent",
-                color: state.viewportMode === mode ? "#1a1a1a" : "#a3a3a3",
-              }}
-            >
-              <Icon className="h-4 w-4" />
-            </button>
-          ))}
+          {viewports.map(({ mode, icon: Icon, label }) => {
+            const isActive = state.viewportMode === mode;
+            return (
+              <button
+                key={mode}
+                onClick={() => dispatch({ type: "SET_VIEWPORT", mode })}
+                title={label}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[13px] font-medium transition-all duration-150",
+                  isActive ? "shadow-[0_1px_3px_rgba(0,0,0,0.06)]" : "",
+                )}
+                style={{
+                  backgroundColor: isActive ? "#ffffff" : "transparent",
+                  color: isActive ? "#1a1a1a" : "#a3a3a3",
+                }}
+              >
+                <Icon className="h-4 w-4" />
+                {isActive && <span>{label}</span>}
+              </button>
+            );
+          })}
         </div>
       ) : (
         <div
           className="hidden items-center rounded-[10px] p-[3px] md:flex"
           style={{ backgroundColor: "#f5f5f4" }}
         >
-          {viewports.map(({ mode, icon: Icon, label }) => (
-            <button
-              key={mode}
-              onClick={() => dispatch({ type: "SET_VIEWPORT", mode })}
-              title={label}
-              className={cn(
-                "rounded-[8px] p-2 transition-all duration-150",
-                state.viewportMode === mode ? "shadow-[0_1px_3px_rgba(0,0,0,0.06)]" : "",
-              )}
-              style={{
-                backgroundColor: state.viewportMode === mode ? "#ffffff" : "transparent",
-                color: state.viewportMode === mode ? "#1a1a1a" : "#a3a3a3",
-              }}
-            >
-              <Icon className="h-4 w-4" />
-            </button>
-          ))}
+          {viewports.map(({ mode, icon: Icon, label }) => {
+            const isActive = state.viewportMode === mode;
+            return (
+              <button
+                key={mode}
+                onClick={() => dispatch({ type: "SET_VIEWPORT", mode })}
+                title={label}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[13px] font-medium transition-all duration-150",
+                  isActive ? "shadow-[0_1px_3px_rgba(0,0,0,0.06)]" : "",
+                )}
+                style={{
+                  backgroundColor: isActive ? "#ffffff" : "transparent",
+                  color: isActive ? "#1a1a1a" : "#a3a3a3",
+                }}
+              >
+                <Icon className="h-4 w-4" />
+                {isActive && <span>{label}</span>}
+              </button>
+            );
+          })}
         </div>
       )}
 

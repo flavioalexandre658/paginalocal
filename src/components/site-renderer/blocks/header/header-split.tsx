@@ -66,7 +66,7 @@ export function HeaderSplit({ content, tokens, navigation }: Props) {
         </a>
 
         {/* Center: Nav links — desktop */}
-        <ul className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+        <ul className="hidden lg:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
           {navItems.map((item) => (
             <li key={item.href}>
               <a
@@ -90,7 +90,7 @@ export function HeaderSplit({ content, tokens, navigation }: Props) {
         </ul>
 
         {/* Right: CTA — desktop */}
-        <div className="hidden md:flex items-center">
+        <div className="hidden lg:flex items-center">
           {ctaText ? (
             <PglButton href={ctaLink} tokens={tokens}>
               {ctaText}
@@ -103,7 +103,7 @@ export function HeaderSplit({ content, tokens, navigation }: Props) {
 
         {/* Hamburger — mobile */}
         <button
-          className="md:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5"
+          className="lg:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
           aria-expanded={menuOpen}
@@ -135,7 +135,7 @@ export function HeaderSplit({ content, tokens, navigation }: Props) {
       {/* Mobile dropdown */}
       <div
         className={cn(
-          "md:hidden overflow-hidden transition-all duration-300",
+          "lg:hidden overflow-hidden transition-all duration-300",
           menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
         )}
         style={{ backgroundColor: tokens.palette.background }}

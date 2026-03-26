@@ -65,7 +65,7 @@ export function HeaderCentered({ content, tokens, navigation }: Props) {
 
           {/* CTA — absolute right on desktop */}
           {ctaText && (
-            <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2">
+            <div className="hidden lg:block absolute right-0 top-1/2 -translate-y-1/2">
               <PglButton href={ctaLink} tokens={tokens}>
                 {ctaText}
               </PglButton>
@@ -75,7 +75,7 @@ export function HeaderCentered({ content, tokens, navigation }: Props) {
 
         {/* Bottom row: nav centered — desktop only */}
         <nav
-          className="hidden md:block"
+          className="hidden lg:block"
           role="navigation"
           aria-label="Navegacao principal"
         >
@@ -109,7 +109,7 @@ export function HeaderCentered({ content, tokens, navigation }: Props) {
         </nav>
 
         {/* Hamburger — mobile */}
-        <div className="md:hidden absolute top-4 right-4">
+        <div className="lg:hidden absolute top-4 right-4">
           <button
             className="w-10 h-10 flex flex-col items-center justify-center gap-1.5"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -144,7 +144,7 @@ export function HeaderCentered({ content, tokens, navigation }: Props) {
       {/* Mobile dropdown */}
       <div
         className={cn(
-          "md:hidden overflow-hidden transition-all duration-300",
+          "lg:hidden overflow-hidden transition-all duration-300",
           menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
         )}
         style={{ backgroundColor: tokens.palette.background }}

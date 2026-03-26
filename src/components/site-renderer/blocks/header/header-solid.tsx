@@ -66,7 +66,7 @@ export function HeaderSolid({ content, tokens, navigation }: Props) {
         </a>
 
         {/* Desktop nav */}
-        <ul className="hidden md:flex items-center gap-8">
+        <ul className="hidden lg:flex items-center gap-8">
           {navItems.map((item) => (
             <li key={item.href}>
               <a
@@ -81,7 +81,7 @@ export function HeaderSolid({ content, tokens, navigation }: Props) {
 
         {/* Desktop CTA */}
         {ctaText && (
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <PglButton href={ctaLink} tokens={tokens} isDark>
               {ctaText}
             </PglButton>
@@ -90,7 +90,7 @@ export function HeaderSolid({ content, tokens, navigation }: Props) {
 
         {/* Hamburger — mobile */}
         <button
-          className="md:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5"
+          className="lg:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
           aria-expanded={menuOpen}
@@ -119,7 +119,7 @@ export function HeaderSolid({ content, tokens, navigation }: Props) {
       {/* Mobile dropdown menu */}
       <div
         className={cn(
-          "md:hidden overflow-hidden transition-all duration-300",
+          "lg:hidden overflow-hidden transition-all duration-300",
           menuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
         )}
         style={{ backgroundColor: tokens.palette.primary }}

@@ -80,7 +80,7 @@ export function HeaderTransparent({ content, tokens, navigation }: Props) {
         </a>
 
         {/* Desktop nav */}
-        <ul className="hidden md:flex items-center gap-8">
+        <ul className="hidden lg:flex items-center gap-8">
           {navItems.map((item) => (
             <li key={item.href}>
               <a
@@ -95,7 +95,7 @@ export function HeaderTransparent({ content, tokens, navigation }: Props) {
 
         {/* Desktop CTA */}
         {ctaText && (
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <PglButton href={ctaLink} tokens={tokens} isDark>
               {ctaText}
             </PglButton>
@@ -104,7 +104,7 @@ export function HeaderTransparent({ content, tokens, navigation }: Props) {
 
         {/* Hamburger — mobile */}
         <button
-          className="md:hidden relative z-50 w-10 h-10 flex flex-col items-center justify-center gap-1.5"
+          className="lg:hidden relative z-50 w-10 h-10 flex flex-col items-center justify-center gap-1.5"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
           aria-expanded={menuOpen}
@@ -132,7 +132,7 @@ export function HeaderTransparent({ content, tokens, navigation }: Props) {
         {/* Mobile menu */}
         <div
           className={cn(
-            "fixed inset-0 z-40 flex flex-col items-center justify-center gap-8 transition-all duration-300 md:hidden",
+            "fixed inset-0 z-40 flex flex-col items-center justify-center gap-8 transition-all duration-300 lg:hidden",
             menuOpen
               ? "opacity-100 pointer-events-auto"
               : "opacity-0 pointer-events-none"
