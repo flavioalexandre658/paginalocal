@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useAction } from "next-safe-action/hooks";
-import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import {
   IconArrowBackUp,
@@ -10,22 +8,18 @@ import {
   IconDeviceDesktop,
   IconDeviceTablet,
   IconDeviceMobile,
-  IconDeviceFloppy,
-  IconExternalLink,
-  IconLoader2,
   IconChevronDown,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
   IconMenu2,
   IconSettings,
-  IconPlayerPlay,
-  IconRocket,
+  IconArrowUp,
 } from "@tabler/icons-react";
 import { SiteSettingsModal } from "./site-settings-modal";
+import { PublishModal } from "./publish-modal";
 import { cn } from "@/lib/utils";
 import { useEditor } from "../_lib/editor-context";
 import type { ViewportMode } from "../_lib/editor-types";
-import { updateBlueprintAction } from "@/actions/stores/update-blueprint.action";
 
 interface Props {
   storeId: string;
@@ -45,26 +39,11 @@ export function EditorTopbar({
   mobileMenuOpen, onToggleMobileMenu, userStores, previewMode, onTogglePreview,
 }: Props) {
   const { state, dispatch } = useEditor();
-  const { executeAsync, isExecuting } = useAction(updateBlueprintAction);
   const router = useRouter();
   const [storeDropdownOpen, setStoreDropdownOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-
-  async function handleSave() {
-    dispatch({ type: "SET_SAVING", isSaving: true });
-    try {
-      const result = await executeAsync({ storeId, blueprint: state.blueprint });
-      if (result?.data?.success) {
-        dispatch({ type: "MARK_SAVED" });
-        toast.success("Alteracoes salvas!");
-      } else {
-        throw new Error("Falha ao salvar");
-      }
-    } catch {
-      dispatch({ type: "SET_SAVING", isSaving: false });
-      toast.error("Erro ao salvar alteracoes");
-    }
-  }
+  const [settingsInitialTab, setSettingsInitialTab] = useState<"general" | "domains" | "integrations" | "tracking">("general");
+  const [publishOpen, setPublishOpen] = useState(false);
 
   const viewports: { mode: ViewportMode; icon: typeof IconDeviceDesktop; label: string }[] = [
     { mode: "desktop", icon: IconDeviceDesktop, label: "Computador" },
@@ -296,7 +275,7 @@ export function EditorTopbar({
         <div className="mx-1 hidden h-5 w-px md:block" style={{ backgroundColor: "rgba(0,0,0,0.06)" }} />
 
         <button
-          onClick={() => setSettingsOpen(true)}
+          onClick={() => { setSettingsInitialTab("general"); setSettingsOpen(true); }}
           className="rounded-[8px] p-2 transition-all duration-150"
           style={{ color: "#737373" }}
           title="Configuracoes"
@@ -338,16 +317,13 @@ export function EditorTopbar({
         </button>
 
         <button
-          onClick={handleSave}
-          disabled={!state.isDirty || isExecuting || state.isSaving}
-          className="flex items-center gap-1.5 rounded-[8px] px-2.5 py-2 text-[13px] font-semibold transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed md:px-4"
-          style={{ backgroundColor: "#22c55e", color: "#ffffff" }}
+          onClick={() => setPublishOpen(true)}
+          className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-semibold transition-all duration-150 md:px-4"
+          style={{ backgroundColor: "#171717", color: "#ffffff" }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
         >
-          {isExecuting || state.isSaving ? (
-            <IconLoader2 className="h-3.5 w-3.5 animate-spin" />
-          ) : (
-            <IconRocket className="h-3.5 w-3.5" />
-          )}
+          <IconArrowUp style={{ width: 14, height: 14 }} />
           <span className="hidden md:inline">Publicar</span>
         </button>
       </div>
@@ -358,6 +334,18 @@ export function EditorTopbar({
         storeId={storeId}
         storeSlug={storeSlug}
         storeName={storeName}
+        initialTab={settingsInitialTab}
+      />
+
+      <PublishModal
+        open={publishOpen}
+        onClose={() => setPublishOpen(false)}
+        storeId={storeId}
+        storeSlug={storeSlug}
+        onOpenDomains={() => {
+          setSettingsInitialTab("domains");
+          setSettingsOpen(true);
+        }}
       />
     </header>
   );

@@ -39,6 +39,7 @@ interface Props {
   storeId: string;
   storeSlug: string;
   storeName: string;
+  initialTab?: Tab;
 }
 
 const TABS: { id: Tab; label: string }[] = [
@@ -48,8 +49,12 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "tracking", label: "Rastreamento" },
 ];
 
-export function SiteSettingsModal({ open, onClose, storeId, storeSlug, storeName }: Props) {
-  const [activeTab, setActiveTab] = useState<Tab>("general");
+export function SiteSettingsModal({ open, onClose, storeId, storeSlug, storeName, initialTab }: Props) {
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab ?? "general");
+
+  useEffect(() => {
+    if (open && initialTab) setActiveTab(initialTab);
+  }, [open, initialTab]);
 
   if (!open) return null;
 
