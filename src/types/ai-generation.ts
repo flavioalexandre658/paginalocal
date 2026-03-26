@@ -121,6 +121,8 @@ export type BlockType = z.infer<typeof BlockTypeEnum>;
 export const HeroContentSchema = z.object({
   headline: z.string(),
   subheadline: z.string(),
+  tagline: z.string().default("Negocio local"),
+  badgeText: z.string().default("Resultado garantido"),
   ctaText: z.string(),
   ctaLink: z.string().optional(),
   ctaType: z.enum(["whatsapp", "link", "scroll"]).default("whatsapp"),

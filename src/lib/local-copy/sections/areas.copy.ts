@@ -133,7 +133,7 @@ export const AREAS_DEFAULT: ModeCopy = {
         ({ city }) => [
             { t: "text", v: `Não encontrou seu bairro? Envie sua localização e confirmamos atendimento em ${city}.` },
         ],
-        ({ name }) => [
+        () => [
             { t: "text", v: `Seu bairro não está na lista? Sem problema — a equipe pode verificar disponibilidade. ` },
             { t: "primary", v: "Fale no WhatsApp" },
             { t: "text", v: "." },

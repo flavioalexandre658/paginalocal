@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useAction } from "next-safe-action/hooks";
+import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import {
   IconArrowBackUp,
@@ -14,6 +16,8 @@ import {
   IconMenu2,
   IconSettings,
   IconArrowUp,
+  IconDeviceFloppy,
+  IconLoader2,
   IconPalette,
   IconBrush,
   IconTypography,
@@ -25,6 +29,7 @@ import { FontsPopup } from "./editor-topbar-panels/fonts-popup";
 import { cn } from "@/lib/utils";
 import { useEditor } from "../_lib/editor-context";
 import type { ViewportMode } from "../_lib/editor-types";
+import { updateBlueprintAction } from "@/actions/stores/update-blueprint.action";
 
 interface Props {
   storeId: string;
@@ -48,12 +53,31 @@ export function EditorTopbar({
   themesOpen, onOpenThemes, onCloseThemes,
 }: Props) {
   const { state, dispatch } = useEditor();
+  const { executeAsync, isExecuting } = useAction(updateBlueprintAction);
   const router = useRouter();
   const [storeDropdownOpen, setStoreDropdownOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [settingsInitialTab, setSettingsInitialTab] = useState<"general" | "domains" | "integrations" | "tracking">("general");
   const [publishOpen, setPublishOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<"colors" | "fonts" | null>(null);
+
+  const isSaving = isExecuting || state.isSaving;
+
+  async function handleSave() {
+    dispatch({ type: "SET_SAVING", isSaving: true });
+    try {
+      const result = await executeAsync({ storeId, blueprint: state.blueprint });
+      if (result?.data?.success) {
+        dispatch({ type: "MARK_SAVED" });
+        toast.success("Alteracoes salvas!");
+      } else {
+        throw new Error("Falha ao salvar");
+      }
+    } catch {
+      dispatch({ type: "SET_SAVING", isSaving: false });
+      toast.error("Erro ao salvar alteracoes");
+    }
+  }
 
   const viewports: { mode: ViewportMode; icon: typeof IconDeviceDesktop; label: string }[] = [
     { mode: "desktop", icon: IconDeviceDesktop, label: "Computador" },
@@ -309,6 +333,22 @@ export function EditorTopbar({
             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
           >
             <IconArrowForwardUp className="h-4 w-4" />
+          </button>
+
+          <button
+            onClick={handleSave}
+            disabled={!state.isDirty || isSaving}
+            className="hidden rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed md:block"
+            style={{ color: "#737373" }}
+            title="Salvar"
+            onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
+          >
+            {isSaving ? (
+              <IconLoader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <IconDeviceFloppy className="h-4 w-4" />
+            )}
           </button>
 
           <div className="mx-1 hidden h-5 w-px md:block" style={{ backgroundColor: "rgba(0,0,0,0.06)" }} />

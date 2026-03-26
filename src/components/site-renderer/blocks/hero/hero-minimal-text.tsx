@@ -63,8 +63,12 @@ export function HeroMinimalText({ content, tokens }: Props) {
             className="block w-10 h-px"
             style={{ backgroundColor: tokens.palette.accent }}
           />
-          <span className="text-[0.7rem] font-medium tracking-[0.15em] uppercase">
-            Negocio local
+          <span
+            className="text-[0.7rem] font-medium tracking-[0.15em] uppercase"
+            data-pgl-path="tagline"
+            data-pgl-edit="text"
+          >
+            {c.tagline}
           </span>
         </div>
 

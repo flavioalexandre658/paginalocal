@@ -16,12 +16,13 @@ const LAYOUT_CSS = `
 .pgl-preview .fixed { position: absolute !important; }
 `;
 
-/** Editor interaction styles (edit mode only) */
+/** Editor interaction styles (edit mode only).
+ *  IMPORTANT: Never set position:relative here — it breaks elements
+ *  that use position:absolute (badges, floating elements).
+ *  Use only box-shadow (inset) for all visual indicators. */
 const EDITOR_CSS = `
 .editor-preview [data-pgl-hover] {
   box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.4) !important;
-  position: relative;
-  z-index: 2;
 }
 
 .editor-preview [data-pgl-hover][data-pgl-edit="text"] { cursor: text; }
@@ -29,26 +30,13 @@ const EDITOR_CSS = `
 .editor-preview [data-pgl-hover][data-pgl-edit="image"],
 .editor-preview [data-pgl-hover][data-pgl-edit="nav"],
 .editor-preview [data-pgl-hover][data-pgl-edit="footer"],
-.editor-preview [data-pgl-hover][data-pgl-edit="pricing"] { cursor: pointer; }
-
-.editor-preview [data-pgl-hover][data-pgl-edit="button"]::after,
-.editor-preview [data-pgl-hover][data-pgl-edit="image"]::after,
-.editor-preview [data-pgl-hover][data-pgl-edit="nav"]::after,
-.editor-preview [data-pgl-hover][data-pgl-edit="footer"]::after,
-.editor-preview [data-pgl-hover][data-pgl-edit="pricing"]::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 1;
+.editor-preview [data-pgl-hover][data-pgl-edit="pricing"] {
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.4), inset 0 0 0 9999px rgba(0, 0, 0, 0.18) !important;
 }
 
 .editor-preview [data-pgl-editing] {
   cursor: text;
-  position: relative;
-  z-index: 2;
   box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.6) !important;
   outline: none !important;
   border-color: inherit !important;

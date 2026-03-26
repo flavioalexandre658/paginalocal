@@ -155,7 +155,7 @@ export const DEFAULT_COPY: ModeCopy = {
             { t: "text", v: ` para atendimento profissional e orientação clara.` },
         ],
         ({ city }) => [{ t: "text", v: `Confira abaixo alguns bairros de ${city} onde o atendimento é mais frequente.` }],
-        ({ city }) => [{ t: "text", v: `Não achou seu bairro? Envie sua localização e a equipe confirma a possibilidade de atendimento.` }],
+        () => [{ t: "text", v: `Não achou seu bairro? Envie sua localização e a equipe confirma a possibilidade de atendimento.` }],
     ],
 
     "areas.heroTitle": [

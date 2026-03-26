@@ -212,7 +212,7 @@ export const ABOUT_BY_MODE: Partial<Record<StoreMode, ModeCopy>> = {
                 { t: "text", v: " – " },
                 { t: "normal", v: name },
             ],
-            ({ name, category, city, state }) => [
+            ({ category, city, state }) => [
                 { t: "text", v: `${category} em ` },
                 { t: "primary", v: city },
                 { t: "text", v: `, ${state}` },

@@ -21,7 +21,7 @@ const WhatsappSvg = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export function WhatsappPill({ content, tokens }: Props) {
+export function WhatsappPill({ content }: Props) {
   const parsed = WhatsappFloatContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;

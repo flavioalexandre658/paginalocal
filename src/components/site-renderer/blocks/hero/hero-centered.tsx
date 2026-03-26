@@ -98,8 +98,12 @@ export function HeroCentered({ content, tokens }: Props) {
                 className="block w-10 h-px"
                 style={{ backgroundColor: tokens.palette.accent }}
               />
-              <span className="text-[0.7rem] font-medium tracking-[0.15em] uppercase">
-                Negocio local
+              <span
+                className="text-[0.7rem] font-medium tracking-[0.15em] uppercase"
+                data-pgl-path="tagline"
+                data-pgl-edit="text"
+              >
+                {c.tagline}
               </span>
             </div>
 
@@ -203,8 +207,10 @@ export function HeroCentered({ content, tokens }: Props) {
                       boxShadow: `0 12px 40px ${tokens.palette.accent}40`,
                       borderRadius: isWarm ? "8px" : tokens.borderRadius === "none" ? "0" : "2px",
                     }}
+                    data-pgl-path="badgeText"
+                    data-pgl-edit="text"
                   >
-                    Resultado garantido
+                    {c.badgeText}
                   </div>
                 )}
               </div>
