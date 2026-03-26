@@ -176,17 +176,28 @@ export function TestimonialsCarousel({ content, tokens }: Props) {
             "mt-8 flex items-center gap-4",
             style === "minimal" ? "justify-start pl-6" : "justify-center",
           )}>
-            {/* Avatar initials */}
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium"
-              style={{
-                backgroundColor: tokens.palette.primary,
-                color: "#fff",
-                fontFamily: "var(--pgl-font-heading)",
-              }}
-            >
-              {getInitials(item.author)}
-            </div>
+            {item.image ? (
+              <img
+                src={item.image}
+                alt={item.author}
+                className="w-12 h-12 rounded-full object-cover"
+                data-pgl-path={`items.${currentIndex}.image`}
+                data-pgl-edit="image"
+              />
+            ) : (
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium"
+                style={{
+                  backgroundColor: tokens.palette.primary,
+                  color: "#fff",
+                  fontFamily: "var(--pgl-font-heading)",
+                }}
+                data-pgl-path={`items.${currentIndex}.image`}
+                data-pgl-edit="image"
+              >
+                {getInitials(item.author)}
+              </div>
+            )}
             <div className="text-left">
               <div
                 className="text-[0.9rem] font-semibold"

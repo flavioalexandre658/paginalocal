@@ -179,18 +179,29 @@ export function TestimonialsGrid({ content, tokens }: Props) {
               </blockquote>
 
               <div className="flex items-center gap-3">
-                {/* Avatar initials -- hidden in minimal */}
                 {style !== "minimal" && (
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-medium shrink-0"
-                    style={{
-                      backgroundColor: tokens.palette.primary,
-                      color: "#fff",
-                      fontFamily: "var(--pgl-font-heading)",
-                    }}
-                  >
-                    {getInitials(item.author)}
-                  </div>
+                  item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.author}
+                      className="w-10 h-10 rounded-full object-cover shrink-0"
+                      data-pgl-path={`items.${i}.image`}
+                      data-pgl-edit="image"
+                    />
+                  ) : (
+                    <div
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-medium shrink-0"
+                      style={{
+                        backgroundColor: tokens.palette.primary,
+                        color: "#fff",
+                        fontFamily: "var(--pgl-font-heading)",
+                      }}
+                      data-pgl-path={`items.${i}.image`}
+                      data-pgl-edit="image"
+                    >
+                      {getInitials(item.author)}
+                    </div>
+                  )
                 )}
                 <div className="min-w-0">
                   <div

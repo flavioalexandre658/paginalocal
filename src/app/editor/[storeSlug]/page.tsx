@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/db";
+import { store } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
 import type { SiteBlueprint } from "@/types/ai-generation";
 import { EditorShell } from "./_components/editor-shell";
 
@@ -34,12 +36,19 @@ export default async function EditorPage({ params }: Props) {
     redirect(`/painel/${storeSlug}`);
   }
 
+  const userStores = await db
+    .select({ id: store.id, name: store.name, slug: store.slug })
+    .from(store)
+    .where(eq(store.userId, session.user.id))
+    .orderBy(desc(store.createdAt));
+
   return (
     <EditorShell
       initialBlueprint={storeData.siteBlueprintV2 as SiteBlueprint}
       storeId={storeData.id}
       storeSlug={storeSlug}
       storeName={storeData.name}
+      userStores={userStores}
     />
   );
 }

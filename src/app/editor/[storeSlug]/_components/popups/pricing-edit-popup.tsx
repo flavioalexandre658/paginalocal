@@ -11,7 +11,6 @@ import {
   ModalFooter,
   ModalFooterActions,
 } from "@/components/ui/modal-blocks";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { useEditor } from "../../_lib/editor-context";
@@ -148,16 +147,16 @@ export function PricingEditPopup({ sectionId, content, onClose }: Props) {
         </ModalHeader>
         <ModalBody>
           <div className="flex gap-4">
-            <div className="w-44 shrink-0 space-y-1 border-r border-border pr-4">
+            <div className="w-44 shrink-0 space-y-1 border-r border-[rgba(0,0,0,0.06)] pr-4">
               {plans.map((plan, i) => (
                 <button
                   key={i}
                   onClick={() => setActivePlanIndex(i)}
                   className={cn(
-                    "flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
+                    "flex w-full items-center gap-2 rounded-[10px] px-3 py-2.5 text-left text-[14px] transition-colors",
                     activePlanIndex === i
-                      ? "bg-primary/10 text-primary font-medium"
-                      : "text-muted-foreground hover:bg-muted"
+                      ? "bg-[#171717] font-medium text-white"
+                      : "text-[#737373] hover:bg-[rgba(0,0,0,0.04)]"
                   )}
                 >
                   {plan.highlighted && <IconStar className="h-3.5 w-3.5 shrink-0 text-amber-500" />}
@@ -170,58 +169,58 @@ export function PricingEditPopup({ sectionId, content, onClose }: Props) {
               <div className="flex-1 space-y-4 overflow-y-auto">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <p className="mb-1 text-xs font-medium text-muted-foreground">Nome do plano</p>
+                    <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Nome do plano</p>
                     <input
                       type="text"
                       value={activePlan.name}
                       onChange={(e) => updatePlan(activePlanIndex, "name", e.target.value)}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
                     />
                   </div>
                   <div>
-                    <p className="mb-1 text-xs font-medium text-muted-foreground">Preco</p>
+                    <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Preco</p>
                     <input
                       type="text"
                       value={activePlan.price}
                       onChange={(e) => updatePlan(activePlanIndex, "price", e.target.value)}
                       placeholder="R$ 99,90"
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <p className="mb-1 text-xs font-medium text-muted-foreground">Descricao</p>
+                  <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Descricao</p>
                   <input
                     type="text"
                     value={activePlan.description}
                     onChange={(e) => updatePlan(activePlanIndex, "description", e.target.value)}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <p className="mb-1 text-xs font-medium text-muted-foreground">Texto do botao</p>
+                    <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Texto do botao</p>
                     <input
                       type="text"
                       value={activePlan.ctaText}
                       onChange={(e) => updatePlan(activePlanIndex, "ctaText", e.target.value)}
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                      className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
                     />
                   </div>
                   <div>
-                    <p className="mb-1 text-xs font-medium text-muted-foreground">Tipo do botao</p>
+                    <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Tipo do botao</p>
                     <div className="flex gap-1.5 pt-1">
                       {(["whatsapp", "link"] as const).map((t) => (
                         <button
                           key={t}
                           onClick={() => updatePlan(activePlanIndex, "ctaType", t)}
                           className={cn(
-                            "rounded-full border px-3 py-1.5 text-[11px] font-medium transition-colors",
+                            "rounded-full border px-3 py-1.5 text-[13px] font-medium transition-colors",
                             activePlan.ctaType === t
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border text-muted-foreground hover:border-primary/50"
+                              ? "border-transparent bg-[#171717] text-white"
+                              : "border-[rgba(0,0,0,0.06)] text-[#737373] hover:border-[rgba(0,0,0,0.2)]"
                           )}
                         >
                           {t === "whatsapp" ? "WhatsApp" : "Link"}
@@ -231,10 +230,10 @@ export function PricingEditPopup({ sectionId, content, onClose }: Props) {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between rounded-lg border border-border bg-background px-4 py-3">
+                <div className="flex items-center justify-between rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-white px-[14px] py-[12px]">
                   <div>
-                    <p className="text-sm font-medium">Plano destaque</p>
-                    <p className="text-xs text-muted-foreground">Marcar como "Mais popular"</p>
+                    <p className="text-[14px] font-medium text-[#171717]">Plano destaque</p>
+                    <p className="text-[13px] text-[#737373]">Marcar como "Mais popular"</p>
                   </div>
                   <Switch
                     checked={activePlan.highlighted}
@@ -243,7 +242,7 @@ export function PricingEditPopup({ sectionId, content, onClose }: Props) {
                 </div>
 
                 <div>
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <p className="mb-[6px] text-[13px] font-medium text-[#737373]">
                     Recursos ({allFeatures.length})
                   </p>
                   <div className="space-y-1.5">
@@ -257,24 +256,24 @@ export function PricingEditPopup({ sectionId, content, onClose }: Props) {
                             className={cn(
                               "flex h-5 w-5 shrink-0 items-center justify-center rounded border text-xs transition-colors",
                               included
-                                ? "border-green-300 bg-green-50 text-green-600"
-                                : "border-red-200 bg-red-50 text-red-400"
+                                ? "border-[#bbf7d0] bg-[#f0fdf4] text-[#16a34a]"
+                                : "border-[#fecaca] bg-[#fef2f2] text-[#ef4444]"
                             )}
                           >
-                            {included ? "✓" : "✕"}
+                            {included ? "\u2713" : "\u2715"}
                           </button>
                           <input
                             type="text"
                             value={featureName}
                             onChange={(e) => renameFeature(featureName, e.target.value)}
                             className={cn(
-                              "flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 text-sm outline-none focus:border-primary",
-                              !included && "text-muted-foreground line-through"
+                              "flex-1 rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]",
+                              !included && "text-[#a3a3a3] line-through"
                             )}
                           />
                           <button
                             onClick={() => removeFeatureFromAll(featureName)}
-                            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                            className="rounded-[8px] p-1 text-[#a3a3a3] transition-colors hover:bg-[#fef2f2] hover:text-[#ef4444]"
                           >
                             <IconTrash className="h-3.5 w-3.5" />
                           </button>
@@ -284,7 +283,7 @@ export function PricingEditPopup({ sectionId, content, onClose }: Props) {
                   </div>
                   <button
                     onClick={addFeature}
-                    className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground"
+                    className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-[rgba(0,0,0,0.06)] py-2 text-[13px] font-medium text-[#737373] transition-colors hover:border-[rgba(0,0,0,0.2)] hover:text-[#171717]"
                   >
                     <IconPlus className="h-3.5 w-3.5" />
                     Adicionar recurso
@@ -297,8 +296,18 @@ export function PricingEditPopup({ sectionId, content, onClose }: Props) {
         <ModalFooter>
           <div />
           <ModalFooterActions>
-            <Button variant="ghost" onClick={onClose}>Cancelar</Button>
-            <Button onClick={handleSave}>Salvar</Button>
+            <button
+              onClick={onClose}
+              className="text-[13px] font-medium text-[#737373] transition-colors hover:text-[#1a1a1a]"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSave}
+              className="rounded-[8px] bg-[#171717] px-[20px] py-[8px] text-[13px] font-medium text-white transition-colors hover:bg-[#171717]/90"
+            >
+              Salvar
+            </button>
           </ModalFooterActions>
         </ModalFooter>
       </ModalContent>

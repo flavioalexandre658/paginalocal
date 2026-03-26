@@ -77,6 +77,7 @@ export const BLOCK_EDIT_MAP: Record<BlockType, EditableField[]> = {
     { path: "items.*.text", mode: "text", label: "Depoimento" },
     { path: "items.*.author", mode: "text", label: "Autor" },
     { path: "items.*.role", mode: "text", label: "Cargo" },
+    { path: "items.*.image", mode: "image", label: "Foto" },
     { path: "items.*.rating", mode: "component", label: "Nota" },
   ],
 

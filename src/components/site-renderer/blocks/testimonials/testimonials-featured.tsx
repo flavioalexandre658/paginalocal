@@ -159,17 +159,28 @@ export function TestimonialsFeatured({ content, tokens }: Props) {
             "mt-8 flex items-center gap-4",
             style === "minimal" ? "justify-start pl-6" : "justify-center",
           )}>
-            {/* Avatar initials */}
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium"
-              style={{
-                backgroundColor: tokens.palette.primary,
-                color: "#fff",
-                fontFamily: "var(--pgl-font-heading)",
-              }}
-            >
-              {getInitials(featured.author)}
-            </div>
+            {featured.image ? (
+              <img
+                src={featured.image}
+                alt={featured.author}
+                className="w-12 h-12 rounded-full object-cover"
+                data-pgl-path="items.0.image"
+                data-pgl-edit="image"
+              />
+            ) : (
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium"
+                style={{
+                  backgroundColor: tokens.palette.primary,
+                  color: "#fff",
+                  fontFamily: "var(--pgl-font-heading)",
+                }}
+                data-pgl-path="items.0.image"
+                data-pgl-edit="image"
+              >
+                {getInitials(featured.author)}
+              </div>
+            )}
             <div className="text-left">
               <div
                 className="text-[0.9rem] font-semibold"

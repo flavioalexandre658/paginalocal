@@ -18,69 +18,55 @@ import { EditorPageRenderer } from "./editor-page-renderer";
  *    them from escaping the preview container.
  */
 const PREVIEW_CSS = `
-  /* Contain fixed/sticky elements inside the preview scroll container */
-  .editor-preview .fixed {
-    position: absolute !important;
-  }
+.editor-preview .fixed { position: absolute !important; }
 
-  /* Hover on ANY editable element */
-  .editor-preview [data-pgl-hover] {
-    outline: 2px solid rgba(59, 130, 246, 0.4) !important;
-    outline-offset: 3px;
-    border-radius: 3px;
-  }
+.editor-preview [data-pgl-hover] {
+  box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.4) !important;
+  position: relative;
+  z-index: 2;
+}
 
-  /* Cursor by mode */
-  .editor-preview [data-pgl-hover][data-pgl-edit="text"] {
-    cursor: text;
-  }
-  .editor-preview [data-pgl-hover][data-pgl-edit="button"],
-  .editor-preview [data-pgl-hover][data-pgl-edit="image"],
-  .editor-preview [data-pgl-hover][data-pgl-edit="nav"],
-  .editor-preview [data-pgl-hover][data-pgl-edit="footer"],
-  .editor-preview [data-pgl-hover][data-pgl-edit="pricing"] {
-    cursor: pointer;
-  }
+.editor-preview [data-pgl-hover][data-pgl-edit="text"] { cursor: text; }
+.editor-preview [data-pgl-hover][data-pgl-edit="button"],
+.editor-preview [data-pgl-hover][data-pgl-edit="image"],
+.editor-preview [data-pgl-hover][data-pgl-edit="nav"],
+.editor-preview [data-pgl-hover][data-pgl-edit="footer"],
+.editor-preview [data-pgl-hover][data-pgl-edit="pricing"] { cursor: pointer; }
 
-  /* Dark overlay on component hover */
-  .editor-preview [data-pgl-hover][data-pgl-edit="image"],
-  .editor-preview [data-pgl-hover][data-pgl-edit="nav"],
-  .editor-preview [data-pgl-hover][data-pgl-edit="footer"],
-  .editor-preview [data-pgl-hover][data-pgl-edit="pricing"] {
-    position: relative;
-  }
-  .editor-preview [data-pgl-hover][data-pgl-edit="image"]::after,
-  .editor-preview [data-pgl-hover][data-pgl-edit="nav"]::after,
-  .editor-preview [data-pgl-hover][data-pgl-edit="footer"]::after,
-  .editor-preview [data-pgl-hover][data-pgl-edit="pricing"]::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.25);
-    border-radius: inherit;
-    pointer-events: none;
-    z-index: 1;
-  }
+.editor-preview [data-pgl-hover][data-pgl-edit="button"]::after,
+.editor-preview [data-pgl-hover][data-pgl-edit="image"]::after,
+.editor-preview [data-pgl-hover][data-pgl-edit="nav"]::after,
+.editor-preview [data-pgl-hover][data-pgl-edit="footer"]::after,
+.editor-preview [data-pgl-hover][data-pgl-edit="pricing"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+}
 
-  /* Active editing state */
-  .editor-preview [data-pgl-editing] {
-    cursor: text;
-  }
+.editor-preview [data-pgl-editing] {
+  cursor: text;
+  position: relative;
+  z-index: 2;
+  box-shadow: inset 0 0 0 2px rgba(59, 130, 246, 0.6) !important;
+  outline: none !important;
+  border-color: inherit !important;
+}
+.editor-preview [contenteditable="true"] {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+.editor-preview [contenteditable="true"]:focus {
+  outline: none !important;
+}
 
-  /* Prevent text selection while browsing */
-  .editor-preview {
-    user-select: none;
-  }
+.editor-preview { user-select: none; }
+.editor-preview [data-pgl-editing] { user-select: text; }
 
-  /* Allow selection inside active editing element */
-  .editor-preview [data-pgl-editing] {
-    user-select: text;
-  }
-
-  /* Default cursor for links/buttons in editor */
-  .editor-preview a, .editor-preview button {
-    cursor: default;
-  }
+.editor-preview a, .editor-preview button { cursor: default; }
 `;
 
 export function EditorPreview() {

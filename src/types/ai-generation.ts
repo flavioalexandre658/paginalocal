@@ -174,6 +174,7 @@ export const TestimonialsContentSchema = z.object({
         author: z.string(),
         rating: z.number().min(1).max(5).optional(),
         role: z.string().optional(),
+        image: z.string().optional(),
       })
     )
     .min(1)

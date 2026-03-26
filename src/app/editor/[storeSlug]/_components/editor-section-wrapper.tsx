@@ -80,9 +80,6 @@ export function EditorSectionWrapper({ section, style, className, children }: Pr
 
     el.contentEditable = "false";
     el.removeAttribute("data-pgl-editing");
-    el.style.outline = "";
-    el.style.outlineOffset = "";
-    el.style.borderRadius = "";
     el.style.cursor = "";
 
     const preview = document.querySelector(".editor-preview") as HTMLElement | null;
@@ -253,9 +250,6 @@ export function EditorSectionWrapper({ section, style, className, children }: Pr
       el.contentEditable = "true";
       el.setAttribute("data-pgl-editing", "true");
       el.removeAttribute("data-pgl-hover");
-      el.style.outline = "2px solid rgb(59, 130, 246)";
-      el.style.outlineOffset = "4px";
-      el.style.borderRadius = "4px";
       el.style.cursor = "text";
       el.focus();
 
@@ -353,10 +347,31 @@ export function EditorSectionWrapper({ section, style, className, children }: Pr
                 openPopup(hoverElRef.current, mode, path);
               }
             }}
-            className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-lg ring-1 ring-black/5 transition-colors hover:bg-slate-900 hover:text-white"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              background: "#fff",
+              borderRadius: 999,
+              padding: "6px 14px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+              fontSize: 13,
+              fontWeight: 500,
+              fontFamily: "system-ui",
+              color: "#1a1a1a",
+              border: "none",
+              cursor: "pointer",
+              transition: "box-shadow 150ms",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = "0 12px 40px rgba(0,0,0,0.12)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
+            }}
           >
-            <IconPencil className="h-3.5 w-3.5" />
-            {hoverRect.mode === "nav" ? "Editar navegação" : hoverRect.mode === "footer" ? "Editar rodapé" : hoverRect.mode === "pricing" ? "Editar planos" : "Editar"}
+            <IconPencil style={{ width: 14, height: 14 }} />
+            {hoverRect.mode === "nav" ? "Editar navegacao" : hoverRect.mode === "footer" ? "Editar rodape" : hoverRect.mode === "pricing" ? "Editar planos" : "Editar"}
           </button>
         </div>,
         document.body

@@ -5,7 +5,6 @@ import { useAction } from "next-safe-action/hooks";
 import toast from "react-hot-toast";
 import { IconUpload, IconTrash, IconLoader2, IconLink } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
 import { uploadEditorImageAction } from "@/actions/uploads/upload-editor-image.action";
 import { useEditor } from "../../_lib/editor-context";
 import type { FieldDef } from "../../_lib/field-definitions";
@@ -72,16 +71,15 @@ export function ImageField({ field, value, onChange }: Props) {
 
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium text-slate-700">
+      <label className="mb-[6px] block text-[13px] font-medium text-[#737373]">
         {field.label}
         {field.required && <span className="text-red-500"> *</span>}
       </label>
 
-      {/* Drop zone / preview */}
       <div
         className={cn(
-          "relative overflow-hidden rounded-lg border-2 border-dashed transition-colors",
-          isDragging ? "border-blue-400 bg-blue-50" : "border-slate-200 bg-slate-50",
+          "relative overflow-hidden rounded-[10px] border border-dashed transition-colors",
+          isDragging ? "border-black/20 bg-[#ebebea]" : "border-black/6 bg-[#f5f5f4]",
           isExecuting && "pointer-events-none opacity-60"
         )}
         onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -94,21 +92,21 @@ export function ImageField({ field, value, onChange }: Props) {
             <img
               src={value}
               alt={field.label}
-              className="h-32 w-full object-cover"
+              className="h-32 w-full rounded-[10px] object-cover"
               onError={(e) => { (e.target as HTMLImageElement).src = ""; }}
             />
-            <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="absolute inset-0 flex items-center justify-center gap-2 rounded-[10px] bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="rounded-md bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50"
+                className="rounded-[10px] bg-white px-3 py-1.5 text-[13px] font-medium text-[#737373] shadow-sm hover:bg-[#f5f5f4]"
               >
                 Trocar
               </button>
               <button
                 type="button"
                 onClick={() => onChange("")}
-                className="rounded-md bg-red-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-red-600"
+                className="rounded-[10px] bg-red-500 px-3 py-1.5 text-[13px] font-medium text-white shadow-sm hover:bg-red-600"
               >
                 <IconTrash className="h-3.5 w-3.5" />
               </button>
@@ -118,28 +116,26 @@ export function ImageField({ field, value, onChange }: Props) {
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="flex w-full flex-col items-center justify-center gap-2 py-8 text-slate-400 hover:text-slate-600"
+            className="flex w-full flex-col items-center justify-center gap-2 py-8 text-[#a3a3a3] hover:text-[#737373]"
           >
             {isExecuting ? (
               <IconLoader2 className="h-6 w-6 animate-spin" />
             ) : (
               <IconUpload className="h-6 w-6" />
             )}
-            <span className="text-xs font-medium">
+            <span className="text-[13px] font-medium">
               {isExecuting ? "Enviando..." : "Clique ou arraste uma imagem"}
             </span>
           </button>
         )}
 
-        {/* Loading overlay */}
         {isExecuting && value && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/70">
-            <IconLoader2 className="h-6 w-6 animate-spin text-blue-500" />
+          <div className="absolute inset-0 flex items-center justify-center rounded-[10px] bg-white/70">
+            <IconLoader2 className="h-6 w-6 animate-spin text-[#737373]" />
           </div>
         )}
       </div>
 
-      {/* Hidden file input */}
       <input
         ref={fileInputRef}
         type="file"
@@ -152,22 +148,22 @@ export function ImageField({ field, value, onChange }: Props) {
         }}
       />
 
-      {/* URL fallback toggle */}
       <button
         type="button"
         onClick={() => setShowUrlInput(!showUrlInput)}
-        className="mt-1.5 flex items-center gap-1 text-[11px] text-slate-400 hover:text-slate-600"
+        className="mt-1.5 flex items-center gap-1 text-[12px] text-[#a3a3a3] hover:text-[#737373]"
       >
         <IconLink className="h-3 w-3" />
         {showUrlInput ? "Ocultar URL" : "Colar URL"}
       </button>
 
       {showUrlInput && (
-        <Input
+        <input
+          type="text"
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
           placeholder="https://..."
-          className="mt-1 h-8 text-xs"
+          className="mt-1 h-10 w-full rounded-[10px] border border-black/6 bg-[#f5f5f4] px-[14px] py-[10px] font-[system-ui] text-[14px] font-normal text-[#1a1a1a] placeholder:text-[#a3a3a3] focus:border-black/20 focus:outline-none"
         />
       )}
     </div>

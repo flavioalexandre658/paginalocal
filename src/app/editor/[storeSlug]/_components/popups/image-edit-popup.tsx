@@ -11,7 +11,6 @@ import {
   ModalFooter,
   ModalFooterActions,
 } from "@/components/ui/modal-blocks";
-import { Button } from "@/components/ui/button";
 import { useEditor } from "../../_lib/editor-context";
 import { setFieldByPath } from "../../_lib/text-field-mapper";
 import { useAction } from "next-safe-action/hooks";
@@ -101,31 +100,30 @@ export function ImageEditPopup({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <IconSearch className="absolute left-[14px] top-1/2 h-4 w-4 -translate-y-1/2 text-[#a3a3a3]" />
                 <input
                   type="text"
                   placeholder="Buscar imagem..."
-                  className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
+                  className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] py-[10px] pl-10 pr-[14px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
                 />
               </div>
-              <Button
-                variant="outline"
-                size="sm"
+              <button
                 onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 rounded-[8px] border border-[rgba(0,0,0,0.06)] bg-transparent px-[14px] py-[10px] text-[13px] font-medium text-[#737373] transition-colors hover:border-[rgba(0,0,0,0.2)]"
               >
-                <IconUpload className="mr-1.5 h-4 w-4" />
+                <IconUpload className="h-4 w-4" />
                 Upload
-              </Button>
+              </button>
             </div>
 
             {isUploading && (
               <div className="flex items-center justify-center py-8">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-[rgba(0,0,0,0.06)] border-t-[#171717]" />
               </div>
             )}
 
             {selectedUrl && !isUploading && (
-              <div className="overflow-hidden rounded-lg border-2 border-primary">
+              <div className="overflow-hidden rounded-[10px] border-2 border-[#171717]">
                 <img src={selectedUrl} alt="Selecionada" className="h-40 w-full object-cover" />
               </div>
             )}
@@ -138,7 +136,7 @@ export function ImageEditPopup({
                 const file = e.dataTransfer.files[0];
                 if (file && file.type.startsWith("image/")) handleUpload(file);
               }}
-              className="cursor-pointer rounded-lg border-2 border-dashed border-border p-6 text-center text-sm text-muted-foreground transition-colors hover:border-primary/50"
+              className="cursor-pointer rounded-[10px] border border-dashed border-[rgba(0,0,0,0.06)] p-6 text-center text-[14px] text-[#a3a3a3] transition-colors hover:border-[rgba(0,0,0,0.2)]"
               onClick={() => fileInputRef.current?.click()}
             >
               Arraste uma imagem ou clique para fazer upload
@@ -148,8 +146,19 @@ export function ImageEditPopup({
         <ModalFooter>
           <div />
           <ModalFooterActions>
-            <Button variant="ghost" onClick={onClose}>Cancelar</Button>
-            <Button onClick={handleSave} disabled={!selectedUrl}>Salvar</Button>
+            <button
+              onClick={onClose}
+              className="text-[13px] font-medium text-[#737373] transition-colors hover:text-[#1a1a1a]"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={!selectedUrl}
+              className="rounded-[8px] bg-[#171717] px-[20px] py-[8px] text-[13px] font-medium text-white transition-colors hover:bg-[#171717]/90 disabled:opacity-50"
+            >
+              Salvar
+            </button>
           </ModalFooterActions>
         </ModalFooter>
       </ModalContent>

@@ -37,55 +37,59 @@ export function SectionToolbar({ section }: Props) {
 
   return (
     <>
-      {/* Dark pill toolbar at bottom-center of section */}
       <div
         data-editor-ui
-        className="pointer-events-auto absolute bottom-3 left-1/2 z-40 flex -translate-x-1/2 items-center gap-0.5 rounded-full bg-gray-900/90 px-3 py-1.5 shadow-xl backdrop-blur-sm"
+        className="pointer-events-auto absolute bottom-3 left-1/2 z-40 flex -translate-x-1/2 items-center"
+        style={{
+          background: "rgba(23,23,23,0.9)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
+          borderRadius: 999,
+          padding: "6px 8px",
+          boxShadow: "0 12px 40px rgba(0,0,0,0.12)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Design button */}
         <ToolbarButton
-          icon={<IconLayoutGrid className="h-3.5 w-3.5" />}
+          icon={<IconLayoutGrid style={{ width: 14, height: 14, marginRight: 4 }} />}
           label="Design"
-          onClick={() => {/* TODO: open design panel */}}
+          onClick={() => {}}
         />
 
-        {/* Edit button */}
         <ToolbarButton
-          icon={<IconPencil className="h-3.5 w-3.5" />}
-          label="Editar"
-          onClick={() => dispatch({ type: "OPEN_DRAWER" })}
+          icon={<IconPencil style={{ width: 14, height: 14, marginRight: 4 }} />}
+          label="Editar conteudo"
+          onClick={() => { dispatch({ type: "SELECT_SECTION", sectionId: section.id }); dispatch({ type: "OPEN_DRAWER" }); }}
         />
 
         <Separator />
 
-        {/* Move up */}
         <IconButton
-          icon={<IconChevronUp className="h-3.5 w-3.5" />}
+          icon={<IconChevronUp style={{ width: 14, height: 14 }} />}
           title="Mover para cima"
           onClick={() => dispatch({ type: "MOVE_SECTION", sectionId: section.id, direction: "up" })}
         />
 
-        {/* Move down */}
         <IconButton
-          icon={<IconChevronDown className="h-3.5 w-3.5" />}
+          icon={<IconChevronDown style={{ width: 14, height: 14 }} />}
           title="Mover para baixo"
           onClick={() => dispatch({ type: "MOVE_SECTION", sectionId: section.id, direction: "down" })}
         />
 
-        {/* Visibility toggle */}
         <IconButton
-          icon={section.visible ? <IconEye className="h-3.5 w-3.5" /> : <IconEyeOff className="h-3.5 w-3.5" />}
-          title={section.visible ? "Ocultar seção" : "Mostrar seção"}
+          icon={section.visible
+            ? <IconEye style={{ width: 14, height: 14 }} />
+            : <IconEyeOff style={{ width: 14, height: 14 }} />
+          }
+          title={section.visible ? "Ocultar secao" : "Mostrar secao"}
           onClick={() => dispatch({ type: "TOGGLE_SECTION_VISIBILITY", sectionId: section.id })}
         />
 
         <Separator />
 
-        {/* Delete */}
         <IconButton
-          icon={<IconTrash className="h-3.5 w-3.5" />}
-          title="Excluir seção"
+          icon={<IconTrash style={{ width: 14, height: 14 }} />}
+          title="Excluir secao"
           onClick={() => setShowDelete(true)}
           danger
         />
@@ -94,9 +98,9 @@ export function SectionToolbar({ section }: Props) {
       <AlertDialog open={showDelete} onOpenChange={setShowDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir seção</AlertDialogTitle>
+            <AlertDialogTitle>Excluir secao</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir a seção &quot;{label}&quot;? Esta ação pode ser desfeita com Ctrl+Z.
+              Tem certeza que deseja excluir a secao &quot;{label}&quot;? Esta acao pode ser desfeita com Ctrl+Z.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -115,7 +119,16 @@ export function SectionToolbar({ section }: Props) {
 }
 
 function Separator() {
-  return <div className="mx-1 h-4 w-px bg-white/20" />;
+  return (
+    <div
+      style={{
+        width: 1,
+        height: 16,
+        background: "rgba(255,255,255,0.15)",
+        margin: "0 4px",
+      }}
+    />
+  );
 }
 
 function ToolbarButton({
@@ -130,7 +143,28 @@ function ToolbarButton({
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        padding: "6px 12px",
+        borderRadius: 6,
+        fontSize: 12,
+        fontWeight: 500,
+        fontFamily: "system-ui",
+        color: "rgba(255,255,255,0.7)",
+        background: "transparent",
+        border: "none",
+        cursor: "pointer",
+        transition: "background 150ms, color 150ms",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+        e.currentTarget.style.color = "white";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+        e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+      }}
     >
       {icon}
       {label}
@@ -153,11 +187,31 @@ function IconButton({
     <button
       onClick={onClick}
       title={title}
-      className={
-        danger
-          ? "rounded-full p-1.5 text-white/60 transition-colors hover:bg-red-500/30 hover:text-red-400"
-          : "rounded-full p-1.5 text-white/60 transition-colors hover:bg-white/15 hover:text-white"
-      }
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "6px 12px",
+        borderRadius: 6,
+        color: "rgba(255,255,255,0.7)",
+        background: "transparent",
+        border: "none",
+        cursor: "pointer",
+        transition: "background 150ms, color 150ms",
+      }}
+      onMouseEnter={(e) => {
+        if (danger) {
+          e.currentTarget.style.background = "rgba(239,68,68,0.2)";
+          e.currentTarget.style.color = "#ef4444";
+        } else {
+          e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+          e.currentTarget.style.color = "white";
+        }
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = "transparent";
+        e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+      }}
     >
       {icon}
     </button>
