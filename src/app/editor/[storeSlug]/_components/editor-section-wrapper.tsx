@@ -6,6 +6,7 @@ import { IconPencil } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import type { SectionBlock, BlockType } from "@/types/ai-generation";
 import { useEditor } from "../_lib/editor-context";
+import { usePreviewEnv } from "../_lib/preview-env";
 import { SectionToolbar } from "./section-toolbar";
 import { setFieldByPath } from "../_lib/text-field-mapper";
 import { getFieldEditMode, resolveCompanionPath } from "../_lib/block-edit-map";
@@ -20,6 +21,7 @@ interface Props {
   style?: React.CSSProperties;
   className?: string;
   children: ReactNode;
+  previewMode?: boolean;
 }
 
 type PopupType = "button" | "image" | "nav" | "footer" | "pricing";
@@ -56,8 +58,9 @@ function findEditTarget(target: HTMLElement, boundary: HTMLElement): HTMLElement
   return null;
 }
 
-export function EditorSectionWrapper({ section, style, className, children }: Props) {
+export function EditorSectionWrapper({ section, style, className, children, previewMode }: Props) {
   const { state, dispatch, storeId } = useEditor();
+  const env = usePreviewEnv();
   const isSelected = state.selectedSectionId === section.id;
   const isHovered = state.hoveredSectionId === section.id;
 
@@ -82,7 +85,7 @@ export function EditorSectionWrapper({ section, style, className, children }: Pr
     el.removeAttribute("data-pgl-editing");
     el.style.cursor = "";
 
-    const preview = document.querySelector(".editor-preview") as HTMLElement | null;
+    const preview = env.getDocument().querySelector(".editor-preview") as HTMLElement | null;
     if (preview) {
       preview.style.userSelect = "none";
       preview.style.setProperty("-webkit-user-select", "none");
@@ -91,11 +94,11 @@ export function EditorSectionWrapper({ section, style, className, children }: Pr
     activeElRef.current = null;
     fieldPathRef.current = "";
     dispatch({ type: "SET_INLINE_EDITING", value: false });
-  }, [dispatch]);
+  }, [dispatch, env]);
 
   useEffect(() => {
     if (!hoverRect || !hoverElRef.current) return;
-    const container = document.querySelector(".editor-preview");
+    const container = env.getScrollContainer();
     if (!container) return;
 
     function onScroll() {
@@ -108,7 +111,7 @@ export function EditorSectionWrapper({ section, style, className, children }: Pr
 
     container.addEventListener("scroll", onScroll, { passive: true });
     return () => container.removeEventListener("scroll", onScroll);
-  }, [hoverRect !== null]);
+  }, [hoverRect !== null, env]);
 
   const save = useCallback(() => {
     const el = activeElRef.current;
@@ -241,7 +244,7 @@ export function EditorSectionWrapper({ section, style, className, children }: Pr
       originalHtmlRef.current = el.innerHTML;
       fieldPathRef.current = path;
 
-      const preview = document.querySelector(".editor-preview") as HTMLElement | null;
+      const preview = env.getDocument().querySelector(".editor-preview") as HTMLElement | null;
       if (preview) {
         preview.style.userSelect = "auto";
         preview.style.setProperty("-webkit-user-select", "auto");
@@ -253,10 +256,11 @@ export function EditorSectionWrapper({ section, style, className, children }: Pr
       el.style.cursor = "text";
       el.focus();
 
-      if (document.caretRangeFromPoint) {
-        const range = document.caretRangeFromPoint(clickX, clickY);
+      const editorDoc = env.getDocument();
+      if (editorDoc.caretRangeFromPoint) {
+        const range = editorDoc.caretRangeFromPoint(clickX, clickY);
         if (range) {
-          const sel = window.getSelection();
+          const sel = editorDoc.getSelection?.() ?? editorDoc.defaultView?.getSelection() ?? null;
           sel?.removeAllRanges();
           sel?.addRange(range);
         }
@@ -264,7 +268,7 @@ export function EditorSectionWrapper({ section, style, className, children }: Pr
     } else {
       openPopup(el, mode, path);
     }
-  }, [section.id, dispatch, save, openPopup]);
+  }, [section.id, dispatch, save, openPopup, env]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!activeElRef.current) return;
@@ -286,6 +290,14 @@ export function EditorSectionWrapper({ section, style, className, children }: Pr
   const closePopup = useCallback(() => setPopup(null), []);
 
   const content = section.content as Record<string, unknown>;
+
+  if (previewMode) {
+    return (
+      <div className={cn("group/section relative", className)} style={style}>
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -374,7 +386,7 @@ export function EditorSectionWrapper({ section, style, className, children }: Pr
             {hoverRect.mode === "nav" ? "Editar navegacao" : hoverRect.mode === "footer" ? "Editar rodape" : hoverRect.mode === "pricing" ? "Editar planos" : "Editar"}
           </button>
         </div>,
-        document.body
+        env.getPortalTarget()
       )}
 
       {popup?.type === "button" && (

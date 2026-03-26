@@ -30,6 +30,7 @@ interface Props {
   page: PageBlueprint;
   designTokens: DesignTokens;
   navigation?: { label: string; href: string; isExternal?: boolean }[];
+  previewMode?: boolean;
 }
 
 function findDarkIndex(sections: SectionBlockType[]): number {
@@ -48,7 +49,7 @@ function findDarkIndex(sections: SectionBlockType[]): number {
   return best;
 }
 
-export function EditorPageRenderer({ page, designTokens, navigation }: Props) {
+export function EditorPageRenderer({ page, designTokens, navigation, previewMode }: Props) {
   // Editor shows ALL sections (including hidden), sorted by order
   const sortedSections = [...page.sections].sort((a, b) => a.order - b.order);
 
@@ -94,6 +95,7 @@ export function EditorPageRenderer({ page, designTokens, navigation }: Props) {
                 key={section.id}
                 section={section}
                 style={sectionStyle}
+                previewMode={previewMode}
               >
                 <div className="flex items-center justify-center gap-3 rounded-lg border border-dashed border-slate-200 bg-slate-50 py-5 text-sm text-slate-400">
                   <IconBrandWhatsapp className="h-5 w-5 text-green-500" />
@@ -113,6 +115,7 @@ export function EditorPageRenderer({ page, designTokens, navigation }: Props) {
               key={section.id}
               section={section}
               style={sectionStyle}
+              previewMode={previewMode}
               className={isHeader ? "!absolute top-0 left-0 right-0 z-50" : undefined}
             >
               <div className={cn(needsPadding && "py-24 md:py-32")}>

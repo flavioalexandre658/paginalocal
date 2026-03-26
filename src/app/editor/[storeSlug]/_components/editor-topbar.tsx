@@ -36,11 +36,13 @@ interface Props {
   mobileMenuOpen: boolean;
   onToggleMobileMenu: () => void;
   userStores: { id: string; name: string; slug: string }[];
+  previewMode: boolean;
+  onTogglePreview: () => void;
 }
 
 export function EditorTopbar({
   storeId, storeSlug, storeName, sidebarCollapsed, onToggleSidebar,
-  mobileMenuOpen, onToggleMobileMenu, userStores,
+  mobileMenuOpen, onToggleMobileMenu, userStores, previewMode, onTogglePreview,
 }: Props) {
   const { state, dispatch } = useEditor();
   const { executeAsync, isExecuting } = useAction(updateBlueprintAction);
@@ -203,34 +205,61 @@ export function EditorTopbar({
         </button>
       </div>
 
-      <div className="flex items-center md:hidden">
-        <span className="text-[13px] font-medium" style={{ color: "#1a1a1a" }}>
-          {activePage?.isHomepage ? "Inicio" : activePage?.slug ?? "Inicio"}
-        </span>
-      </div>
+      {!previewMode && (
+        <div className="flex items-center md:hidden">
+          <span className="text-[13px] font-medium" style={{ color: "#1a1a1a" }}>
+            {activePage?.isHomepage ? "Inicio" : activePage?.slug ?? "Inicio"}
+          </span>
+        </div>
+      )}
 
-      <div
-        className="hidden items-center rounded-[10px] p-[3px] md:flex"
-        style={{ backgroundColor: "#f5f5f4" }}
-      >
-        {viewports.map(({ mode, icon: Icon, label }) => (
-          <button
-            key={mode}
-            onClick={() => dispatch({ type: "SET_VIEWPORT", mode })}
-            title={label}
-            className={cn(
-              "rounded-[8px] p-2 transition-all duration-150",
-              state.viewportMode === mode ? "shadow-[0_1px_3px_rgba(0,0,0,0.06)]" : "",
-            )}
-            style={{
-              backgroundColor: state.viewportMode === mode ? "#ffffff" : "transparent",
-              color: state.viewportMode === mode ? "#1a1a1a" : "#a3a3a3",
-            }}
-          >
-            <Icon className="h-4 w-4" />
-          </button>
-        ))}
-      </div>
+      {previewMode ? (
+        <div
+          className="flex items-center rounded-[10px] p-[3px]"
+          style={{ backgroundColor: "#f5f5f4" }}
+        >
+          {viewports.map(({ mode, icon: Icon, label }) => (
+            <button
+              key={mode}
+              onClick={() => dispatch({ type: "SET_VIEWPORT", mode })}
+              title={label}
+              className={cn(
+                "rounded-[8px] p-2 transition-all duration-150",
+                state.viewportMode === mode ? "shadow-[0_1px_3px_rgba(0,0,0,0.06)]" : "",
+              )}
+              style={{
+                backgroundColor: state.viewportMode === mode ? "#ffffff" : "transparent",
+                color: state.viewportMode === mode ? "#1a1a1a" : "#a3a3a3",
+              }}
+            >
+              <Icon className="h-4 w-4" />
+            </button>
+          ))}
+        </div>
+      ) : (
+        <div
+          className="hidden items-center rounded-[10px] p-[3px] md:flex"
+          style={{ backgroundColor: "#f5f5f4" }}
+        >
+          {viewports.map(({ mode, icon: Icon, label }) => (
+            <button
+              key={mode}
+              onClick={() => dispatch({ type: "SET_VIEWPORT", mode })}
+              title={label}
+              className={cn(
+                "rounded-[8px] p-2 transition-all duration-150",
+                state.viewportMode === mode ? "shadow-[0_1px_3px_rgba(0,0,0,0.06)]" : "",
+              )}
+              style={{
+                backgroundColor: state.viewportMode === mode ? "#ffffff" : "transparent",
+                color: state.viewportMode === mode ? "#1a1a1a" : "#a3a3a3",
+              }}
+            >
+              <Icon className="h-4 w-4" />
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex items-center gap-1">
         <button
@@ -269,19 +298,36 @@ export function EditorTopbar({
           <IconSettings className="h-4 w-4" />
         </button>
 
-        <a
-          href={`/site/${storeSlug}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="hidden items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[13px] font-medium transition-all duration-150 md:flex"
-          style={{ color: "#737373" }}
-          title="Pre-visualizar"
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
+        <button
+          onClick={onTogglePreview}
+          className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[13px] font-medium transition-all duration-150"
+          style={{
+            backgroundColor: previewMode ? "#171717" : "transparent",
+            color: previewMode ? "#ffffff" : "#737373",
+            border: previewMode ? "none" : "1px solid rgba(0,0,0,0.06)",
+          }}
+          onMouseEnter={(e) => { if (!previewMode) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
+          onMouseLeave={(e) => { if (!previewMode) { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; } }}
         >
-          <IconPlayerPlay style={{ width: 14, height: 14 }} />
-          <span>Preview</span>
-        </a>
+          Previa
+          <div
+            className="relative"
+            style={{ width: 32, height: 18, borderRadius: 999, backgroundColor: previewMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.1)", transition: "background 200ms" }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 2,
+                left: previewMode ? 16 : 2,
+                width: 14,
+                height: 14,
+                borderRadius: 999,
+                backgroundColor: previewMode ? "#ffffff" : "#a3a3a3",
+                transition: "left 200ms ease-out, background 200ms",
+              }}
+            />
+          </div>
+        </button>
 
         <button
           onClick={handleSave}

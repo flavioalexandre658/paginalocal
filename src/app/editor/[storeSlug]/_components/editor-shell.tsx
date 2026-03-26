@@ -20,6 +20,7 @@ interface Props {
 export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, userStores }: Props) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
 
   return (
     <EditorProvider initialBlueprint={initialBlueprint} storeId={storeId}>
@@ -37,12 +38,16 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
           mobileMenuOpen={mobileMenuOpen}
           onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
           userStores={userStores}
+          previewMode={previewMode}
+          onTogglePreview={() => setPreviewMode(!previewMode)}
         />
 
         <div className="flex flex-1 overflow-hidden">
-          <div className="hidden md:block">
-            <EditorSidebar collapsed={sidebarCollapsed} storeSlug={storeSlug} />
-          </div>
+          {!previewMode && (
+            <div className="hidden md:block">
+              <EditorSidebar collapsed={sidebarCollapsed} storeSlug={storeSlug} />
+            </div>
+          )}
 
           <div
             className="flex-1 overflow-hidden p-2"
@@ -52,23 +57,25 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
               className="h-full overflow-hidden rounded-[12px]"
               style={{ backgroundColor: "#f5f5f4" }}
             >
-              <EditorPreview />
+              <EditorPreview previewMode={previewMode} />
             </div>
           </div>
         </div>
       </div>
 
-      <EditorSidebar
-        collapsed={false}
-        mobileOverlay
-        mobileMenuOpen={mobileMenuOpen}
-        onCloseMobileMenu={() => setMobileMenuOpen(false)}
-        storeName={storeName}
-        storeSlug={storeSlug}
-        userStores={userStores}
-      />
+      {!previewMode && (
+        <EditorSidebar
+          collapsed={false}
+          mobileOverlay
+          mobileMenuOpen={mobileMenuOpen}
+          onCloseMobileMenu={() => setMobileMenuOpen(false)}
+          storeName={storeName}
+          storeSlug={storeSlug}
+          userStores={userStores}
+        />
+      )}
 
-      <SectionEditDrawer />
+      {!previewMode && <SectionEditDrawer />}
     </EditorProvider>
   );
 }
