@@ -16,6 +16,7 @@ import {
   IconChevronDown,
   IconLayoutSidebarLeftCollapse,
   IconLayoutSidebarLeftExpand,
+  IconMenu2,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { useEditor } from "../_lib/editor-context";
@@ -28,10 +29,15 @@ interface Props {
   storeName: string;
   sidebarCollapsed: boolean;
   onToggleSidebar: () => void;
+  mobileMenuOpen: boolean;
+  onToggleMobileMenu: () => void;
   userStores: { id: string; name: string; slug: string }[];
 }
 
-export function EditorTopbar({ storeId, storeSlug, storeName, sidebarCollapsed, onToggleSidebar, userStores }: Props) {
+export function EditorTopbar({
+  storeId, storeSlug, storeName, sidebarCollapsed, onToggleSidebar,
+  mobileMenuOpen, onToggleMobileMenu, userStores,
+}: Props) {
   const { state, dispatch } = useEditor();
   const { executeAsync, isExecuting } = useAction(updateBlueprintAction);
   const router = useRouter();
@@ -59,16 +65,23 @@ export function EditorTopbar({ storeId, storeSlug, storeName, sidebarCollapsed, 
     { mode: "mobile", icon: IconDeviceMobile, label: "Mobile" },
   ];
 
+  const activePage = state.blueprint.pages.find((p) => p.id === state.activePageId);
+
   return (
     <header
       className="flex h-12 shrink-0 items-center justify-between px-3"
-      style={{
-        fontFamily: "system-ui, -apple-system, sans-serif",
-        backgroundColor: "#ffffff",
-      }}
+      style={{ fontFamily: "system-ui, -apple-system, sans-serif", backgroundColor: "#ffffff" }}
     >
       <div className="flex items-center gap-2">
-        <div className="relative">
+        <button
+          onClick={onToggleMobileMenu}
+          className="rounded-[8px] p-1.5 transition-all duration-150 md:hidden"
+          style={{ color: "#737373" }}
+        >
+          <IconMenu2 style={{ width: 20, height: 20 }} />
+        </button>
+
+        <div className="relative hidden md:block">
           <button
             onClick={() => setStoreDropdownOpen(!storeDropdownOpen)}
             className="flex items-center gap-2 rounded-[8px] px-2 py-1 transition-all duration-150"
@@ -136,9 +149,6 @@ export function EditorTopbar({ storeId, storeSlug, storeName, sidebarCollapsed, 
                       <span className="truncate">{s.name}</span>
                     </button>
                   ))}
-                  {userStores.length === 0 && (
-                    <div className="px-3 py-2 text-[13px]" style={{ color: "#a3a3a3" }}>Carregando...</div>
-                  )}
                 </div>
 
                 <div className="my-1" style={{ height: 1, backgroundColor: "rgba(0,0,0,0.06)" }} />
@@ -174,7 +184,7 @@ export function EditorTopbar({ storeId, storeSlug, storeName, sidebarCollapsed, 
 
         <button
           onClick={onToggleSidebar}
-          className="rounded-[8px] p-1.5 transition-all duration-150"
+          className="hidden rounded-[8px] p-1.5 transition-all duration-150 md:block"
           style={{ color: "#a3a3a3" }}
           title={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
           onMouseEnter={(e) => { e.currentTarget.style.color = "#1a1a1a"; e.currentTarget.style.backgroundColor = "#f5f5f4"; }}
@@ -188,8 +198,14 @@ export function EditorTopbar({ storeId, storeSlug, storeName, sidebarCollapsed, 
         </button>
       </div>
 
+      <div className="flex items-center md:hidden">
+        <span className="text-[13px] font-medium" style={{ color: "#1a1a1a" }}>
+          {activePage?.isHomepage ? "Inicio" : activePage?.slug ?? "Inicio"}
+        </span>
+      </div>
+
       <div
-        className="flex items-center rounded-[10px] p-[3px]"
+        className="hidden items-center rounded-[10px] p-[3px] md:flex"
         style={{ backgroundColor: "#f5f5f4" }}
       >
         {viewports.map(({ mode, icon: Icon, label }) => (
@@ -215,7 +231,7 @@ export function EditorTopbar({ storeId, storeSlug, storeName, sidebarCollapsed, 
         <button
           onClick={() => dispatch({ type: "UNDO" })}
           disabled={state.undoStack.length === 0}
-          className="rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed"
+          className="hidden rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed md:block"
           style={{ color: "#737373" }}
           title="Desfazer"
           onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
@@ -226,7 +242,7 @@ export function EditorTopbar({ storeId, storeSlug, storeName, sidebarCollapsed, 
         <button
           onClick={() => dispatch({ type: "REDO" })}
           disabled={state.redoStack.length === 0}
-          className="rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed"
+          className="hidden rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed md:block"
           style={{ color: "#737373" }}
           title="Refazer"
           onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
@@ -235,12 +251,12 @@ export function EditorTopbar({ storeId, storeSlug, storeName, sidebarCollapsed, 
           <IconArrowForwardUp className="h-4 w-4" />
         </button>
 
-        <div className="mx-1.5 h-5 w-px" style={{ backgroundColor: "rgba(0,0,0,0.06)" }} />
+        <div className="mx-1.5 hidden h-5 w-px md:block" style={{ backgroundColor: "rgba(0,0,0,0.06)" }} />
 
         <button
           onClick={handleSave}
           disabled={!state.isDirty || isExecuting || state.isSaving}
-          className="flex items-center gap-1.5 rounded-[8px] px-4 py-2 text-[13px] font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 rounded-[8px] px-2.5 py-2 text-[13px] font-medium transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed md:px-4"
           style={{ backgroundColor: "#171717", color: "#ffffff" }}
         >
           {isExecuting || state.isSaving ? (
@@ -248,7 +264,7 @@ export function EditorTopbar({ storeId, storeSlug, storeName, sidebarCollapsed, 
           ) : (
             <IconDeviceFloppy className="h-3.5 w-3.5" />
           )}
-          Salvar
+          <span className="hidden md:inline">Salvar</span>
         </button>
 
         <a

@@ -19,6 +19,7 @@ interface Props {
 
 export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, userStores }: Props) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <EditorProvider initialBlueprint={initialBlueprint} storeId={storeId}>
@@ -33,11 +34,15 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
           storeName={storeName}
           sidebarCollapsed={sidebarCollapsed}
           onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+          mobileMenuOpen={mobileMenuOpen}
+          onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
           userStores={userStores}
         />
 
         <div className="flex flex-1 overflow-hidden">
-          <EditorSidebar collapsed={sidebarCollapsed} />
+          <div className="hidden md:block">
+            <EditorSidebar collapsed={sidebarCollapsed} />
+          </div>
 
           <div
             className="flex-1 overflow-hidden p-2"
@@ -52,6 +57,16 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
           </div>
         </div>
       </div>
+
+      <EditorSidebar
+        collapsed={false}
+        mobileOverlay
+        mobileMenuOpen={mobileMenuOpen}
+        onCloseMobileMenu={() => setMobileMenuOpen(false)}
+        storeName={storeName}
+        storeSlug={storeSlug}
+        userStores={userStores}
+      />
 
       <SectionEditDrawer />
     </EditorProvider>

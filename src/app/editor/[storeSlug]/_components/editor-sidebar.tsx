@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   IconDeviceDesktop,
@@ -11,6 +13,7 @@ import {
   IconSettings,
   IconHelp,
   IconSparkles,
+  IconChevronDown,
 } from "@tabler/icons-react";
 
 const NAV_ITEMS = [
@@ -24,9 +27,230 @@ const NAV_ITEMS = [
 
 interface Props {
   collapsed: boolean;
+  mobileOverlay?: boolean;
+  mobileMenuOpen?: boolean;
+  onCloseMobileMenu?: () => void;
+  storeName?: string;
+  storeSlug?: string;
+  userStores?: { id: string; name: string; slug: string }[];
 }
 
-export function EditorSidebar({ collapsed }: Props) {
+function NavItems({ expanded, onItemClick }: { expanded: boolean; onItemClick?: () => void }) {
+  return (
+    <div className={cn("py-2", expanded ? "px-2" : "px-1")}>
+      {NAV_ITEMS.map((item) => {
+        const isActive = item.id === "website";
+        return (
+          <button
+            key={item.id}
+            onClick={onItemClick}
+            className={cn(
+              "flex w-full items-center rounded-[10px] transition-all duration-150",
+              expanded ? "gap-[10px] px-3 py-2 my-0.5" : "justify-center p-2.5 my-0.5",
+            )}
+            style={{
+              backgroundColor: isActive ? "#f5f5f4" : "transparent",
+              color: isActive ? "#1a1a1a" : "#737373",
+              fontWeight: isActive ? 500 : 400,
+              fontSize: 14,
+            }}
+            title={!expanded ? item.label : undefined}
+            onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = "#fafaf9"; }}
+            onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = "transparent"; }}
+          >
+            <item.icon style={{ width: 18, height: 18, flexShrink: 0 }} />
+            {expanded && <span>{item.label}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function UpgradeCard() {
+  return (
+    <div className="px-3 pb-2">
+      <div
+        className="rounded-[12px] p-4"
+        style={{ backgroundColor: "#f5f5f4", border: "1px solid rgba(0,0,0,0.06)" }}
+      >
+        <p className="text-[13px] font-semibold" style={{ color: "#1a1a1a" }}>Publique seu site</p>
+        <p className="text-[12px] mt-0.5" style={{ color: "#737373" }}>Acesse recursos premium</p>
+        <button
+          className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[8px] py-2 text-[13px] font-medium text-white"
+          style={{ backgroundColor: "#171717" }}
+        >
+          <IconSparkles style={{ width: 14, height: 14 }} />
+          Fazer upgrade
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FooterLinks({ expanded }: { expanded: boolean }) {
+  return (
+    <div
+      className={cn("py-2", expanded ? "px-2" : "px-1")}
+      style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
+    >
+      {[
+        { icon: IconSettings, label: "Configuracoes" },
+        { icon: IconHelp, label: "Ajuda" },
+      ].map(({ icon: Icon, label }) => (
+        <button
+          key={label}
+          className={cn(
+            "flex w-full items-center rounded-[8px] transition-all duration-150",
+            expanded ? "gap-[10px] px-3 py-1.5" : "justify-center p-2",
+          )}
+          style={{ color: "#737373", fontSize: 13 }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "#1a1a1a"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "#737373"; }}
+        >
+          <Icon style={{ width: 16, height: 16 }} />
+          {expanded && <span>{label}</span>}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function EditorSidebar({
+  collapsed,
+  mobileOverlay,
+  mobileMenuOpen,
+  onCloseMobileMenu,
+  storeName,
+  storeSlug,
+  userStores,
+}: Props) {
+  const router = useRouter();
+  const [storeListOpen, setStoreListOpen] = useState(false);
+
+  if (mobileOverlay) {
+    return (
+      <>
+        <div
+          className={cn(
+            "fixed inset-0 z-40 transition-opacity duration-200 md:hidden",
+            mobileMenuOpen ? "opacity-100" : "pointer-events-none opacity-0"
+          )}
+          style={{ backgroundColor: "rgba(0,0,0,0.2)" }}
+          onClick={onCloseMobileMenu}
+        />
+
+        <aside
+          className={cn(
+            "fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col transition-transform duration-200 ease-out md:hidden",
+          )}
+          style={{
+            fontFamily: "system-ui, -apple-system, sans-serif",
+            backgroundColor: "#ffffff",
+            transform: mobileMenuOpen ? "translateX(0)" : "translateX(-100%)",
+          }}
+        >
+          <div
+            className="px-4 py-4"
+            style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
+          >
+            <button
+              onClick={() => setStoreListOpen(!storeListOpen)}
+              className="flex w-full items-center gap-2 rounded-[8px] px-2 py-1"
+            >
+              <div
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold text-white"
+                style={{ backgroundColor: "#171717" }}
+              >
+                {storeName?.charAt(0).toUpperCase() ?? "S"}
+              </div>
+              <span className="flex-1 truncate text-left text-[14px] font-semibold" style={{ color: "#1a1a1a" }}>
+                {storeName}
+              </span>
+              <IconChevronDown
+                style={{ width: 14, height: 14, color: "#737373", transition: "transform 200ms", transform: storeListOpen ? "rotate(180deg)" : "rotate(0)" }}
+              />
+            </button>
+
+            {storeListOpen && (
+              <div
+                className="mt-2 rounded-[12px] py-2"
+                style={{ backgroundColor: "#ffffff", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 12px 40px rgba(0,0,0,0.12)" }}
+              >
+                <div className="flex flex-col items-center py-3">
+                  <div
+                    className="flex h-12 w-12 items-center justify-center rounded-full text-[18px] font-semibold text-white"
+                    style={{ backgroundColor: "#171717" }}
+                  >
+                    {storeName?.charAt(0).toUpperCase() ?? "S"}
+                  </div>
+                  <p className="mt-2 text-[14px] font-semibold" style={{ color: "#1a1a1a" }}>{storeName}</p>
+                </div>
+
+                <div className="my-1" style={{ height: 1, backgroundColor: "rgba(0,0,0,0.06)" }} />
+
+                <div className="px-2 py-1">
+                  {userStores?.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => {
+                        setStoreListOpen(false);
+                        if (s.slug !== storeSlug) {
+                          onCloseMobileMenu?.();
+                          router.push(`/editor/${s.slug}`);
+                        }
+                      }}
+                      className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
+                      style={{
+                        backgroundColor: s.slug === storeSlug ? "#f5f5f4" : "transparent",
+                        color: s.slug === storeSlug ? "#1a1a1a" : "#737373",
+                        fontWeight: s.slug === storeSlug ? 500 : 400,
+                      }}
+                    >
+                      <div
+                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
+                        style={{ backgroundColor: "#171717" }}
+                      >
+                        {s.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="truncate">{s.name}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="my-1" style={{ height: 1, backgroundColor: "rgba(0,0,0,0.06)" }} />
+
+                <div className="px-2 py-1">
+                  <button
+                    className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
+                    style={{ color: "#737373" }}
+                    onClick={() => { setStoreListOpen(false); onCloseMobileMenu?.(); router.push("/painel"); }}
+                  >
+                    + Adicionar negocio
+                  </button>
+                  <button
+                    className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
+                    style={{ color: "#737373" }}
+                    onClick={() => { setStoreListOpen(false); onCloseMobileMenu?.(); router.push("/api/auth/sign-out"); }}
+                  >
+                    Sair
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            <NavItems expanded onItemClick={onCloseMobileMenu} />
+          </div>
+
+          <UpgradeCard />
+          <FooterLinks expanded />
+        </aside>
+      </>
+    );
+  }
+
   return (
     <aside
       className="flex shrink-0 flex-col transition-all duration-200"
@@ -37,82 +261,10 @@ export function EditorSidebar({ collapsed }: Props) {
       }}
     >
       <div className="flex-1 overflow-y-auto">
-        <div className={cn("py-2", collapsed ? "px-1" : "px-2")}>
-          {NAV_ITEMS.map((item) => {
-            const isActive = item.id === "website";
-            return (
-              <button
-                key={item.id}
-                className={cn(
-                  "flex w-full items-center rounded-[10px] transition-all duration-150",
-                  collapsed ? "justify-center p-2.5 my-0.5" : "gap-[10px] px-3 py-2 my-0.5",
-                )}
-                style={{
-                  backgroundColor: isActive ? "#f5f5f4" : "transparent",
-                  color: isActive ? "#1a1a1a" : "#737373",
-                  fontWeight: isActive ? 500 : 400,
-                  fontSize: 14,
-                }}
-                title={collapsed ? item.label : undefined}
-                onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = "#fafaf9"; }}
-                onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.backgroundColor = "transparent"; }}
-              >
-                <item.icon style={{ width: 18, height: 18, flexShrink: 0 }} />
-                {!collapsed && <span>{item.label}</span>}
-              </button>
-            );
-          })}
-        </div>
+        <NavItems expanded={!collapsed} />
       </div>
-
-      {!collapsed && (
-        <div className="px-3 pb-2">
-          <div
-            className="rounded-[12px] p-4"
-            style={{ backgroundColor: "#f5f5f4", border: "1px solid rgba(0,0,0,0.06)" }}
-          >
-            <p className="text-[13px] font-semibold" style={{ color: "#1a1a1a" }}>Publique seu site</p>
-            <p className="text-[12px] mt-0.5" style={{ color: "#737373" }}>Acesse recursos premium</p>
-            <button
-              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[8px] py-2 text-[13px] font-medium text-white"
-              style={{ backgroundColor: "#171717" }}
-            >
-              <IconSparkles style={{ width: 14, height: 14 }} />
-              Fazer upgrade
-            </button>
-          </div>
-        </div>
-      )}
-
-      <div
-        className={cn("py-2", collapsed ? "px-1" : "px-2")}
-        style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
-      >
-        <button
-          className={cn(
-            "flex w-full items-center rounded-[8px] transition-all duration-150",
-            collapsed ? "justify-center p-2" : "gap-[10px] px-3 py-1.5",
-          )}
-          style={{ color: "#737373", fontSize: 13 }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = "#1a1a1a"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = "#737373"; }}
-        >
-          <IconSettings style={{ width: 16, height: 16 }} />
-          {!collapsed && <span>Configuracoes</span>}
-        </button>
-        <button
-          className={cn(
-            "flex w-full items-center rounded-[8px] transition-all duration-150",
-            collapsed ? "justify-center p-2" : "gap-[10px] px-3 py-1.5",
-          )}
-          style={{ color: "#737373", fontSize: 13 }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = "#1a1a1a"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = "#737373"; }}
-        >
-          <IconHelp style={{ width: 16, height: 16 }} />
-          {!collapsed && <span>Ajuda</span>}
-        </button>
-      </div>
+      {!collapsed && <UpgradeCard />}
+      <FooterLinks expanded={!collapsed} />
     </aside>
   );
 }
