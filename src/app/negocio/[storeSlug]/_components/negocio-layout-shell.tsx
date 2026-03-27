@@ -3,6 +3,7 @@
 import { type ReactNode, useState } from "react";
 import { usePathname } from "next/navigation";
 import { IconMenu2 } from "@tabler/icons-react";
+import { PglButton } from "@/components/ui/pgl-button";
 import { EditorSidebar } from "@/app/editor/[storeSlug]/_components/editor-sidebar";
 import { SiteSettingsModal } from "@/app/editor/[storeSlug]/_components/site-settings-modal";
 
@@ -38,13 +39,9 @@ export function NegocioLayoutShell({ children, storeId, storeName, storeSlug, us
         className="flex items-center gap-2 px-3 h-12 md:hidden shrink-0"
         style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
       >
-        <button
-          onClick={() => setMobileMenuOpen(true)}
-          className="rounded-[8px] p-1.5 transition-all duration-150"
-          style={{ color: "#737373" }}
-        >
-          <IconMenu2 style={{ width: 20, height: 20 }} />
-        </button>
+        <PglButton variant="ghost" size="icon-sm" onClick={() => setMobileMenuOpen(true)}>
+          <IconMenu2 className="h-5 w-5" />
+        </PglButton>
 
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <div

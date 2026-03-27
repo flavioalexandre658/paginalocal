@@ -11,6 +11,7 @@ import {
   ModalFooter,
   ModalFooterActions,
 } from "@/components/ui/modal-blocks";
+import { PglButton } from "@/components/ui/pgl-button";
 import { useEditor } from "../../_lib/editor-context";
 import { setFieldByPath } from "../../_lib/text-field-mapper";
 
@@ -209,18 +210,8 @@ export function NavEditPopup({ sectionId, content, onClose }: Props) {
         <ModalFooter>
           <div />
           <ModalFooterActions>
-            <button
-              onClick={onClose}
-              className="text-[13px] font-medium text-[#737373] transition-colors hover:text-[#1a1a1a]"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleSave}
-              className="rounded-[8px] bg-[#171717] px-[20px] py-[8px] text-[13px] font-medium text-white transition-colors hover:bg-[#171717]/90"
-            >
-              Salvar
-            </button>
+            <PglButton variant="ghost" size="sm" onClick={onClose}>Cancelar</PglButton>
+            <PglButton variant="dark" size="sm" onClick={handleSave}>Salvar</PglButton>
           </ModalFooterActions>
         </ModalFooter>
       </ModalContent>

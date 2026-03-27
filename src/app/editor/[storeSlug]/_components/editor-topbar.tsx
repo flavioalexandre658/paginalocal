@@ -21,12 +21,14 @@ import {
   IconPalette,
   IconBrush,
   IconTypography,
+  IconExternalLink,
 } from "@tabler/icons-react";
 import { SiteSettingsModal } from "./site-settings-modal";
 import { PublishModal } from "./publish-modal";
 import { ColorsPopup } from "./editor-topbar-panels/colors-popup";
 import { FontsPopup } from "./editor-topbar-panels/fonts-popup";
 import { cn } from "@/lib/utils";
+import { PglButton } from "@/components/ui/pgl-button";
 import { useEditor } from "../_lib/editor-context";
 import type { ViewportMode } from "../_lib/editor-types";
 import { updateBlueprintAction } from "@/actions/stores/update-blueprint.action";
@@ -45,12 +47,13 @@ interface Props {
   themesOpen: boolean;
   onOpenThemes: () => void;
   onCloseThemes: () => void;
+  isPublished: boolean;
 }
 
 export function EditorTopbar({
   storeId, storeSlug, storeName, sidebarCollapsed, onToggleSidebar,
   onToggleMobileMenu, userStores, previewMode, onTogglePreview,
-  themesOpen, onOpenThemes, onCloseThemes,
+  themesOpen, onOpenThemes, onCloseThemes, isPublished: isPublishedProp,
 }: Props) {
   const { state, dispatch } = useEditor();
   const { executeAsync, isExecuting } = useAction(updateBlueprintAction);
@@ -60,6 +63,7 @@ export function EditorTopbar({
   const [settingsInitialTab, setSettingsInitialTab] = useState<"general" | "domains" | "integrations" | "tracking">("general");
   const [publishOpen, setPublishOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<"colors" | "fonts" | null>(null);
+  const [isPublished, setIsPublished] = useState(isPublishedProp);
 
   const isSaving = isExecuting || state.isSaving;
 
@@ -89,105 +93,69 @@ export function EditorTopbar({
 
   return (
     <header
-      className="flex h-12 shrink-0 items-center justify-between px-3"
-      style={{ fontFamily: "system-ui, -apple-system, sans-serif", backgroundColor: "#ffffff" }}
+      className="flex h-12 shrink-0 items-center justify-between px-3 bg-white dark:bg-slate-900"
+      style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}
     >
+      {/* Left */}
       <div className="flex items-center gap-2">
-        <button
-          onClick={onToggleMobileMenu}
-          className="rounded-[8px] p-1.5 transition-all duration-150 md:hidden"
-          style={{ color: "#737373" }}
-        >
-          <IconMenu2 style={{ width: 20, height: 20 }} />
-        </button>
+        <PglButton variant="ghost" size="icon-sm" onClick={onToggleMobileMenu} className="md:hidden">
+          <IconMenu2 className="h-5 w-5" />
+        </PglButton>
 
         <div className="relative hidden md:block">
           <button
             onClick={() => setStoreDropdownOpen(!storeDropdownOpen)}
-            className="flex items-center gap-2 rounded-[8px] px-2 py-1 transition-all duration-150"
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f5f5f4"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+            className="flex items-center gap-2 rounded-lg px-2 py-1 transition-all duration-150 hover:bg-slate-100/60 dark:hover:bg-slate-800/60"
           >
-            <div
-              className="flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-semibold text-white"
-              style={{ backgroundColor: "#171717" }}
-            >
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-[12px] font-semibold text-white dark:bg-white dark:text-slate-900">
               {storeName.charAt(0).toUpperCase()}
             </div>
-            <span className="max-w-[160px] truncate text-[14px] font-semibold" style={{ color: "#1a1a1a" }}>
+            <span className="max-w-[160px] truncate text-[14px] font-semibold text-slate-900 dark:text-white">
               {storeName}
             </span>
-            <IconChevronDown style={{ width: 14, height: 14, color: "#737373" }} />
+            <IconChevronDown className="h-3.5 w-3.5 text-slate-400" />
           </button>
 
           {storeDropdownOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setStoreDropdownOpen(false)} />
-              <div
-                className="absolute left-0 top-full z-50 mt-2 w-[260px] rounded-[12px] py-2"
-                style={{
-                  backgroundColor: "#ffffff",
-                  border: "1px solid rgba(0,0,0,0.06)",
-                  boxShadow: "0 25px 60px rgba(0,0,0,0.15)",
-                }}
-              >
+              <div className="absolute left-0 top-full z-50 mt-2 w-[260px] rounded-xl border border-slate-200/60 bg-white/95 py-2 shadow-2xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/60 dark:bg-slate-900/95 dark:shadow-slate-900/50">
                 <div className="flex flex-col items-center py-3">
-                  <div
-                    className="flex h-12 w-12 items-center justify-center rounded-full text-[18px] font-semibold text-white"
-                    style={{ backgroundColor: "#171717" }}
-                  >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 text-[18px] font-semibold text-white dark:bg-white dark:text-slate-900">
                     {storeName.charAt(0).toUpperCase()}
                   </div>
-                  <p className="mt-2 text-[14px] font-semibold" style={{ color: "#1a1a1a" }}>{storeName}</p>
+                  <p className="mt-2 text-[14px] font-semibold text-slate-900 dark:text-white">{storeName}</p>
                 </div>
-
-                <div className="my-1" style={{ height: 1, backgroundColor: "rgba(0,0,0,0.06)" }} />
-
+                <div className="my-1 h-px bg-slate-200/60 dark:bg-slate-700/60" />
                 <div className="px-2 py-1">
                   {userStores.map((s) => (
                     <button
                       key={s.id}
-                      className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
-                      style={{
-                        backgroundColor: s.slug === storeSlug ? "#f5f5f4" : "transparent",
-                        color: s.slug === storeSlug ? "#1a1a1a" : "#737373",
-                        fontWeight: s.slug === storeSlug ? 500 : 400,
-                      }}
-                      onMouseEnter={(e) => { if (s.slug !== storeSlug) e.currentTarget.style.backgroundColor = "#fafaf9"; }}
-                      onMouseLeave={(e) => { if (s.slug !== storeSlug) e.currentTarget.style.backgroundColor = "transparent"; }}
-                      onClick={() => {
-                        setStoreDropdownOpen(false);
-                        if (s.slug !== storeSlug) router.push(`/negocio/${s.slug}/site`);
-                      }}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors",
+                        s.slug === storeSlug
+                          ? "bg-slate-100 text-slate-900 font-medium dark:bg-slate-800 dark:text-white"
+                          : "text-slate-500 hover:bg-slate-100/60 dark:text-slate-400 dark:hover:bg-slate-800/60",
+                      )}
+                      onClick={() => { setStoreDropdownOpen(false); if (s.slug !== storeSlug) router.push(`/negocio/${s.slug}/site`); }}
                     >
-                      <div
-                        className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold text-white"
-                        style={{ backgroundColor: "#171717" }}
-                      >
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-900 text-[10px] font-semibold text-white dark:bg-white dark:text-slate-900">
                         {s.name.charAt(0).toUpperCase()}
                       </div>
                       <span className="truncate">{s.name}</span>
                     </button>
                   ))}
                 </div>
-
-                <div className="my-1" style={{ height: 1, backgroundColor: "rgba(0,0,0,0.06)" }} />
-
+                <div className="my-1 h-px bg-slate-200/60 dark:bg-slate-700/60" />
                 <div className="px-2 py-1">
                   <button
-                    className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
-                    style={{ color: "#737373" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#fafaf9"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
-                    onClick={() => { setStoreDropdownOpen(false); router.push("/painel"); }}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-slate-500 transition-colors hover:bg-slate-100/60 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800/60"
+                    onClick={() => { setStoreDropdownOpen(false); router.push("/onboarding"); }}
                   >
                     + Adicionar negocio
                   </button>
                   <button
-                    className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
-                    style={{ color: "#737373" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#fafaf9"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-slate-400 dark:hover:bg-red-950 dark:hover:text-red-400"
                     onClick={async () => { setStoreDropdownOpen(false); const { signOut } = await import("@/lib/auth-client"); await signOut({ fetchOptions: { onSuccess: () => { router.push("/entrar"); router.refresh(); } } }); }}
                   >
                     Sair
@@ -199,38 +167,26 @@ export function EditorTopbar({
         </div>
 
         {state.isDirty && (
-          <span className="h-2 w-2 rounded-full bg-amber-400" title="Alteracoes nao salvas" />
+          <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" title="Alteracoes nao salvas" />
         )}
 
-        <button
-          onClick={onToggleSidebar}
-          className="hidden rounded-[8px] p-1.5 transition-all duration-150 md:block"
-          style={{ color: "#a3a3a3" }}
-          title={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
-          onMouseEnter={(e) => { e.currentTarget.style.color = "#1a1a1a"; e.currentTarget.style.backgroundColor = "#f5f5f4"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = "#a3a3a3"; e.currentTarget.style.backgroundColor = "transparent"; }}
-        >
-          {sidebarCollapsed ? (
-            <IconLayoutSidebarLeftExpand style={{ width: 16, height: 16 }} />
-          ) : (
-            <IconLayoutSidebarLeftCollapse style={{ width: 16, height: 16 }} />
-          )}
-        </button>
+        <PglButton variant="ghost" size="icon-sm" onClick={onToggleSidebar} title={sidebarCollapsed ? "Expandir menu" : "Recolher menu"} className="hidden md:inline-flex">
+          {sidebarCollapsed ? <IconLayoutSidebarLeftExpand className="h-4 w-4" /> : <IconLayoutSidebarLeftCollapse className="h-4 w-4" />}
+        </PglButton>
       </div>
 
+      {/* Center — mobile page name */}
       {!previewMode && (
         <div className="flex items-center md:hidden">
-          <span className="text-[13px] font-medium" style={{ color: "#1a1a1a" }}>
+          <span className="text-[13px] font-medium text-slate-900 dark:text-white">
             {activePage?.isHomepage ? "Inicio" : activePage?.slug ?? "Inicio"}
           </span>
         </div>
       )}
 
+      {/* Center — viewport pills (preview) / theme-colors-fonts (editor) */}
       {previewMode ? (
-        <div
-          className="flex items-center rounded-[10px] p-[3px]"
-          style={{ backgroundColor: "#f5f5f4" }}
-        >
+        <div className="flex items-center rounded-xl bg-slate-100/80 p-[3px] dark:bg-slate-800/80">
           {viewports.map(({ mode, icon: Icon, label }) => {
             const isActive = state.viewportMode === mode;
             return (
@@ -239,13 +195,11 @@ export function EditorTopbar({
                 onClick={() => dispatch({ type: "SET_VIEWPORT", mode })}
                 title={label}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-[8px] px-3 py-1.5 text-[13px] font-medium transition-all duration-150",
-                  isActive ? "shadow-[0_1px_3px_rgba(0,0,0,0.06)]" : "",
+                  "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-150",
+                  isActive
+                    ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                    : "text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300",
                 )}
-                style={{
-                  backgroundColor: isActive ? "#ffffff" : "transparent",
-                  color: isActive ? "#1a1a1a" : "#a3a3a3",
-                }}
               >
                 <Icon className="h-4 w-4" />
                 {isActive && <span>{label}</span>}
@@ -254,14 +208,11 @@ export function EditorTopbar({
           })}
         </div>
       ) : themesOpen ? (
-        <div className="hidden md:flex items-center gap-4">
-          <span className="text-[13px] font-medium" style={{ color: "#737373" }}>Alterar seu tema</span>
+        <div className="hidden md:flex items-center">
+          <span className="text-[13px] font-medium text-slate-500 dark:text-slate-400">Alterar seu tema</span>
         </div>
       ) : (
-        <div
-          className="hidden items-center rounded-full p-[3px] md:flex"
-          style={{ border: "1px solid rgba(0,0,0,0.08)" }}
-        >
+        <div className="hidden items-center rounded-full border border-slate-200/60 p-[3px] md:flex dark:border-slate-700/60">
           {([
             { id: "theme" as const, icon: IconPalette, label: "Tema" },
             { id: "colors" as const, icon: IconBrush, label: "Cores" },
@@ -277,17 +228,12 @@ export function EditorTopbar({
                 }}
                 className={cn(
                   "flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-150",
-                  isActive && "shadow-[0_1px_3px_rgba(0,0,0,0.08)]",
+                  isActive
+                    ? "bg-white text-slate-900 shadow-sm border border-slate-200/60 dark:bg-slate-800 dark:text-white dark:border-slate-700/60"
+                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-100/40 border border-transparent dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/40",
                 )}
-                style={{
-                  backgroundColor: isActive ? "#ffffff" : "transparent",
-                  color: isActive ? "#1a1a1a" : "#737373",
-                  border: isActive ? "1px solid rgba(0,0,0,0.1)" : "1px solid transparent",
-                }}
-                onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.color = "#1a1a1a"; e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.03)"; } }}
-                onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.color = "#737373"; e.currentTarget.style.backgroundColor = "transparent"; } }}
               >
-                <Icon style={{ width: 15, height: 15 }} />
+                <Icon className="h-[15px] w-[15px]" />
                 {label}
               </button>
             );
@@ -298,127 +244,59 @@ export function EditorTopbar({
       {activePanel === "colors" && <ColorsPopup onClose={() => setActivePanel(null)} />}
       {activePanel === "fonts" && <FontsPopup onClose={() => setActivePanel(null)} />}
 
+      {/* Right */}
       {themesOpen ? (
         <div className="flex items-center">
-          <button
-            onClick={onCloseThemes}
-            className="rounded-full px-4 py-1.5 text-[13px] font-medium transition-all duration-150"
-            style={{ border: "1px solid rgba(0,0,0,0.15)", color: "#1a1a1a" }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f5f5f4"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
-          >
+          <PglButton variant="outline" size="sm" shape="pill" onClick={onCloseThemes}>
             Voltar ao editor
-          </button>
+          </PglButton>
         </div>
       ) : (
         <div className="flex items-center gap-1">
-          <button
-            onClick={() => dispatch({ type: "UNDO" })}
-            disabled={state.undoStack.length === 0}
-            className="hidden rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed md:block"
-            style={{ color: "#737373" }}
-            title="Desfazer"
-            onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
-          >
+          <PglButton variant="ghost" size="icon-sm" onClick={() => dispatch({ type: "UNDO" })} disabled={state.undoStack.length === 0} title="Desfazer" className="hidden md:inline-flex">
             <IconArrowBackUp className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => dispatch({ type: "REDO" })}
-            disabled={state.redoStack.length === 0}
-            className="hidden rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed md:block"
-            style={{ color: "#737373" }}
-            title="Refazer"
-            onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
-          >
+          </PglButton>
+          <PglButton variant="ghost" size="icon-sm" onClick={() => dispatch({ type: "REDO" })} disabled={state.redoStack.length === 0} title="Refazer" className="hidden md:inline-flex">
             <IconArrowForwardUp className="h-4 w-4" />
-          </button>
+          </PglButton>
 
-          <button
-            onClick={handleSave}
-            disabled={!state.isDirty || isSaving}
-            className="hidden rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed md:block"
-            style={{ color: "#737373" }}
-            title="Salvar"
-            onMouseEnter={(e) => { if (!e.currentTarget.disabled) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
-          >
-            {isSaving ? (
-              <IconLoader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <IconDeviceFloppy className="h-4 w-4" />
-            )}
-          </button>
+          <PglButton variant="ghost" size="icon-sm" onClick={handleSave} disabled={!state.isDirty || isSaving} loading={isSaving} title="Salvar" className="hidden md:inline-flex">
+            {!isSaving && <IconDeviceFloppy className="h-4 w-4" />}
+          </PglButton>
 
-          <div className="mx-1 hidden h-5 w-px md:block" style={{ backgroundColor: "rgba(0,0,0,0.06)" }} />
+          <div className="mx-1 hidden h-5 w-px bg-slate-200/40 md:block dark:bg-slate-700/40" />
 
-          <button
-            onClick={() => { setSettingsInitialTab("general"); setSettingsOpen(true); }}
-            className="rounded-[8px] p-2 transition-all duration-150"
-            style={{ color: "#737373" }}
-            title="Configuracoes"
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; }}
-          >
+          <PglButton variant="ghost" size="icon-sm" onClick={() => { setSettingsInitialTab("general"); setSettingsOpen(true); }} title="Configuracoes">
             <IconSettings className="h-4 w-4" />
-          </button>
+          </PglButton>
 
-          <button
+          <PglButton
+            variant={previewMode ? "dark" : "outline"}
+            size="sm"
+            shape="pill"
             onClick={onTogglePreview}
-            className="flex items-center gap-2 rounded-full px-3 py-1.5 text-[13px] font-medium transition-all duration-150"
-            style={{
-              backgroundColor: previewMode ? "#171717" : "transparent",
-              color: previewMode ? "#ffffff" : "#737373",
-              border: previewMode ? "none" : "1px solid rgba(0,0,0,0.06)",
-            }}
-            onMouseEnter={(e) => { if (!previewMode) { e.currentTarget.style.backgroundColor = "#f5f5f4"; e.currentTarget.style.color = "#1a1a1a"; } }}
-            onMouseLeave={(e) => { if (!previewMode) { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#737373"; } }}
+            className="gap-2"
           >
             Previa
-            <div
-              className="relative"
-              style={{ width: 32, height: 18, borderRadius: 999, backgroundColor: previewMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.1)", transition: "background 200ms" }}
-            >
-              <div
-                style={{
-                  position: "absolute",
-                  top: 2,
-                  left: previewMode ? 16 : 2,
-                  width: 14,
-                  height: 14,
-                  borderRadius: 999,
-                  backgroundColor: previewMode ? "#ffffff" : "#a3a3a3",
-                  transition: "left 200ms ease-out, background 200ms",
-                }}
-              />
+            <div className={cn("relative h-[18px] w-8 rounded-full transition-colors", previewMode ? "bg-white/30 dark:bg-slate-900/30" : "bg-slate-200 dark:bg-slate-700")}>
+              <div className={cn("absolute top-[2px] h-[14px] w-[14px] rounded-full transition-all duration-200", previewMode ? "left-4 bg-white dark:bg-slate-900" : "left-[2px] bg-slate-400 dark:bg-slate-500")} />
             </div>
-          </button>
+          </PglButton>
 
-          <button
-            onClick={handleSave}
-            disabled={!state.isDirty || isSaving}
-            className="rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed md:hidden"
-            style={{ color: "#737373" }}
-            title="Salvar"
-          >
-            {isSaving ? (
-              <IconLoader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <IconDeviceFloppy className="h-4 w-4" />
-            )}
-          </button>
+          <PglButton variant="ghost" size="icon-sm" onClick={handleSave} disabled={!state.isDirty || isSaving} loading={isSaving} title="Salvar" className="md:hidden">
+            {!isSaving && <IconDeviceFloppy className="h-4 w-4" />}
+          </PglButton>
 
-          <button
+          <PglButton
+            variant={isPublished ? "dark" : "primary"}
+            size="sm"
+            shape="pill"
             onClick={() => setPublishOpen(true)}
-            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-semibold transition-all duration-150 md:px-4"
-            style={{ backgroundColor: "#171717", color: "#ffffff" }}
-            onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+            className="font-semibold md:px-4"
           >
-            <IconArrowUp style={{ width: 14, height: 14 }} />
-            <span className="hidden md:inline">Publicar</span>
-          </button>
+            {isPublished ? <IconExternalLink className="h-3.5 w-3.5" /> : <IconArrowUp className="h-3.5 w-3.5" />}
+            <span className="hidden md:inline">{isPublished ? "Visualizar" : "Publicar"}</span>
+          </PglButton>
         </div>
       )}
 
@@ -436,10 +314,9 @@ export function EditorTopbar({
         onClose={() => setPublishOpen(false)}
         storeId={storeId}
         storeSlug={storeSlug}
-        onOpenDomains={() => {
-          setSettingsInitialTab("domains");
-          setSettingsOpen(true);
-        }}
+        isPublished={isPublished}
+        onPublishSuccess={() => setIsPublished(true)}
+        onOpenDomains={() => { setSettingsInitialTab("domains"); setSettingsOpen(true); }}
       />
     </header>
   );

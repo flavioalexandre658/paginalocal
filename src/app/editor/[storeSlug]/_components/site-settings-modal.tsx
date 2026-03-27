@@ -16,6 +16,7 @@ import {
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PglButton } from "@/components/ui/pgl-button";
 import { updateStoreAction } from "@/actions/stores/update-store.action";
 import { getStoreBySlugAuthAction } from "@/actions/stores/get-store-by-slug-auth.action";
 import {
@@ -436,14 +437,9 @@ function DomainsTab({ storeId, storeSlug }: { storeId: string; storeSlug: string
                 onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.2)"; }}
                 onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.06)"; }}
               />
-              <button
-                onClick={handleAddDomain}
-                disabled={addingDomain || !domainInput.trim()}
-                className="shrink-0 rounded-[8px] px-4 py-2 text-[13px] font-medium text-white disabled:opacity-40"
-                style={{ backgroundColor: "#171717" }}
-              >
-                {addingDomain ? <IconLoader2 className="h-3.5 w-3.5 animate-spin" /> : "Adicionar"}
-              </button>
+              <PglButton variant="dark" size="sm" onClick={handleAddDomain} disabled={addingDomain || !domainInput.trim()} loading={addingDomain}>
+                {!addingDomain && "Adicionar"}
+              </PglButton>
             </div>
           </div>
         ) : (
@@ -526,10 +522,10 @@ function DomainsTab({ storeId, storeSlug }: { storeId: string; storeSlug: string
                   style={{ backgroundColor: "#f5f5f4", border: "1px solid rgba(0,0,0,0.06)", outline: "none", flex: 1 }}
                 />
                 <span className="shrink-0 text-[13px]" style={{ color: "#737373" }}>.paginalocal.com.br</span>
-                <button onClick={handleSaveSubdomain} disabled={savingSlug} className="shrink-0 rounded-[8px] px-3 py-2 text-[13px] font-medium text-white" style={{ backgroundColor: "#171717" }}>
-                  {savingSlug ? <IconLoader2 className="h-3.5 w-3.5 animate-spin" /> : "Salvar"}
-                </button>
-                <button onClick={() => { setEditingSubdomain(false); setSubdomain(storeSlug); }} className="shrink-0 text-[13px]" style={{ color: "#737373" }}>Cancelar</button>
+                <PglButton variant="dark" size="xs" onClick={handleSaveSubdomain} disabled={savingSlug} loading={savingSlug}>
+                  {!savingSlug && "Salvar"}
+                </PglButton>
+                <PglButton variant="ghost" size="xs" onClick={() => { setEditingSubdomain(false); setSubdomain(storeSlug); }}>Cancelar</PglButton>
               </div>
             ) : (
               <div className="flex items-center gap-2">
@@ -686,20 +682,8 @@ function TrackingTab({ storeSlug }: { storeSlug: string }) {
             onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.06)"; }}
           />
           <div className="flex justify-end gap-2">
-            <button
-              onClick={() => { setEditPlatform(null); setEditValue(""); }}
-              className="text-[13px] font-medium px-3 py-1.5"
-              style={{ color: "#737373" }}
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleSave}
-              className="rounded-[8px] px-4 py-1.5 text-[13px] font-medium text-white"
-              style={{ backgroundColor: "#171717" }}
-            >
-              Salvar
-            </button>
+            <PglButton variant="ghost" size="xs" onClick={() => { setEditPlatform(null); setEditValue(""); }}>Cancelar</PglButton>
+            <PglButton variant="dark" size="xs" onClick={handleSave}>Salvar</PglButton>
           </div>
         </div>
       )}

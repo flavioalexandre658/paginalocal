@@ -16,9 +16,10 @@ interface Props {
   storeSlug: string;
   storeName: string;
   userStores: { id: string; name: string; slug: string }[];
+  isPublished: boolean;
 }
 
-export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, userStores }: Props) {
+export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, userStores, isPublished }: Props) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
@@ -28,8 +29,8 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
     <EditorProvider initialBlueprint={initialBlueprint} storeId={storeId}>
       <UnsavedChangesGuard />
       <div
-        className="flex flex-col overflow-hidden"
-        style={{ fontFamily: "system-ui, -apple-system, sans-serif", backgroundColor: "#ffffff", height: "100dvh" }}
+        className="flex flex-col overflow-hidden bg-white dark:bg-slate-900"
+        style={{ fontFamily: "system-ui, -apple-system, sans-serif", height: "100dvh" }}
       >
         <EditorTopbar
           storeId={storeId}
@@ -45,6 +46,7 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
           themesOpen={themesOpen}
           onOpenThemes={() => { setThemesOpen(true); setPreviewMode(false); }}
           onCloseThemes={() => setThemesOpen(false)}
+          isPublished={isPublished}
         />
 
         <div className="flex flex-1 overflow-hidden">
@@ -57,14 +59,8 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
           {themesOpen ? (
             <ThemesPage onBack={() => setThemesOpen(false)} />
           ) : (
-            <div
-              className="flex-1 overflow-hidden p-2"
-              style={{ backgroundColor: "#ffffff" }}
-            >
-              <div
-                className="h-full overflow-hidden rounded-[12px]"
-                style={{ backgroundColor: "#f5f5f4" }}
-              >
+            <div className="flex-1 overflow-hidden p-2">
+              <div className="h-full overflow-hidden rounded-2xl bg-slate-100/80 dark:bg-slate-800/50">
                 <EditorPreview previewMode={previewMode} />
               </div>
             </div>

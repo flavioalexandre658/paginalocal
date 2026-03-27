@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { IconAdjustments, IconArrowLeft, IconArrowsShuffle, IconLink, IconLinkOff, IconRefresh } from "@tabler/icons-react";
+import { PglButton } from "@/components/ui/pgl-button";
 import { useEditor } from "../../_lib/editor-context";
 import type { DesignTokens } from "@/types/ai-generation";
 
@@ -441,12 +442,8 @@ export function ColorsPopup({ onClose }: Props) {
 
           {/* Footer */}
           <div className="flex items-center justify-end gap-3 px-6 py-4" style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}>
-            <button onClick={handleCancel} className="rounded-[8px] px-4 py-2 text-[13px] font-medium transition-colors" style={{ color: "#737373" }} onMouseEnter={(e) => { e.currentTarget.style.color = "#1a1a1a"; }} onMouseLeave={(e) => { e.currentTarget.style.color = "#737373"; }}>
-              Cancelar
-            </button>
-            <button onClick={handleDone} className="rounded-[8px] px-5 py-2 text-[13px] font-semibold transition-opacity" style={{ backgroundColor: "#171717", color: "#ffffff" }} onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; }} onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}>
-              Aplicar
-            </button>
+            <PglButton variant="ghost" size="sm" onClick={handleCancel}>Cancelar</PglButton>
+            <PglButton variant="dark" size="sm" onClick={handleDone}>Aplicar</PglButton>
           </div>
         </div>
       </div>

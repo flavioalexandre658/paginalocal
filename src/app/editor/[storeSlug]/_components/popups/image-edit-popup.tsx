@@ -11,6 +11,7 @@ import {
   ModalFooter,
   ModalFooterActions,
 } from "@/components/ui/modal-blocks";
+import { PglButton } from "@/components/ui/pgl-button";
 import { useEditor } from "../../_lib/editor-context";
 import { setFieldByPath } from "../../_lib/text-field-mapper";
 import { useAction } from "next-safe-action/hooks";
@@ -147,19 +148,8 @@ export function ImageEditPopup({
         <ModalFooter>
           <div />
           <ModalFooterActions>
-            <button
-              onClick={onClose}
-              className="text-[13px] font-medium text-[#737373] transition-colors hover:text-[#1a1a1a]"
-            >
-              Cancelar
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!selectedUrl}
-              className="rounded-[8px] bg-[#171717] px-[20px] py-[8px] text-[13px] font-medium text-white transition-colors hover:bg-[#171717]/90 disabled:opacity-50"
-            >
-              Salvar
-            </button>
+            <PglButton variant="ghost" size="sm" onClick={onClose}>Cancelar</PglButton>
+            <PglButton variant="dark" size="sm" onClick={handleSave} disabled={!selectedUrl}>Salvar</PglButton>
           </ModalFooterActions>
         </ModalFooter>
       </ModalContent>

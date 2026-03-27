@@ -22,12 +22,12 @@ export default async function SiteEditorPage({ params }: Props) {
   const storeData = isAdmin
     ? await db.query.store.findFirst({
         where: (s, { eq }) => eq(s.slug, storeSlug),
-        columns: { id: true, name: true, slug: true, siteBlueprintV2: true },
+        columns: { id: true, name: true, slug: true, siteBlueprintV2: true, isActive: true },
       })
     : await db.query.store.findFirst({
         where: (s, { and, eq }) =>
           and(eq(s.slug, storeSlug), eq(s.userId, session.user.id)),
-        columns: { id: true, name: true, slug: true, siteBlueprintV2: true },
+        columns: { id: true, name: true, slug: true, siteBlueprintV2: true, isActive: true },
       });
 
   if (!storeData) redirect("/painel");
@@ -49,6 +49,7 @@ export default async function SiteEditorPage({ params }: Props) {
       storeSlug={storeSlug}
       storeName={storeData.name}
       userStores={userStores}
+      isPublished={storeData.isActive}
     />
   );
 }
