@@ -101,30 +101,31 @@ export function ImageEditPopup({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="relative flex-1">
-                <IconSearch className="absolute left-[14px] top-1/2 h-4 w-4 -translate-y-1/2 text-[#a3a3a3]" />
+                <IconSearch className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-black/30" />
                 <input
                   type="text"
                   placeholder="Buscar imagem..."
-                  className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] py-[10px] pl-10 pr-[14px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
+                  className="w-full rounded-xl border border-black/10 bg-white py-2.5 pl-10 pr-3.5 text-sm text-black/80 outline-none transition-colors placeholder:text-black/30 focus:border-black/30 focus:ring-1 focus:ring-black/10"
                 />
               </div>
-              <button
+              <PglButton
+                variant="outline"
+                size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-1.5 rounded-[8px] border border-[rgba(0,0,0,0.06)] bg-transparent px-[14px] py-[10px] text-[13px] font-medium text-[#737373] transition-colors hover:border-[rgba(0,0,0,0.2)]"
               >
-                <IconUpload className="h-4 w-4" />
+                <IconUpload className="size-4" />
                 Upload
-              </button>
+              </PglButton>
             </div>
 
             {isUploading && (
               <div className="flex items-center justify-center py-8">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-[rgba(0,0,0,0.06)] border-t-[#171717]" />
+                <div className="size-6 animate-spin rounded-full border-2 border-black/10 border-t-black/80" />
               </div>
             )}
 
             {selectedUrl && !isUploading && (
-              <div className="overflow-hidden rounded-[10px] border-2 border-[#171717]">
+              <div className="overflow-hidden rounded-xl border-2 border-black/80">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={selectedUrl} alt="Selecionada" className="h-40 w-full object-cover" />
               </div>
@@ -138,7 +139,7 @@ export function ImageEditPopup({
                 const file = e.dataTransfer.files[0];
                 if (file && file.type.startsWith("image/")) handleUpload(file);
               }}
-              className="cursor-pointer rounded-[10px] border border-dashed border-[rgba(0,0,0,0.06)] p-6 text-center text-[14px] text-[#a3a3a3] transition-colors hover:border-[rgba(0,0,0,0.2)]"
+              className="cursor-pointer rounded-xl border border-dashed border-black/10 p-6 text-center text-sm text-black/40 transition-colors hover:border-black/20"
               onClick={() => fileInputRef.current?.click()}
             >
               Arraste uma imagem ou clique para fazer upload

@@ -10,7 +10,7 @@ import {
   ModalFooter,
   ModalFooterActions,
 } from "@/components/ui/modal-blocks";
-import { Button } from "@/components/ui/button";
+import { PglButton } from "@/components/ui/pgl-button";
 import { useEditor } from "../_lib/editor-context";
 import { BLOCK_TYPE_LABELS } from "../_lib/block-type-labels";
 import { SectionFieldRenderer } from "./section-field-renderer";
@@ -71,9 +71,9 @@ export function SectionEditDrawer() {
         <ModalFooter>
           <div />
           <ModalFooterActions>
-            <Button variant="ghost" onClick={handleClose}>
+            <PglButton variant="ghost" size="sm" onClick={handleClose}>
               Fechar
-            </Button>
+            </PglButton>
           </ModalFooterActions>
         </ModalFooter>
       </ModalContent>

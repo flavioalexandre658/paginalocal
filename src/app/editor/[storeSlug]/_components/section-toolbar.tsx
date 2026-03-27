@@ -10,6 +10,7 @@ import {
   IconEyeOff,
   IconLayoutGrid,
 } from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
 import type { SectionBlock } from "@/types/ai-generation";
 import { useEditor } from "../_lib/editor-context";
 import {
@@ -41,25 +42,17 @@ export function SectionToolbar({ section }: Props) {
     <>
       <div
         data-editor-ui
-        className="pointer-events-auto absolute bottom-3 left-1/2 z-40 flex -translate-x-1/2 items-center"
-        style={{
-          background: "rgba(23,23,23,0.9)",
-          backdropFilter: "blur(8px)",
-          WebkitBackdropFilter: "blur(8px)",
-          borderRadius: 999,
-          padding: "6px 8px",
-          boxShadow: "0 12px 40px rgba(0,0,0,0.12)",
-        }}
+        className="pointer-events-auto absolute bottom-3 left-1/2 z-40 flex -translate-x-1/2 items-center gap-0.5 rounded-full bg-black/90 px-2 py-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.12)] backdrop-blur-md"
         onClick={(e) => e.stopPropagation()}
       >
         <ToolbarButton
-          icon={<IconLayoutGrid style={{ width: 14, height: 14, marginRight: 4 }} />}
+          icon={<IconLayoutGrid className="size-3.5" />}
           label="Design"
           onClick={() => { dispatch({ type: "SELECT_SECTION", sectionId: section.id }); setShowDesign(true); }}
         />
 
         <ToolbarButton
-          icon={<IconPencil style={{ width: 14, height: 14, marginRight: 4 }} />}
+          icon={<IconPencil className="size-3.5" />}
           label={typeof window !== "undefined" && window.innerWidth < 640 ? "Editar" : "Editar conteudo"}
           onClick={() => { dispatch({ type: "SELECT_SECTION", sectionId: section.id }); dispatch({ type: "OPEN_DRAWER" }); }}
         />
@@ -67,21 +60,21 @@ export function SectionToolbar({ section }: Props) {
         <Separator />
 
         <IconButton
-          icon={<IconChevronUp style={{ width: 14, height: 14 }} />}
+          icon={<IconChevronUp className="size-3.5" />}
           title="Mover para cima"
           onClick={() => dispatch({ type: "MOVE_SECTION", sectionId: section.id, direction: "up" })}
         />
 
         <IconButton
-          icon={<IconChevronDown style={{ width: 14, height: 14 }} />}
+          icon={<IconChevronDown className="size-3.5" />}
           title="Mover para baixo"
           onClick={() => dispatch({ type: "MOVE_SECTION", sectionId: section.id, direction: "down" })}
         />
 
         <IconButton
           icon={section.visible
-            ? <IconEye style={{ width: 14, height: 14 }} />
-            : <IconEyeOff style={{ width: 14, height: 14 }} />
+            ? <IconEye className="size-3.5" />
+            : <IconEyeOff className="size-3.5" />
           }
           title={section.visible ? "Ocultar secao" : "Mostrar secao"}
           onClick={() => dispatch({ type: "TOGGLE_SECTION_VISIBILITY", sectionId: section.id })}
@@ -90,7 +83,7 @@ export function SectionToolbar({ section }: Props) {
         <Separator />
 
         <IconButton
-          icon={<IconTrash style={{ width: 14, height: 14 }} />}
+          icon={<IconTrash className="size-3.5" />}
           title="Excluir secao"
           onClick={() => setShowDelete(true)}
           danger
@@ -127,44 +120,14 @@ export function SectionToolbar({ section }: Props) {
 }
 
 function Separator() {
-  return (
-    <div
-      style={{
-        width: 1,
-        height: 16,
-        background: "rgba(255,255,255,0.15)",
-        margin: "0 4px",
-      }}
-    />
-  );
+  return <div className="mx-1 h-4 w-px bg-white/15" />;
 }
 
 function ToolbarButton({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        padding: "6px 12px",
-        borderRadius: 6,
-        fontSize: 12,
-        fontWeight: 500,
-        fontFamily: "system-ui",
-        color: "rgba(255,255,255,0.7)",
-        background: "transparent",
-        border: "none",
-        cursor: "pointer",
-        transition: "background 150ms, color 150ms",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-        e.currentTarget.style.color = "white";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = "transparent";
-        e.currentTarget.style.color = "rgba(255,255,255,0.7)";
-      }}
+      className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-white/70 transition-[background,color] duration-150 hover:bg-white/10 hover:text-white"
     >
       {icon}
       {label}
@@ -187,31 +150,12 @@ function IconButton({
     <button
       onClick={onClick}
       title={title}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "6px 12px",
-        borderRadius: 6,
-        color: "rgba(255,255,255,0.7)",
-        background: "transparent",
-        border: "none",
-        cursor: "pointer",
-        transition: "background 150ms, color 150ms",
-      }}
-      onMouseEnter={(e) => {
-        if (danger) {
-          e.currentTarget.style.background = "rgba(239,68,68,0.2)";
-          e.currentTarget.style.color = "#ef4444";
-        } else {
-          e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-          e.currentTarget.style.color = "white";
-        }
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = "transparent";
-        e.currentTarget.style.color = "rgba(255,255,255,0.7)";
-      }}
+      className={cn(
+        "flex items-center justify-center rounded-lg px-2 py-1.5 text-white/70 transition-[background,color] duration-150",
+        danger
+          ? "hover:bg-red-500/20 hover:text-red-400"
+          : "hover:bg-white/10 hover:text-white",
+      )}
     >
       {icon}
     </button>

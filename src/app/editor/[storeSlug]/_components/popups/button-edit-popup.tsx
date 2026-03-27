@@ -107,7 +107,7 @@ export function ButtonEditPopup({
         <ModalBody>
           <div className="space-y-4">
             <div>
-              <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Tipo de link</p>
+              <p className="mb-1.5 text-[13px] font-medium text-black/55">Tipo de link</p>
               <div className="flex flex-wrap gap-1.5">
                 {LINK_TYPES.map((lt) => (
                   <button
@@ -116,8 +116,8 @@ export function ButtonEditPopup({
                     className={cn(
                       "rounded-full border px-3 py-1 text-[13px] font-medium transition-colors",
                       linkType === lt.value
-                        ? "border-transparent bg-[#171717] text-white"
-                        : "border-[rgba(0,0,0,0.06)] bg-transparent text-[#737373] hover:border-[rgba(0,0,0,0.2)]"
+                        ? "border-transparent bg-black/80 text-white"
+                        : "border-black/[0.08] bg-transparent text-black/55 hover:border-black/20"
                     )}
                   >
                     {lt.label}
@@ -127,24 +127,24 @@ export function ButtonEditPopup({
             </div>
 
             <div>
-              <p className="mb-[6px] text-[13px] font-medium text-[#737373]">{linkLabel}</p>
+              <p className="mb-1.5 text-[13px] font-medium text-black/55">{linkLabel}</p>
               <input
                 type="text"
                 value={linkValue}
                 onChange={(e) => setLinkValue(e.target.value)}
                 placeholder={placeholder}
-                className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
+                className="w-full rounded-xl border border-black/10 bg-white px-3.5 py-2.5 text-sm text-black/80 outline-none transition-colors placeholder:text-black/30 focus:border-black/30 focus:ring-1 focus:ring-black/10"
               />
             </div>
 
             <div>
-              <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Texto do botao</p>
+              <p className="mb-1.5 text-[13px] font-medium text-black/55">Texto do botao</p>
               <input
                 type="text"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder="Ex: Comece agora"
-                className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
+                className="w-full rounded-xl border border-black/10 bg-white px-3.5 py-2.5 text-sm text-black/80 outline-none transition-colors placeholder:text-black/30 focus:border-black/30 focus:ring-1 focus:ring-black/10"
               />
             </div>
           </div>

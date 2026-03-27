@@ -34,6 +34,7 @@ interface Props {
   userStores?: { id: string; name: string; slug: string }[];
   onOpenSettings?: () => void;
   onOpenUpgrade?: () => void;
+  onOpenHelp?: () => void;
 }
 
 // ─── Nav Items ─────────────────────────────────────────────────────────────
@@ -122,9 +123,11 @@ function UpgradeCard({ onUpgrade }: { onUpgrade?: () => void }) {
 function FooterLinks({
   expanded,
   onOpenSettings,
+  onOpenHelp,
 }: {
   expanded: boolean;
   onOpenSettings?: () => void;
+  onOpenHelp?: () => void;
 }) {
   return (
     <div className="flex flex-col gap-2 border-t border-black/5 pt-3">
@@ -151,6 +154,7 @@ function FooterLinks({
         </li>
         <li className="relative flex items-center gap-1">
           <button
+            onClick={onOpenHelp}
             className={cn(
               "flex w-full items-center overflow-hidden font-medium outline-none",
               "transition-[background,color] duration-150",
@@ -321,6 +325,7 @@ export function EditorSidebar({
   userStores,
   onOpenSettings,
   onOpenUpgrade,
+  onOpenHelp,
 }: Props) {
   const router = useRouter();
 
@@ -398,6 +403,10 @@ export function EditorSidebar({
                 onCloseMobileMenu?.();
                 onOpenSettings?.();
               }}
+              onOpenHelp={() => {
+                onCloseMobileMenu?.();
+                onOpenHelp?.();
+              }}
             />
           </div>
         </aside>
@@ -439,6 +448,7 @@ export function EditorSidebar({
         <FooterLinks
           expanded={!collapsed}
           onOpenSettings={onOpenSettings}
+          onOpenHelp={onOpenHelp}
         />
       </div>
     </aside>

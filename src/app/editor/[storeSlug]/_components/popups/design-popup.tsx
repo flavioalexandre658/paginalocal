@@ -13,7 +13,7 @@ import {
   ModalFooter,
   ModalFooterActions,
 } from "@/components/ui/modal-blocks";
-import { Button } from "@/components/ui/button";
+import { PglButton } from "@/components/ui/pgl-button";
 import { useEditor } from "../../_lib/editor-context";
 import { BLOCK_REGISTRY } from "@/components/site-renderer/blocks/registry";
 import { DesignTokensProvider } from "@/components/site-renderer/design-tokens-provider";
@@ -107,10 +107,11 @@ function VariantThumbnail({
   return (
     <button
       onClick={onClick}
-      className="group relative w-full rounded-[10px] overflow-hidden text-left transition-all duration-150 cursor-pointer"
-      style={{
-        border: isActive ? `2.5px solid #171717` : "2px solid rgba(0,0,0,0.08)",
-      }}
+      className={`group relative w-full rounded-[10px] overflow-hidden text-left transition-all duration-150 cursor-pointer border-2 ${
+        isActive
+          ? "border-black/80 ring-1 ring-black/80"
+          : "border-black/[0.08] hover:border-black/20"
+      }`}
     >
       <div
         ref={containerRef}
@@ -143,8 +144,8 @@ function VariantThumbnail({
       </div>
 
       {isActive && (
-        <div className="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-[#171717] shadow-md">
-          <IconCheck style={{ width: 13, height: 13, color: "#fff" }} />
+        <div className="absolute top-2 right-2 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-black/80 shadow-md">
+          <IconCheck className="size-3.5 text-white" />
         </div>
       )}
 
@@ -180,7 +181,7 @@ export function DesignPopup({ section, open, onClose }: Props) {
         <ModalBody>
           {variants.length <= 1 ? (
             <div className="flex items-center justify-center py-12">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-black/40">
                 Esta secao possui apenas um layout disponivel.
               </p>
             </div>
@@ -205,9 +206,9 @@ export function DesignPopup({ section, open, onClose }: Props) {
         <ModalFooter>
           <div />
           <ModalFooterActions>
-            <Button variant="ghost" onClick={onClose}>
+            <PglButton variant="ghost" size="sm" onClick={onClose}>
               Fechar
-            </Button>
+            </PglButton>
           </ModalFooterActions>
         </ModalFooter>
       </ModalContent>

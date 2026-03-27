@@ -11,7 +11,6 @@ import {
   ModalFooter,
   ModalFooterActions,
 } from "@/components/ui/modal-blocks";
-import { Switch } from "@/components/ui/switch";
 import { PglButton } from "@/components/ui/pgl-button";
 import { useEditor } from "../../_lib/editor-context";
 
@@ -25,6 +24,8 @@ interface Props {
   content: Record<string, unknown>;
   onClose: () => void;
 }
+
+const inputClasses = "w-full rounded-xl border border-black/10 bg-white px-3.5 py-2.5 text-sm text-black/80 outline-none transition-colors placeholder:text-black/30 focus:border-black/30 focus:ring-1 focus:ring-black/10";
 
 export function FooterEditPopup({ sectionId, content, onClose }: Props) {
   const { dispatch } = useEditor();
@@ -79,63 +80,63 @@ export function FooterEditPopup({ sectionId, content, onClose }: Props) {
           <div className="space-y-5">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Nome da loja</p>
+                <p className="mb-1.5 text-[13px] font-medium text-black/55">Nome da loja</p>
                 <input
                   type="text"
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
                   placeholder="Nome do negocio"
-                  className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
+                  className={inputClasses}
                 />
               </div>
               <div>
-                <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Tagline</p>
+                <p className="mb-1.5 text-[13px] font-medium text-black/55">Tagline</p>
                 <input
                   type="text"
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
                   placeholder="Slogan do negocio"
-                  className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
+                  className={inputClasses}
                 />
               </div>
             </div>
 
             <div>
-              <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Links de navegacao</p>
+              <p className="mb-1.5 text-[13px] font-medium text-black/55">Links de navegacao</p>
               <div className="space-y-2">
                 {navLinks.map((link, i) => (
                   editingIndex === i ? (
-                    <div key={i} className="space-y-2 rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-white p-[14px]">
+                    <div key={i} className="space-y-2 rounded-xl border border-black/10 bg-white p-3.5">
                       <input
                         type="text"
                         value={link.label}
                         onChange={(e) => setNavLinks((prev) => prev.map((l, idx) => idx === i ? { ...l, label: e.target.value } : l))}
                         placeholder="Nome do link"
-                        className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
+                        className={inputClasses}
                       />
                       <input
                         type="text"
                         value={link.href}
                         onChange={(e) => setNavLinks((prev) => prev.map((l, idx) => idx === i ? { ...l, href: e.target.value } : l))}
                         placeholder="URL ou #secao"
-                        className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
+                        className={inputClasses}
                       />
                       <button
                         onClick={() => setEditingIndex(null)}
-                        className="text-[13px] font-medium text-[#171717] hover:text-[#171717]/70"
+                        className="text-[13px] font-medium text-black/80 transition-colors hover:text-black/55"
                       >
                         Concluido
                       </button>
                     </div>
                   ) : (
-                    <div key={i} className="flex items-center gap-2 rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-white px-[14px] py-[12px] transition-colors hover:border-[rgba(0,0,0,0.2)]">
-                      <IconGripVertical className="h-4 w-4 shrink-0 cursor-grab text-[#a3a3a3]" />
-                      <span className="flex-1 truncate text-[14px]">{link.label}</span>
-                      <button onClick={() => setEditingIndex(i)} className="rounded-[8px] p-1 text-[#a3a3a3] transition-colors hover:bg-[rgba(0,0,0,0.04)] hover:text-[#171717]">
-                        <IconPencil className="h-3.5 w-3.5" />
+                    <div key={i} className="flex items-center gap-2 rounded-xl border border-black/[0.08] bg-white px-3.5 py-3 transition-colors hover:border-black/20">
+                      <IconGripVertical className="size-4 shrink-0 cursor-grab text-black/30" />
+                      <span className="flex-1 truncate text-sm text-black/80">{link.label}</span>
+                      <button onClick={() => setEditingIndex(i)} className="rounded-lg p-1 text-black/30 transition-colors hover:bg-black/5 hover:text-black/80">
+                        <IconPencil className="size-3.5" />
                       </button>
-                      <button onClick={() => setNavLinks((prev) => prev.filter((_, idx) => idx !== i))} className="rounded-[8px] p-1 text-[#a3a3a3] transition-colors hover:bg-[#fef2f2] hover:text-[#ef4444]">
-                        <IconTrash className="h-3.5 w-3.5" />
+                      <button onClick={() => setNavLinks((prev) => prev.filter((_, idx) => idx !== i))} className="rounded-lg p-1 text-black/30 transition-colors hover:bg-red-50 hover:text-red-600">
+                        <IconTrash className="size-3.5" />
                       </button>
                     </div>
                   )
@@ -143,45 +144,45 @@ export function FooterEditPopup({ sectionId, content, onClose }: Props) {
               </div>
               <button
                 onClick={() => setNavLinks((prev) => [...prev, { label: "Novo link", href: "#" }])}
-                className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-[10px] border border-dashed border-[rgba(0,0,0,0.06)] py-2 text-[13px] font-medium text-[#737373] transition-colors hover:border-[rgba(0,0,0,0.2)] hover:text-[#171717]"
+                className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-black/10 py-2 text-[13px] font-medium text-black/55 transition-colors hover:border-black/20 hover:text-black/80"
               >
-                <IconPlus className="h-3.5 w-3.5" />
+                <IconPlus className="size-3.5" />
                 Adicionar link
               </button>
             </div>
 
             <div>
-              <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Contato</p>
+              <p className="mb-1.5 text-[13px] font-medium text-black/55">Contato</p>
               <div className="space-y-3">
                 <div>
-                  <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Endereco</p>
+                  <p className="mb-1.5 text-[13px] font-medium text-black/55">Endereco</p>
                   <input
                     type="text"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="Rua, numero, cidade"
-                    className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
+                    className={inputClasses}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Telefone</p>
+                    <p className="mb-1.5 text-[13px] font-medium text-black/55">Telefone</p>
                     <input
                       type="text"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="(00) 00000-0000"
-                      className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
+                      className={inputClasses}
                     />
                   </div>
                   <div>
-                    <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Email</p>
+                    <p className="mb-1.5 text-[13px] font-medium text-black/55">Email</p>
                     <input
                       type="text"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="contato@empresa.com"
-                      className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
+                      className={inputClasses}
                     />
                   </div>
                 </div>
@@ -189,33 +190,40 @@ export function FooterEditPopup({ sectionId, content, onClose }: Props) {
             </div>
 
             <div>
-              <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Horario de funcionamento</p>
+              <p className="mb-1.5 text-[13px] font-medium text-black/55">Horario de funcionamento</p>
               <input
                 type="text"
                 value={hours}
                 onChange={(e) => setHours(e.target.value)}
                 placeholder="Seg - Sex, 08:00 - 18:00"
-                className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
+                className={inputClasses}
               />
             </div>
 
             <div>
-              <p className="mb-[6px] text-[13px] font-medium text-[#737373]">Texto de copyright</p>
+              <p className="mb-1.5 text-[13px] font-medium text-black/55">Texto de copyright</p>
               <input
                 type="text"
                 value={copyrightText}
                 onChange={(e) => setCopyrightText(e.target.value)}
                 placeholder="© 2024 Nome da Empresa"
-                className="w-full rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-[#f5f5f4] px-[14px] py-[10px] text-[14px] outline-none placeholder:text-[#a3a3a3] focus:border-[rgba(0,0,0,0.2)]"
+                className={inputClasses}
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-[10px] border border-[rgba(0,0,0,0.06)] bg-white px-[14px] py-[12px]">
+            <div className="flex items-center justify-between rounded-xl border border-black/[0.08] bg-white px-3.5 py-3">
               <div>
-                <p className="text-[14px] font-medium text-[#171717]">Redes sociais</p>
-                <p className="text-[13px] text-[#737373]">Mostrar icones das redes sociais</p>
+                <p className="text-sm font-medium text-black/80">Redes sociais</p>
+                <p className="text-[13px] text-black/55">Mostrar icones das redes sociais</p>
               </div>
-              <Switch checked={showSocial} onCheckedChange={setShowSocial} />
+              <button
+                role="switch"
+                aria-checked={showSocial}
+                onClick={() => setShowSocial(!showSocial)}
+                className={`relative h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${showSocial ? "bg-black/80" : "bg-black/10"}`}
+              >
+                <span className={`block h-5 w-5 rounded-full bg-white shadow transition-transform ${showSocial ? "translate-x-5" : "translate-x-0"}`} />
+              </button>
             </div>
           </div>
         </ModalBody>

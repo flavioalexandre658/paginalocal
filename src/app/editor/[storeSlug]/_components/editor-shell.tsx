@@ -10,6 +10,8 @@ import { SectionEditDrawer } from "./section-edit-drawer";
 import { UnsavedChangesGuard } from "./unsaved-changes-guard";
 import { ThemesPage } from "./editor-topbar-panels/themes-page";
 import { UpgradeModal } from "@/components/shared/upgrade-modal";
+import { UserSettingsModal } from "@/components/shared/user-settings-modal";
+import { HelpModal } from "@/components/shared/help-modal";
 
 interface Props {
   initialBlueprint: SiteBlueprint;
@@ -27,6 +29,7 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
   const [themesOpen, setThemesOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
   return (
     <EditorProvider initialBlueprint={initialBlueprint} storeId={storeId}>
@@ -45,6 +48,7 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
               userStores={userStores}
               onOpenSettings={() => setSettingsOpen(true)}
               onOpenUpgrade={() => setUpgradeOpen(true)}
+              onOpenHelp={() => setHelpOpen(true)}
             />
           </div>
         )}
@@ -93,6 +97,7 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
           storeSlug={storeSlug}
           userStores={userStores}
           onOpenUpgrade={() => setUpgradeOpen(true)}
+          onOpenHelp={() => setHelpOpen(true)}
         />
       )}
 
@@ -102,6 +107,19 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
         open={upgradeOpen}
         onClose={() => setUpgradeOpen(false)}
         storeSlug={storeSlug}
+      />
+
+      <UserSettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        storeId={storeId}
+        storeSlug={storeSlug}
+        onOpenUpgrade={() => { setSettingsOpen(false); setUpgradeOpen(true); }}
+      />
+
+      <HelpModal
+        open={helpOpen}
+        onClose={() => setHelpOpen(false)}
       />
     </EditorProvider>
   );

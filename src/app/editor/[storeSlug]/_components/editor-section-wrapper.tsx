@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback, useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { IconPencil } from "@tabler/icons-react";
+import { PglButton } from "@/components/ui/pgl-button";
 import { cn } from "@/lib/utils";
 import type { SectionBlock, BlockType } from "@/types/ai-generation";
 import { useEditor } from "../_lib/editor-context";
@@ -308,8 +309,8 @@ export function EditorSectionWrapper({ section, style, className, children, prev
       ref={wrapperRef}
       className={cn(
         "group/section relative cursor-pointer transition-all duration-150",
-        isSelected && "ring-2 ring-inset ring-blue-500",
-        !isSelected && "hover:ring-1 hover:ring-inset hover:ring-blue-300",
+        isSelected && "ring-2 ring-inset ring-black/80",
+        !isSelected && "hover:ring-1 hover:ring-inset hover:ring-black/20",
         (isSelected || isHovered) && "z-10",
         !section.visible && "opacity-30",
         className
@@ -330,7 +331,7 @@ export function EditorSectionWrapper({ section, style, className, children, prev
       onKeyDown={handleKeyDown}
     >
       {!section.visible && (
-        <div data-editor-ui className="absolute left-1/2 top-4 z-30 -translate-x-1/2 rounded-full bg-slate-800/80 px-3 py-1 text-[11px] font-medium text-white">
+        <div data-editor-ui className="absolute left-1/2 top-4 z-30 -translate-x-1/2 rounded-full bg-black/80 px-3 py-1 text-[11px] font-medium text-white">
           Seção oculta
         </div>
       )}
@@ -342,9 +343,8 @@ export function EditorSectionWrapper({ section, style, className, children, prev
       {hoverRect && !popup && !state.isInlineEditing && createPortal(
         <div
           data-editor-ui
-          className="pointer-events-auto"
+          className="pointer-events-auto fixed"
           style={{
-            position: "fixed",
             top: hoverRect.rect.top + hoverRect.rect.height / 2 - 16,
             left: hoverRect.rect.left + hoverRect.rect.width / 2 - 30,
             zIndex: 99998,
@@ -353,7 +353,11 @@ export function EditorSectionWrapper({ section, style, className, children, prev
             if (hoverElRef.current) hoverElRef.current.setAttribute("data-pgl-hover", "true");
           }}
         >
-          <button
+          <PglButton
+            variant="default"
+            size="sm"
+            shape="pill"
+            className="shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.12)] bg-white text-black/80 hover:bg-white hover:text-black"
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -363,32 +367,10 @@ export function EditorSectionWrapper({ section, style, className, children, prev
                 openPopup(hoverElRef.current, mode, path);
               }
             }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              background: "#fff",
-              borderRadius: 999,
-              padding: "6px 14px",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-              fontSize: 13,
-              fontWeight: 500,
-              fontFamily: "system-ui",
-              color: "#1a1a1a",
-              border: "none",
-              cursor: "pointer",
-              transition: "box-shadow 150ms",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = "0 12px 40px rgba(0,0,0,0.12)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)";
-            }}
           >
-            <IconPencil style={{ width: 14, height: 14 }} />
+            <IconPencil className="size-3.5" />
             {hoverRect.mode === "nav" ? "Editar navegacao" : hoverRect.mode === "footer" ? "Editar rodape" : hoverRect.mode === "pricing" ? "Editar planos" : "Editar"}
-          </button>
+          </PglButton>
         </div>,
         env.getPortalTarget()
       )}
