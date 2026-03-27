@@ -114,6 +114,17 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
     case "SET_VIEWPORT":
       return { ...state, viewportMode: action.mode };
 
+    case "UPDATE_NAVIGATION": {
+      const undo = withUndo(state);
+      const blueprint = cloneBlueprint(state.blueprint);
+      blueprint.navigation = action.navigation.map((n) => ({
+        label: n.label,
+        href: n.href,
+        isExternal: n.isExternal ?? false,
+      }));
+      return { ...state, ...undo, blueprint };
+    }
+
     case "UPDATE_DESIGN_TOKENS": {
       const undo = withUndo(state);
       const blueprint = cloneBlueprint(state.blueprint);

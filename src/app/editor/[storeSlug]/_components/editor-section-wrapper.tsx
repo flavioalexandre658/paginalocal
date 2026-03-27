@@ -22,6 +22,8 @@ interface Props {
   className?: string;
   children: ReactNode;
   previewMode?: boolean;
+  onClickPlaceholder?: () => void;
+  openDrawerOnClick?: boolean;
 }
 
 type PopupType = "button" | "image" | "nav" | "footer" | "pricing";
@@ -58,7 +60,7 @@ function findEditTarget(target: HTMLElement, boundary: HTMLElement): HTMLElement
   return null;
 }
 
-export function EditorSectionWrapper({ section, style, className, children, previewMode }: Props) {
+export function EditorSectionWrapper({ section, style, className, children, previewMode, onClickPlaceholder, openDrawerOnClick }: Props) {
   const { state, dispatch, storeId } = useEditor();
   const env = usePreviewEnv();
   const isSelected = state.selectedSectionId === section.id;
@@ -223,6 +225,8 @@ export function EditorSectionWrapper({ section, style, className, children, prev
     if (!el) {
       e.stopPropagation();
       dispatch({ type: "SELECT_SECTION", sectionId: section.id });
+      if (onClickPlaceholder) onClickPlaceholder();
+      if (openDrawerOnClick) dispatch({ type: "OPEN_DRAWER" });
       return;
     }
 

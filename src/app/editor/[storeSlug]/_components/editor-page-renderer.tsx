@@ -106,6 +106,7 @@ export function EditorPageRenderer({ page, designTokens, navigation, previewMode
                 section={section}
                 style={sectionStyle}
                 previewMode={previewMode}
+                openDrawerOnClick
               >
                 <div className="flex items-center justify-center gap-3 rounded-lg border border-dashed border-slate-200 bg-slate-50 py-5 text-sm text-slate-400">
                   <IconBrandWhatsapp className="h-5 w-5 text-green-500" />

@@ -84,15 +84,14 @@ export function NavEditPopup({ sectionId, content, onClose }: Props) {
       content: updatedContent,
     });
 
-    const updatedBlueprint = {
-      ...state.blueprint,
+    dispatch({
+      type: "UPDATE_NAVIGATION",
       navigation: links.map((l) => ({
         label: l.label,
         href: l.href,
         isExternal: l.isExternal,
       })),
-    };
-    dispatch({ type: "SET_BLUEPRINT", blueprint: updatedBlueprint });
+    });
     onClose();
   }, [state.blueprint, links, content, dispatch, sectionId, storeName, ctaText, ctaLink, onClose]);
 

@@ -88,29 +88,27 @@ const ModalHeader = React.forwardRef<HTMLDivElement, ModalHeaderProps>(
       <div
         ref={ref}
         className={cn(
-          "flex-shrink-0 px-6 py-5",
+          "relative flex-shrink-0 px-6 py-5 pr-14",
           "bg-gradient-to-b from-muted/50 to-muted/20",
           "border-b border-border/50",
           className
         )}
         {...props}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            {icon && (
-              <span className="flex items-center justify-center size-10 rounded-xl bg-primary/10 text-primary">
-                {icon}
-              </span>
-            )}
-            <div className="space-y-1">{children}</div>
-          </div>
-          {!hideCloseButton && (
-            <ModalClose className="rounded-lg p-2 opacity-70 ring-offset-background transition-all hover:opacity-100 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none cursor-pointer">
-              <IconX className="h-5 w-5" />
-              <span className="sr-only">Fechar</span>
-            </ModalClose>
+        <div className="flex items-center gap-3">
+          {icon && (
+            <span className="flex items-center justify-center size-10 rounded-xl bg-primary/10 text-primary">
+              {icon}
+            </span>
           )}
+          <div className="space-y-1 min-w-0">{children}</div>
         </div>
+        {!hideCloseButton && (
+          <ModalClose className="absolute right-4 top-5 rounded-lg p-2 opacity-70 ring-offset-background transition-all hover:opacity-100 hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none cursor-pointer">
+            <IconX className="h-5 w-5" />
+            <span className="sr-only">Fechar</span>
+          </ModalClose>
+        )}
       </div>
     )
   }

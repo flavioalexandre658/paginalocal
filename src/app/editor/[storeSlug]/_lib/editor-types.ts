@@ -37,5 +37,6 @@ export type EditorAction =
   | { type: "SET_VIEWPORT"; mode: ViewportMode }
   | { type: "UPDATE_DESIGN_TOKENS"; tokens: Partial<DesignTokens> }
   | { type: "UPDATE_SECTION_VARIANT"; sectionId: string; variant: number }
+  | { type: "UPDATE_NAVIGATION"; navigation: { label: string; href: string; isExternal?: boolean }[] }
   | { type: "UNDO" }
   | { type: "REDO" };

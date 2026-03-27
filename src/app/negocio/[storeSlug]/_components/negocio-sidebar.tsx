@@ -18,6 +18,8 @@ interface Props {
   storeName: string;
   storeSlug: string;
   userStores: { id: string; name: string; slug: string }[];
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 function getNavItems(storeSlug: string) {
@@ -29,17 +31,14 @@ function getNavItems(storeSlug: string) {
   ];
 }
 
-export function NegocioSidebar({ storeName, storeSlug, userStores }: Props) {
+export function NegocioSidebar({ storeName, storeSlug, userStores, mobileOpen, onMobileClose }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const items = getNavItems(storeSlug);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  return (
-    <div
-      className="hidden w-[200px] shrink-0 flex-col md:flex"
-      style={{ borderRight: "1px solid rgba(0,0,0,0.06)" }}
-    >
+  const navContent = (onItemClick?: () => void) => (
+    <>
       {/* Store name + dropdown */}
       <div className="px-3 pt-4 pb-2">
         <div className="relative">
@@ -71,7 +70,7 @@ export function NegocioSidebar({ storeName, storeSlug, userStores }: Props) {
                 {userStores.map((s) => (
                   <button
                     key={s.id}
-                    onClick={() => { setDropdownOpen(false); if (s.slug !== storeSlug) router.push(`/negocio/${s.slug}`); }}
+                    onClick={() => { setDropdownOpen(false); if (s.slug !== storeSlug) router.push(`/negocio/${s.slug}`); onItemClick?.(); }}
                     className="flex w-full items-center gap-2 px-3 py-2 text-[13px] transition-colors"
                     style={{
                       backgroundColor: s.slug === storeSlug ? "#f5f5f4" : "transparent",
@@ -104,8 +103,8 @@ export function NegocioSidebar({ storeName, storeSlug, userStores }: Props) {
           return (
             <button
               key={item.id}
-              onClick={() => router.push(item.href)}
-              className={cn("flex w-full items-center gap-[10px] rounded-[10px] px-3 py-2 my-0.5 transition-all duration-150")}
+              onClick={() => { router.push(item.href); onItemClick?.(); }}
+              className="flex w-full items-center gap-[10px] rounded-[10px] px-3 py-2 my-0.5 transition-all duration-150"
               style={{
                 backgroundColor: isActive ? "#f5f5f4" : "transparent",
                 color: isActive ? "#1a1a1a" : "#737373",
@@ -124,7 +123,6 @@ export function NegocioSidebar({ storeName, storeSlug, userStores }: Props) {
 
       {/* Bottom section */}
       <div className="px-3 pb-3">
-        {/* Upsell card */}
         <div
           className="rounded-[12px] p-4 mb-3"
           style={{ backgroundColor: "#f5f5f4", border: "1px solid rgba(0,0,0,0.06)" }}
@@ -134,7 +132,7 @@ export function NegocioSidebar({ storeName, storeSlug, userStores }: Props) {
           <button
             className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-[8px] py-2 text-[13px] font-medium transition-opacity"
             style={{ backgroundColor: "#171717", color: "#ffffff" }}
-            onClick={() => router.push(`/negocio/${storeSlug}/site`)}
+            onClick={() => { router.push(`/negocio/${storeSlug}/site`); onItemClick?.(); }}
             onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; }}
             onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
           >
@@ -142,10 +140,8 @@ export function NegocioSidebar({ storeName, storeSlug, userStores }: Props) {
             Fazer upgrade
           </button>
         </div>
-
-        {/* Footer links */}
         <button
-          onClick={() => router.push(`/negocio/${storeSlug}/site`)}
+          onClick={() => { router.push(`/negocio/${storeSlug}/site`); onItemClick?.(); }}
           className="flex w-full items-center gap-2 rounded-[8px] px-2 py-1.5 text-[13px] transition-colors"
           style={{ color: "#737373" }}
           onMouseEnter={(e) => { e.currentTarget.style.color = "#1a1a1a"; }}
@@ -164,6 +160,39 @@ export function NegocioSidebar({ storeName, storeSlug, userStores }: Props) {
           Ajuda
         </button>
       </div>
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile sidebar overlay */}
+      <div
+        className={cn(
+          "fixed inset-0 z-40 transition-opacity duration-200 md:hidden",
+          mobileOpen ? "opacity-100" : "pointer-events-none opacity-0",
+        )}
+        style={{ backgroundColor: "rgba(0,0,0,0.2)" }}
+        onClick={onMobileClose}
+      />
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col transition-transform duration-200 ease-out md:hidden",
+        )}
+        style={{
+          backgroundColor: "#ffffff",
+          transform: mobileOpen ? "translateX(0)" : "translateX(-100%)",
+        }}
+      >
+        {navContent(onMobileClose)}
+      </aside>
+
+      {/* Desktop sidebar */}
+      <div
+        className="hidden w-[200px] shrink-0 flex-col md:flex"
+        style={{ borderRight: "1px solid rgba(0,0,0,0.06)" }}
+      >
+        {navContent()}
+      </div>
+    </>
   );
 }

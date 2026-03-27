@@ -60,7 +60,7 @@ export function SectionToolbar({ section }: Props) {
 
         <ToolbarButton
           icon={<IconPencil style={{ width: 14, height: 14, marginRight: 4 }} />}
-          label="Editar conteudo"
+          label={typeof window !== "undefined" && window.innerWidth < 640 ? "Editar" : "Editar conteudo"}
           onClick={() => { dispatch({ type: "SELECT_SECTION", sectionId: section.id }); dispatch({ type: "OPEN_DRAWER" }); }}
         />
 
