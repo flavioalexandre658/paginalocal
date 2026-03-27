@@ -33,6 +33,7 @@ export default async function NegocioLayout({ children, params }: LayoutProps) {
 
   return (
     <NegocioLayoutShell
+      storeId={storeData[0].id}
       storeName={storeData[0].name}
       storeSlug={storeSlug}
       userStores={userStores}

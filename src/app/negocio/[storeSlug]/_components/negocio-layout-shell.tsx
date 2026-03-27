@@ -2,27 +2,23 @@
 
 import { type ReactNode, useState } from "react";
 import { usePathname } from "next/navigation";
-import { IconMenu2, IconChevronRight } from "@tabler/icons-react";
-import { NegocioSidebar } from "./negocio-sidebar";
+import { IconMenu2 } from "@tabler/icons-react";
+import { EditorSidebar } from "@/app/editor/[storeSlug]/_components/editor-sidebar";
+import { SiteSettingsModal } from "@/app/editor/[storeSlug]/_components/site-settings-modal";
 
 interface Props {
   children: ReactNode;
+  storeId: string;
   storeName: string;
   storeSlug: string;
   userStores: { id: string; name: string; slug: string }[];
 }
 
-const PAGE_LABELS: Record<string, string> = {
-  home: "Inicio",
-  contatos: "Contatos",
-  analitica: "Analitica",
-  site: "Meu Site",
-};
-
-export function NegocioLayoutShell({ children, storeName, storeSlug, userStores }: Props) {
+export function NegocioLayoutShell({ children, storeId, storeName, storeSlug, userStores }: Props) {
   const pathname = usePathname();
   const isEditorRoute = pathname.includes(`/negocio/${storeSlug}/site`);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   if (isEditorRoute) {
     return (
@@ -32,21 +28,14 @@ export function NegocioLayoutShell({ children, storeName, storeSlug, userStores 
     );
   }
 
-  const currentPage = pathname === `/negocio/${storeSlug}`
-    ? "home"
-    : pathname.includes("/contatos") ? "contatos"
-    : pathname.includes("/analitica") ? "analitica"
-    : "home";
-  const pageLabel = PAGE_LABELS[currentPage] ?? "Inicio";
-
   return (
     <div
       className="flex flex-col overflow-hidden"
       style={{ fontFamily: "system-ui, -apple-system, sans-serif", backgroundColor: "#ffffff", height: "100dvh" }}
     >
-      {/* Mobile topbar */}
+      {/* Mobile topbar — same pattern as editor */}
       <div
-        className="flex items-center gap-2 px-3 py-2.5 md:hidden shrink-0"
+        className="flex items-center gap-2 px-3 h-12 md:hidden shrink-0"
         style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
       >
         <button
@@ -57,7 +46,7 @@ export function NegocioLayoutShell({ children, storeName, storeSlug, userStores 
           <IconMenu2 style={{ width: 20, height: 20 }} />
         </button>
 
-        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           <div
             className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold text-white shrink-0"
             style={{ backgroundColor: "#171717" }}
@@ -67,24 +56,42 @@ export function NegocioLayoutShell({ children, storeName, storeSlug, userStores 
           <span className="text-[13px] font-semibold truncate" style={{ color: "#1a1a1a" }}>
             {storeName}
           </span>
-          <IconChevronRight style={{ width: 12, height: 12, color: "#a3a3a3", flexShrink: 0 }} />
-          <span className="text-[13px] font-medium" style={{ color: "#737373" }}>
-            {pageLabel}
-          </span>
         </div>
       </div>
 
-      {/* Main content area */}
+      {/* Desktop sidebar + content */}
       <div className="flex flex-1 overflow-hidden">
-        <NegocioSidebar
-          storeName={storeName}
-          storeSlug={storeSlug}
-          userStores={userStores}
-          mobileOpen={mobileMenuOpen}
-          onMobileClose={() => setMobileMenuOpen(false)}
-        />
+        <div className="hidden md:block">
+          <EditorSidebar
+            collapsed={false}
+            storeName={storeName}
+            storeSlug={storeSlug}
+            userStores={userStores}
+            onOpenSettings={() => setSettingsOpen(true)}
+          />
+        </div>
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
+
+      {/* Mobile sidebar overlay — reuse same component */}
+      <EditorSidebar
+        collapsed={false}
+        mobileOverlay
+        mobileMenuOpen={mobileMenuOpen}
+        onCloseMobileMenu={() => setMobileMenuOpen(false)}
+        storeName={storeName}
+        storeSlug={storeSlug}
+        userStores={userStores}
+        onOpenSettings={() => { setMobileMenuOpen(false); setSettingsOpen(true); }}
+      />
+
+      <SiteSettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        storeId={storeId}
+        storeSlug={storeSlug}
+        storeName={storeName}
+      />
     </div>
   );
 }

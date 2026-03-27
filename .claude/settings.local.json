@@ -24,7 +24,8 @@
       "Bash(sudo *)"
     ],
     "additionalDirectories": [
-      "e:\\Program Files\\xampp\\htdocs\\work\\paginalocal\\.claude\\skills"
+      "e:\\Program Files\\xampp\\htdocs\\work\\paginalocal\\.claude\\skills",
+      "C:\\Users\\flavi\\.claude\\skills"
     ]
   }
 }

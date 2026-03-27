@@ -31,6 +31,7 @@ interface Props {
   storeName?: string;
   storeSlug?: string;
   userStores?: { id: string; name: string; slug: string }[];
+  onOpenSettings?: () => void;
 }
 
 function NavItems({ expanded, storeSlug, onItemClick }: { expanded: boolean; storeSlug: string; onItemClick?: () => void }) {
@@ -94,30 +95,37 @@ function UpgradeCard() {
   );
 }
 
-function FooterLinks({ expanded }: { expanded: boolean }) {
+function FooterLinks({ expanded, onOpenSettings }: { expanded: boolean; onOpenSettings?: () => void }) {
   return (
     <div
       className={cn("py-2", expanded ? "px-2" : "px-1")}
       style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
     >
-      {[
-        { icon: IconSettings, label: "Configuracoes" },
-        { icon: IconHelp, label: "Ajuda" },
-      ].map(({ icon: Icon, label }) => (
-        <button
-          key={label}
-          className={cn(
-            "flex w-full items-center rounded-[8px] transition-all duration-150",
-            expanded ? "gap-[10px] px-3 py-1.5" : "justify-center p-2",
-          )}
-          style={{ color: "#737373", fontSize: 13 }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = "#1a1a1a"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = "#737373"; }}
-        >
-          <Icon style={{ width: 16, height: 16 }} />
-          {expanded && <span>{label}</span>}
-        </button>
-      ))}
+      <button
+        onClick={onOpenSettings}
+        className={cn(
+          "flex w-full items-center rounded-[8px] transition-all duration-150",
+          expanded ? "gap-[10px] px-3 py-1.5" : "justify-center p-2",
+        )}
+        style={{ color: "#737373", fontSize: 13 }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = "#1a1a1a"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = "#737373"; }}
+      >
+        <IconSettings style={{ width: 16, height: 16 }} />
+        {expanded && <span>Configuracoes</span>}
+      </button>
+      <button
+        className={cn(
+          "flex w-full items-center rounded-[8px] transition-all duration-150",
+          expanded ? "gap-[10px] px-3 py-1.5" : "justify-center p-2",
+        )}
+        style={{ color: "#737373", fontSize: 13 }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = "#1a1a1a"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = "#737373"; }}
+      >
+        <IconHelp style={{ width: 16, height: 16 }} />
+        {expanded && <span>Ajuda</span>}
+      </button>
     </div>
   );
 }
@@ -130,6 +138,7 @@ export function EditorSidebar({
   storeName,
   storeSlug,
   userStores,
+  onOpenSettings,
 }: Props) {
   const router = useRouter();
   const [storeListOpen, setStoreListOpen] = useState(false);
@@ -237,7 +246,7 @@ export function EditorSidebar({
                   <button
                     className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
                     style={{ color: "#737373" }}
-                    onClick={() => { setStoreListOpen(false); onCloseMobileMenu?.(); router.push("/api/auth/sign-out"); }}
+                    onClick={async () => { setStoreListOpen(false); onCloseMobileMenu?.(); const { signOut } = await import("@/lib/auth-client"); await signOut({ fetchOptions: { onSuccess: () => { router.push("/entrar"); router.refresh(); } } }); }}
                   >
                     Sair
                   </button>
@@ -251,7 +260,7 @@ export function EditorSidebar({
           </div>
 
           <UpgradeCard />
-          <FooterLinks expanded />
+          <FooterLinks expanded onOpenSettings={() => { onCloseMobileMenu?.(); onOpenSettings?.(); }} />
         </aside>
       </>
     );
@@ -267,11 +276,90 @@ export function EditorSidebar({
         borderRight: "1px solid rgba(0,0,0,0.06)",
       }}
     >
+      {/* Store name header + full dropdown — desktop sidebar */}
+      {!collapsed && storeName && (
+        <div className="px-3 pt-4 pb-1">
+          <div className="relative">
+            <button
+              onClick={() => setStoreListOpen(!storeListOpen)}
+              className="flex w-full items-center gap-2 rounded-[8px] px-2 py-1.5 transition-all duration-150"
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f5f5f4"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+            >
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white" style={{ backgroundColor: "#171717" }}>
+                {storeName.charAt(0).toUpperCase()}
+              </div>
+              <span className="flex-1 truncate text-left text-[14px] font-semibold" style={{ color: "#1a1a1a" }}>
+                {storeName}
+              </span>
+              <IconChevronDown style={{ width: 14, height: 14, color: "#737373", flexShrink: 0, transition: "transform 200ms", transform: storeListOpen ? "rotate(180deg)" : "rotate(0)" }} />
+            </button>
+
+            {storeListOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setStoreListOpen(false)} />
+                <div
+                  className="absolute left-0 top-full z-50 mt-2 w-[260px] rounded-[12px] py-2"
+                  style={{ backgroundColor: "#ffffff", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 25px 60px rgba(0,0,0,0.15)" }}
+                >
+                  <div className="flex flex-col items-center py-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full text-[18px] font-semibold text-white" style={{ backgroundColor: "#171717" }}>
+                      {storeName.charAt(0).toUpperCase()}
+                    </div>
+                    <p className="mt-2 text-[14px] font-semibold" style={{ color: "#1a1a1a" }}>{storeName}</p>
+                  </div>
+
+                  <div className="my-1" style={{ height: 1, backgroundColor: "rgba(0,0,0,0.06)" }} />
+
+                  <div className="px-2 py-1">
+                    {userStores?.map((s) => (
+                      <button
+                        key={s.id}
+                        onClick={() => { setStoreListOpen(false); if (s.slug !== storeSlug) router.push(`/negocio/${s.slug}`); }}
+                        className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
+                        style={{ backgroundColor: s.slug === storeSlug ? "#f5f5f4" : "transparent", color: s.slug === storeSlug ? "#1a1a1a" : "#737373", fontWeight: s.slug === storeSlug ? 500 : 400 }}
+                        onMouseEnter={(e) => { if (s.slug !== storeSlug) e.currentTarget.style.backgroundColor = "#fafaf9"; }}
+                        onMouseLeave={(e) => { if (s.slug !== storeSlug) e.currentTarget.style.backgroundColor = s.slug === storeSlug ? "#f5f5f4" : "transparent"; }}
+                      >
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white" style={{ backgroundColor: "#171717" }}>{s.name.charAt(0).toUpperCase()}</div>
+                        <span className="truncate">{s.name}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="my-1" style={{ height: 1, backgroundColor: "rgba(0,0,0,0.06)" }} />
+
+                  <div className="px-2 py-1">
+                    <button
+                      className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
+                      style={{ color: "#737373" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#fafaf9"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+                      onClick={() => { setStoreListOpen(false); router.push("/onboarding"); }}
+                    >
+                      + Adicionar negocio
+                    </button>
+                    <button
+                      className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
+                      style={{ color: "#737373" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#fafaf9"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+                      onClick={async () => { setStoreListOpen(false); const { signOut } = await import("@/lib/auth-client"); await signOut({ fetchOptions: { onSuccess: () => { router.push("/entrar"); router.refresh(); } } }); }}
+                    >
+                      Sair
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto">
         <NavItems expanded={!collapsed} storeSlug={storeSlug ?? ""} />
       </div>
       {!collapsed && <UpgradeCard />}
-      <FooterLinks expanded={!collapsed} />
+      <FooterLinks expanded={!collapsed} onOpenSettings={onOpenSettings} />
     </aside>
   );
 }

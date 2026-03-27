@@ -188,7 +188,7 @@ export function EditorTopbar({
                     style={{ color: "#737373" }}
                     onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#fafaf9"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
-                    onClick={() => { setStoreDropdownOpen(false); router.push("/api/auth/sign-out"); }}
+                    onClick={async () => { setStoreDropdownOpen(false); const { signOut } = await import("@/lib/auth-client"); await signOut({ fetchOptions: { onSuccess: () => { router.push("/entrar"); router.refresh(); } } }); }}
                   >
                     Sair
                   </button>
