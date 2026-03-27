@@ -396,6 +396,20 @@ export function EditorTopbar({
           </button>
 
           <button
+            onClick={handleSave}
+            disabled={!state.isDirty || isSaving}
+            className="rounded-[8px] p-2 transition-all duration-150 disabled:opacity-25 disabled:cursor-not-allowed md:hidden"
+            style={{ color: "#737373" }}
+            title="Salvar"
+          >
+            {isSaving ? (
+              <IconLoader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <IconDeviceFloppy className="h-4 w-4" />
+            )}
+          </button>
+
+          <button
             onClick={() => setPublishOpen(true)}
             className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-semibold transition-all duration-150 md:px-4"
             style={{ backgroundColor: "#171717", color: "#ffffff" }}

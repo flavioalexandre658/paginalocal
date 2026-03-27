@@ -52,7 +52,10 @@ const EDITOR_CSS = `
 .editor-preview { user-select: none; }
 .editor-preview [data-pgl-editing] { user-select: text; }
 
-.editor-preview a, .editor-preview button { cursor: default; }
+.editor-preview a, .editor-preview button:not([data-editor-ui] button) { cursor: default; pointer-events: none; }
+.editor-preview [data-pgl-edit] { pointer-events: auto; }
+.editor-preview [data-editor-ui] { pointer-events: auto; }
+.editor-preview [data-editor-ui] * { pointer-events: auto; }
 `;
 
 /* ── Skeleton ─────────────────────────────────────────────────────── */

@@ -6,6 +6,7 @@ import { PricingContentSchema } from "@/types/ai-generation";
 import { StyledHeadline } from "../../shared/styled-headline";
 import { PglButton } from "../../shared/pgl-button";
 import { Check, X } from "lucide-react";
+import { isLightColor } from "@/lib/color-contrast";
 
 interface Props {
   content: Record<string, unknown>;
@@ -13,7 +14,7 @@ interface Props {
   isDark?: boolean;
 }
 
-export function PricingCards({ content, tokens }: Props) {
+export function PricingCards({ content, tokens, isDark }: Props) {
   const parsed = PricingContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
@@ -25,10 +26,16 @@ export function PricingCards({ content, tokens }: Props) {
   const isBold = style === "bold";
   const isMinimal = style === "minimal";
 
+  const pageBgDark = !isLightColor(tokens.palette.background);
+  const onDark = isDark || pageBgDark;
+  const textColor = onDark ? "#ffffff" : tokens.palette.text;
+  const mutedColor = onDark ? "rgba(255,255,255,0.55)" : tokens.palette.textMuted;
+  const dividerColor = onDark ? "rgba(255,255,255,0.08)" : `${tokens.palette.text}0a`;
+
   const colCount = Math.min(c.plans.length, 3);
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 mb-10 md:mb-16 items-end">
           <StyledHeadline
@@ -42,7 +49,7 @@ export function PricingCards({ content, tokens }: Props) {
           {c.subtitle && (
             <p
               className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
-              style={{ color: tokens.palette.textMuted }}
+              style={{ color: mutedColor }}
               data-delay="1"
               data-pgl-path="subtitle"
               data-pgl-edit="text"
@@ -54,7 +61,7 @@ export function PricingCards({ content, tokens }: Props) {
 
         <div
           className={cn(
-            "grid grid-cols-1 gap-4 md:gap-6 items-start pt-4",
+            "grid grid-cols-1 gap-4 md:gap-6 items-start pt-8",
             colCount === 2 && "md:grid-cols-2",
             colCount >= 3 && "md:grid-cols-2 lg:grid-cols-3",
           )}
@@ -66,7 +73,6 @@ export function PricingCards({ content, tokens }: Props) {
               key={index}
               className={cn(
                 "pgl-fade-up relative flex flex-col p-6 md:p-8 transition-all duration-[400ms] overflow-visible",
-                plan.highlighted && "mt-4",
                 isMinimal
                   ? "bg-transparent"
                   : plan.highlighted
@@ -75,48 +81,27 @@ export function PricingCards({ content, tokens }: Props) {
                         isElegant && "shadow-xl",
                       )
                     : cn(
-                        "bg-white border",
-                        isElegant
-                          ? "border-black/[0.08] shadow-sm hover:shadow-md"
-                          : "border-black/[0.06]",
+                        "border",
+                        !onDark && "hover:shadow-md",
                       ),
               )}
               data-delay={String(Math.min(index + 1, 7))}
               style={{
                 borderRadius: isMinimal ? "0" : "var(--card-radius)",
                 ...(isMinimal
-                  ? {
-                      borderBottom: `1px solid ${tokens.palette.text}0a`,
-                    }
+                  ? { borderBottom: `1px solid ${dividerColor}` }
                   : plan.highlighted
                     ? {
-                        ...(isIndustrial
-                          ? {
-                              boxShadow: `0 0 0 2px ${tokens.palette.accent}`,
-                              backgroundColor: "#fff",
-                            }
-                          : isElegant
-                            ? {
-                                boxShadow: `0 8px 40px ${tokens.palette.accent}18`,
-                                border: `1px solid ${tokens.palette.accent}30`,
-                                backgroundColor: "#fff",
-                              }
-                            : isWarm
-                              ? {
-                                  border: `2px solid ${tokens.palette.accent}40`,
-                                  backgroundColor: "#fff",
-                                }
-                              : isBold
-                                ? {
-                                    boxShadow: `0 0 0 2px ${tokens.palette.accent}`,
-                                    backgroundColor: "#fff",
-                                  }
-                                : {
-                                    boxShadow: `0 0 0 2px ${tokens.palette.accent}`,
-                                    backgroundColor: "#fff",
-                                  }),
+                        boxShadow: isElegant
+                          ? `0 8px 40px ${tokens.palette.accent}18`
+                          : `0 0 0 2px ${tokens.palette.accent}`,
+                        border: isElegant ? `1px solid ${tokens.palette.accent}30` : isWarm ? `2px solid ${tokens.palette.accent}40` : undefined,
+                        backgroundColor: onDark ? "rgba(255,255,255,0.08)" : "#ffffff",
                       }
-                    : {}),
+                    : {
+                        backgroundColor: onDark ? "rgba(255,255,255,0.05)" : "#ffffff",
+                        borderColor: onDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)",
+                      }),
               }}
             >
               {plan.highlighted && !isMinimal && (
@@ -134,7 +119,7 @@ export function PricingCards({ content, tokens }: Props) {
               <div className="mb-6">
                 <p
                   className="text-[0.7rem] font-medium uppercase tracking-[0.12em] mb-3"
-                  style={{ color: tokens.palette.textMuted }}
+                  style={{ color: mutedColor }}
                 >
                   {plan.name}
                 </p>
@@ -147,7 +132,7 @@ export function PricingCards({ content, tokens }: Props) {
                   )}
                   style={{
                     fontFamily: "var(--pgl-font-heading)",
-                    color: tokens.palette.text,
+                    color: textColor,
                   }}
                 >
                   {plan.price}
@@ -155,7 +140,7 @@ export function PricingCards({ content, tokens }: Props) {
                 {plan.description && (
                   <p
                     className="text-[0.875rem] font-light"
-                    style={{ color: tokens.palette.textMuted }}
+                    style={{ color: mutedColor }}
                   >
                     {plan.description}
                   </p>
@@ -164,7 +149,7 @@ export function PricingCards({ content, tokens }: Props) {
 
               <div
                 className="h-px mb-6"
-                style={{ backgroundColor: `${tokens.palette.text}0a` }}
+                style={{ backgroundColor: dividerColor }}
               />
 
               <ul className="space-y-3 mb-8 flex-1">
@@ -177,7 +162,7 @@ export function PricingCards({ content, tokens }: Props) {
                       {isExcluded ? (
                         <X
                           className="w-4 h-4 shrink-0 mt-0.5"
-                          style={{ color: `${tokens.palette.textMuted}66` }}
+                          style={{ color: onDark ? "rgba(255,255,255,0.3)" : `${tokens.palette.textMuted}66` }}
                         />
                       ) : (
                         <Check
@@ -192,8 +177,8 @@ export function PricingCards({ content, tokens }: Props) {
                         )}
                         style={{
                           color: isExcluded
-                            ? `${tokens.palette.textMuted}80`
-                            : tokens.palette.text,
+                            ? (onDark ? "rgba(255,255,255,0.35)" : `${tokens.palette.textMuted}80`)
+                            : textColor,
                         }}
                       >
                         {featureText}

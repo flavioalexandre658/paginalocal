@@ -230,7 +230,7 @@ export default function OnboardingPage() {
       console.error('[Onboarding] V2 failed:', v2Result.serverError)
     }
 
-    router.push(`/site/${result.data.slug}`)
+    router.push(`/negocio/${result.data.slug}/site`)
   }
 
   function handleBackToChoose() {

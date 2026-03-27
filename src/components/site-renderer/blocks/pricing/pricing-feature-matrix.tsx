@@ -47,7 +47,7 @@ export function PricingFeatureMatrix({ content, tokens, isDark }: Props) {
   });
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 mb-10 md:mb-16 items-end">
           <StyledHeadline

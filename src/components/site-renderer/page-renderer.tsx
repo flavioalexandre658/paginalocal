@@ -8,6 +8,7 @@ import type {
 } from "@/types/ai-generation";
 import { SectionBlock } from "./section-block";
 import { DesignTokensProvider } from "./design-tokens-provider";
+import { isLightColor, getContrastColor } from "@/lib/color-contrast";
 
 /** Blocks that control their own background — don't apply alternation */
 const SELF_BG_BLOCKS = new Set(["hero", "cta", "whatsapp-float", "about", "header", "footer"]);
@@ -70,11 +71,19 @@ export function PageRenderer({
           const isAlwaysDark = false; // About controls its own bg now
           const isDark = isAlwaysDark || idx === darkIdx;
 
-          // Surface alternation via inline style for non-self-bg, non-dark blocks
           let sectionStyle: React.CSSProperties = {};
-          if (!selfBg && !isDark) {
+          if (isDark) {
+            sectionStyle = {
+              backgroundColor: designTokens.palette.primary,
+              color: getContrastColor(designTokens.palette.primary),
+            };
+          } else if (!selfBg) {
             if (vizIdx % 2 === 1) {
-              sectionStyle = { backgroundColor: designTokens.palette.surface };
+              const bg = designTokens.palette.surface;
+              sectionStyle = {
+                backgroundColor: bg,
+                color: getContrastColor(bg),
+              };
             }
             vizIdx++;
           }

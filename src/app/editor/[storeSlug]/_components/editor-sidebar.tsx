@@ -259,11 +259,12 @@ export function EditorSidebar({
 
   return (
     <aside
-      className="flex shrink-0 flex-col transition-all duration-200"
+      className="flex h-full shrink-0 flex-col transition-all duration-200"
       style={{
         width: collapsed ? 56 : 220,
         fontFamily: "system-ui, -apple-system, sans-serif",
         backgroundColor: "#ffffff",
+        borderRight: "1px solid rgba(0,0,0,0.06)",
       }}
     >
       <div className="flex-1 overflow-y-auto">

@@ -249,7 +249,7 @@ export default function ManualOnboardingPage() {
       } catch {
         // Generation errors are non-blocking
       }
-      router.push(`/site/${result.data.slug}`)
+      router.push(`/negocio/${result.data.slug}/site`)
     } else {
       toast.error('Erro inesperado ao criar site')
       setStep('summary')

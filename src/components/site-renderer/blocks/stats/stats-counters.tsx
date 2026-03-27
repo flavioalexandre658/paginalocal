@@ -16,7 +16,7 @@ function isValidStat(value: string): boolean {
   return value.trim() !== "" && (isNaN(num) || num > 0);
 }
 
-export function StatsCounters({ content, tokens }: Props) {
+export function StatsCounters({ content, tokens, isDark }: Props) {
   const parsed = StatsContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
@@ -27,6 +27,11 @@ export function StatsCounters({ content, tokens }: Props) {
   if (validItems.length < 2) return null;
 
   const style = tokens.style;
+
+  const textColor = isDark ? "#ffffff" : tokens.palette.text;
+  const mutedColor = isDark ? "rgba(255,255,255,0.65)" : tokens.palette.textMuted;
+  const numberColor = isDark ? tokens.palette.accent : tokens.palette.primary;
+  const borderColor = isDark ? "rgba(255,255,255,0.1)" : `${tokens.palette.text}08`;
 
   /* -- elegant: inline text, no trust bar -- */
   if (style === "elegant") {
@@ -39,7 +44,7 @@ export function StatsCounters({ content, tokens }: Props) {
                 className="text-xl md:text-2xl font-semibold tracking-tight tabular-nums"
                 style={{
                   fontFamily: "var(--pgl-font-heading)",
-                  color: tokens.palette.primary,
+                  color: numberColor,
                 }}
                 data-pgl-path={`items.${item._idx}.value`}
                 data-pgl-edit="text"
@@ -49,7 +54,7 @@ export function StatsCounters({ content, tokens }: Props) {
               <span
                 className="ml-2 font-normal"
                 style={{
-                  color: tokens.palette.textMuted,
+                  color: mutedColor,
                   fontSize: "var(--label-size, 0.75rem)",
                   textTransform: "var(--label-transform, uppercase)" as unknown as undefined,
                   letterSpacing: "var(--label-tracking, 0.08em)" as unknown as undefined,
@@ -77,7 +82,7 @@ export function StatsCounters({ content, tokens }: Props) {
                 className="text-lg md:text-xl font-medium tabular-nums"
                 style={{
                   fontFamily: "var(--pgl-font-heading)",
-                  color: tokens.palette.text,
+                  color: textColor,
                 }}
                 data-pgl-path={`items.${item._idx}.value`}
                 data-pgl-edit="text"
@@ -87,7 +92,7 @@ export function StatsCounters({ content, tokens }: Props) {
               <span
                 className="ml-1.5 font-normal"
                 style={{
-                  color: tokens.palette.textMuted,
+                  color: mutedColor,
                   fontSize: "var(--label-size, 0.7rem)",
                   letterSpacing: "var(--label-tracking, 0.06em)" as unknown as undefined,
                 }}
@@ -133,7 +138,7 @@ export function StatsCounters({ content, tokens }: Props) {
                   className="text-2xl font-semibold tracking-tight tabular-nums"
                   style={{
                     fontFamily: "var(--pgl-font-heading)",
-                    color: tokens.palette.primary,
+                    color: numberColor,
                   }}
                   data-pgl-path={`items.${item._idx}.value`}
                   data-pgl-edit="text"
@@ -143,7 +148,7 @@ export function StatsCounters({ content, tokens }: Props) {
                 <div
                   className="mt-1 font-normal"
                   style={{
-                    color: tokens.palette.textMuted,
+                    color: mutedColor,
                     fontSize: "var(--label-size, 0.7rem)",
                     textTransform: "var(--label-transform, uppercase)" as unknown as undefined,
                     letterSpacing: "var(--label-tracking, 0.08em)" as unknown as undefined,
@@ -183,7 +188,7 @@ export function StatsCounters({ content, tokens }: Props) {
             )}
             style={{
               // @ts-expect-error -- CSS custom property
-              "--divide-color": `${tokens.palette.text}08`,
+              "--divide-color": borderColor,
             }}
           >
             {validItems.map((item, i) => (
@@ -201,7 +206,7 @@ export function StatsCounters({ content, tokens }: Props) {
                   className="text-2xl md:text-3xl font-bold tracking-tight tabular-nums"
                   style={{
                     fontFamily: "var(--pgl-font-heading)",
-                    color: tokens.palette.accent,
+                    color: isDark ? tokens.palette.accent : tokens.palette.accent,
                   }}
                   data-pgl-path={`items.${item._idx}.value`}
                   data-pgl-edit="text"
@@ -211,7 +216,7 @@ export function StatsCounters({ content, tokens }: Props) {
                 <div
                   className="mt-1 font-semibold"
                   style={{
-                    color: tokens.palette.text,
+                    color: textColor,
                     fontSize: "var(--label-size, 0.7rem)",
                     textTransform: "var(--label-transform, uppercase)" as unknown as undefined,
                     letterSpacing: "var(--label-tracking, 0.08em)" as unknown as undefined,
@@ -264,7 +269,7 @@ export function StatsCounters({ content, tokens }: Props) {
                 className="text-2xl font-semibold tracking-tight tabular-nums"
                 style={{
                   fontFamily: "var(--pgl-font-heading)",
-                  color: tokens.palette.primary,
+                  color: numberColor,
                 }}
                 data-pgl-path={`items.${item._idx}.value`}
                 data-pgl-edit="text"
@@ -274,7 +279,7 @@ export function StatsCounters({ content, tokens }: Props) {
               <div
                 className="mt-1 font-normal"
                 style={{
-                  color: tokens.palette.textMuted,
+                  color: mutedColor,
                   fontSize: "var(--label-size, 0.7rem)",
                   textTransform: "var(--label-transform, uppercase)" as unknown as undefined,
                   letterSpacing: "var(--label-tracking, 0.08em)" as unknown as undefined,

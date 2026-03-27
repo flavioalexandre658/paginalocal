@@ -10,6 +10,7 @@ import type {
 } from "@/types/ai-generation";
 import { SectionBlock } from "@/components/site-renderer/section-block";
 import { DesignTokensProvider } from "@/components/site-renderer/design-tokens-provider";
+import { getContrastColor } from "@/lib/color-contrast";
 import { EditorSectionWrapper } from "./editor-section-wrapper";
 import { BLOCK_TYPE_LABELS } from "../_lib/block-type-labels";
 
@@ -77,9 +78,18 @@ export function EditorPageRenderer({ page, designTokens, navigation, previewMode
           const isDark = section.id === darkSectionId;
 
           let sectionStyle: React.CSSProperties = {};
-          if (section.visible && !selfBg && !isDark) {
+          if (isDark) {
+            sectionStyle = {
+              backgroundColor: designTokens.palette.primary,
+              color: getContrastColor(designTokens.palette.primary),
+            };
+          } else if (section.visible && !selfBg) {
             if (vizIdx % 2 === 1) {
-              sectionStyle = { backgroundColor: designTokens.palette.surface };
+              const bg = designTokens.palette.surface;
+              sectionStyle = {
+                backgroundColor: bg,
+                color: getContrastColor(bg),
+              };
             }
             vizIdx++;
           }

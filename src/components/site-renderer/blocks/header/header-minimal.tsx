@@ -33,11 +33,31 @@ export function HeaderMinimal({ content, tokens, navigation }: Props) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Lock body scroll when overlay is open
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? "hidden" : "";
-    return () => {
+    if (menuOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.overflow = "hidden";
+    } else {
+      const top = document.body.style.top;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
       document.body.style.overflow = "";
+      if (top) window.scrollTo(0, parseInt(top) * -1);
+    }
+    return () => {
+      const top = document.body.style.top;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.overflow = "";
+      if (top) window.scrollTo(0, parseInt(top) * -1);
     };
   }, [menuOpen]);
 
