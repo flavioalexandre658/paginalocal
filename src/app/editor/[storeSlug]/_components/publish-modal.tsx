@@ -27,32 +27,21 @@ interface Props {
 }
 
 export function PublishModal({
-  open,
-  onClose,
-  storeId,
-  storeSlug,
-  isPublished,
-  onPublishSuccess,
-  onOpenDomains,
+  open, onClose, storeId, storeSlug, isPublished, onPublishSuccess, onOpenDomains,
 }: Props) {
   const { state, dispatch } = useEditor();
-  const { executeAsync: saveBlueprint, isExecuting: isSavingBlueprint } =
-    useAction(updateBlueprintAction);
-  const { executeAsync: activateStore, isExecuting: isActivating } =
-    useAction(activateStoreAction);
+  const { executeAsync: saveBlueprint, isExecuting: isSavingBlueprint } = useAction(updateBlueprintAction);
+  const { executeAsync: activateStore, isExecuting: isActivating } = useAction(activateStoreAction);
 
-  const siteUrl = `https://${storeSlug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN ?? "paginalocal.com.br"}`;
-  const displayUrl =
-    siteUrl.length > 30 ? siteUrl.slice(0, 30) + "..." : siteUrl;
+  const domain = process.env.NEXT_PUBLIC_MAIN_DOMAIN ?? "paginalocal.com.br";
+  const siteUrl = `https://${storeSlug}.${domain}`;
+  const displayUrl = `https://${storeSlug}.${domain}`;
 
   async function handlePublish() {
     dispatch({ type: "SET_SAVING", isSaving: true });
     try {
-      const blueprintResult = await saveBlueprint({
-        storeId,
-        blueprint: state.blueprint,
-      });
-      if (!blueprintResult?.data?.success) throw new Error("Falha ao salvar");
+      const res = await saveBlueprint({ storeId, blueprint: state.blueprint });
+      if (!res?.data?.success) throw new Error("Falha ao salvar");
       dispatch({ type: "MARK_SAVED" });
       await activateStore({ storeId });
       onPublishSuccess();
@@ -75,111 +64,111 @@ export function PublishModal({
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-[9998] bg-black/20"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-[9998]" onClick={onClose} />
 
-      {/* Modal */}
       <div
-        className="publish-modal fixed z-[9999] right-3 top-14 w-[320px] rounded-2xl bg-white"
-        style={{
-          boxShadow: "0 8px 40px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04)",
-        }}
+        className="fixed z-[9999] right-3 top-14 w-[376px] max-w-[calc(100vw-32px)] rounded-2xl bg-white p-6 shadow-xl ring-1 ring-black/5"
+        style={{ animation: "publish-enter 200ms ease-out" }}
       >
-        {/* Content */}
-        <div className="px-5 pt-5 pb-5">
-          {/* ─── Title ─── */}
-          <h3 className="text-[15px] font-semibold text-neutral-900 mb-4">
+        <div className="flex flex-col gap-4">
+          {/* Title */}
+          <p className="text-base font-medium">
             {isPublished ? "Visualizar seu site" : "Publicar seu site"}
-          </h3>
-
-          {/* ─── Domain label ─── */}
-          <p className="text-[12px] font-medium text-neutral-400 mb-1.5">
-            Seu domínio
           </p>
 
-          {/* ─── Domain container ─── */}
-          <div className={cn(
-            "rounded-2xl overflow-hidden border",
-            isPublished
-              ? "border-emerald-200/60 bg-emerald-50/30"
-              : "border-red-200/60 bg-red-50/30",
-          )}>
-            <div className="flex items-center gap-2.5 px-4 py-3">
-              <IconWorld className="size-4 shrink-0 text-neutral-400" />
-              <span className="flex-1 truncate text-[13px] text-neutral-700">
-                {displayUrl}
-              </span>
-              <button
-                onClick={handleCopy}
-                className="rounded-md p-1 text-neutral-300 transition-colors hover:text-neutral-500 hover:bg-black/[0.04]"
-              >
-                <IconCopy className="size-3.5" />
-              </button>
-              <button
-                onClick={() => { onClose(); onOpenDomains(); }}
-                className="rounded-md p-1 text-neutral-300 transition-colors hover:text-neutral-500 hover:bg-black/[0.04]"
-              >
-                <IconPencil className="size-3.5" />
-              </button>
-            </div>
+          {/* Domain section */}
+          <div className="flex flex-col justify-center gap-2">
+            <p className="text-xs font-medium text-black/55">Seu dominio</p>
+
+            {/* Domain card */}
             <div className={cn(
-              "flex items-center justify-center gap-1.5 py-2",
-              isPublished ? "bg-emerald-50/50" : "bg-red-50/50",
+              "flex flex-col rounded-[14px]",
+              isPublished ? "bg-[#DEF2E7]" : "bg-amber-100/50",
             )}>
-              {isPublished ? (
-                <>
-                  <span className="size-[6px] rounded-full bg-emerald-500" />
-                  <span className="text-[11px] font-medium text-emerald-600">Seu site esta no ar</span>
-                </>
-              ) : (
-                <>
-                  <IconEyeOff className="size-3 text-red-400" />
-                  <span className="text-[11px] font-medium text-red-500">Modo demonstracao</span>
-                </>
-              )}
+              {/* URL row: white inner card */}
+              <div className="m-0.5 flex items-center justify-between rounded-xl bg-white pl-3 pr-1">
+                <button
+                  onClick={() => window.open(siteUrl, "_blank")}
+                  className="flex min-w-0 flex-1 items-center gap-2 py-2 outline-none"
+                >
+                  <IconWorld className="size-5 shrink-0 text-black/55" />
+                  <p className="text-sm truncate text-left hover:underline">{displayUrl}</p>
+                </button>
+                <div className="flex items-center">
+                  <button
+                    onClick={handleCopy}
+                    className="rounded-2xl p-2 text-black/55 transition-colors hover:bg-black/5 hover:text-black/80"
+                    title="Copiar dominio"
+                  >
+                    <IconCopy className="size-5" />
+                  </button>
+                  <button
+                    onClick={() => { onClose(); onOpenDomains(); }}
+                    className="rounded-2xl p-2 text-black/55 transition-colors hover:bg-black/5 hover:text-black/80"
+                  >
+                    <IconPencil className="size-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Status bar */}
+              <div className="flex items-center justify-center gap-2 p-2">
+                {isPublished ? (
+                  <>
+                    <div className="size-2 rounded-full bg-[#519A73]" />
+                    <p className="text-xs font-medium text-[#519A73]">Seu site esta no ar</p>
+                  </>
+                ) : (
+                  <>
+                    <IconEyeOff className="size-3.5 text-amber-600" />
+                    <p className="text-xs font-medium text-amber-600">Modo demonstracao</p>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* ─── Custom domain CTA ─── */}
-          <button
-            onClick={() => {
-              onClose();
-              onOpenDomains();
-            }}
-            className="mt-3 w-full rounded-xl border border-neutral-150 bg-neutral-50/50 p-5 text-center transition-all hover:border-neutral-200 hover:bg-neutral-50"
-          >
-            <IconStar className="size-5 text-neutral-300 mx-auto mb-2" />
-            <p className="text-[13px] font-medium text-neutral-700 leading-snug">
-              Tenha um visual profissional
-              <br />
-              com um domínio personalizado.
-            </p>
-            <span className="inline-block mt-3 rounded-lg bg-neutral-100 px-4 py-1.5 text-[12px] font-medium text-neutral-500">
-              Adicionar domínio
-            </span>
-          </button>
+          {/* Custom domain CTA card */}
+          <div className="flex flex-col items-center justify-center gap-6 rounded-xl bg-black/[0.03] p-3">
+            <div className="flex max-w-[174px] flex-col items-center gap-1 pt-3 text-center">
+              <IconStar className="size-6 text-black/55" />
+              <p className="text-sm font-medium">
+                Tenha um visual profissional com um dominio personalizado.
+              </p>
+            </div>
+            <button
+              onClick={() => { onClose(); onOpenDomains(); }}
+              className="w-full rounded-2xl bg-black/5 px-4 py-2 text-sm font-medium text-black/55 transition-colors hover:bg-black/10 hover:text-black/80"
+            >
+              Adicionar dominio
+            </button>
+          </div>
 
-          {/* ─── Action button ─── */}
+          {/* Main CTA */}
           {isPublished ? (
             <button
               onClick={() => window.open(siteUrl, "_blank")}
-              className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-500 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-emerald-600"
+              className="flex items-center justify-center gap-1 rounded-2xl px-4 py-3 text-sm font-medium text-white transition-colors"
+              style={{ backgroundColor: "#519A73" }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#408059"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#519A73"; }}
             >
+              <IconExternalLink className="size-5" />
               Ver site
             </button>
           ) : (
             <button
               onClick={handlePublish}
               disabled={isBusy}
-              className="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-emerald-500 py-2.5 text-[13px] font-semibold text-white transition-colors hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-1 rounded-2xl px-4 py-3 text-sm font-medium text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: "#519A73" }}
+              onMouseEnter={(e) => { if (!isBusy) e.currentTarget.style.backgroundColor = "#408059"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#519A73"; }}
             >
               {isBusy ? (
-                <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                <IconRocket className="size-4" />
+                <IconRocket className="size-5" />
               )}
               {isBusy ? "Publicando..." : "Publicar site"}
             </button>
@@ -187,20 +176,7 @@ export function PublishModal({
         </div>
       </div>
 
-      {/* Animation */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            .publish-modal {
-              animation: publish-enter 200ms ease-out;
-            }
-            @keyframes publish-enter {
-              from { opacity: 0; transform: translateY(4px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
-          `,
-        }}
-      />
+      <style dangerouslySetInnerHTML={{ __html: `@keyframes publish-enter { from { opacity: 0; transform: translateY(-4px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }` }} />
     </>
   );
 }

@@ -82,14 +82,15 @@ export function PricingPageClient({ plans, isLoggedIn = false }: PricingPageClie
   const planQuery = searchParams.get('plan')
   const storeSlug = searchParams.get('store')
 
-  // Filtra plano específico se houver query param
+  // Filtra plano Essencial (removido) e plano especifico se houver query param
   const filteredPlans = useMemo(() => {
-    if (!planQuery) return plans
+    const activePlans = plans.filter(p => p.type !== 'ESSENTIAL')
 
-    // Normaliza o nome do plano (remove acentos, lowercase)
+    if (!planQuery) return activePlans
+
     const normalizedQuery = planQuery.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 
-    return plans.filter(plan => {
+    return activePlans.filter(plan => {
       const normalizedPlanName = plan.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       return normalizedPlanName === normalizedQuery
     })

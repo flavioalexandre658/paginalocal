@@ -99,16 +99,6 @@ export async function checkCanCreateStore(userId: string): Promise<{ allowed: bo
 }
 
 export async function checkCanActivateStore(userId: string): Promise<{ allowed: boolean; reason?: string; requiresSubscription?: boolean }> {
-  const planContext = await getUserPlanContext(userId)
-
-  if (!planContext.hasActiveSubscription) {
-    return {
-      allowed: false,
-      reason: 'Você precisa de uma assinatura ativa para publicar sua loja.',
-      requiresSubscription: true,
-    }
-  }
-
   return { allowed: true }
 }
 

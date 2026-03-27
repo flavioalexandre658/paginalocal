@@ -19,6 +19,7 @@ export const getStoreBySlugAuthAction = authActionClient
         slug: store.slug,
         name: store.name,
         customDomain: store.customDomain,
+        isActive: store.isActive,
       })
       .from(store)
       .where(and(eq(store.slug, parsedInput.slug), eq(store.userId, ctx.userId)))

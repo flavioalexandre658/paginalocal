@@ -17,6 +17,19 @@ import {
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PglStatusBadge } from "@/components/ui/pgl-status-badge";
+import {
+  PglDashboardCard,
+  PglDashboardCardHeader,
+  PglDashboardCardHeaderLeft,
+  PglDashboardCardHeaderRight,
+  PglDashboardCardTitle,
+  PglDashboardCardIcon,
+  PglDashboardCardBody,
+  PglDashboardCardListItem,
+  PglDashboardCardEmpty,
+  PglDashboardCardSkeleton,
+} from "@/components/ui/pgl-dashboard-card";
 import { getStoreDashboardAction } from "@/actions/stores/get-store-dashboard.action";
 
 interface Props {
@@ -51,151 +64,182 @@ export function NegocioHomeContent({ storeId, storeName, storeSlug, isActive, cu
   const displayUrl = customDomain || `${storeSlug}.${DOMAIN}`;
 
   const actions = [
+    { label: "Publicar site", done: isActive, href: `/negocio/${storeSlug}/site` },
     { label: "Configurar dominio personalizado", done: !!customDomain, href: `/negocio/${storeSlug}/site` },
     { label: "Adicionar um contato", done: false, href: `/negocio/${storeSlug}/contatos` },
-    { label: "Publicar site", done: isActive, href: `/negocio/${storeSlug}/site` },
   ];
 
   return (
-    <div className="relative min-h-full">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+    <div className="flex min-w-80 max-w-6xl flex-col gap-8 px-4 py-4 md:mx-auto md:pb-8 md:pt-0 2xl:pt-8">
+      {/* Greeting */}
+      <div className="flex flex-col items-start gap-4">
+        <p className="text-xl font-semibold leading-tight text-black/80 md:text-2xl">
+          <span className="block">{getGreeting()},</span>
+          <span className="block">bem-vindo ao Pagina Local</span>
+        </p>
+      </div>
 
-      <div className="relative z-10 px-6 py-8 lg:px-10 max-w-[1100px] mx-auto">
-        {/* Greeting */}
-        <h1 className="text-2xl lg:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white leading-tight">
-          {getGreeting()},
-          <br />
-          <span className="font-normal">bem-vindo ao </span>
-          <span className="text-primary font-bold">Pagina Local</span>
-        </h1>
+      {/* Main grid — site preview (2 cols) + right sidebar (1 col) with all cards */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {/* Site preview card — spans 2 columns */}
+        <div className="lg:col-span-2">
+          <PglDashboardCard className="h-full min-h-72">
+            <PglDashboardCardHeader>
+              <div className="flex w-full flex-wrap items-center justify-between gap-2">
+                <PglDashboardCardHeaderLeft>
+                  <PglDashboardCardIcon>
+                    <IconWorld />
+                  </PglDashboardCardIcon>
+                  <PglDashboardCardTitle className="max-w-80 sm:max-w-[400px]">
+                    {displayUrl}
+                  </PglDashboardCardTitle>
+                </PglDashboardCardHeaderLeft>
 
-        {/* Main grid */}
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
-          {/* Site preview card */}
-          <div className="rounded-2xl border border-slate-200/60 bg-white/70 shadow-lg shadow-slate-200/20 backdrop-blur-sm overflow-hidden dark:border-slate-700/60 dark:bg-slate-900/70 dark:shadow-slate-900/20 transition-all duration-500 hover:shadow-xl hover:shadow-slate-200/30 dark:hover:shadow-slate-900/30">
-            {/* URL bar */}
-            <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-slate-200/40 dark:border-slate-700/40">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <IconWorld className="h-4 w-4 text-slate-400 shrink-0" />
-                <span className="text-[13px] truncate text-slate-500 dark:text-slate-400">{displayUrl}</span>
-                <span className={cn(
-                  "flex items-center gap-1.5 shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
-                  isActive
-                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                    : "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-                )}>
-                  <span className={cn("h-1.5 w-1.5 rounded-full", isActive ? "bg-emerald-500 animate-pulse" : "bg-amber-500")} />
-                  {isActive ? "Publicado" : "Rascunho"}
-                </span>
+                <PglDashboardCardHeaderRight className="flex-1 justify-between">
+                  <PglStatusBadge status={isActive ? "success" : "warning"}>
+                    {isActive ? "Publicado" : "Rascunho"}
+                  </PglStatusBadge>
+                  <button
+                    onClick={() => router.push(`/negocio/${storeSlug}/site`)}
+                    className="inline-flex shrink-0 items-center gap-1 rounded-xl bg-black/5 px-3 py-1 text-sm font-medium text-black/55 transition-[background,color] duration-150 hover:bg-black/10 hover:text-black/80"
+                  >
+                    Editar site
+                  </button>
+                </PglDashboardCardHeaderRight>
               </div>
-              <button
-                onClick={() => router.push(`/negocio/${storeSlug}/site`)}
-                className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-slate-200/60 bg-white/50 px-3.5 py-1.5 text-[12px] font-semibold text-slate-700 backdrop-blur-sm transition-all hover:bg-white hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-slate-200 dark:hover:bg-slate-800"
+            </PglDashboardCardHeader>
+
+            <PglDashboardCardBody>
+              <a
+                className="block h-full max-h-[552px] overflow-hidden rounded-b-2xl"
+                href={`/negocio/${storeSlug}/site`}
               >
-                Editar site
-              </button>
-            </div>
+                <SitePreviewIframe siteUrl={siteUrl} storeName={storeName} />
+              </a>
+            </PglDashboardCardBody>
+          </PglDashboardCard>
+        </div>
 
-            <SitePreviewIframe siteUrl={siteUrl} storeName={storeName} />
-          </div>
+        {/* Right column — 3 cards stacked */}
+        <div className="flex flex-col gap-4">
+          {/* Get Started */}
+          <PglDashboardCard>
+            <PglDashboardCardHeader className="px-5 pt-5 pb-2">
+              <PglDashboardCardHeaderLeft>
+                <PglDashboardCardIcon>
+                  <IconSparkles />
+                </PglDashboardCardIcon>
+                <PglDashboardCardTitle>Comecar</PglDashboardCardTitle>
+              </PglDashboardCardHeaderLeft>
+            </PglDashboardCardHeader>
 
-          {/* Get Started card */}
-          <div className="rounded-2xl border border-slate-200/60 bg-white/70 shadow-lg shadow-slate-200/20 backdrop-blur-sm self-start dark:border-slate-700/60 dark:bg-slate-900/70 dark:shadow-slate-900/20 transition-all duration-500 hover:shadow-xl">
-            <div className="flex items-center gap-2.5 px-5 pt-5 pb-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 text-amber-500 shadow-lg shadow-amber-500/10">
-                <IconSparkles className="h-4 w-4" />
-              </div>
-              <span className="text-[15px] font-semibold text-slate-900 dark:text-white">Comecar</span>
-            </div>
-
-            <div className="px-3 pb-3">
+            <PglDashboardCardBody className="px-3 pb-3">
               {actions.map((action) => (
-                <button
+                <PglDashboardCardListItem
                   key={action.label}
                   onClick={() => router.push(action.href)}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/60"
                 >
                   {action.done ? (
-                    <IconCircleCheck className="h-[18px] w-[18px] text-emerald-500 shrink-0" />
+                    <IconCircleCheck className="size-[18px] shrink-0 text-green-600" />
                   ) : (
-                    <IconCircleDashed className="h-[18px] w-[18px] text-slate-300 dark:text-slate-600 shrink-0" />
+                    <IconCircleDashed className="size-[18px] shrink-0 text-black/20" />
                   )}
                   <span className={cn(
-                    "flex-1 text-[14px] font-medium",
-                    action.done ? "text-slate-400 dark:text-slate-500" : "text-slate-700 dark:text-slate-200",
+                    "flex-1 text-sm font-medium",
+                    action.done ? "text-black/30" : "text-black/80",
                   )}>
                     {action.label}
                   </span>
-                  <IconChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-600 shrink-0" />
-                </button>
+                  {!action.done && (
+                    <IconChevronRight className="size-4 shrink-0 text-black/20" />
+                  )}
+                </PglDashboardCardListItem>
               ))}
-            </div>
-          </div>
-        </div>
+            </PglDashboardCardBody>
+          </PglDashboardCard>
 
-        {/* Data cards */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <DataCard icon={<IconPhone className="h-4 w-4" />} iconColor="blue" title="Ultimos contatos" loaded={loaded}>
-            {data?.recentLeads && data.recentLeads.length > 0 ? (
-              data.recentLeads.slice(0, 5).map((lead: { id: string; name: string | null; source: string; createdAt: Date }) => (
-                <DataRow key={lead.id}>
-                  {lead.source === "whatsapp" ? (
-                    <IconBrandWhatsapp className="h-4 w-4 text-emerald-500 shrink-0" />
-                  ) : (
-                    <IconPhone className="h-4 w-4 text-blue-500 shrink-0" />
-                  )}
-                  <span className="flex-1 truncate text-[13px] text-slate-700 dark:text-slate-300">{lead.name || "Sem nome"}</span>
-                  <span className="text-[11px] text-slate-400 shrink-0">
-                    {new Date(lead.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-                  </span>
-                </DataRow>
-              ))
-            ) : (
-              <EmptyState icon={<IconPhone className="h-5 w-5" />} text="Nenhum contato ainda" />
-            )}
-          </DataCard>
+          {/* Contacts */}
+          <PglDashboardCard>
+            <PglDashboardCardHeader className="px-5 pt-5 pb-2">
+              <PglDashboardCardHeaderLeft>
+                <PglDashboardCardIcon>
+                  <IconPhone />
+                </PglDashboardCardIcon>
+                <PglDashboardCardTitle>Ultimos contatos</PglDashboardCardTitle>
+              </PglDashboardCardHeaderLeft>
+            </PglDashboardCardHeader>
+            <PglDashboardCardBody className="px-3 pb-1">
+              {!loaded ? (
+                <PglDashboardCardSkeleton rows={3} />
+              ) : data?.recentLeads && data.recentLeads.length > 0 ? (
+                data.recentLeads.slice(0, 5).map((lead: { id: string; name: string | null; source: string; createdAt: Date }) => (
+                  <PglDashboardCardListItem key={lead.id}>
+                    {lead.source === "whatsapp" ? (
+                      <IconBrandWhatsapp className="size-4 shrink-0 text-green-600" />
+                    ) : (
+                      <IconPhone className="size-4 shrink-0 text-black/40" />
+                    )}
+                    <span className="flex-1 truncate text-[13px] text-black/80">{lead.name || "Sem nome"}</span>
+                    <span className="shrink-0 text-[11px] text-black/30">
+                      {new Date(lead.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                    </span>
+                  </PglDashboardCardListItem>
+                ))
+              ) : (
+                <PglDashboardCardEmpty
+                  icon={<IconPhone />}
+                  text="Nenhum contato ainda"
+                  ctaLabel="Adicionar contato"
+                  onCtaClick={() => router.push(`/negocio/${storeSlug}/contatos`)}
+                />
+              )}
+            </PglDashboardCardBody>
+          </PglDashboardCard>
 
-          <DataCard icon={<IconEye className="h-4 w-4" />} iconColor="purple" title="Ultimas visualizacoes" loaded={loaded}>
-            {data?.recentPageviews && data.recentPageviews.length > 0 ? (
-              data.recentPageviews.slice(0, 5).map((pv: { id: string; device: string | null; referrer: string | null; createdAt: Date }) => (
-                <DataRow key={pv.id}>
-                  {pv.device === "mobile" ? (
-                    <IconDeviceMobile className="h-4 w-4 text-slate-400 shrink-0" />
-                  ) : (
-                    <IconDeviceDesktop className="h-4 w-4 text-slate-400 shrink-0" />
-                  )}
-                  <span className="flex-1 truncate text-[13px] text-slate-700 dark:text-slate-300">{getReferrerLabel(pv.referrer)}</span>
-                  <span className="text-[11px] text-slate-400 shrink-0">
-                    {new Date(pv.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-                  </span>
-                </DataRow>
-              ))
-            ) : (
-              <EmptyState icon={<IconEye className="h-5 w-5" />} text="Nenhuma visualizacao ainda" />
-            )}
-          </DataCard>
-
-          <DataCard icon={<IconSparkles className="h-4 w-4" />} iconColor="amber" title="Dicas" loaded={loaded}>
-            {data?.dynamicTips && data.dynamicTips.length > 0 ? (
-              data.dynamicTips.slice(0, 3).map((tip: { id: string; title: string; actionUrl?: string | null }) => (
-                <button
-                  key={tip.id}
-                  onClick={() => tip.actionUrl && router.push(tip.actionUrl)}
-                  className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition-all hover:bg-slate-100/60 dark:hover:bg-slate-800/60"
-                >
-                  <span className="text-[13px] text-slate-700 dark:text-slate-300">{tip.title}</span>
-                  <IconChevronRight className="h-4 w-4 text-slate-300 dark:text-slate-600 shrink-0" />
-                </button>
-              ))
-            ) : (
-              <EmptyState icon={<IconSparkles className="h-5 w-5" />} text="Tudo certo por aqui!" />
-            )}
-          </DataCard>
+          {/* Pageviews */}
+          <PglDashboardCard>
+            <PglDashboardCardHeader className="px-5 pt-5 pb-2">
+              <PglDashboardCardHeaderLeft>
+                <PglDashboardCardIcon>
+                  <IconEye />
+                </PglDashboardCardIcon>
+                <PglDashboardCardTitle>Ultimas visualizacoes</PglDashboardCardTitle>
+              </PglDashboardCardHeaderLeft>
+            </PglDashboardCardHeader>
+            <PglDashboardCardBody className="px-3 pb-1">
+              {!loaded ? (
+                <PglDashboardCardSkeleton rows={3} />
+              ) : data?.recentPageviews && data.recentPageviews.length > 0 ? (
+                data.recentPageviews.slice(0, 5).map((pv: { id: string; device: string | null; referrer: string | null; createdAt: Date }) => (
+                  <PglDashboardCardListItem key={pv.id}>
+                    {pv.device === "mobile" ? (
+                      <IconDeviceMobile className="size-4 shrink-0 text-black/40" />
+                    ) : (
+                      <IconDeviceDesktop className="size-4 shrink-0 text-black/40" />
+                    )}
+                    <span className="flex-1 truncate text-[13px] text-black/80">{getReferrerLabel(pv.referrer)}</span>
+                    <span className="shrink-0 text-[11px] text-black/30">
+                      {new Date(pv.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                    </span>
+                  </PglDashboardCardListItem>
+                ))
+              ) : (
+                <PglDashboardCardEmpty
+                  icon={<IconEye />}
+                  text="Nenhuma visualizacao ainda"
+                  ctaLabel="Publicar site"
+                  onCtaClick={() => router.push(`/negocio/${storeSlug}/site`)}
+                />
+              )}
+            </PglDashboardCardBody>
+          </PglDashboardCard>
         </div>
       </div>
     </div>
   );
 }
+
+// ─── Site Preview Iframe ────────────────────────────────────────────────────
 
 function SitePreviewIframe({ siteUrl, storeName }: { siteUrl: string; storeName: string }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -208,9 +252,9 @@ function SitePreviewIframe({ siteUrl, storeName }: { siteUrl: string; storeName:
     function calc() {
       const cw = el!.offsetWidth;
       const isMobile = cw < 500;
-      const renderW = isMobile ? 390 : 1440;
+      const renderW = isMobile ? 390 : 1520;
       const sc = cw / renderW;
-      setDims({ renderWidth: renderW, scale: sc, height: Math.ceil((isMobile ? 844 : 900) * sc) });
+      setDims({ renderWidth: renderW, scale: sc, height: Math.ceil((isMobile ? 844 : 1400) * sc) });
     }
     calc();
     const ro = new ResizeObserver(calc);
@@ -221,13 +265,13 @@ function SitePreviewIframe({ siteUrl, storeName }: { siteUrl: string; storeName:
   return (
     <div
       ref={containerRef}
-      className="relative overflow-hidden bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900"
+      className="pointer-events-none relative h-full w-full overflow-hidden"
       style={{ height: dims?.height ?? 300 }}
     >
       {!frameLoaded && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
-          <Skeleton className="h-8 w-48 rounded-lg" />
-          <Skeleton className="h-4 w-32 rounded-md" />
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3">
+          <Skeleton className="h-8 w-48 rounded-lg bg-[#f5f5f4]" />
+          <Skeleton className="h-4 w-32 rounded-md bg-[#f5f5f4]" />
         </div>
       )}
       {dims && (
@@ -237,7 +281,7 @@ function SitePreviewIframe({ siteUrl, storeName }: { siteUrl: string; storeName:
           className="pointer-events-none"
           style={{
             width: dims.renderWidth,
-            height: dims.renderWidth < 500 ? 844 : 900,
+            height: dims.renderWidth < 500 ? 844 : 1400,
             transform: `scale(${dims.scale})`,
             transformOrigin: "top left",
             border: "none",
@@ -254,51 +298,7 @@ function SitePreviewIframe({ siteUrl, storeName }: { siteUrl: string; storeName:
   );
 }
 
-const ICON_COLORS = {
-  blue: "from-blue-500/20 to-blue-500/5 text-blue-500",
-  purple: "from-purple-500/20 to-purple-500/5 text-purple-500",
-  amber: "from-amber-500/20 to-amber-500/5 text-amber-500",
-  emerald: "from-emerald-500/20 to-emerald-500/5 text-emerald-500",
-};
-
-function DataCard({ icon, iconColor, title, loaded, children }: {
-  icon: React.ReactNode; iconColor: keyof typeof ICON_COLORS; title: string; loaded: boolean; children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-2xl border border-slate-200/60 bg-white/70 shadow-lg shadow-slate-200/20 backdrop-blur-sm transition-all duration-500 hover:shadow-xl hover:shadow-slate-200/30 dark:border-slate-700/60 dark:bg-slate-900/70 dark:shadow-slate-900/20 dark:hover:shadow-slate-900/30">
-      <div className="flex items-center gap-2.5 px-5 pt-5 pb-2">
-        <div className={`flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br ${ICON_COLORS[iconColor]}`}>
-          {icon}
-        </div>
-        <span className="text-[13px] font-semibold text-slate-900 dark:text-white">{title}</span>
-      </div>
-      <div className="px-3 pb-3">
-        {!loaded ? (
-          <div className="space-y-2 px-2 py-1">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-9 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : children}
-      </div>
-    </div>
-  );
-}
-
-function DataRow({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-2.5 rounded-lg px-3 py-2">{children}</div>
-  );
-}
-
-function EmptyState({ icon, text }: { icon: React.ReactNode; text: string }) {
-  return (
-    <div className="flex flex-col items-center gap-2 py-8 text-slate-400 dark:text-slate-500">
-      {icon}
-      <p className="text-[13px]">{text}</p>
-    </div>
-  );
-}
+// ─── Utils ──────────────────────────────────────────────────────────────────
 
 function getReferrerLabel(referrer: string | null): string {
   if (!referrer) return "Acesso direto";

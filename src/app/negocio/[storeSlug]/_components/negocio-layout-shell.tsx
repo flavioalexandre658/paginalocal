@@ -1,11 +1,12 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { IconMenu2 } from "@tabler/icons-react";
 import { PglButton } from "@/components/ui/pgl-button";
 import { EditorSidebar } from "@/app/editor/[storeSlug]/_components/editor-sidebar";
 import { SiteSettingsModal } from "@/app/editor/[storeSlug]/_components/site-settings-modal";
+import { UpgradeModal } from "@/components/shared/upgrade-modal";
 
 interface Props {
   children: ReactNode;
@@ -17,9 +18,11 @@ interface Props {
 
 export function NegocioLayoutShell({ children, storeId, storeName, storeSlug, userStores }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
   const isEditorRoute = pathname.includes(`/negocio/${storeSlug}/site`);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   if (isEditorRoute) {
     return (
@@ -34,23 +37,17 @@ export function NegocioLayoutShell({ children, storeId, storeName, storeSlug, us
       className="flex flex-col overflow-hidden"
       style={{ fontFamily: "system-ui, -apple-system, sans-serif", backgroundColor: "#ffffff", height: "100dvh" }}
     >
-      {/* Mobile topbar — same pattern as editor */}
-      <div
-        className="flex items-center gap-2 px-3 h-12 md:hidden shrink-0"
-        style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
-      >
+      {/* Mobile topbar */}
+      <div className="flex h-12 shrink-0 items-center gap-2 border-b border-black/[0.06] px-3 md:hidden">
         <PglButton variant="ghost" size="icon-sm" onClick={() => setMobileMenuOpen(true)}>
-          <IconMenu2 className="h-5 w-5" />
+          <IconMenu2 className="size-5" />
         </PglButton>
 
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <div
-            className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold text-white shrink-0"
-            style={{ backgroundColor: "#171717" }}
-          >
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-black/80 text-[10px] font-semibold text-white">
             {storeName.charAt(0).toUpperCase()}
           </div>
-          <span className="text-[13px] font-semibold truncate" style={{ color: "#1a1a1a" }}>
+          <span className="truncate text-[13px] font-semibold text-black/80">
             {storeName}
           </span>
         </div>
@@ -65,6 +62,7 @@ export function NegocioLayoutShell({ children, storeId, storeName, storeSlug, us
             storeSlug={storeSlug}
             userStores={userStores}
             onOpenSettings={() => setSettingsOpen(true)}
+            onOpenUpgrade={() => setUpgradeOpen(true)}
           />
         </div>
         <main className="flex-1 overflow-y-auto">{children}</main>
@@ -80,6 +78,7 @@ export function NegocioLayoutShell({ children, storeId, storeName, storeSlug, us
         storeSlug={storeSlug}
         userStores={userStores}
         onOpenSettings={() => { setMobileMenuOpen(false); setSettingsOpen(true); }}
+        onOpenUpgrade={() => { setMobileMenuOpen(false); setUpgradeOpen(true); }}
       />
 
       <SiteSettingsModal
@@ -88,6 +87,14 @@ export function NegocioLayoutShell({ children, storeId, storeName, storeSlug, us
         storeId={storeId}
         storeSlug={storeSlug}
         storeName={storeName}
+        onOpenUpgrade={() => setUpgradeOpen(true)}
+        onPublishChange={() => router.refresh()}
+      />
+
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        storeSlug={storeSlug}
       />
     </div>
   );

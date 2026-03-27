@@ -5,7 +5,6 @@ import { useAction } from "next-safe-action/hooks";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
-  IconX,
   IconWorld,
   IconSettings2,
   IconLoader2,
@@ -17,6 +16,17 @@ import {
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PglButton } from "@/components/ui/pgl-button";
+import {
+  SettingsModal,
+  SettingsModalContent,
+  SettingsModalSidebar,
+  SettingsModalSidebarTitle,
+  SettingsModalSidebarItem,
+  SettingsModalMobileTabs,
+  SettingsModalMobileTab,
+  SettingsModalBody,
+  SettingsModalTabPanel,
+} from "@/components/ui/pgl-settings-modal";
 import { updateStoreAction } from "@/actions/stores/update-store.action";
 import { getStoreBySlugAuthAction } from "@/actions/stores/get-store-by-slug-auth.action";
 import {
@@ -29,6 +39,7 @@ import { getTrackingAction } from "@/actions/tracking/get-tracking.action";
 import { upsertTrackingAction } from "@/actions/tracking/upsert-tracking.action";
 import { deleteTrackingAction } from "@/actions/tracking/delete-tracking.action";
 import { toggleTrackingAction } from "@/actions/tracking/toggle-tracking.action";
+import { usePlanRestrictions } from "@/hooks/use-plan-restrictions";
 
 type Tab = "general" | "domains" | "integrations" | "tracking";
 
@@ -39,6 +50,8 @@ interface Props {
   storeSlug: string;
   storeName: string;
   initialTab?: Tab;
+  onOpenUpgrade?: () => void;
+  onPublishChange?: (isActive: boolean) => void;
 }
 
 const TABS: { id: Tab; label: string }[] = [
@@ -48,102 +61,63 @@ const TABS: { id: Tab; label: string }[] = [
   { id: "tracking", label: "Rastreamento" },
 ];
 
-export function SiteSettingsModal({ open, onClose, storeId, storeSlug, storeName, initialTab }: Props) {
+export function SiteSettingsModal({ open, onClose, storeId, storeSlug, storeName, initialTab, onOpenUpgrade, onPublishChange }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>(initialTab ?? "general");
 
   useEffect(() => {
     if (open && initialTab) setActiveTab(initialTab);
   }, [open, initialTab]);
 
-  if (!open) return null;
-
   return (
-    <>
-      <div className="fixed inset-0 z-[9998] bg-black/30" onClick={onClose} />
-      <div
-        className="fixed z-[9999] flex overflow-hidden rounded-[16px] inset-4 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-[720px] md:max-h-[80vh]"
-        style={{ backgroundColor: "#ffffff", boxShadow: "0 25px 60px rgba(0,0,0,0.2)", fontFamily: "system-ui, -apple-system, sans-serif" }}
-      >
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 z-10 rounded-[8px] p-1.5 transition-colors"
-          style={{ color: "#737373" }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = "#1a1a1a"; e.currentTarget.style.backgroundColor = "#f5f5f4"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = "#737373"; e.currentTarget.style.backgroundColor = "transparent"; }}
-        >
-          <IconX style={{ width: 18, height: 18 }} />
-        </button>
-
-        <div
-          className="hidden w-[200px] shrink-0 flex-col p-5 md:flex"
-          style={{ borderRight: "1px solid rgba(0,0,0,0.06)" }}
-        >
-          <p className="mb-4 text-[15px] font-semibold" style={{ color: "#1a1a1a" }}>Configuracoes</p>
+    <SettingsModal open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <SettingsModalContent defaultTab={activeTab}>
+        <SettingsModalSidebar>
+          <SettingsModalSidebarTitle>Configuracoes</SettingsModalSidebarTitle>
           {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className="rounded-[8px] px-3 py-2 text-left text-[14px] transition-colors"
-              style={{
-                backgroundColor: activeTab === tab.id ? "#f5f5f4" : "transparent",
-                color: activeTab === tab.id ? "#1a1a1a" : "#737373",
-                fontWeight: activeTab === tab.id ? 500 : 400,
-              }}
-              onMouseEnter={(e) => { if (activeTab !== tab.id) e.currentTarget.style.backgroundColor = "#fafaf9"; }}
-              onMouseLeave={(e) => { if (activeTab !== tab.id) e.currentTarget.style.backgroundColor = "transparent"; }}
-            >
+            <SettingsModalSidebarItem key={tab.id} value={tab.id}>
               {tab.label}
-            </button>
+            </SettingsModalSidebarItem>
           ))}
-        </div>
+        </SettingsModalSidebar>
 
-        <div className="flex flex-1 flex-col overflow-hidden md:hidden">
-          <div className="flex gap-1 border-b px-4 pt-4" style={{ borderColor: "rgba(0,0,0,0.06)" }}>
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <SettingsModalMobileTabs>
             {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className="rounded-t-[8px] px-3 py-2 text-[13px] transition-colors"
-                style={{
-                  backgroundColor: activeTab === tab.id ? "#f5f5f4" : "transparent",
-                  color: activeTab === tab.id ? "#1a1a1a" : "#737373",
-                  fontWeight: activeTab === tab.id ? 500 : 400,
-                }}
-              >
+              <SettingsModalMobileTab key={tab.id} value={tab.id}>
                 {tab.label}
-              </button>
+              </SettingsModalMobileTab>
             ))}
-          </div>
-          <div className="flex-1 overflow-y-auto p-5">
-            {activeTab === "general" && <GeneralTab storeId={storeId} storeSlug={storeSlug} storeName={storeName} />}
-            {activeTab === "domains" && <DomainsTab storeId={storeId} storeSlug={storeSlug} />}
-            {activeTab === "integrations" && <IntegrationsTab />}
-            {activeTab === "tracking" && <TrackingTab storeSlug={storeSlug} />}
-          </div>
-        </div>
+          </SettingsModalMobileTabs>
 
-        <div className="hidden flex-1 flex-col overflow-hidden md:flex">
-          <div className="flex-1 overflow-y-auto p-8">
-            {activeTab === "general" && <GeneralTab storeId={storeId} storeSlug={storeSlug} storeName={storeName} />}
-            {activeTab === "domains" && <DomainsTab storeId={storeId} storeSlug={storeSlug} />}
-            {activeTab === "integrations" && <IntegrationsTab />}
-            {activeTab === "tracking" && <TrackingTab storeSlug={storeSlug} />}
-          </div>
+          <SettingsModalBody>
+            <SettingsModalTabPanel value="general">
+              <GeneralTab storeId={storeId} storeSlug={storeSlug} storeName={storeName} onPublishChange={onPublishChange} />
+            </SettingsModalTabPanel>
+            <SettingsModalTabPanel value="domains">
+              <DomainsTab storeId={storeId} storeSlug={storeSlug} onOpenUpgrade={() => { onClose(); onOpenUpgrade?.(); }} />
+            </SettingsModalTabPanel>
+            <SettingsModalTabPanel value="integrations">
+              <IntegrationsTab />
+            </SettingsModalTabPanel>
+            <SettingsModalTabPanel value="tracking">
+              <TrackingTab storeSlug={storeSlug} />
+            </SettingsModalTabPanel>
+          </SettingsModalBody>
         </div>
-      </div>
-    </>
+      </SettingsModalContent>
+    </SettingsModal>
   );
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h2 className="mb-6 text-[20px] font-semibold" style={{ color: "#1a1a1a" }}>{children}</h2>;
+  return <h2 className="mb-6 text-xl md:text-2xl font-semibold text-black/80">{children}</h2>;
 }
 
 function SectionBlock({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
     <div className="mb-8">
-      <h3 className="text-[14px] font-semibold" style={{ color: "#1a1a1a" }}>{title}</h3>
-      {description && <p className="mt-1 text-[13px]" style={{ color: "#737373" }}>{description}</p>}
+      <h3 className="text-sm font-semibold text-black/80">{title}</h3>
+      {description && <p className="mt-0.5 text-sm text-black/55">{description}</p>}
       <div className="mt-4">{children}</div>
     </div>
   );
@@ -165,18 +139,17 @@ function OptionCard({
   return (
     <button
       onClick={onClick}
-      className="flex w-full items-center gap-4 rounded-[12px] p-4 text-left transition-all"
-      style={{
-        border: selected ? "2px solid #171717" : "1px solid rgba(0,0,0,0.06)",
-        backgroundColor: selected ? "#fafaf9" : "#ffffff",
-      }}
-      onMouseEnter={(e) => { if (!selected) e.currentTarget.style.borderColor = "rgba(0,0,0,0.12)"; }}
-      onMouseLeave={(e) => { if (!selected) e.currentTarget.style.borderColor = "rgba(0,0,0,0.06)"; }}
+      className={cn(
+        "flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition-all",
+        selected
+          ? "border-black/80 ring-1 ring-black/80 bg-black/[0.02]"
+          : "border-black/10 hover:border-black/20 hover:bg-black/[0.01]",
+      )}
     >
-      <div style={{ color: "#737373" }}>{icon}</div>
+      <div className={cn("shrink-0 [&>svg]:size-5", selected ? "text-black/80" : "text-black/40")}>{icon}</div>
       <div className="flex-1">
-        <p className="text-[14px] font-medium" style={{ color: "#1a1a1a" }}>{title}</p>
-        <p className="text-[13px]" style={{ color: "#737373" }}>{description}</p>
+        <p className={cn("text-sm font-medium", selected ? "text-black/80" : "text-black/55")}>{title}</p>
+        <p className="text-sm text-black/40">{description}</p>
       </div>
     </button>
   );
@@ -185,35 +158,25 @@ function OptionCard({
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <button
+      role="switch"
+      aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className="relative inline-flex shrink-0"
-      style={{
-        width: 44,
-        height: 24,
-        borderRadius: 999,
-        backgroundColor: checked ? "#171717" : "#f5f5f4",
-        border: checked ? "1px solid #171717" : "1px solid rgba(0,0,0,0.06)",
-        transition: "all 200ms ease-out",
-      }}
+      className={cn(
+        "relative h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors",
+        checked ? "bg-black/80" : "bg-black/10",
+      )}
     >
       <span
-        style={{
-          position: "absolute",
-          top: 2,
-          left: checked ? 22 : 2,
-          width: 18,
-          height: 18,
-          borderRadius: 999,
-          backgroundColor: "#ffffff",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-          transition: "left 200ms ease-out",
-        }}
+        className={cn(
+          "block h-5 w-5 rounded-full bg-white shadow transition-transform",
+          checked ? "translate-x-5" : "translate-x-0",
+        )}
       />
     </button>
   );
 }
 
-function GeneralTab({ storeId, storeSlug }: { storeId: string; storeSlug: string; storeName: string }) {
+function GeneralTab({ storeId, storeSlug, onPublishChange }: { storeId: string; storeSlug: string; storeName: string; onPublishChange?: (isActive: boolean) => void }) {
   const { executeAsync: updateStore } = useAction(updateStoreAction);
   const [isPublished, setIsPublished] = useState(false);
   const [seoIndexable, setSeoIndexable] = useState(true);
@@ -222,7 +185,7 @@ function GeneralTab({ storeId, storeSlug }: { storeId: string; storeSlug: string
   useEffect(() => {
     getStoreBySlugAuthAction({ slug: storeSlug }).then((r) => {
       if (r?.data) {
-        setIsPublished((r.data as { isActive?: boolean }).isActive ?? false);
+        setIsPublished(r.data?.isActive ?? false);
       }
       setLoading(false);
     });
@@ -233,6 +196,7 @@ function GeneralTab({ storeId, storeSlug }: { storeId: string; storeSlug: string
     const result = await updateStore({ storeId, isActive: published });
     if (result?.data) {
       toast.success(published ? "Site publicado" : "Site despublicado");
+      onPublishChange?.(published);
     } else {
       setIsPublished(!published);
       toast.error("Erro ao atualizar status");
@@ -302,9 +266,10 @@ function GeneralTab({ storeId, storeSlug }: { storeId: string; storeSlug: string
 interface DnsRecord { type: string; host: string; value: string }
 interface DomainConfig { name: string; verified: boolean; misconfigured: boolean; intendedRecords: DnsRecord[] }
 
-function DomainsTab({ storeId, storeSlug }: { storeId: string; storeSlug: string }) {
+function DomainsTab({ storeId, storeSlug, onOpenUpgrade }: { storeId: string; storeSlug: string; onOpenUpgrade?: () => void }) {
   const router = useRouter();
   const { executeAsync: updateStore } = useAction(updateStoreAction);
+  const { canUseCustomDomain } = usePlanRestrictions();
   const [editingSubdomain, setEditingSubdomain] = useState(false);
   const [subdomain, setSubdomain] = useState(storeSlug);
   const [savingSlug, setSavingSlug] = useState(false);
@@ -427,17 +392,26 @@ function DomainsTab({ storeId, storeSlug }: { storeId: string; storeSlug: string
       <SectionBlock title="Dominio personalizado" description="Conecte seu proprio dominio ao site">
         {!domainConfig ? (
           <div className="space-y-3">
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <input
                 value={domainInput}
                 onChange={(e) => setDomainInput(e.target.value.toLowerCase())}
                 placeholder="seunegocio.com.br"
-                className="flex-1 rounded-[10px] px-[14px] py-[10px] text-[14px]"
-                style={{ backgroundColor: "#f5f5f4", border: "1px solid rgba(0,0,0,0.06)", outline: "none" }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.2)"; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = "rgba(0,0,0,0.06)"; }}
+                className="flex-1 h-9 rounded-xl border border-black/10 bg-white px-3.5 text-sm text-black/80 outline-none placeholder:text-black/30 focus:border-black/30 focus:ring-1 focus:ring-black/10"
               />
-              <PglButton variant="dark" size="sm" onClick={handleAddDomain} disabled={addingDomain || !domainInput.trim()} loading={addingDomain}>
+              <PglButton
+                variant="dark"
+                size="sm"
+                onClick={() => {
+                  if (!canUseCustomDomain()) {
+                    onOpenUpgrade?.();
+                    return;
+                  }
+                  handleAddDomain();
+                }}
+                disabled={addingDomain || !domainInput.trim()}
+                loading={addingDomain}
+              >
                 {!addingDomain && "Adicionar"}
               </PglButton>
             </div>

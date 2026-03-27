@@ -99,7 +99,14 @@ module.exports = {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+			},
+			boxShadow: {
+				// Button shadow system — light raised feel
+				'button':         'inset 0 1px 0 rgba(255,255,255,.5), 0 0 0 1px rgba(0,0,0,.07), 0 1px 1px rgba(0,0,0,.04)',
+				'button-hover':   'inset 0 1px 0 rgba(255,255,255,.5), 0 0 0 1px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.06)',
+				'button-dark':    'inset 0 1px 0 rgba(255,255,255,.1), 0 0 0 1px rgba(0,0,0,.30), 0 1px 2px rgba(0,0,0,.25)',
+				'button-primary': 'inset 0 1px 0 rgba(255,255,255,.15), 0 0 0 1px rgba(5,150,105,.25), 0 1px 3px rgba(5,150,105,.3)',
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],

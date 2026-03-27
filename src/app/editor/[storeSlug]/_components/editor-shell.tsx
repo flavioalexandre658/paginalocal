@@ -9,6 +9,7 @@ import { EditorPreview } from "./editor-preview";
 import { SectionEditDrawer } from "./section-edit-drawer";
 import { UnsavedChangesGuard } from "./unsaved-changes-guard";
 import { ThemesPage } from "./editor-topbar-panels/themes-page";
+import { UpgradeModal } from "@/components/shared/upgrade-modal";
 
 interface Props {
   initialBlueprint: SiteBlueprint;
@@ -24,37 +25,50 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [themesOpen, setThemesOpen] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
     <EditorProvider initialBlueprint={initialBlueprint} storeId={storeId}>
       <UnsavedChangesGuard />
       <div
-        className="flex flex-col overflow-hidden bg-white dark:bg-slate-900"
+        className="flex overflow-hidden bg-sidebar"
         style={{ fontFamily: "system-ui, -apple-system, sans-serif", height: "100dvh" }}
       >
-        <EditorTopbar
-          storeId={storeId}
-          storeSlug={storeSlug}
-          storeName={storeName}
-          sidebarCollapsed={sidebarCollapsed}
-          onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-          mobileMenuOpen={mobileMenuOpen}
-          onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
-          userStores={userStores}
-          previewMode={previewMode}
-          onTogglePreview={() => setPreviewMode(!previewMode)}
-          themesOpen={themesOpen}
-          onOpenThemes={() => { setThemesOpen(true); setPreviewMode(false); }}
-          onCloseThemes={() => setThemesOpen(false)}
-          isPublished={isPublished}
-        />
+        {/* Sidebar — full height, hidden on mobile and in preview mode */}
+        {!previewMode && (
+          <div className="hidden md:block">
+            <EditorSidebar
+              collapsed={sidebarCollapsed}
+              storeName={storeName}
+              storeSlug={storeSlug}
+              userStores={userStores}
+              onOpenSettings={() => setSettingsOpen(true)}
+              onOpenUpgrade={() => setUpgradeOpen(true)}
+            />
+          </div>
+        )}
 
-        <div className="flex flex-1 overflow-hidden">
-          {!previewMode && (
-            <div className="hidden md:block">
-              <EditorSidebar collapsed={sidebarCollapsed} storeSlug={storeSlug} />
-            </div>
-          )}
+        {/* Right column: topbar + content */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <EditorTopbar
+            storeId={storeId}
+            storeSlug={storeSlug}
+            storeName={storeName}
+            sidebarCollapsed={sidebarCollapsed}
+            onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+            mobileMenuOpen={mobileMenuOpen}
+            onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
+            previewMode={previewMode}
+            onTogglePreview={() => setPreviewMode(!previewMode)}
+            themesOpen={themesOpen}
+            onOpenThemes={() => { setThemesOpen(true); setPreviewMode(false); }}
+            onCloseThemes={() => setThemesOpen(false)}
+            isPublished={isPublished}
+            settingsOpen={settingsOpen}
+            onOpenSettings={() => setSettingsOpen(true)}
+            onCloseSettings={() => setSettingsOpen(false)}
+          />
 
           {themesOpen ? (
             <ThemesPage onBack={() => setThemesOpen(false)} />
@@ -77,10 +91,17 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
           storeName={storeName}
           storeSlug={storeSlug}
           userStores={userStores}
+          onOpenUpgrade={() => setUpgradeOpen(true)}
         />
       )}
 
       {!previewMode && <SectionEditDrawer />}
+
+      <UpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        storeSlug={storeSlug}
+      />
     </EditorProvider>
   );
 }
