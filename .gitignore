@@ -12,7 +12,7 @@
 
 # testing
 /coverage
-
+/.claude/design-copy
 # next.js
 /.next/
 /out/
