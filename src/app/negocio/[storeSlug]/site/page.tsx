@@ -33,7 +33,7 @@ export default async function SiteEditorPage({ params }: Props) {
   if (!storeData) redirect("/painel");
 
   if (!storeData.siteBlueprintV2) {
-    redirect(`/painel/${storeSlug}`);
+    redirect(`/negocio/${storeSlug}`);
   }
 
   const userStores = await db

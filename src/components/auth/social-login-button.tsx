@@ -12,6 +12,7 @@ interface SocialLoginButtonProps {
 }
 
 export function SocialLoginButton({ callbackURL = '/painel' }: SocialLoginButtonProps) {
+  // /painel now auto-redirects to /negocio/:slug
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleGoogleLogin() {
