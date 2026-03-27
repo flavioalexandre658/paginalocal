@@ -130,6 +130,145 @@ function FooterLinks({ expanded, onOpenSettings }: { expanded: boolean; onOpenSe
   );
 }
 
+interface StoreListDropdownProps {
+  storeName: string;
+  storeSlug: string | undefined;
+  userStores: { id: string; name: string; slug: string }[] | undefined;
+  /** desktop: absolute-positioned overlay; mobile: inline below trigger */
+  variant: "desktop" | "mobile";
+  onStoreSelect: (slug: string) => void;
+  onAddBusiness: () => void;
+  onSignOut: () => void;
+}
+
+function StoreListDropdown({
+  storeName,
+  storeSlug,
+  userStores,
+  variant,
+  onStoreSelect,
+  onAddBusiness,
+  onSignOut,
+}: StoreListDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const dropdownContent = (
+    <>
+      <div className="flex flex-col items-center py-3">
+        <div
+          className="flex h-12 w-12 items-center justify-center rounded-full text-[18px] font-semibold text-white"
+          style={{ backgroundColor: "#171717" }}
+        >
+          {storeName.charAt(0).toUpperCase()}
+        </div>
+        <p className="mt-2 text-[14px] font-semibold" style={{ color: "#1a1a1a" }}>{storeName}</p>
+      </div>
+
+      <div className="my-1" style={{ height: 1, backgroundColor: "rgba(0,0,0,0.06)" }} />
+
+      <div className="px-2 py-1">
+        {userStores?.map((s) => (
+          <button
+            key={s.id}
+            onClick={() => { setIsOpen(false); onStoreSelect(s.slug); }}
+            className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
+            style={{
+              backgroundColor: s.slug === storeSlug ? "#f5f5f4" : "transparent",
+              color: s.slug === storeSlug ? "#1a1a1a" : "#737373",
+              fontWeight: s.slug === storeSlug ? 500 : 400,
+            }}
+            onMouseEnter={(e) => { if (s.slug !== storeSlug) e.currentTarget.style.backgroundColor = "#fafaf9"; }}
+            onMouseLeave={(e) => { if (s.slug !== storeSlug) e.currentTarget.style.backgroundColor = "transparent"; }}
+          >
+            <div
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
+              style={{ backgroundColor: "#171717" }}
+            >
+              {s.name.charAt(0).toUpperCase()}
+            </div>
+            <span className="truncate">{s.name}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="my-1" style={{ height: 1, backgroundColor: "rgba(0,0,0,0.06)" }} />
+
+      <div className="px-2 py-1">
+        <button
+          className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
+          style={{ color: "#737373" }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#fafaf9"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+          onClick={() => { setIsOpen(false); onAddBusiness(); }}
+        >
+          + Adicionar negocio
+        </button>
+        <button
+          className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
+          style={{ color: "#737373" }}
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#fafaf9"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+          onClick={() => { setIsOpen(false); onSignOut(); }}
+        >
+          Sair
+        </button>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "flex w-full items-center gap-2 rounded-[8px] px-2 transition-all duration-150",
+          variant === "desktop" ? "py-1.5" : "py-1",
+        )}
+        onMouseEnter={(e) => { if (variant === "desktop") e.currentTarget.style.backgroundColor = "#f5f5f4"; }}
+        onMouseLeave={(e) => { if (variant === "desktop") e.currentTarget.style.backgroundColor = "transparent"; }}
+      >
+        <div
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
+          style={{ backgroundColor: "#171717" }}
+        >
+          {storeName.charAt(0).toUpperCase()}
+        </div>
+        <span className="flex-1 truncate text-left text-[14px] font-semibold" style={{ color: "#1a1a1a" }}>
+          {storeName}
+        </span>
+        <IconChevronDown
+          style={{
+            width: 14, height: 14, color: "#737373", flexShrink: 0,
+            transition: "transform 200ms",
+            transform: isOpen ? "rotate(180deg)" : "rotate(0)",
+          }}
+        />
+      </button>
+
+      {isOpen && variant === "desktop" && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div
+            className="absolute left-0 top-full z-50 mt-2 w-[260px] rounded-[12px] py-2"
+            style={{ backgroundColor: "#ffffff", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 25px 60px rgba(0,0,0,0.15)" }}
+          >
+            {dropdownContent}
+          </div>
+        </>
+      )}
+
+      {isOpen && variant === "mobile" && (
+        <div
+          className="mt-2 rounded-[12px] py-2"
+          style={{ backgroundColor: "#ffffff", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 12px 40px rgba(0,0,0,0.12)" }}
+        >
+          {dropdownContent}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function EditorSidebar({
   collapsed,
   mobileOverlay,
@@ -141,7 +280,6 @@ export function EditorSidebar({
   onOpenSettings,
 }: Props) {
   const router = useRouter();
-  const [storeListOpen, setStoreListOpen] = useState(false);
 
   if (mobileOverlay) {
     return (
@@ -169,89 +307,25 @@ export function EditorSidebar({
             className="px-4 py-4"
             style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}
           >
-            <button
-              onClick={() => setStoreListOpen(!storeListOpen)}
-              className="flex w-full items-center gap-2 rounded-[8px] px-2 py-1"
-            >
-              <div
-                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold text-white"
-                style={{ backgroundColor: "#171717" }}
-              >
-                {storeName?.charAt(0).toUpperCase() ?? "S"}
-              </div>
-              <span className="flex-1 truncate text-left text-[14px] font-semibold" style={{ color: "#1a1a1a" }}>
-                {storeName}
-              </span>
-              <IconChevronDown
-                style={{ width: 14, height: 14, color: "#737373", transition: "transform 200ms", transform: storeListOpen ? "rotate(180deg)" : "rotate(0)" }}
+            {storeName && (
+              <StoreListDropdown
+                storeName={storeName}
+                storeSlug={storeSlug}
+                userStores={userStores}
+                variant="mobile"
+                onStoreSelect={(slug) => {
+                  if (slug !== storeSlug) {
+                    onCloseMobileMenu?.();
+                    router.push(`/negocio/${slug}/site`);
+                  }
+                }}
+                onAddBusiness={() => { onCloseMobileMenu?.(); router.push("/painel"); }}
+                onSignOut={async () => {
+                  onCloseMobileMenu?.();
+                  const { signOut } = await import("@/lib/auth-client");
+                  await signOut({ fetchOptions: { onSuccess: () => { router.push("/entrar"); router.refresh(); } } });
+                }}
               />
-            </button>
-
-            {storeListOpen && (
-              <div
-                className="mt-2 rounded-[12px] py-2"
-                style={{ backgroundColor: "#ffffff", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 12px 40px rgba(0,0,0,0.12)" }}
-              >
-                <div className="flex flex-col items-center py-3">
-                  <div
-                    className="flex h-12 w-12 items-center justify-center rounded-full text-[18px] font-semibold text-white"
-                    style={{ backgroundColor: "#171717" }}
-                  >
-                    {storeName?.charAt(0).toUpperCase() ?? "S"}
-                  </div>
-                  <p className="mt-2 text-[14px] font-semibold" style={{ color: "#1a1a1a" }}>{storeName}</p>
-                </div>
-
-                <div className="my-1" style={{ height: 1, backgroundColor: "rgba(0,0,0,0.06)" }} />
-
-                <div className="px-2 py-1">
-                  {userStores?.map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => {
-                        setStoreListOpen(false);
-                        if (s.slug !== storeSlug) {
-                          onCloseMobileMenu?.();
-                          router.push(`/negocio/${s.slug}/site`);
-                        }
-                      }}
-                      className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
-                      style={{
-                        backgroundColor: s.slug === storeSlug ? "#f5f5f4" : "transparent",
-                        color: s.slug === storeSlug ? "#1a1a1a" : "#737373",
-                        fontWeight: s.slug === storeSlug ? 500 : 400,
-                      }}
-                    >
-                      <div
-                        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
-                        style={{ backgroundColor: "#171717" }}
-                      >
-                        {s.name.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="truncate">{s.name}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="my-1" style={{ height: 1, backgroundColor: "rgba(0,0,0,0.06)" }} />
-
-                <div className="px-2 py-1">
-                  <button
-                    className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
-                    style={{ color: "#737373" }}
-                    onClick={() => { setStoreListOpen(false); onCloseMobileMenu?.(); router.push("/painel"); }}
-                  >
-                    + Adicionar negocio
-                  </button>
-                  <button
-                    className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
-                    style={{ color: "#737373" }}
-                    onClick={async () => { setStoreListOpen(false); onCloseMobileMenu?.(); const { signOut } = await import("@/lib/auth-client"); await signOut({ fetchOptions: { onSuccess: () => { router.push("/entrar"); router.refresh(); } } }); }}
-                  >
-                    Sair
-                  </button>
-                </div>
-              </div>
             )}
           </div>
 
@@ -276,83 +350,22 @@ export function EditorSidebar({
         borderRight: "1px solid rgba(0,0,0,0.06)",
       }}
     >
-      {/* Store name header + full dropdown — desktop sidebar */}
       {!collapsed && storeName && (
         <div className="px-3 pt-4 pb-1">
-          <div className="relative">
-            <button
-              onClick={() => setStoreListOpen(!storeListOpen)}
-              className="flex w-full items-center gap-2 rounded-[8px] px-2 py-1.5 transition-all duration-150"
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f5f5f4"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
-            >
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white" style={{ backgroundColor: "#171717" }}>
-                {storeName.charAt(0).toUpperCase()}
-              </div>
-              <span className="flex-1 truncate text-left text-[14px] font-semibold" style={{ color: "#1a1a1a" }}>
-                {storeName}
-              </span>
-              <IconChevronDown style={{ width: 14, height: 14, color: "#737373", flexShrink: 0, transition: "transform 200ms", transform: storeListOpen ? "rotate(180deg)" : "rotate(0)" }} />
-            </button>
-
-            {storeListOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setStoreListOpen(false)} />
-                <div
-                  className="absolute left-0 top-full z-50 mt-2 w-[260px] rounded-[12px] py-2"
-                  style={{ backgroundColor: "#ffffff", border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 25px 60px rgba(0,0,0,0.15)" }}
-                >
-                  <div className="flex flex-col items-center py-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full text-[18px] font-semibold text-white" style={{ backgroundColor: "#171717" }}>
-                      {storeName.charAt(0).toUpperCase()}
-                    </div>
-                    <p className="mt-2 text-[14px] font-semibold" style={{ color: "#1a1a1a" }}>{storeName}</p>
-                  </div>
-
-                  <div className="my-1" style={{ height: 1, backgroundColor: "rgba(0,0,0,0.06)" }} />
-
-                  <div className="px-2 py-1">
-                    {userStores?.map((s) => (
-                      <button
-                        key={s.id}
-                        onClick={() => { setStoreListOpen(false); if (s.slug !== storeSlug) router.push(`/negocio/${s.slug}`); }}
-                        className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
-                        style={{ backgroundColor: s.slug === storeSlug ? "#f5f5f4" : "transparent", color: s.slug === storeSlug ? "#1a1a1a" : "#737373", fontWeight: s.slug === storeSlug ? 500 : 400 }}
-                        onMouseEnter={(e) => { if (s.slug !== storeSlug) e.currentTarget.style.backgroundColor = "#fafaf9"; }}
-                        onMouseLeave={(e) => { if (s.slug !== storeSlug) e.currentTarget.style.backgroundColor = s.slug === storeSlug ? "#f5f5f4" : "transparent"; }}
-                      >
-                        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white" style={{ backgroundColor: "#171717" }}>{s.name.charAt(0).toUpperCase()}</div>
-                        <span className="truncate">{s.name}</span>
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="my-1" style={{ height: 1, backgroundColor: "rgba(0,0,0,0.06)" }} />
-
-                  <div className="px-2 py-1">
-                    <button
-                      className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
-                      style={{ color: "#737373" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#fafaf9"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
-                      onClick={() => { setStoreListOpen(false); router.push("/onboarding"); }}
-                    >
-                      + Adicionar negocio
-                    </button>
-                    <button
-                      className="flex w-full items-center gap-3 rounded-[8px] px-3 py-2 text-[13px] transition-colors"
-                      style={{ color: "#737373" }}
-                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#fafaf9"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
-                      onClick={async () => { setStoreListOpen(false); const { signOut } = await import("@/lib/auth-client"); await signOut({ fetchOptions: { onSuccess: () => { router.push("/entrar"); router.refresh(); } } }); }}
-                    >
-                      Sair
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+          <StoreListDropdown
+            storeName={storeName}
+            storeSlug={storeSlug}
+            userStores={userStores}
+            variant="desktop"
+            onStoreSelect={(slug) => {
+              if (slug !== storeSlug) router.push(`/negocio/${slug}`);
+            }}
+            onAddBusiness={() => router.push("/onboarding")}
+            onSignOut={async () => {
+              const { signOut } = await import("@/lib/auth-client");
+              await signOut({ fetchOptions: { onSuccess: () => { router.push("/entrar"); router.refresh(); } } });
+            }}
+          />
         </div>
       )}
       <div className="flex-1 overflow-y-auto">
