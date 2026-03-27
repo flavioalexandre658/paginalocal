@@ -68,6 +68,7 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
             settingsOpen={settingsOpen}
             onOpenSettings={() => setSettingsOpen(true)}
             onCloseSettings={() => setSettingsOpen(false)}
+            onOpenUpgrade={() => setUpgradeOpen(true)}
           />
 
           {themesOpen ? (

@@ -63,6 +63,10 @@ const SettingsModalContent = React.forwardRef<
 >(({ className, children, defaultTab = "", ...props }, ref) => {
   const [activeTab, setActiveTab] = React.useState(defaultTab)
 
+  React.useEffect(() => {
+    if (defaultTab) setActiveTab(defaultTab)
+  }, [defaultTab])
+
   return (
     <DialogPrimitive.Portal>
       <SettingsModalOverlay />

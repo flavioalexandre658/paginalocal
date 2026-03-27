@@ -54,12 +54,22 @@ interface Props {
   currentPlanType?: string | null;
 }
 
-export function UpgradePanel({ plans, storeSlug, loading, currentPlanType }: Props) {
-  const allPlans = plans.filter((p) => p.type !== "ESSENTIAL");
+const PLAN_ORDER: Record<string, number> = { PRO: 1, AGENCY: 2 };
 
-  // Auto-select: if user is on PRO, expand AGENCY. Otherwise expand PRO.
-  const defaultSelected = currentPlanType === "PRO"
-    ? (allPlans.find((p) => p.type === "AGENCY")?.type ?? "AGENCY")
+export function UpgradePanel({ plans, storeSlug, loading, currentPlanType }: Props) {
+  const filteredPlans = plans.filter((p) => p.type !== "ESSENTIAL");
+
+  // Sort: current plan always first, then by tier
+  const allPlans = [...filteredPlans].sort((a, b) => {
+    const aCurrent = a.type === currentPlanType ? 0 : 1;
+    const bCurrent = b.type === currentPlanType ? 0 : 1;
+    if (aCurrent !== bCurrent) return aCurrent - bCurrent;
+    return (PLAN_ORDER[a.type] ?? 0) - (PLAN_ORDER[b.type] ?? 0);
+  });
+
+  // Auto-select: expand the plan that is NOT the current one
+  const defaultSelected = currentPlanType
+    ? (allPlans.find((p) => p.type !== currentPlanType)?.type ?? allPlans[0]?.type ?? "PRO")
     : "PRO";
 
   const [selectedType, setSelectedType] = useState(defaultSelected);
@@ -76,6 +86,9 @@ export function UpgradePanel({ plans, storeSlug, loading, currentPlanType }: Pro
   const savings = Math.round((1 - activePlan.yearlyPriceInCents / (activePlan.monthlyPriceInCents * 12)) * 100);
   const isBusy = isExecuting && checkoutId === activePlan.id;
   const isCurrentPlan = activePlan.type === currentPlanType;
+  const currentTier = PLAN_ORDER[currentPlanType ?? ""] ?? 0;
+  const activeTier = PLAN_ORDER[activePlan.type] ?? 0;
+  const isDowngrade = currentTier > 0 && activeTier < currentTier;
 
   async function handleUpgrade() {
     if (isCurrentPlan) return;
@@ -126,19 +139,19 @@ export function UpgradePanel({ plans, storeSlug, loading, currentPlanType }: Pro
               <div key={p.id} className="overflow-hidden rounded-2xl bg-black/[0.03]">
                 <button
                   onClick={() => setSelectedType(p.type)}
-                  className="flex w-full items-center justify-between px-6 py-4 transition-[background,color] duration-150 hover:bg-black/[0.06]"
+                  className="flex w-full items-center gap-3 px-5 py-4 transition-[background,color] duration-150 hover:bg-black/[0.06]"
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-medium text-black/55">{p.name}</span>
+                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                    <span className="shrink-0 text-base font-medium text-black/55 sm:text-lg">{p.name}</span>
                     {isCurrent && (
-                      <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-semibold text-black/40">
-                        Plano atual
+                      <span className="shrink-0 rounded-full bg-black/5 px-2 py-0.5 text-[11px] font-semibold text-black/40">
+                        Atual
                       </span>
                     )}
-                    <IconChevronUp className="size-4 rotate-180 text-black/30" />
+                    <IconChevronUp className="size-4 shrink-0 rotate-180 text-black/30" />
                   </div>
-                  <span className="text-lg font-medium text-black/55">
-                    {formatPrice(monthlyPrice(p, interval))}<span className="text-sm text-black/30">/mes</span>
+                  <span className="shrink-0 text-base font-medium text-black/55 sm:text-lg">
+                    {formatPrice(monthlyPrice(p, interval))}<span className="text-xs text-black/30 sm:text-sm">/mes</span>
                   </span>
                 </button>
               </div>
@@ -148,22 +161,22 @@ export function UpgradePanel({ plans, storeSlug, loading, currentPlanType }: Pro
           return (
             <div key={p.id} className="overflow-hidden rounded-2xl bg-black/[0.03]">
               {/* Active plan header */}
-              <div className="flex w-full items-center justify-between px-6 py-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-semibold text-black/80">{p.name}</span>
+              <div className="flex w-full items-center gap-3 px-5 py-4">
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <span className="shrink-0 text-base font-semibold text-black/80 sm:text-lg">{p.name}</span>
                   {isCurrent && (
-                    <span className="rounded-full bg-black/5 px-2 py-0.5 text-xs font-semibold text-black/40">
-                      Plano atual
+                    <span className="shrink-0 rounded-full bg-black/5 px-2 py-0.5 text-[11px] font-semibold text-black/40">
+                      Atual
                     </span>
                   )}
                 </div>
-                <span className="text-lg font-medium text-black/80">
-                  {formatPrice(price)}<span className="text-sm text-black/30">/mes</span>
+                <span className="shrink-0 text-base font-medium text-black/80 sm:text-lg">
+                  {formatPrice(price)}<span className="text-xs text-black/30 sm:text-sm">/mes</span>
                 </span>
               </div>
 
               {/* Expanded content */}
-              <div className="px-6 pb-6">
+              <div className="px-5 pb-6">
                 {/* Toggle + savings */}
                 <div className="mb-5 flex items-center gap-3">
                   <div className="grid auto-cols-auto grid-flow-col rounded-xl bg-black/[0.06] p-0.5">
@@ -231,7 +244,7 @@ export function UpgradePanel({ plans, storeSlug, loading, currentPlanType }: Pro
                     loading={isBusy}
                     disabled={isExecuting}
                   >
-                    {!isBusy && (isCurrent ? "Plano atual" : "Fazer upgrade")}
+                    {!isBusy && (isDowngrade ? "Fazer downgrade" : "Fazer upgrade")}
                   </PglButton>
                 )}
               </div>
