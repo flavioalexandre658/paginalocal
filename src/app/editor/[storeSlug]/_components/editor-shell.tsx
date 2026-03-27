@@ -28,8 +28,8 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
     <EditorProvider initialBlueprint={initialBlueprint} storeId={storeId}>
       <UnsavedChangesGuard />
       <div
-        className="flex h-screen flex-col overflow-hidden"
-        style={{ fontFamily: "system-ui, -apple-system, sans-serif", backgroundColor: "#ffffff" }}
+        className="flex flex-col overflow-hidden"
+        style={{ fontFamily: "system-ui, -apple-system, sans-serif", backgroundColor: "#ffffff", height: "100dvh" }}
       >
         <EditorTopbar
           storeId={storeId}

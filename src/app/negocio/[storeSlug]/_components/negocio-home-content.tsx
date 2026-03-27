@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 import {
@@ -39,7 +39,6 @@ export function NegocioHomeContent({ storeId, storeName, storeSlug, isActive, cu
   const router = useRouter();
   const { executeAsync, result } = useAction(getStoreDashboardAction);
   const [loaded, setLoaded] = useState(false);
-  const [iframeLoaded, setIframeLoaded] = useState(false);
 
   useEffect(() => {
     executeAsync({ storeSlug }).then(() => setLoaded(true));
@@ -103,32 +102,7 @@ export function NegocioHomeContent({ storeId, storeName, storeSlug, isActive, cu
           </div>
 
           {/* Live site preview via iframe */}
-          <div className="relative overflow-hidden" style={{ height: 420, backgroundColor: "#f0f0ee" }}>
-            {!iframeLoaded && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
-                <Skeleton className="h-8 w-48 rounded-[8px] bg-[#e5e5e5]" />
-                <Skeleton className="h-4 w-32 rounded-[6px] bg-[#e5e5e5]" />
-              </div>
-            )}
-            <iframe
-              src={siteUrl}
-              title={`Preview de ${storeName}`}
-              className="pointer-events-none"
-              style={{
-                width: 1440,
-                height: 900,
-                transform: "scale(0.46)",
-                transformOrigin: "top left",
-                border: "none",
-                display: "block",
-                opacity: iframeLoaded ? 1 : 0,
-                transition: "opacity 300ms ease",
-              }}
-              onLoad={() => setIframeLoaded(true)}
-              sandbox="allow-scripts allow-same-origin"
-              loading="lazy"
-            />
-          </div>
+          <SitePreviewIframe siteUrl={siteUrl} storeName={storeName} />
         </div>
 
         {/* Get Started card */}
@@ -248,6 +222,63 @@ export function NegocioHomeContent({ storeId, storeName, storeSlug, isActive, cu
           )}
         </DataCard>
       </div>
+    </div>
+  );
+}
+
+function SitePreviewIframe({ siteUrl, storeName }: { siteUrl: string; storeName: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dims, setDims] = useState<{ renderWidth: number; scale: number; height: number } | null>(null);
+  const [frameLoaded, setFrameLoaded] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    function calc() {
+      const cw = el!.offsetWidth;
+      const isMobile = cw < 500;
+      const renderW = isMobile ? 390 : 1440;
+      const sc = cw / renderW;
+      setDims({ renderWidth: renderW, scale: sc, height: Math.ceil((isMobile ? 844 : 900) * sc) });
+    }
+    calc();
+    const ro = new ResizeObserver(calc);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative overflow-hidden"
+      style={{ height: dims?.height ?? 300, backgroundColor: "#f0f0ee" }}
+    >
+      {!frameLoaded && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
+          <Skeleton className="h-8 w-48 rounded-[8px] bg-[#e5e5e5]" />
+          <Skeleton className="h-4 w-32 rounded-[6px] bg-[#e5e5e5]" />
+        </div>
+      )}
+      {dims && (
+        <iframe
+          src={siteUrl}
+          title={`Preview de ${storeName}`}
+          className="pointer-events-none"
+          style={{
+            width: dims.renderWidth,
+            height: dims.renderWidth < 500 ? 844 : 900,
+            transform: `scale(${dims.scale})`,
+            transformOrigin: "top left",
+            border: "none",
+            display: "block",
+            opacity: frameLoaded ? 1 : 0,
+            transition: "opacity 300ms ease",
+          }}
+          onLoad={() => setFrameLoaded(true)}
+          sandbox="allow-scripts allow-same-origin"
+          loading="lazy"
+        />
+      )}
     </div>
   );
 }
