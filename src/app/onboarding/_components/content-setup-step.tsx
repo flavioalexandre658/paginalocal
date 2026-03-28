@@ -22,8 +22,9 @@ import { createCollectionAction } from '@/actions/collections/create-collection.
 import { createProductAction } from '@/actions/products/create-product.action'
 import { createPricingPlanAction } from '@/actions/pricing-plans/create-pricing-plan.action'
 import { uploadEntityImageAction } from '@/actions/uploads/upload-entity-image.action'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { PglButton } from '@/components/ui/pgl-button'
+import { PglField, PglFieldLabel, PglFieldInput, PglFieldTextarea } from '@/components/ui/pgl-field'
+import { OnboardingCard, OnboardingHeader, OnboardingBody } from '@/components/ui/pgl-onboarding'
 import { cn } from '@/lib/utils'
 
 type StoreMode = 'LOCAL_BUSINESS' | 'PRODUCT_CATALOG' | 'SERVICE_PRICING' | 'HYBRID'
@@ -105,144 +106,129 @@ export function ContentSetupStep({ storeId, storeName, mode, onComplete }: Conte
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.4, ease: 'easeOut' }}
-            className="w-full max-w-lg"
+            className="w-full max-w-md"
         >
-            {/* Header */}
-            <div className="mb-6 text-center md:mb-8">
-                <motion.div
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.1 }}
-                    className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
-                >
-                    <IconSparkles className="h-6 w-6 text-primary" />
-                </motion.div>
-                <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-2xl">
-                    Vamos configurar o seu site
-                </h1>
-                <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
-                    {storeName} precisa de conteúdo inicial para ficar completo
-                </p>
-            </div>
+            <OnboardingCard>
+                <OnboardingHeader
+                    title="Vamos configurar o seu site"
+                    subtitle={`${storeName} precisa de conteúdo inicial`}
+                />
 
-            {/* Progress Indicator */}
-            <div className="mb-6 flex items-center justify-center gap-2">
-                {subSteps.map((step, index) => (
-                    <div key={step.id} className="flex items-center gap-2">
-                        <div
-                            className={cn(
-                                'flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300',
-                                step.isCompleted
-                                    ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
-                                    : index === currentSubStepIndex
-                                        ? 'bg-primary text-white shadow-md shadow-primary/30'
-                                        : 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
-                            )}
-                        >
-                            {step.isCompleted ? (
-                                <IconCheck className="h-4 w-4" />
-                            ) : (
-                                index + 1
-                            )}
-                        </div>
-                        {index < subSteps.length - 1 && (
+                {/* Progress Indicator */}
+                <div className="flex items-center justify-center gap-2 px-6 pt-2">
+                    {subSteps.map((step, index) => (
+                        <div key={step.id} className="flex items-center gap-2">
                             <div
                                 className={cn(
-                                    'h-0.5 w-8 rounded-full transition-all duration-300',
-                                    step.isCompleted ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700'
+                                    'flex size-7 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300',
+                                    step.isCompleted
+                                        ? 'bg-emerald-500 text-white'
+                                        : index === currentSubStepIndex
+                                            ? 'bg-black/80 text-white'
+                                            : 'bg-black/5 text-black/40'
                                 )}
-                            />
-                        )}
-                    </div>
-                ))}
-            </div>
-
-            {/* Current Sub-Step Form */}
-            <div className="rounded-2xl border border-slate-200/40 bg-white/70 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50">
-                <AnimatePresence mode="wait">
-                    {!allCompleted && currentSubStep && (
-                        <motion.div
-                            key={currentSubStep.id}
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -20 }}
-                            transition={{ duration: 0.3 }}
-                        >
-                            <div className="mb-5 flex items-center gap-3">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
-                                    <currentSubStep.icon className="h-5 w-5 text-primary" />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-medium text-primary">
-                                        Passo {currentSubStepIndex + 1} de {subSteps.length}
-                                    </p>
-                                    <h2 className="font-semibold text-slate-900 dark:text-white">
-                                        {currentSubStep.title}
-                                    </h2>
-                                </div>
-                            </div>
-
-                            {currentSubStep.id === 'collection' && (
-                                <CollectionForm
-                                    storeId={storeId}
-                                    onSuccess={(collectionId) => handleSubStepComplete({ collectionId })}
-                                />
-                            )}
-
-                            {currentSubStep.id === 'product' && (
-                                <ProductForm
-                                    storeId={storeId}
-                                    collectionId={createdCollectionId}
-                                    onSuccess={() => handleSubStepComplete()}
-                                />
-                            )}
-
-                            {currentSubStep.id === 'plan' && (
-                                <PlanForm
-                                    storeId={storeId}
-                                    onSuccess={() => handleSubStepComplete()}
-                                />
-                            )}
-                        </motion.div>
-                    )}
-
-                    {allCompleted && (
-                        <motion.div
-                            key="all-done"
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.4 }}
-                            className="py-4 text-center"
-                        >
-                            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-500/30">
-                                <IconCheck className="h-7 w-7 text-white" />
-                            </div>
-                            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-                                Tudo pronto!
-                            </h2>
-                            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                                Seu conteúdo inicial foi cadastrado com sucesso
-                            </p>
-                            <Button
-                                onClick={onComplete}
-                                className="mt-6 h-12 w-full gap-2 cursor-pointer text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/30"
                             >
-                                <IconRocket className="h-5 w-5" />
-                                Concluir configuração
-                            </Button>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+                                {step.isCompleted ? (
+                                    <IconCheck className="size-3.5" />
+                                ) : (
+                                    index + 1
+                                )}
+                            </div>
+                            {index < subSteps.length - 1 && (
+                                <div
+                                    className={cn(
+                                        'h-px w-8 rounded-full transition-all duration-300',
+                                        step.isCompleted ? 'bg-emerald-500' : 'bg-black/[0.06]'
+                                    )}
+                                />
+                            )}
+                        </div>
+                    ))}
+                </div>
 
-            <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="mt-4 text-center text-xs text-slate-400"
-            >
-                Você poderá adicionar mais itens depois no painel
-            </motion.p>
+                <OnboardingBody>
+                    <AnimatePresence mode="wait">
+                        {!allCompleted && currentSubStep && (
+                            <motion.div
+                                key={currentSubStep.id}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.3 }}
+                            >
+                                <div className="mb-4 flex items-center gap-3">
+                                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-black/5">
+                                        <currentSubStep.icon className="size-4.5 text-black/55" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-medium text-black/40">
+                                            Passo {currentSubStepIndex + 1} de {subSteps.length}
+                                        </p>
+                                        <h2 className="text-sm font-semibold text-black/80">
+                                            {currentSubStep.title}
+                                        </h2>
+                                    </div>
+                                </div>
+
+                                {currentSubStep.id === 'collection' && (
+                                    <CollectionForm
+                                        storeId={storeId}
+                                        onSuccess={(collectionId) => handleSubStepComplete({ collectionId })}
+                                    />
+                                )}
+
+                                {currentSubStep.id === 'product' && (
+                                    <ProductForm
+                                        storeId={storeId}
+                                        collectionId={createdCollectionId}
+                                        onSuccess={() => handleSubStepComplete()}
+                                    />
+                                )}
+
+                                {currentSubStep.id === 'plan' && (
+                                    <PlanForm
+                                        storeId={storeId}
+                                        onSuccess={() => handleSubStepComplete()}
+                                    />
+                                )}
+                            </motion.div>
+                        )}
+
+                        {allCompleted && (
+                            <motion.div
+                                key="all-done"
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.4 }}
+                                className="py-6 text-center"
+                            >
+                                <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
+                                    <IconCheck className="size-6" />
+                                </div>
+                                <h2 className="text-lg font-semibold text-black/80">
+                                    Tudo pronto!
+                                </h2>
+                                <p className="mt-1 text-sm text-black/55">
+                                    Seu conteúdo inicial foi cadastrado com sucesso
+                                </p>
+                                <PglButton
+                                    variant="dark"
+                                    size="sm"
+                                    onClick={onComplete}
+                                    className="mt-6 w-full"
+                                >
+                                    <IconRocket className="size-4" />
+                                    Concluir configuração
+                                </PglButton>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </OnboardingBody>
+
+                <p className="px-6 pb-6 text-center text-xs text-black/30">
+                    Você poderá adicionar mais itens depois no painel
+                </p>
+            </OnboardingCard>
         </motion.div>
     )
 }
@@ -263,42 +249,45 @@ function MiniDropZone({
     const inputRef = useRef<HTMLInputElement>(null)
 
     return (
-        <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+        <PglField>
+            <PglFieldLabel>
                 {label}
-                <span className="ml-1 font-normal text-slate-400">(opcional)</span>
-            </label>
+                <span className="ml-1 font-normal text-black/30">(opcional)</span>
+            </PglFieldLabel>
             {preview ? (
-                <div className="relative h-28 w-full overflow-hidden rounded-lg border border-emerald-200/60 bg-emerald-50/30 dark:border-emerald-800/40 dark:bg-emerald-950/20">
+                <div className="relative h-28 w-full overflow-hidden rounded-2xl ring-1 ring-black/[0.06]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={preview.url} alt="preview" className="h-full w-full object-cover" />
                     <button
                         type="button"
                         onClick={onRemove}
-                        className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm transition-colors hover:bg-black/50"
+                        className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-black/30 backdrop-blur-sm transition-colors hover:bg-black/50"
                     >
-                        <IconX className="h-3.5 w-3.5 text-white" />
+                        <IconX className="size-3.5 text-white" />
                     </button>
-                    <div className="absolute left-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500">
-                        <IconCheck className="h-3 w-3 text-white" />
+                    <div className="absolute left-2 top-2 flex size-5 items-center justify-center rounded-full bg-emerald-500">
+                        <IconCheck className="size-3 text-white" />
                     </div>
                 </div>
             ) : (
                 <button
                     type="button"
                     onClick={() => inputRef.current?.click()}
-                    className="flex w-full items-center gap-3 rounded-lg border-2 border-dashed border-slate-200/70 bg-slate-50/50 px-4 py-3 text-left transition-all hover:border-primary/30 hover:bg-primary/5 dark:border-slate-700/60 dark:bg-slate-800/40"
+                    className={cn(
+                        "flex w-full items-center gap-3 rounded-2xl border border-dashed border-black/[0.12] px-4 py-3 text-left",
+                        "transition-all duration-150 hover:border-black/30 hover:bg-black/[0.02]",
+                    )}
                 >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-700/60">
-                        <IconPhoto className="h-4 w-4 text-slate-400" />
+                    <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-black/5">
+                        <IconPhoto className="size-4 text-black/30" />
                     </div>
                     <div className="min-w-0">
-                        <p className="text-sm text-slate-500 dark:text-slate-400">
-                            <span className="font-medium text-primary">Clique</span> para adicionar imagem
+                        <p className="text-sm text-black/55">
+                            <span className="font-medium text-black/80">Clique</span> para adicionar imagem
                         </p>
-                        <p className="text-xs text-slate-400">JPG, PNG, WebP · Máx 10MB</p>
+                        <p className="text-xs text-black/30">JPG, PNG, WebP · Máx 10MB</p>
                     </div>
-                    <IconUpload className="ml-auto h-4 w-4 shrink-0 text-slate-300" />
+                    <IconUpload className="ml-auto size-4 shrink-0 text-black/20" />
                 </button>
             )}
             <input
@@ -312,6 +301,22 @@ function MiniDropZone({
                     e.target.value = ''
                 }}
             />
+        </PglField>
+    )
+}
+
+// ===== Created Items List =====
+
+function CreatedItemsList({ items }: { items: { name: string; price: string }[] }) {
+    if (items.length === 0) return null
+    return (
+        <div className="mb-4 space-y-1.5">
+            {items.map((item, i) => (
+                <div key={i} className="flex items-center justify-between rounded-xl border border-black/[0.06] px-4 py-2.5 text-sm">
+                    <span className="font-medium text-black/80">{item.name}</span>
+                    <span className="text-black/55">R$ {item.price}</span>
+                </div>
+            ))}
         </div>
     )
 }
@@ -377,19 +382,16 @@ function CollectionForm({
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Nome da coleção
-                </label>
-                <Input
+            <PglField>
+                <PglFieldLabel>Nome da coleção</PglFieldLabel>
+                <PglFieldInput
                     placeholder="Ex: Camisetas, Bolos, Acessórios..."
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
                     disabled={isBusy}
                     autoFocus
                 />
-            </div>
+            </PglField>
 
             <MiniDropZone
                 label="Imagem da coleção"
@@ -398,18 +400,17 @@ function CollectionForm({
                 onRemove={handleImageRemove}
             />
 
-            <Button
+            <PglButton
                 type="submit"
+                variant="dark"
+                size="sm"
                 disabled={isBusy || !name.trim()}
-                className="h-11 w-full gap-2 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+                loading={isBusy}
+                className="w-full"
             >
-                {isBusy ? (
-                    <IconLoader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                    <IconArrowRight className="h-4 w-4" />
-                )}
+                {!isBusy && <IconArrowRight className="size-4" />}
                 Criar coleção
-            </Button>
+            </PglButton>
         </form>
     )
 }
@@ -491,44 +492,29 @@ function ProductForm({
 
     return (
         <div className="space-y-4">
-            {createdProducts.length > 0 && (
-                <div className="space-y-2 mb-4">
-                    {createdProducts.map((product, i) => (
-                        <div key={i} className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm dark:border-emerald-800 dark:bg-emerald-900/20">
-                            <span className="font-medium text-emerald-800 dark:text-emerald-300">{product.name}</span>
-                            <span className="text-emerald-600 dark:text-emerald-400">R$ {product.price}</span>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <CreatedItemsList items={createdProducts} />
 
             <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Nome do produto
-                    </label>
-                    <Input
+                <PglField>
+                    <PglFieldLabel>Nome do produto</PglFieldLabel>
+                    <PglFieldInput
                         placeholder="Ex: Camiseta Básica, Bolo de Chocolate..."
                         value={name}
                         onChange={e => setName(e.target.value)}
-                        className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
                         disabled={isBusy}
                         autoFocus
                     />
-                </div>
+                </PglField>
 
-                <div>
-                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Preço (R$)
-                    </label>
-                    <Input
+                <PglField>
+                    <PglFieldLabel>Preço (R$)</PglFieldLabel>
+                    <PglFieldInput
                         placeholder="29,90"
                         value={price}
                         onChange={e => setPrice(e.target.value)}
-                        className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
                         disabled={isBusy}
                     />
-                </div>
+                </PglField>
 
                 <MiniDropZone
                     label="Foto do produto"
@@ -537,42 +523,43 @@ function ProductForm({
                     onRemove={handleImageRemove}
                 />
 
-                <div className="flex gap-3">
-                    <Button
+                <div className="flex gap-2">
+                    <PglButton
                         type="submit"
-                        disabled={isBusy || !name.trim() || !price}
                         variant="outline"
-                        className="h-11 flex-1 gap-2 cursor-pointer"
+                        size="sm"
+                        disabled={isBusy || !name.trim() || !price}
+                        loading={isBusy}
+                        className="flex-1"
                     >
-                        {isBusy ? (
-                            <IconLoader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <IconPackage className="h-4 w-4" />
-                        )}
+                        {!isBusy && <IconPackage className="size-4" />}
                         {createdProducts.length === 0 ? 'Adicionar produto' : '+ Adicionar outro'}
-                    </Button>
+                    </PglButton>
 
                     {createdProducts.length > 0 && (
-                        <Button
+                        <PglButton
                             type="button"
+                            variant="dark"
+                            size="sm"
                             onClick={onSuccess}
-                            className="h-11 flex-1 gap-2 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+                            className="flex-1"
                         >
-                            <IconArrowRight className="h-4 w-4" />
+                            <IconArrowRight className="size-4" />
                             Continuar
-                        </Button>
+                        </PglButton>
                     )}
                 </div>
             </form>
 
             {createdProducts.length === 0 && (
-                <button
-                    type="button"
+                <PglButton
+                    variant="ghost"
+                    size="xs"
                     onClick={onSuccess}
-                    className="w-full text-center text-sm text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                    className="w-full"
                 >
                     Pular — a IA vai sugerir produtos
-                </button>
+                </PglButton>
             )}
         </div>
     )
@@ -634,96 +621,80 @@ function PlanForm({
 
     return (
         <div className="space-y-4">
-            {createdPlans.length > 0 && (
-                <div className="space-y-2 mb-4">
-                    {createdPlans.map((plan, i) => (
-                        <div key={i} className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm dark:border-emerald-800 dark:bg-emerald-900/20">
-                            <span className="font-medium text-emerald-800 dark:text-emerald-300">{plan.name}</span>
-                            <span className="text-emerald-600 dark:text-emerald-400">R$ {plan.price}</span>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <CreatedItemsList items={createdPlans} />
 
             <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Nome do plano
-                    </label>
-                    <Input
+                <PglField>
+                    <PglFieldLabel>Nome do plano</PglFieldLabel>
+                    <PglFieldInput
                         placeholder="Ex: Plano Mensal, Pacote Premium..."
                         value={name}
                         onChange={e => setName(e.target.value)}
-                        className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
                         disabled={isExecuting}
                         autoFocus
                     />
-                </div>
+                </PglField>
 
-                <div>
-                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Preço mensal (R$)
-                    </label>
-                    <Input
+                <PglField>
+                    <PglFieldLabel>Preço mensal (R$)</PglFieldLabel>
+                    <PglFieldInput
                         placeholder="99,90"
                         value={price}
                         onChange={e => setPrice(e.target.value)}
-                        className="h-11 border-slate-200/50 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
                         disabled={isExecuting}
                     />
-                </div>
+                </PglField>
 
-                <div>
-                    <label className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Benefícios{' '}
-                        <span className="font-normal text-slate-400">(um por linha, opcional)</span>
-                    </label>
-                    <textarea
+                <PglField>
+                    <PglFieldLabel>
+                        Benefícios <span className="font-normal text-black/30">(um por linha, opcional)</span>
+                    </PglFieldLabel>
+                    <PglFieldTextarea
                         placeholder={"Acesso ilimitado\nSuporte prioritário\nMaterial exclusivo"}
                         value={features}
                         onChange={e => setFeatures(e.target.value)}
                         rows={3}
-                        className="w-full resize-none rounded-md border border-slate-200/50 bg-white/50 px-3 py-2.5 text-sm transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50"
                         disabled={isExecuting}
                     />
-                </div>
+                </PglField>
 
-                <div className="flex gap-3">
-                    <Button
+                <div className="flex gap-2">
+                    <PglButton
                         type="submit"
-                        disabled={isExecuting || !name.trim() || !price}
                         variant="outline"
-                        className="h-11 flex-1 gap-2 cursor-pointer"
+                        size="sm"
+                        disabled={isExecuting || !name.trim() || !price}
+                        loading={isExecuting}
+                        className="flex-1"
                     >
-                        {isExecuting ? (
-                            <IconLoader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <IconCreditCard className="h-4 w-4" />
-                        )}
+                        {!isExecuting && <IconCreditCard className="size-4" />}
                         {createdPlans.length === 0 ? 'Criar plano' : '+ Adicionar outro'}
-                    </Button>
+                    </PglButton>
 
                     {createdPlans.length > 0 && (
-                        <Button
+                        <PglButton
                             type="button"
+                            variant="dark"
+                            size="sm"
                             onClick={onSuccess}
-                            className="h-11 flex-1 gap-2 cursor-pointer shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+                            className="flex-1"
                         >
-                            <IconArrowRight className="h-4 w-4" />
+                            <IconArrowRight className="size-4" />
                             Continuar
-                        </Button>
+                        </PglButton>
                     )}
                 </div>
             </form>
 
             {createdPlans.length === 0 && (
-                <button
-                    type="button"
+                <PglButton
+                    variant="ghost"
+                    size="xs"
                     onClick={onSuccess}
-                    className="w-full text-center text-sm text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                    className="w-full"
                 >
                     Pular — a IA vai sugerir planos
-                </button>
+                </PglButton>
             )}
         </div>
     )

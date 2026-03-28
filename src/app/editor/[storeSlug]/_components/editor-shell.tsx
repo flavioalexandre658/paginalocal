@@ -28,7 +28,8 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
   const [previewMode, setPreviewMode] = useState(false);
   const [themesOpen, setThemesOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [siteSettingsOpen, setSiteSettingsOpen] = useState(false);
+  const [userSettingsOpen, setUserSettingsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
 
   return (
@@ -46,7 +47,7 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
               storeName={storeName}
               storeSlug={storeSlug}
               userStores={userStores}
-              onOpenSettings={() => setSettingsOpen(true)}
+              onOpenSettings={() => setUserSettingsOpen(true)}
               onOpenUpgrade={() => setUpgradeOpen(true)}
               onOpenHelp={() => setHelpOpen(true)}
             />
@@ -69,9 +70,9 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
             onOpenThemes={() => { setThemesOpen(true); setPreviewMode(false); }}
             onCloseThemes={() => setThemesOpen(false)}
             isPublished={isPublished}
-            settingsOpen={settingsOpen}
-            onOpenSettings={() => setSettingsOpen(true)}
-            onCloseSettings={() => setSettingsOpen(false)}
+            settingsOpen={siteSettingsOpen}
+            onOpenSettings={() => setSiteSettingsOpen(true)}
+            onCloseSettings={() => setSiteSettingsOpen(false)}
             onOpenUpgrade={() => setUpgradeOpen(true)}
           />
 
@@ -110,11 +111,11 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
       />
 
       <UserSettingsModal
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
+        open={userSettingsOpen}
+        onClose={() => setUserSettingsOpen(false)}
         storeId={storeId}
         storeSlug={storeSlug}
-        onOpenUpgrade={() => { setSettingsOpen(false); setUpgradeOpen(true); }}
+        onOpenUpgrade={() => { setUserSettingsOpen(false); setUpgradeOpen(true); }}
       />
 
       <HelpModal

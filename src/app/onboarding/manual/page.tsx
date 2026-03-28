@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useAction } from 'next-safe-action/hooks'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  IconArrowLeft,
   IconLoader2,
   IconMapPin,
   IconSparkles,
@@ -13,20 +12,10 @@ import {
   IconRocket,
   IconCheck,
   IconSearch,
-  IconBuildingStore,
-  IconCategory,
-  IconCoin,
-  IconChartBar,
-  IconUsers,
-  IconWorld,
-  IconFlag,
-  IconId,
-  IconLetterCase,
   IconBrandWhatsapp,
 } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
-import { PatternFormat } from 'react-number-format'
 import { createStoreManualAction } from '@/actions/stores/create-store-manual.action'
 import { generateSiteAfterOnboarding } from '@/actions/ai/generate-site-after-onboarding'
 import {
@@ -35,14 +24,21 @@ import {
   type LocationDetails,
 } from '@/actions/utils/search-location.action'
 import { usePlanLimitRedirect } from '@/hooks/use-plan-limit-redirect'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
+import { PglButton } from '@/components/ui/pgl-button'
+import { PglField, PglFieldLabel, PglFieldInput, PglFieldTextarea, PglFieldPhone } from '@/components/ui/pgl-field'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
+import {
+  OnboardingShell,
+  OnboardingProgress,
+  OnboardingHeader,
+  OnboardingCreatingItem,
+} from '@/components/ui/pgl-onboarding'
+import { IconArrowLeft } from '@tabler/icons-react'
 
 // ─── Types & Constants ───────────────────────────────────────────────────────
 
@@ -110,8 +106,6 @@ export default function ManualOnboardingPage() {
   const { executeAsync: searchLocation } = useAction(searchLocationAction)
   const { executeAsync: getLocationDetails } = useAction(getLocationDetailsAction)
   const { handleActionError } = usePlanLimitRedirect()
-
-  const currentIndex = STEPS.indexOf(step)
 
   // Animate logs during creating step
   useEffect(() => {
@@ -257,8 +251,7 @@ export default function ManualOnboardingPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+    <OnboardingShell>
       <AnimatePresence mode="wait">
         {step === 'business-type' && (
           <BusinessTypeStep
@@ -329,41 +322,25 @@ export default function ManualOnboardingPage() {
           />
         )}
       </AnimatePresence>
-
-      {/* Progress dots */}
-      {step !== 'creating' && (
-        <div className="fixed bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-2">
-          {STEPS.filter(s => s !== 'creating').map((s, i) => (
-            <div
-              key={s}
-              className={cn(
-                'h-2 rounded-full transition-all duration-300',
-                i <= currentIndex ? 'w-6 bg-primary' : 'w-2 bg-slate-200 dark:bg-slate-700'
-              )}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+    </OnboardingShell>
   )
 }
 
-// ─── Step Layout Wrapper ─────────────────────────────────────────────────────
+// ─── Step Layout (Durable-style) ─────────────────────────────────────────────
 
 function StepLayout({
   children,
+  step,
+  totalSteps,
   onBack,
-  icons,
-  title,
+  backHref,
 }: {
   children: React.ReactNode
+  step: number
+  totalSteps: number
   onBack?: () => void
-  icons: [React.ComponentType<{ className?: string }>, React.ComponentType<{ className?: string }>, React.ComponentType<{ className?: string }>]
-  iconColors?: string
-  title: string
+  backHref?: string
 }) {
-  const [Icon1] = icons
-
   return (
     <motion.div
       variants={fadeVariants}
@@ -371,45 +348,37 @@ function StepLayout({
       animate="animate"
       exit="exit"
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="flex min-h-screen w-full flex-col items-center justify-center px-4 py-16"
+      className="flex flex-1 flex-col"
     >
-      {/* Back button */}
-      {onBack && (
-        <button
-          type="button"
-          onClick={onBack}
-          className="fixed left-4 top-6 z-20 flex items-center gap-1 text-sm text-slate-400 transition-colors hover:text-slate-700"
-        >
-          <IconArrowLeft className="h-4 w-4" />
-        </button>
-      )}
-
-      <div className="w-full max-w-md">
-        {/* Gradient icon */}
-        <motion.div
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.1 }}
-          className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
-        >
-          <Icon1 className="h-6 w-6 text-primary" />
-        </motion.div>
-
-        {/* Title */}
-        <h1 className="mb-6 text-center text-xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-2xl">
-          {title}
-        </h1>
-
-        {/* GlassCard wrapper */}
-        <div className="rounded-2xl border border-slate-200/40 bg-white/70 p-6 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50">
+      <div className="p-4">
+        {backHref ? (
+          <Link href={backHref}>
+            <button className="rounded-xl p-1 text-black/55 transition-[background,color] duration-150 hover:bg-black/5 hover:text-black/80">
+              <IconArrowLeft className="size-5" />
+            </button>
+          </Link>
+        ) : onBack ? (
+          <button
+            onClick={onBack}
+            className="rounded-xl p-1 text-black/55 transition-[background,color] duration-150 hover:bg-black/5 hover:text-black/80"
+          >
+            <IconArrowLeft className="size-5" />
+          </button>
+        ) : (
+          <div className="h-7" />
+        )}
+      </div>
+      <div className="flex flex-1 items-center justify-center">
+        <div className="w-full max-w-md p-4">
           {children}
         </div>
       </div>
+      <OnboardingProgress current={step} total={totalSteps} className="p-8" />
     </motion.div>
   )
 }
 
-// ─── Step 1: Business Type ───────────────────────────────────────────────────
+// ─── Step 0: Business Type ───────────────────────────────────────────────────
 
 function BusinessTypeStep({
   value,
@@ -421,48 +390,39 @@ function BusinessTypeStep({
   onNext: () => void
 }) {
   return (
-    <StepLayout
-      icons={[IconBuildingStore, IconCategory, IconSparkles]}
-      iconColors="text-primary"
-      title="Qual é o tipo do seu negócio?"
-    >
-      <div className="space-y-4">
-        <Input
+    <StepLayout step={0} totalSteps={5} backHref="/onboarding">
+      <OnboardingHeader title="Qual é o tipo do seu negócio?" />
+
+      <div className="space-y-6">
+        <PglFieldTextarea
           autoFocus
-          placeholder="Ex: Barbearia, Restaurante, Academia..."
+          placeholder="Ex: academia de musculação e funcional"
           value={value}
           onChange={e => onChange(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter' && value.trim().length >= 2) onNext() }}
-          className="h-12 rounded-lg border-slate-200 bg-white text-base placeholder:text-slate-400 focus:border-slate-400 focus:ring-0"
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && value.trim().length >= 2) { e.preventDefault(); onNext() } }}
+          rows={3}
+          className="bg-black/[0.03] ring-black/10 text-base"
         />
-        <Button
+
+        <PglButton
+          variant="default"
           disabled={value.trim().length < 2}
           onClick={onNext}
-          className="h-12 w-full cursor-pointer gap-2 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+          className="w-full rounded-2xl px-4 py-3 text-base"
         >
           Próximo
-        </Button>
-      </div>
-
-      <div className="mt-6 text-center">
-        <Link
-          href="/onboarding"
-          className="text-sm text-slate-400 transition-colors hover:text-slate-600"
-        >
-          Voltar ao início
-        </Link>
+        </PglButton>
       </div>
     </StepLayout>
   )
 }
 
-// ─── Step 2: Revenue ─────────────────────────────────────────────────────────
+// ─── Step 1: Revenue ─────────────────────────────────────────────────────────
 
 function RevenueStep({
   selected,
   onSelect,
   onBack,
-  onNext,
 }: {
   selected: string
   onSelect: (v: string) => void
@@ -470,24 +430,22 @@ function RevenueStep({
   onNext: () => void
 }) {
   return (
-    <StepLayout
-      onBack={onBack}
-      icons={[IconCoin, IconChartBar, IconUsers]}
-      iconColors="text-primary"
-      title="Qual seu faturamento mensal atual?"
-    >
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+    <StepLayout step={1} totalSteps={5} onBack={onBack}>
+      <OnboardingHeader title="Qual seu faturamento mensal?" />
+
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
           {REVENUE_OPTIONS.map(option => (
             <button
               key={option}
               type="button"
               onClick={() => onSelect(option)}
               className={cn(
-                'cursor-pointer rounded-lg border-2 px-4 py-3 text-sm transition-all hover:border-primary/40 hover:bg-primary/5',
+                'inline-flex w-full cursor-pointer items-center justify-center rounded-2xl px-6 py-4 text-sm font-medium outline-none',
+                'transition-[background,color] duration-150',
                 selected === option
-                  ? 'border-primary bg-primary/5 font-semibold text-primary'
-                  : 'border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-400'
+                  ? 'bg-black/80 text-white'
+                  : 'bg-black/5 text-black/80 hover:bg-black/10',
               )}
             >
               {option}
@@ -495,19 +453,21 @@ function RevenueStep({
           ))}
         </div>
 
-        <Button
+        <PglButton
+          variant="default"
           disabled={!selected}
-          onClick={onNext}
-          className="h-12 w-full cursor-pointer gap-2 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+          onClick={onBack}
+          className="w-full rounded-2xl px-4 py-3 text-base"
+          style={{ display: 'none' }}
         >
-          Próximo
-        </Button>
+          {/* Auto-advances on select, hidden button for form consistency */}
+        </PglButton>
       </div>
     </StepLayout>
   )
 }
 
-// ─── Step 3: Location ────────────────────────────────────────────────────────
+// ─── Step 2: Location ────────────────────────────────────────────────────────
 
 function LocationStep({
   locationQuery,
@@ -532,102 +492,100 @@ function LocationStep({
   onBack: () => void
   onNext: () => void
 }) {
+  const locationText = selectedLocation
+    ? selectedLocation.locationScope === 'country'
+      ? 'Atendimento em todo o Brasil'
+      : selectedLocation.locationScope === 'state'
+        ? `Atendimento em todo o ${selectedLocation.city}, ${selectedLocation.state}`
+        : selectedLocation.fullAddress || `${selectedLocation.city}, ${selectedLocation.state}`
+    : ''
+
   return (
-    <StepLayout
-      onBack={onBack}
-      icons={[IconMapPin, IconWorld, IconFlag]}
-      iconColors="text-indigo-500"
-      title="Onde fica seu negócio?"
-    >
-      <div className="space-y-4">
-        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-          <PopoverTrigger asChild>
-            <div className="relative">
-              <Input
-                autoFocus
-                placeholder="Digite cidade ou bairro..."
-                value={locationQuery}
-                className={cn(
-                  'h-12 rounded-lg border-slate-200 bg-white pr-10 text-base placeholder:text-slate-400 focus:border-slate-400 focus:ring-0',
-                  selectedLocation && 'border-emerald-400'
-                )}
-                onChange={e => {
-                  onLocationSearch(e.target.value)
-                  if (!isPopoverOpen && e.target.value.length >= 3) setIsPopoverOpen(true)
-                }}
-                onFocus={() => {
-                  if (locationQuery.length >= 3) setIsPopoverOpen(true)
-                }}
-              />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                {isSearchingLocation ? (
-                  <IconLoader2 className="h-4 w-4 animate-spin text-slate-400" />
-                ) : selectedLocation ? (
-                  <IconCheck className="h-4 w-4 text-emerald-500" />
-                ) : (
-                  <IconSearch className="h-4 w-4 text-slate-400" />
-                )}
+    <StepLayout step={2} totalSteps={5} onBack={onBack}>
+      <OnboardingHeader title="Onde fica o seu negócio?" />
+
+      <div className="space-y-6">
+        <PglField>
+          <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <PopoverTrigger asChild>
+              <div className="relative">
+                <PglFieldInput
+                  autoFocus
+                  placeholder="Digite cidade ou bairro..."
+                  value={locationQuery}
+                  onChange={e => {
+                    onLocationSearch(e.target.value)
+                    if (!isPopoverOpen && e.target.value.length >= 3) setIsPopoverOpen(true)
+                  }}
+                  onFocus={() => {
+                    if (locationQuery.length >= 3) setIsPopoverOpen(true)
+                  }}
+                  className="pr-10"
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {isSearchingLocation ? (
+                    <IconLoader2 className="size-4 animate-spin text-black/30" />
+                  ) : selectedLocation ? (
+                    <IconCheck className="size-4 text-emerald-500" />
+                  ) : (
+                    <IconSearch className="size-4 text-black/30" />
+                  )}
+                </div>
               </div>
-            </div>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-[var(--radix-popover-trigger-width)] p-0"
-            align="start"
-            onOpenAutoFocus={e => e.preventDefault()}
-          >
-            {locationPredictions.length > 0 ? (
-              <div className="max-h-[300px] overflow-auto py-1">
-                {locationPredictions.map(prediction => (
-                  <button
-                    key={prediction.placeId}
-                    type="button"
-                    className="flex w-full cursor-pointer items-start gap-3 px-3 py-2.5 text-left transition-colors hover:bg-slate-50"
-                    onClick={() => onLocationSelect(prediction)}
-                  >
-                    <IconMapPin className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
-                    <div>
-                      <p className="font-medium text-slate-900">{prediction.mainText}</p>
-                      <p className="text-sm text-slate-500">{prediction.secondaryText}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="px-3 py-4 text-center text-sm text-slate-500">
-                {isSearchingLocation ? 'Buscando...' : 'Digite para buscar'}
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-[var(--radix-popover-trigger-width)] rounded-2xl border border-black/[0.08] bg-white p-1 shadow-xl shadow-black/10"
+              align="start"
+              onOpenAutoFocus={e => e.preventDefault()}
+            >
+              {locationPredictions.length > 0 ? (
+                <div className="max-h-[300px] overflow-auto">
+                  {locationPredictions.map(prediction => (
+                    <button
+                      key={prediction.placeId}
+                      type="button"
+                      className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-black/[0.03]"
+                      onClick={() => onLocationSelect(prediction)}
+                    >
+                      <IconMapPin className="size-4 shrink-0 text-black/30" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-black/80">{prediction.mainText}</p>
+                        <p className="text-xs text-black/40">{prediction.secondaryText}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="px-3 py-4 text-center text-sm text-black/40">
+                  {isSearchingLocation ? 'Buscando...' : 'Digite para buscar'}
+                </div>
+              )}
+            </PopoverContent>
+          </Popover>
+        </PglField>
 
         {selectedLocation && (
-          <p className="flex items-center gap-2 text-sm text-emerald-600">
-            <IconCheck className="h-4 w-4" />
-            {selectedLocation.locationScope === 'country'
-              ? 'Atendimento em todo o Brasil'
-              : selectedLocation.locationScope === 'state'
-                ? `Atendimento em todo o ${selectedLocation.city}, ${selectedLocation.state}`
-                : selectedLocation.fullAddress || `${selectedLocation.city}, ${selectedLocation.state}`}
-          </p>
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-black/5 px-3 py-1 text-xs font-medium text-black/55">
+            <IconCheck className="size-3" /> {locationText}
+          </div>
         )}
 
-        <p className="text-center text-xs text-slate-400">
-          Idioma do site: Portugues
-        </p>
+        <p className="text-xs text-black/30">Idioma do site: Português</p>
 
-        <Button
+        <PglButton
+          variant="default"
           disabled={!selectedLocation}
           onClick={onNext}
-          className="h-12 w-full cursor-pointer gap-2 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+          className="w-full rounded-2xl px-4 py-3 text-base"
         >
           Próximo
-        </Button>
+        </PglButton>
       </div>
     </StepLayout>
   )
 }
 
-// ─── Step 4: Name & Contact ──────────────────────────────────────────────────
+// ─── Step 3: Name & Contact ──────────────────────────────────────────────────
 
 function NameContactStep({
   name,
@@ -647,48 +605,47 @@ function NameContactStep({
   const canContinue = name.trim().length >= 2 && whatsapp.replace(/\D/g, '').length >= 10
 
   return (
-    <StepLayout
-      onBack={onBack}
-      icons={[IconId, IconUsers, IconLetterCase]}
-      iconColors="text-primary"
-      title="Qual o nome do seu negócio?"
-    >
-      <div className="space-y-4">
-        <Input
-          autoFocus
-          placeholder="Nome do negócio"
-          value={name}
-          onChange={e => setName(e.target.value)}
-          className="h-12 rounded-lg border-slate-200 bg-white text-base placeholder:text-slate-400 focus:border-slate-400 focus:ring-0"
-        />
+    <StepLayout step={3} totalSteps={5} onBack={onBack}>
+      <OnboardingHeader title="Nome e contato do negócio" />
 
-        <div className="relative">
-          <IconBrandWhatsapp className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-          <PatternFormat
-            format="(##) #####-####"
-            mask="_"
-            value={whatsapp}
-            onValueChange={values => setWhatsapp(values.formattedValue)}
-            customInput={Input}
-            placeholder="(11) 99999-9999"
-            className="h-12 rounded-lg border-slate-200 bg-white pl-10 text-base placeholder:text-slate-400 focus:border-slate-400 focus:ring-0"
-          />
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <PglField>
+            <PglFieldLabel>Nome do negócio</PglFieldLabel>
+            <PglFieldInput
+              autoFocus
+              placeholder="Ex: Alonso Academia"
+              value={name}
+              onChange={e => setName(e.target.value)}
+            />
+          </PglField>
+
+          <PglField>
+            <PglFieldLabel className="flex items-center gap-1.5">
+              <IconBrandWhatsapp className="size-4 text-emerald-500" /> WhatsApp
+            </PglFieldLabel>
+            <PglFieldPhone
+              value={whatsapp}
+              onValueChange={values => setWhatsapp(values.formattedValue)}
+              placeholder="(11) 99999-9999"
+            />
+          </PglField>
         </div>
 
-        <Button
+        <PglButton
+          variant="default"
           disabled={!canContinue}
           onClick={onNext}
-          onKeyDown={e => { if (e.key === 'Enter' && canContinue) onNext() }}
-          className="h-12 w-full cursor-pointer gap-2 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+          className="w-full rounded-2xl px-4 py-3 text-base"
         >
           Próximo
-        </Button>
+        </PglButton>
       </div>
     </StepLayout>
   )
 }
 
-// ─── Step 5: Summary ─────────────────────────────────────────────────────────
+// ─── Step 4: Summary ─────────────────────────────────────────────────────────
 
 function SummaryStep({
   name,
@@ -709,61 +666,77 @@ function SummaryStep({
   onBack: () => void
   onSubmit: () => void
 }) {
-  const detailScore = Math.min(differential.trim().length / 120, 1)
-
   return (
-    <StepLayout
-      onBack={onBack}
-      icons={[IconSparkles, IconLetterCase, IconFlag]}
-      iconColors="text-primary"
-      title="Resumo"
-    >
-      <div className="space-y-5">
-        <p className="text-center text-sm text-slate-600">
-          Voce esta criando <span className="font-semibold">{name}</span>, um negocio de{' '}
-          <span className="font-semibold">{businessType}</span> em{' '}
-          <span className="font-semibold">{city}</span>.
-        </p>
+    <StepLayout step={4} totalSteps={5} onBack={onBack}>
+      <OnboardingHeader title="Quase pronto!" />
 
-        <textarea
-          rows={4}
-          value={differential}
-          onChange={e => setDifferential(e.target.value)}
-          placeholder="Conte mais sobre seus servicos, publico-alvo ou qualquer detalhe..."
-          className="w-full resize-none rounded-lg border border-slate-200/50 bg-white/50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-primary/30 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/10 dark:border-slate-700/50 dark:bg-slate-800/50 dark:text-white"
-        />
-
-        {/* Detail progress bar */}
-        <div className="space-y-1.5">
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-primary transition-all duration-300"
-              style={{ width: `${detailScore * 100}%` }}
-            />
-          </div>
-          <p className="text-center text-xs text-slate-400">
-            Adicione mais detalhes para a IA gerar resultados melhores
-          </p>
+      <div className="space-y-6">
+        <div className="rounded-2xl bg-black/[0.03] px-4 py-3 text-sm text-black/55">
+          Você está criando <strong className="text-black/80">{name}</strong>, um negócio de{' '}
+          <strong className="text-black/80">{businessType}</strong> em{' '}
+          <strong className="text-black/80">{city}</strong>.
         </div>
 
-        <Button
+        <PglField>
+          <PglFieldLabel>Algo mais sobre o negócio? (opcional)</PglFieldLabel>
+          <PglFieldTextarea
+            rows={4}
+            value={differential}
+            onChange={e => setDifferential(e.target.value)}
+            placeholder="Conte mais sobre seus serviços, público-alvo, diferenciais..."
+            className="bg-black/[0.03] ring-black/10 text-base"
+          />
+        </PglField>
+
+        <div className="space-y-1.5">
+          <div className="h-1 w-full rounded-full bg-black/10">
+            <div
+              className="h-1 rounded-full bg-black/80 transition-all"
+              style={{ width: `${Math.min(100, (differential.length / 120) * 100)}%` }}
+            />
+          </div>
+          <p className="text-xs text-black/30">Adicione detalhes para a IA gerar melhores resultados</p>
+        </div>
+
+        <PglButton
+          variant="default"
           disabled={isExecuting}
+          loading={isExecuting}
           onClick={onSubmit}
-          className="h-12 w-full cursor-pointer gap-2 text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+          className="w-full rounded-2xl px-4 py-3 text-base"
         >
-          {isExecuting ? (
-            <IconLoader2 className="mr-2 h-5 w-5 animate-spin" />
-          ) : (
-            <IconRocket className="mr-2 h-5 w-5" />
-          )}
-          Criar meu site
-        </Button>
+          {!isExecuting && 'Criar meu site'}
+        </PglButton>
       </div>
     </StepLayout>
   )
 }
 
-// ─── Step 6: Creating ────────────────────────────────────────────────────────
+// ─── Site Skeleton Preview ───────────────────────────────────────────────────
+
+function SiteSkeletonPreview() {
+  return (
+    <div className="overflow-hidden rounded-2xl bg-black/[0.03]">
+      <div className="relative h-14 bg-black/[0.06]">
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+          animate={{ x: ['-100%', '100%'] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+        />
+      </div>
+      <div className="space-y-1.5 p-3">
+        <div className="h-3 w-3/4 rounded bg-black/[0.06]" />
+        <div className="h-2 w-1/2 rounded bg-black/[0.04]" />
+        <div className="mt-2 flex gap-1.5">
+          <div className="h-5 w-16 rounded bg-black/[0.06]" />
+          <div className="h-5 w-14 rounded bg-black/[0.04]" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Step 5: Creating ────────────────────────────────────────────────────────
 
 function CreatingStep({
   businessName,
@@ -779,86 +752,47 @@ function CreatingStep({
       animate="animate"
       exit="exit"
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="flex min-h-screen w-full flex-col items-center justify-center px-4 py-16"
+      className="flex flex-1 flex-col"
     >
-      <div className="w-full max-w-md">
-        {/* Gradient icon */}
-        <motion.div
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.1 }}
-          className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
-        >
-          <IconSparkles className="h-7 w-7 text-primary animate-pulse" />
-        </motion.div>
-
-        <h1 className="mb-2 text-center text-xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-2xl">
-          Criando seu site
-        </h1>
-        <p className="mb-8 text-center text-sm text-slate-500 dark:text-slate-400">
-          Nossa IA está montando a página de <span className="font-medium text-slate-700 dark:text-slate-200">{businessName || 'seu negócio'}</span>
-        </p>
-
-        {/* Skeleton preview in GlassCard */}
-        <div className="mb-8 overflow-hidden rounded-2xl border border-slate-200/40 bg-white/70 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70">
-          <div className="relative h-20 bg-slate-100">
+      <div className="h-12" />
+      <div className="flex flex-1 items-center justify-center">
+        <div className="w-full max-w-lg p-4">
+          <div className="mb-6 text-center">
             <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/60 to-transparent"
-              animate={{ x: ['-100%', '100%'] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-            />
-          </div>
-          <div className="space-y-2.5 p-4">
-            <div className="h-3 w-3/4 rounded bg-slate-100" />
-            <div className="h-2.5 w-1/2 rounded bg-slate-50" />
-            <div className="mt-3 flex gap-2">
-              <div className="h-7 w-20 rounded bg-slate-100" />
-              <div className="h-7 w-16 rounded bg-slate-50" />
-            </div>
-          </div>
-        </div>
-
-        {/* Log items */}
-        <div className="space-y-2">
-          {HUMANIZED_LOGS.map((log, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -16 }}
-              animate={{
-                opacity: index <= currentLogIndex ? 1 : 0.3,
-                x: 0,
-              }}
-              transition={{ delay: index * 0.08, duration: 0.3 }}
-              className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 transition-colors',
-                index < currentLogIndex && 'bg-emerald-50/50 dark:bg-emerald-950/20',
-                index === currentLogIndex && 'bg-primary/5 dark:bg-primary/10'
-              )}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+              className="mx-auto mb-3 flex size-12 items-center justify-center rounded-2xl bg-black/5"
             >
-              <div className={cn(
-                'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors',
-                index < currentLogIndex && 'bg-emerald-500 text-white',
-                index === currentLogIndex && 'bg-primary text-white',
-                index > currentLogIndex && 'bg-slate-100 text-slate-400 dark:bg-slate-800'
-              )}>
-                {index < currentLogIndex ? (
-                  <IconCheck className="h-3.5 w-3.5" />
-                ) : index === currentLogIndex ? (
-                  <IconLoader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <log.icon className="h-3.5 w-3.5" />
-                )}
-              </div>
-              <span className={cn(
-                'text-sm',
-                index <= currentLogIndex ? 'text-slate-700 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500'
-              )}>
-                {log.text}
-              </span>
+              <IconSparkles className="size-6 text-black/55" />
             </motion.div>
-          ))}
+            <p className="text-xl font-medium text-black/80 md:text-2xl">Criando seu site</p>
+            <p className="mt-1.5 text-sm text-black/40">
+              Nossa IA está montando a página de{' '}
+              <span className="font-medium text-black/55">{businessName || 'seu negócio'}</span>
+            </p>
+          </div>
+
+          <SiteSkeletonPreview />
+
+          <div className="mt-5 space-y-1.5">
+            {HUMANIZED_LOGS.map((log, index) => (
+              <OnboardingCreatingItem
+                key={index}
+                icon={log.icon}
+                label={log.text}
+                status={
+                  index < currentLogIndex
+                    ? 'done'
+                    : index === currentLogIndex
+                      ? 'active'
+                      : 'pending'
+                }
+              />
+            ))}
+          </div>
         </div>
       </div>
+      <OnboardingProgress current={4} total={5} className="p-8" />
     </motion.div>
   )
 }

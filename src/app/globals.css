@@ -2,12 +2,19 @@
 
 @custom-variant dark (&:is(.dark *));
 
-html,
+:root {
+  --pgl-font-heading: var(--font-fraunces), 'Georgia', serif;
+  --pgl-font-body: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+html {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
 body {
   overflow-x: hidden;
   max-width: 100vw;
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
 }
 
 /* All interactive elements use pointer cursor */

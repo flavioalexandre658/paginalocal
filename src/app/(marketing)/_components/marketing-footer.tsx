@@ -1,75 +1,94 @@
 import Link from 'next/link'
 import { Logo } from '@/components/shared/logo'
+import { IconArrowRight } from '@tabler/icons-react'
+
+const NAV_COLUMNS = [
+  {
+    title: "Produto",
+    links: [
+      { label: "Construtor de sites IA", href: "/#como-funciona" },
+      { label: "Precos", href: "/planos" },
+    ],
+  },
+  {
+    title: "Empresa",
+    links: [
+      { label: "Sobre nos", href: "/sobre-nos" },
+      { label: "Contato", href: "/contato" },
+      { label: "Central de ajuda", href: "/contato" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Termos de Uso", href: "/termos-de-uso" },
+      { label: "Politica de Privacidade", href: "/politica-de-privacidade" },
+      { label: "LGPD", href: "/lgpd" },
+    ],
+  },
+]
 
 export function MarketingFooter() {
   return (
-    <footer className="relative border-t border-slate-200/40 bg-slate-50/50 py-12 dark:border-slate-700/40 dark:bg-slate-900/50">
-      <div className="container mx-auto px-4">
-        <div className="grid gap-8 md:grid-cols-4">
-          <div className="md:col-span-1">
-            <Logo size="sm" href="/" />
-            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-              Sites profissionais otimizados para aparecer no Google. Feitos para negócios locais.
-            </p>
-          </div>
+    <footer className="bg-white px-4 pb-6 sm:px-6 lg:px-14">
+      <div className="mx-auto max-w-[1200px]">
+        {/* Main footer card — rounded, neutral bg, generous padding */}
+        <div className="overflow-hidden rounded-3xl bg-black/[0.03] px-8 py-20 sm:px-12 md:py-28 lg:px-16">
+          <div className="mx-auto max-w-[1000px]">
+            <div className="flex flex-col gap-16 xl:flex-row xl:gap-28">
 
-          <div>
-            <h4 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
-              Produto
-            </h4>
-            <nav className="flex flex-col gap-3">
-              <Link href="/planos" className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-                Planos
-              </Link>
-              <Link href="/#como-funciona" className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-                Como funciona
-              </Link>
-            </nav>
-          </div>
+              {/* Left — logo + description + CTA */}
+              <div className="xl:max-w-[320px]">
+                <Logo size="sm" href="/" />
+                <p className="mt-5 text-sm text-black/55 leading-relaxed">
+                  O construtor de sites com IA mais rapido do Brasil. Crie seu site profissional em 30 segundos e comece a atrair clientes pelo Google.
+                </p>
+                <Link
+                  href="/cadastro"
+                  className="mt-6 inline-flex items-center gap-1.5 rounded-2xl bg-black/80 px-4 py-2 text-sm font-medium text-white/75 shadow-button-dark transition-[background,color,box-shadow] hover:text-white hover:shadow-button-dark"
+                >
+                  Ir para o aplicativo
+                  <IconArrowRight className="size-4" />
+                </Link>
+              </div>
 
-          <div>
-            <h4 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
-              Empresa
-            </h4>
-            <nav className="flex flex-col gap-3">
-              <Link href="/sobre-nos" className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-                Sobre nós
-              </Link>
-              <Link href="/contato" className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-                Contato
-              </Link>
-            </nav>
-          </div>
+              {/* Right — nav columns */}
+              <div className="grid flex-1 grid-cols-2 gap-10 sm:grid-cols-3">
+                {NAV_COLUMNS.map((col) => (
+                  <div key={col.title}>
+                    <h4 className="text-sm font-semibold text-black/80">
+                      {col.title}
+                    </h4>
+                    <nav className="mt-5 flex flex-col gap-3.5">
+                      {col.links.map((link) => (
+                        <Link
+                          key={link.label}
+                          href={link.href}
+                          className="text-sm text-black/55 transition-[color] duration-150 hover:text-black/80"
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </nav>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-          <div>
-            <h4 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">
-              Legal
-            </h4>
-            <nav className="flex flex-col gap-3">
-              <Link href="/termos-de-uso" className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-                Termos de Uso
-              </Link>
-              <Link href="/politica-de-privacidade" className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-                Política de Privacidade
-              </Link>
-              <Link href="/lgpd" className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-                LGPD
-              </Link>
-            </nav>
-          </div>
-        </div>
-
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200/40 pt-8 dark:border-slate-700/40 md:flex-row">
-          <p className="text-sm text-slate-400">
-            &copy; {new Date().getFullYear()} Página Local. Todos os direitos reservados.
-          </p>
-          <div className="flex items-center gap-6">
-            <Link href="/entrar" className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-              Entrar
-            </Link>
-            <Link href="/cadastro" className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
-              Criar conta
-            </Link>
+            {/* Bottom bar */}
+            <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-black/[0.06] pt-8 md:flex-row">
+              <p className="text-sm text-black/30">
+                &copy; {new Date().getFullYear()} Pagina Local. Todos os direitos reservados.
+              </p>
+              <div className="flex items-center gap-6">
+                <Link href="/entrar" className="text-sm text-black/40 transition-[color] duration-150 hover:text-black/80">
+                  Entrar
+                </Link>
+                <Link href="/cadastro" className="text-sm text-black/40 transition-[color] duration-150 hover:text-black/80">
+                  Criar conta
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>

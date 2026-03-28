@@ -16,7 +16,8 @@ import { useAction } from 'next-safe-action/hooks'
 
 import { uploadStoreImageAction } from '@/actions/uploads/upload-store-image.action'
 import { uploadFaviconAction } from '@/actions/uploads/upload-favicon.action'
-import { Button } from '@/components/ui/button'
+import { PglButton } from '@/components/ui/pgl-button'
+import { OnboardingCard, OnboardingHeader, OnboardingBody, OnboardingFooter } from '@/components/ui/pgl-onboarding'
 import { cn } from '@/lib/utils'
 
 interface ImageSetupStepProps {
@@ -57,7 +58,7 @@ function DropZone({
   return (
     <div className="relative">
       {preview ? (
-        <div className="relative overflow-hidden rounded-xl border border-emerald-200/60 bg-emerald-50/30 dark:border-emerald-800/40 dark:bg-emerald-950/20">
+        <div className="relative overflow-hidden rounded-2xl ring-1 ring-black/[0.06]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={preview.preview}
@@ -65,19 +66,19 @@ function DropZone({
             className="h-28 w-full object-cover"
           />
           <div className="absolute inset-0 flex items-end justify-between bg-gradient-to-t from-black/40 to-transparent p-2.5">
-            <span className="text-xs font-medium text-white/90 truncate max-w-[70%]">
+            <span className="max-w-[70%] truncate text-xs font-medium text-white/90">
               {preview.file.name}
             </span>
             <button
               type="button"
               onClick={onRemove}
-              className="flex h-6 w-6 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm transition-colors hover:bg-white/40"
+              className="flex size-6 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm transition-colors hover:bg-white/40"
             >
-              <IconX className="h-3.5 w-3.5 text-white" />
+              <IconX className="size-3.5 text-white" />
             </button>
           </div>
-          <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 shadow-md">
-            <IconCheck className="h-3.5 w-3.5 text-white" />
+          <div className="absolute right-2 top-2 flex size-5 items-center justify-center rounded-full bg-emerald-500">
+            <IconCheck className="size-3 text-white" />
           </div>
         </div>
       ) : (
@@ -88,18 +89,19 @@ function DropZone({
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
           className={cn(
-            'flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-5 text-center transition-all',
+            'flex w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed p-5 text-center',
+            'transition-all duration-150',
             isDragging
-              ? 'border-primary/60 bg-primary/5'
-              : 'border-slate-200/70 bg-slate-50/50 hover:border-primary/30 hover:bg-primary/5 dark:border-slate-700/60 dark:bg-slate-800/40'
+              ? 'border-black/30 bg-black/[0.03]'
+              : 'border-black/[0.12] hover:border-black/30 hover:bg-black/[0.02]'
           )}
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700/60">
-            <IconUpload className="h-4.5 w-4.5 text-slate-400" />
+          <div className="flex size-9 items-center justify-center rounded-full bg-black/5">
+            <IconUpload className="size-4 text-black/30" />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</p>
-            <p className="mt-0.5 text-xs text-slate-400">{hint}</p>
+            <p className="text-sm font-medium text-black/55">{label}</p>
+            <p className="mt-0.5 text-xs text-black/30">{hint}</p>
           </div>
         </button>
       )}
@@ -118,7 +120,7 @@ function DropZone({
   )
 }
 
-function Toggle({
+function ToggleRow({
   checked,
   onChange,
   label,
@@ -136,40 +138,37 @@ function Toggle({
       type="button"
       onClick={() => onChange(!checked)}
       className={cn(
-        'group flex w-full items-center gap-3 rounded-xl border p-3.5 text-left transition-all',
+        'group flex w-full items-center gap-3 rounded-2xl border p-3.5 text-left',
+        'transition-all duration-150',
         checked
-          ? 'border-primary/30 bg-primary/5 dark:border-primary/20 dark:bg-primary/10'
-          : 'border-slate-200/60 bg-white/60 hover:border-slate-300/80 hover:bg-white dark:border-slate-700/50 dark:bg-slate-800/40 dark:hover:bg-slate-800/70'
+          ? 'border-black/80 bg-black/[0.02] ring-1 ring-black/80'
+          : 'border-black/[0.08] hover:border-black/20'
       )}
     >
       <div className={cn(
-        'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors',
-        checked
-          ? 'bg-primary text-white'
-          : 'bg-slate-100 text-slate-400 group-hover:bg-slate-200 dark:bg-slate-700/60 dark:text-slate-400'
+        'flex size-9 shrink-0 items-center justify-center rounded-xl transition-colors',
+        checked ? 'bg-black/80 text-white' : 'bg-black/5 text-black/30'
       )}>
-        <Icon className="h-4.5 w-4.5" />
+        <Icon className="size-4" />
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <p className={cn(
           'text-sm font-medium leading-snug',
-          checked ? 'text-primary dark:text-primary' : 'text-slate-700 dark:text-slate-200'
+          checked ? 'text-black/80' : 'text-black/55'
         )}>
           {label}
         </p>
-        <p className="mt-0.5 text-xs leading-snug text-slate-400 dark:text-slate-500">
+        <p className="mt-0.5 text-xs leading-snug text-black/30">
           {description}
         </p>
       </div>
       <div className={cn(
-        'flex h-5 w-9 shrink-0 items-center rounded-full border-2 px-0.5 transition-all',
-        checked
-          ? 'border-primary bg-primary'
-          : 'border-slate-300 bg-slate-100 dark:border-slate-600 dark:bg-slate-700'
+        'relative h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors',
+        checked ? 'bg-black/80' : 'bg-black/10'
       )}>
-        <div className={cn(
-          'h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform',
-          checked ? 'translate-x-3.5' : 'translate-x-0'
+        <span className={cn(
+          'block size-5 rounded-full bg-white shadow transition-transform',
+          checked ? 'translate-x-5' : 'translate-x-0'
         )} />
       </div>
     </button>
@@ -243,122 +242,110 @@ export function ImageSetupStep({ storeId, onComplete }: ImageSetupStepProps) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
-      className="w-full max-w-lg"
+      className="w-full max-w-md"
     >
-      <div className="mb-6 text-center">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/10"
-        >
-          <IconPhoto className="h-8 w-8 text-primary" />
-        </motion.div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-          Adicione imagens ao site
-        </h1>
-        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-          Opcional — você pode adicionar depois no painel
-        </p>
-      </div>
-
-      <div className="rounded-2xl border border-slate-200/40 bg-white/70 p-5 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/40 dark:bg-slate-900/70 dark:shadow-slate-900/50 space-y-3">
-        <Toggle
-          checked={wantHero}
-          onChange={setWantHero}
-          label="Deseja adicionar uma imagem de destaque no site?"
-          description="Aparece no topo da página, como capa do negócio"
-          icon={IconPhoto}
+      <OnboardingCard>
+        <OnboardingHeader
+          title="Imagens do site"
+          subtitle="Opcional — você pode adicionar depois no painel"
         />
 
-        <AnimatePresence>
-          {wantHero && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.25 }}
-              className="overflow-hidden"
-            >
-              <div className="pt-1 pb-1">
-                <DropZone
-                  label="Clique ou arraste a imagem de destaque"
-                  hint="JPG, PNG, WebP · Máx 10MB · Recomendado: 1920×1080"
-                  preview={heroFile}
-                  onSelect={(f) => setHeroFile(makePreview(f))}
-                  onRemove={() => removePreview(heroFile, setHeroFile)}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <OnboardingBody className="space-y-3">
+          <ToggleRow
+            checked={wantHero}
+            onChange={setWantHero}
+            label="Imagem de destaque"
+            description="Aparece no topo da página, como capa do negócio"
+            icon={IconPhoto}
+          />
 
-        <Toggle
-          checked={wantLogoFavicon}
-          onChange={setWantLogoFavicon}
-          label="Deseja adicionar logo e ícone agora?"
-          description="Logo para o cabeçalho e ícone que aparece na aba do navegador"
-          icon={IconBrandInstagram}
-        />
-
-        <AnimatePresence>
-          {wantLogoFavicon && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.25 }}
-              className="overflow-hidden"
-            >
-              <div className="grid grid-cols-2 gap-3 pt-1 pb-1">
-                <div>
-                  <p className="mb-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">Logo</p>
+          <AnimatePresence>
+            {wantHero && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25 }}
+                className="overflow-hidden"
+              >
+                <div className="pb-1 pt-1">
                   <DropZone
-                    label="Logo da empresa"
-                    hint="PNG com fundo transparente recomendado · Máx 10MB"
-                    preview={logoFile}
-                    onSelect={(f) => setLogoFile(makePreview(f))}
-                    onRemove={() => removePreview(logoFile, setLogoFile)}
+                    label="Clique ou arraste a imagem"
+                    hint="JPG, PNG, WebP · Máx 10MB · 1920×1080"
+                    preview={heroFile}
+                    onSelect={(f) => setHeroFile(makePreview(f))}
+                    onRemove={() => removePreview(heroFile, setHeroFile)}
                   />
                 </div>
-                <div>
-                  <p className="mb-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">Favicon (ícone da aba)</p>
-                  <DropZone
-                    label="Ícone do site"
-                    hint="Imagem quadrada recomendada · Máx 2MB"
-                    preview={faviconFile}
-                    onSelect={(f) => setFaviconFile(makePreview(f))}
-                    onRemove={() => removePreview(faviconFile, setFaviconFile)}
-                  />
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        <div className="flex gap-2 pt-1">
-          <Button
-            variant="outline"
-            className="flex-1 h-11 cursor-pointer border-slate-200 text-slate-500 hover:text-slate-700 dark:border-slate-700 dark:text-slate-400"
+          <ToggleRow
+            checked={wantLogoFavicon}
+            onChange={setWantLogoFavicon}
+            label="Logo e ícone"
+            description="Logo para o cabeçalho e ícone na aba do navegador"
+            icon={IconBrandInstagram}
+          />
+
+          <AnimatePresence>
+            {wantLogoFavicon && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.25 }}
+                className="overflow-hidden"
+              >
+                <div className="grid grid-cols-2 gap-3 pb-1 pt-1">
+                  <div>
+                    <p className="mb-1.5 text-xs font-medium text-black/55">Logo</p>
+                    <DropZone
+                      label="Logo da empresa"
+                      hint="PNG transparente · Máx 10MB"
+                      preview={logoFile}
+                      onSelect={(f) => setLogoFile(makePreview(f))}
+                      onRemove={() => removePreview(logoFile, setLogoFile)}
+                    />
+                  </div>
+                  <div>
+                    <p className="mb-1.5 text-xs font-medium text-black/55">Favicon</p>
+                    <DropZone
+                      label="Ícone do site"
+                      hint="Quadrada · Máx 2MB"
+                      preview={faviconFile}
+                      onSelect={(f) => setFaviconFile(makePreview(f))}
+                      onRemove={() => removePreview(faviconFile, setFaviconFile)}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </OnboardingBody>
+
+        <OnboardingFooter>
+          <PglButton
+            variant="ghost"
+            size="sm"
             onClick={onComplete}
             disabled={isUploading}
           >
             Pular
-          </Button>
-          <Button
-            className="flex-1 h-11 cursor-pointer gap-2 shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
+          </PglButton>
+          <PglButton
+            variant="dark"
+            size="sm"
             onClick={handleSave}
             disabled={isUploading}
+            loading={isUploading}
           >
-            {isUploading ? (
-              <IconLoader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <IconArrowRight className="h-4 w-4" />
-            )}
+            {!isUploading && <IconArrowRight className="size-4" />}
             {hasAnyFile ? 'Salvar e continuar' : 'Continuar'}
-          </Button>
-        </div>
-      </div>
+          </PglButton>
+        </OnboardingFooter>
+      </OnboardingCard>
     </motion.div>
   )
 }

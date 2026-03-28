@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { PatternFormat, type PatternFormatProps } from "react-number-format"
 import { cn } from "@/lib/utils"
 
 // ═══════════════════════════════════════════════
@@ -80,6 +81,35 @@ const PglFieldTextarea = React.forwardRef<
 ))
 PglFieldTextarea.displayName = "PglFieldTextarea"
 
+// ─── Phone (PatternFormat wrapper) ────────────────────────────────
+
+interface PglFieldPhoneProps
+  extends Omit<PatternFormatProps, "format" | "customInput"> {
+  format?: string
+  className?: string
+}
+
+const PglFieldPhone = React.forwardRef<HTMLInputElement, PglFieldPhoneProps>(
+  ({ format = "(##) #####-####", className, ...props }, ref) => (
+    <PatternFormat
+      getInputRef={ref}
+      format={format}
+      mask="_"
+      className={cn(
+        "w-full rounded-2xl px-4 py-2.5 text-sm font-medium text-black/80 outline-none",
+        "ring-1 ring-black/10 transition-all duration-150",
+        "placeholder:text-black/30",
+        "hover:ring-black/30",
+        "focus:ring-black/30",
+        "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-black/[0.02]",
+        className,
+      )}
+      {...props}
+    />
+  ),
+)
+PglFieldPhone.displayName = "PglFieldPhone"
+
 // ─── Hint ─────────────────────────────────────────────────────────
 
 const PglFieldHint = ({
@@ -115,6 +145,7 @@ export {
   PglFieldLabel,
   PglFieldInput,
   PglFieldTextarea,
+  PglFieldPhone,
   PglFieldHint,
   PglFieldError,
 }

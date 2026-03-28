@@ -268,6 +268,7 @@ export function EditorTopbar({
         storeSlug={storeSlug}
         storeName={storeName}
         initialTab={settingsInitialTab}
+        onOpenUpgrade={() => { onCloseSettings(); onOpenUpgrade(); }}
         onPublishChange={(active) => setIsPublished(active)}
       />
 
