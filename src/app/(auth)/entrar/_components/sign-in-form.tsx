@@ -6,13 +6,11 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { IconLoader2 } from '@tabler/icons-react'
+import { IconLoader2, IconArrowRight } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
 
 import { signIn } from '@/lib/auth-client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { PasswordInput } from '@/components/ui/password-input'
+import { SocialLoginButton } from '@/components/auth/social-login-button'
 import {
   Form,
   FormControl,
@@ -23,11 +21,13 @@ import {
 } from '@/components/ui/form'
 
 const signInSchema = z.object({
-  email: z.string().email('Email inválido'),
-  password: z.string().min(1, 'Senha é obrigatória'),
+  email: z.string().email('Email invalido'),
+  password: z.string().min(1, 'Senha e obrigatoria'),
 })
 
 type SignInFormData = z.infer<typeof signInSchema>
+
+const inputClasses = "h-12 w-full rounded-full border border-black/10 bg-white px-5 text-sm text-black/80 outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-black/30 focus:border-black/30 focus:ring-1 focus:ring-black/10"
 
 export function SignInForm() {
   const router = useRouter()
@@ -35,22 +35,15 @@ export function SignInForm() {
 
   const form = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
+    defaultValues: { email: '', password: '' },
   })
 
   async function handleSubmit(data: SignInFormData) {
     setIsLoading(true)
-
-    const result = await signIn.email({
-      email: data.email,
-      password: data.password,
-    })
+    const result = await signIn.email({ email: data.email, password: data.password })
 
     if (result.error) {
-      toast.error(result.error.message || 'Credenciais inválidas')
+      toast.error(result.error.message || 'Credenciais invalidas')
       setIsLoading(false)
       return
     }
@@ -60,23 +53,32 @@ export function SignInForm() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* Google */}
+      <SocialLoginButton />
+
+      {/* Divider */}
+      <div className="flex items-center gap-4">
+        <div className="h-px flex-1 bg-black/[0.06]" />
+        <span className="text-xs text-black/30">or</span>
+        <div className="h-px flex-1 bg-black/[0.06]" />
+      </div>
+
+      {/* Form */}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
           <FormField
             control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-slate-700 dark:text-slate-300">
-                  Email
-                </FormLabel>
+                <FormLabel className="sr-only">Email</FormLabel>
                 <FormControl>
-                  <Input
+                  <input
                     type="email"
-                    placeholder="seu@email.com"
+                    placeholder="Email"
                     autoComplete="email"
-                    className="h-11 border-slate-200/60 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/60 dark:bg-slate-800/50"
+                    className={inputClasses}
                     {...field}
                   />
                 </FormControl>
@@ -90,22 +92,13 @@ export function SignInForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <div className="flex items-center justify-between">
-                  <FormLabel className="text-slate-700 dark:text-slate-300">
-                    Senha
-                  </FormLabel>
-                  <Link
-                    href="/recuperar-senha"
-                    className="text-sm text-slate-500 transition-colors hover:text-primary dark:text-slate-400"
-                  >
-                    Esqueceu a senha?
-                  </Link>
-                </div>
+                <FormLabel className="sr-only">Senha</FormLabel>
                 <FormControl>
-                  <PasswordInput
-                    placeholder="••••••••"
+                  <input
+                    type="password"
+                    placeholder="Senha"
                     autoComplete="current-password"
-                    className="h-11 border-slate-200/60 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/60 dark:bg-slate-800/50"
+                    className={inputClasses}
                     {...field}
                   />
                 </FormControl>
@@ -114,14 +107,28 @@ export function SignInForm() {
             )}
           />
 
-          <Button
+          {/* Forgot password */}
+          <div className="flex justify-end">
+            <Link
+              href="/recuperar-senha"
+              className="text-xs font-medium text-black/40 transition-[color] duration-150 hover:text-black/80"
+            >
+              Esqueceu a senha?
+            </Link>
+          </div>
+
+          {/* Submit */}
+          <button
             type="submit"
-            className="h-11 w-full gap-2 shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
             disabled={isLoading}
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black/80 text-sm font-medium text-white/75 shadow-button-dark transition-[background,color,box-shadow] duration-150 hover:text-white hover:shadow-button-dark disabled:opacity-50"
           >
-            {isLoading && <IconLoader2 className="h-4 w-4 animate-spin" />}
-            Entrar
-          </Button>
+            {isLoading ? (
+              <IconLoader2 className="size-4 animate-spin" />
+            ) : null}
+            Continuar
+            {!isLoading && <IconArrowRight className="size-4" />}
+          </button>
         </form>
       </Form>
     </div>

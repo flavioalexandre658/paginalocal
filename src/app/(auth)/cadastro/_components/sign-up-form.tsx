@@ -1,19 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { IconLoader2 } from '@tabler/icons-react'
+import { IconLoader2, IconMail, IconArrowLeft } from '@tabler/icons-react'
 import { PatternFormat } from 'react-number-format'
 import toast from 'react-hot-toast'
 
 import { signUp } from '@/lib/auth-client'
 import { updateUserPhoneAction } from '@/actions/users/update-user-phone.action'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { PasswordInput } from '@/components/ui/password-input'
+import { SocialLoginButton } from '@/components/auth/social-login-button'
 import {
   Form,
   FormControl,
@@ -25,14 +24,14 @@ import {
 
 const signUpSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
-  email: z.string().email('Email inválido'),
-  phone: z.string().min(14, 'Telefone inválido'),
+  email: z.string().email('Email invalido'),
+  phone: z.string().min(14, 'Telefone invalido'),
   password: z.string().min(8, 'Senha deve ter pelo menos 8 caracteres'),
 })
 
 type SignUpFormData = z.infer<typeof signUpSchema>
 
-const inputClassName = 'h-11 border-slate-200/60 bg-white/50 transition-all placeholder:text-slate-400 focus:border-primary/30 focus:bg-white focus:ring-2 focus:ring-primary/10 dark:border-slate-700/60 dark:bg-slate-800/50'
+const inputClasses = "h-12 w-full rounded-full border border-black/10 bg-white px-5 text-sm text-black/80 outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-black/30 focus:border-black/30 focus:ring-1 focus:ring-black/10"
 
 export function SignUpForm() {
   const router = useRouter()
@@ -42,15 +41,11 @@ export function SignUpForm() {
   const storeSlugParam = searchParams.get('s')
   const hasTransferPlan = isTransferFlow && !!planParam
   const [isLoading, setIsLoading] = useState(false)
+  const [showEmailForm, setShowEmailForm] = useState(false)
 
   const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      phone: '',
-      password: '',
-    },
+    defaultValues: { name: '', email: '', phone: '', password: '' },
   })
 
   async function handleSubmit(data: SignUpFormData) {
@@ -84,25 +79,49 @@ export function SignUpForm() {
     router.push(redirectUrl)
   }
 
+  /* ── Initial view: social buttons + email option ── */
+  if (!showEmailForm) {
+    return (
+      <div className="space-y-3">
+        <SocialLoginButton label="Cadastrar com Google" />
+
+        <button
+          type="button"
+          onClick={() => setShowEmailForm(true)}
+          className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-black/10 bg-white text-sm font-medium text-black/80 transition-[background,border-color,box-shadow] duration-150 hover:border-black/20 hover:shadow-sm"
+        >
+          <IconMail className="size-5" />
+          Cadastrar com email
+        </button>
+
+        {/* Terms */}
+        <p className="pt-4 text-xs text-black/40 leading-relaxed">
+          Ao se cadastrar, voce concorda com a{' '}
+          <Link href="/politica-de-privacidade" className="underline decoration-black/20 underline-offset-2 hover:text-black/80">
+            Politica de Privacidade
+          </Link>
+          {' '}e os{' '}
+          <Link href="/termos-de-uso" className="underline decoration-black/20 underline-offset-2 hover:text-black/80">
+            Termos de Uso
+          </Link>.
+        </p>
+      </div>
+    )
+  }
+
+  /* ── Email form view ── */
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-slate-700 dark:text-slate-300">
-                  Nome
-                </FormLabel>
+                <FormLabel className="sr-only">Nome</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Seu nome completo"
-                    autoComplete="name"
-                    className={inputClassName}
-                    {...field}
-                  />
+                  <input placeholder="Nome completo" autoComplete="name" className={inputClasses} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -114,17 +133,9 @@ export function SignUpForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-slate-700 dark:text-slate-300">
-                  Email
-                </FormLabel>
+                <FormLabel className="sr-only">Email</FormLabel>
                 <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="seu@email.com"
-                    autoComplete="email"
-                    className={inputClassName}
-                    {...field}
-                  />
+                  <input type="email" placeholder="Email" autoComplete="email" className={inputClasses} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -136,19 +147,16 @@ export function SignUpForm() {
             name="phone"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-slate-700 dark:text-slate-300">
-                  Telefone (WhatsApp)
-                </FormLabel>
+                <FormLabel className="sr-only">Telefone</FormLabel>
                 <FormControl>
                   <PatternFormat
                     format="(##) #####-####"
                     mask="_"
                     value={field.value}
                     onValueChange={(values) => field.onChange(values.formattedValue)}
-                    customInput={Input}
-                    placeholder="(00) 00000-0000"
+                    placeholder="WhatsApp (00) 00000-0000"
                     autoComplete="tel"
-                    className={inputClassName}
+                    className={inputClasses}
                   />
                 </FormControl>
                 <FormMessage />
@@ -161,32 +169,48 @@ export function SignUpForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-slate-700 dark:text-slate-300">
-                  Senha
-                </FormLabel>
+                <FormLabel className="sr-only">Senha</FormLabel>
                 <FormControl>
-                  <PasswordInput
-                    placeholder="Mínimo 8 caracteres"
-                    autoComplete="new-password"
-                    className={inputClassName}
-                    {...field}
-                  />
+                  <input type="password" placeholder="Senha (min. 8 caracteres)" autoComplete="new-password" className={inputClasses} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <Button
+          {/* Submit */}
+          <button
             type="submit"
-            className="h-11 w-full gap-2 shadow-lg shadow-primary/20 transition-all hover:shadow-xl hover:shadow-primary/30"
             disabled={isLoading}
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-black/80 text-sm font-medium text-white/75 shadow-button-dark transition-[background,color,box-shadow] duration-150 hover:text-white hover:shadow-button-dark disabled:opacity-50"
           >
-            {isLoading && <IconLoader2 className="h-4 w-4 animate-spin" />}
-            Criar conta grátis
-          </Button>
+            {isLoading && <IconLoader2 className="size-4 animate-spin" />}
+            Cadastrar com email
+          </button>
         </form>
       </Form>
+
+      {/* Go back */}
+      <button
+        type="button"
+        onClick={() => setShowEmailForm(false)}
+        className="flex w-full items-center justify-center gap-1.5 text-sm font-medium text-black/40 transition-[color] duration-150 hover:text-black/80"
+      >
+        <IconArrowLeft className="size-3.5" />
+        Voltar
+      </button>
+
+      {/* Terms */}
+      <p className="text-xs text-black/40 leading-relaxed">
+        Ao se cadastrar, voce concorda com a{' '}
+        <Link href="/politica-de-privacidade" className="underline decoration-black/20 underline-offset-2 hover:text-black/80">
+          Politica de Privacidade
+        </Link>
+        {' '}e os{' '}
+        <Link href="/termos-de-uso" className="underline decoration-black/20 underline-offset-2 hover:text-black/80">
+          Termos de Uso
+        </Link>.
+      </p>
     </div>
   )
 }

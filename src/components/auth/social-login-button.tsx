@@ -5,45 +5,38 @@ import { IconBrandGoogle, IconLoader2 } from '@tabler/icons-react'
 import toast from 'react-hot-toast'
 
 import { signIn } from '@/lib/auth-client'
-import { Button } from '@/components/ui/button'
 
 interface SocialLoginButtonProps {
   callbackURL?: string
+  label?: string
 }
 
-export function SocialLoginButton({ callbackURL = '/painel' }: SocialLoginButtonProps) {
-  // /painel now auto-redirects to /negocio/:slug
+export function SocialLoginButton({ callbackURL = '/painel', label = 'Continuar com Google' }: SocialLoginButtonProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   async function handleGoogleLogin() {
     setIsLoading(true)
-
-    const result = await signIn.social({
-      provider: 'google',
-      callbackURL,
-    })
+    const result = await signIn.social({ provider: 'google', callbackURL })
 
     if (result.error) {
       toast.error(result.error.message || 'Erro ao entrar com Google')
       setIsLoading(false)
-      return
     }
   }
 
   return (
-    <Button
+    <button
       type="button"
-      variant="outline"
-      className="h-12 w-full gap-3 border-slate-200/60 bg-white/50 text-slate-700 shadow-sm transition-all hover:bg-slate-50 hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/50 dark:text-slate-200 dark:hover:bg-slate-800"
       onClick={handleGoogleLogin}
       disabled={isLoading}
+      className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-black/10 bg-white text-sm font-medium text-black/80 transition-[background,border-color,box-shadow] duration-150 hover:border-black/20 hover:shadow-sm disabled:opacity-50"
     >
       {isLoading ? (
-        <IconLoader2 className="h-5 w-5 animate-spin" />
+        <IconLoader2 className="size-5 animate-spin text-black/40" />
       ) : (
-        <IconBrandGoogle className="h-5 w-5" />
+        <IconBrandGoogle className="size-5" />
       )}
-      Continuar com Google
-    </Button>
+      {label}
+    </button>
   )
 }

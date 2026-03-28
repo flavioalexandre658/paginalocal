@@ -17,16 +17,14 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
 
   return (
     <AuthCard
-      title={isTransferFlow ? 'Crie sua conta' : 'Criar conta'}
+      title="Crie sua conta gratis"
       description={
         hasTransferPlan
-          ? 'Cadastre-se para ativar seu plano e receber sua loja'
-          : isTransferFlow
-            ? 'Cadastre-se para receber a sua loja'
-            : 'Preencha os dados abaixo para criar sua conta'
+          ? 'Cadastre-se para ativar seu plano e receber sua loja.'
+          : 'Crie em 30 segundos. Sem cartao de credito.'
       }
       footer={{
-        text: 'Já tem uma conta?',
+        text: 'Ja tem uma conta?',
         linkText: 'Entrar',
         linkHref: '/entrar',
       }}

@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
-import { AuthCard } from "@/components/auth/auth-card";
-import { SignInForm } from "./_components/sign-in-form";
+import { AuthCard } from "@/components/auth/auth-card"
+import { SignInForm } from "./_components/sign-in-form"
 
 export const metadata: Metadata = {
   title: 'Entrar',
@@ -9,15 +9,15 @@ export const metadata: Metadata = {
 export default function SignInPage() {
   return (
     <AuthCard
-      title="Entrar"
-      description="Digite suas credenciais para acessar sua conta"
+      title="Entrar no Pagina Local"
+      description="Bem-vindo de volta! Faca login para continuar"
       footer={{
-        text: "Não tem uma conta?",
-        linkText: "Criar conta",
+        text: "Nao tem uma conta?",
+        linkText: "Sign up",
         linkHref: "/cadastro",
       }}
     >
       <SignInForm />
     </AuthCard>
-  );
+  )
 }
