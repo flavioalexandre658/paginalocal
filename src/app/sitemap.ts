@@ -22,6 +22,11 @@ const STATIC_PAGES = [
     priority: 0.9,
   },
   {
+    path: '/ia-que-cria-sites',
+    changeFrequency: 'weekly' as const,
+    priority: 0.9,
+  },
+  {
     path: '/sobre-nos',
     changeFrequency: 'monthly' as const,
     priority: 0.7,
