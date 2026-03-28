@@ -106,8 +106,8 @@ function StepVisual({ type, span2 }: { type: string; span2: boolean }) {
         </div>
         {/* Fake search input */}
         <div className="w-full rounded-2xl border border-black/[0.06] bg-white px-5 py-3.5 text-left text-sm text-black/30 shadow-sm">
-          What type of business are you building?
-          <span className="ml-0.5 inline-block h-4 w-px animate-pulse bg-black/40" />
+         Que tipo de negócio você está construindo?
+          <span className="ml-0.5 inline-block h-3 w-px animate-pulse bg-black/40" />
         </div>
         {/* Mockup screenshot placeholder */}
         <div className="mt-6 aspect-[16/10] w-full overflow-hidden rounded-t-2xl bg-black/[0.04]">

@@ -42,8 +42,8 @@ export function MarketingHeader({ isLoggedIn = false, hasSubscription = false }:
           <div className="flex items-center gap-10">
             <Logo size="sm" href="/" />
             <nav className="hidden items-center gap-8 lg:flex">
-              <Link href="/#como-funciona" className="text-sm font-medium text-black/80 transition-[background,color] duration-150 hover:text-black/55">
-                Construtor de sites IA
+              <Link href="/ia-que-cria-sites" className="text-sm font-medium text-black/80 transition-[background,color] duration-150 hover:text-black/55">
+                IA que cria sites
               </Link>
               <Link href="/planos" className="text-sm font-medium text-black/80 transition-[background,color] duration-150 hover:text-black/55">
                 Precos
@@ -99,8 +99,8 @@ export function MarketingHeader({ isLoggedIn = false, hasSubscription = false }:
           <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden" onClick={() => setMobileMenuOpen(false)} />
           <div className="fixed left-0 right-0 top-14 z-50 border-b border-black/[0.06] bg-white px-4 py-6 shadow-xl shadow-black/[0.06] lg:hidden">
             <nav className="flex flex-col gap-1">
-              <Link href="/#como-funciona" onClick={() => setMobileMenuOpen(false)} className="rounded-xl px-4 py-3 text-base font-medium text-black/80 transition-[background,color] duration-150 hover:bg-black/5">
-                Construtor de sites IA
+              <Link href="/ia-que-cria-sites" onClick={() => setMobileMenuOpen(false)} className="rounded-xl px-4 py-3 text-base font-medium text-black/80 transition-[background,color] duration-150 hover:bg-black/5">
+                IA que cria sites
               </Link>
               <Link href="/planos" onClick={() => setMobileMenuOpen(false)} className="rounded-xl px-4 py-3 text-base font-medium text-black/80 transition-[background,color] duration-150 hover:bg-black/5">
                 Precos
