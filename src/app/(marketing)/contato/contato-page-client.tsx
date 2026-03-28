@@ -1,7 +1,5 @@
 'use client'
 
-import { useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -11,67 +9,15 @@ import {
   IconBrandWhatsapp,
   IconClock,
   IconSend,
-  IconMessageCircle,
   IconLoader2,
+  IconChevronRight,
 } from '@tabler/icons-react'
 import { trackWhatsAppClick } from '@/lib/tracking'
 import { MarketingHeader } from '../_components/marketing-header'
 import { MarketingFooter } from '../_components/marketing-footer'
-import { Breadcrumb } from '@/components/shared/breadcrumb'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
+import { PglButton } from '@/components/ui/pgl-button'
 
-const revealVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const } 
-  }
-}
-
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.15, delayChildren: 0.1 }
-  }
-}
-
-const staggerItem = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } 
-  }
-}
-
-function ScrollReveal({ children, className }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-50px' })
-
-  return (
-    <motion.div
-      ref={ref}
-      initial="hidden"
-      animate={isInView ? 'visible' : 'hidden'}
-      variants={revealVariants}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  )
-}
+// ─── Schema ─────────────────────────────────────────────────────────────────
 
 const contactFormSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
@@ -82,18 +28,27 @@ const contactFormSchema = z.object({
 
 type ContactFormData = z.infer<typeof contactFormSchema>
 
+// ─── Props ───────────────────────────────────────────────────────────────────
+
 interface ContatoPageClientProps {
   isLoggedIn?: boolean
   hasSubscription?: boolean
 }
 
-export function ContatoPageClient({ isLoggedIn = false, hasSubscription = false }: ContatoPageClientProps) {
-  return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+// ─── Shared input class ──────────────────────────────────────────────────────
 
+const inputClass =
+  'h-12 w-full rounded-xl border border-black/10 bg-white px-4 text-sm text-black/80 placeholder:text-black/30 outline-none focus:border-[#6366f1] focus:ring-1 focus:ring-[#6366f1]/15 transition-colors'
+
+// ─── Page ────────────────────────────────────────────────────────────────────
+
+export function ContatoPageClient({
+  isLoggedIn = false,
+  hasSubscription = false,
+}: ContatoPageClientProps) {
+  return (
+    <main className="min-h-screen bg-white">
       <MarketingHeader isLoggedIn={isLoggedIn} hasSubscription={hasSubscription} />
-      <Breadcrumb items={[{ label: 'Contato' }]} />
       <HeroSection />
       <ContactSection />
       <FAQSection />
@@ -102,43 +57,47 @@ export function ContatoPageClient({ isLoggedIn = false, hasSubscription = false 
   )
 }
 
+// ─── Hero ────────────────────────────────────────────────────────────────────
+
 function HeroSection() {
   return (
-    <section className="relative py-16 md:py-24">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mx-auto max-w-3xl text-center"
-        >
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary shadow-lg shadow-primary/10">
-            <IconMessageCircle className="h-8 w-8" />
+    <section className="py-16 md:py-24">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-14">
+        <div className="mx-auto max-w-2xl text-center">
+          <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#6366f1]/[0.08]">
+            <IconMail className="h-7 w-7 text-[#6366f1]" />
           </div>
 
-          <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
+          <h1
+            className="text-3xl font-semibold tracking-tight text-black/80 md:text-4xl lg:text-[2.75rem] lg:leading-tight"
+            style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
+          >
             Fale conosco
           </h1>
 
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-500 dark:text-slate-400">
-            Estamos aqui para ajudar. Escolha a forma de contato que preferir.
+          <p className="mx-auto mt-4 max-w-xl text-base text-black/55 md:text-lg">
+            Estamos aqui para ajudar. Escolha a forma de contato que preferir ou
+            envie uma mensagem pelo formulário.
           </p>
-        </motion.div>
+        </div>
       </div>
     </section>
   )
 }
 
+// ─── Contact Section ─────────────────────────────────────────────────────────
+
 function ContactSection() {
-  const contactCards = [
+  const whatsappHref = `https://wa.me/55${process.env.NEXT_PUBLIC_SUPPORT_NUMBER ?? '73981269904'}?text=${encodeURIComponent('Olá! Gostaria de tirar uma dúvida.')}`
+
+  const cards = [
     {
       icon: IconBrandWhatsapp,
       title: 'WhatsApp',
       description: 'Atendimento rápido pelo WhatsApp',
       action: 'Iniciar conversa',
-      href: `https://wa.me/55${process.env.NEXT_PUBLIC_SUPPORT_NUMBER || '73981269904'}?text=${encodeURIComponent('Olá! Gostaria de tirar uma dúvida.')}`,
-      color: 'from-emerald-500/20 to-emerald-500/5',
-      iconColor: 'text-emerald-500',
+      href: whatsappHref,
+      isWhatsapp: true,
     },
     {
       icon: IconMail,
@@ -146,8 +105,7 @@ function ContactSection() {
       description: 'contato@decolou.com',
       action: 'Enviar e-mail',
       href: 'mailto:contato@decolou.com',
-      color: 'from-blue-500/20 to-blue-500/5',
-      iconColor: 'text-blue-500',
+      isWhatsapp: false,
     },
     {
       icon: IconClock,
@@ -155,236 +113,229 @@ function ContactSection() {
       description: 'Seg a Sex, 9h às 18h',
       action: null,
       href: null,
-      color: 'from-amber-500/20 to-amber-500/5',
-      iconColor: 'text-amber-500',
+      isWhatsapp: false,
     },
   ]
 
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-50px' })
-
   return (
-    <section className="relative pb-16">
-      <div className="container mx-auto px-4">
-        <motion.div
-          ref={ref}
-          initial="hidden"
-          animate={isInView ? 'visible' : 'hidden'}
-          variants={staggerContainer}
-          className="mx-auto mb-12 grid max-w-4xl gap-6 md:grid-cols-3"
-        >
-          {contactCards.map((card) => (
-            <motion.div
-              key={card.title}
-              variants={staggerItem}
-              className="rounded-2xl border border-slate-200/40 bg-white/70 p-6 shadow-lg shadow-slate-200/20 backdrop-blur-sm dark:border-slate-700/40 dark:bg-slate-900/70"
-            >
-              <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${card.color} ${card.iconColor}`}>
-                <card.icon className="h-6 w-6" />
-              </div>
-              <h3 className="mb-1 text-lg font-semibold text-slate-900 dark:text-white">
-                {card.title}
-              </h3>
-              <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
-                {card.description}
-              </p>
-              {card.action && card.href && (
-                <a
-                  href={card.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={card.title === 'WhatsApp' ? () => trackWhatsAppClick('contato_whatsapp') : undefined}
-                  className="inline-flex items-center text-sm font-medium text-primary transition-colors hover:text-primary/80"
-                >
-                  {card.action}
-                  <svg className="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </a>
-              )}
-            </motion.div>
-          ))}
-        </motion.div>
+    <section className="pb-20">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-14">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-14">
+          {/* Left: contact cards */}
+          <div className="flex flex-col gap-4">
+            {cards.map((card) => (
+              <div
+                key={card.title}
+                className="rounded-2xl bg-black/[0.03] p-6"
+              >
+                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#6366f1]/[0.08]">
+                  <card.icon className="h-5 w-5 text-[#6366f1]" />
+                </div>
 
-        <ScrollReveal>
-          <div className="mx-auto max-w-2xl rounded-2xl border border-slate-200/60 bg-white/70 p-8 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/60 dark:bg-slate-900/70 dark:shadow-slate-900/50 md:p-12">
-            <h2 className="mb-2 text-xl font-semibold text-slate-900 dark:text-white">
+                <h3 className="mb-1 text-base font-semibold text-black/80">
+                  {card.title}
+                </h3>
+                <p className="mb-4 text-sm text-black/55">{card.description}</p>
+
+                {card.action && card.href && (
+                  <a
+                    href={card.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={
+                      card.isWhatsapp
+                        ? () => trackWhatsAppClick('contato_whatsapp')
+                        : undefined
+                    }
+                    className="inline-flex items-center gap-0.5 text-sm font-medium text-[#6366f1] transition-opacity hover:opacity-70"
+                  >
+                    {card.action}
+                    <IconChevronRight className="h-4 w-4" />
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Right: form */}
+          <div className="rounded-2xl border border-black/[0.08] bg-white p-6 md:p-8">
+            <h2
+              className="mb-1 text-xl font-semibold text-black/80"
+              style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
+            >
               Envie uma mensagem
             </h2>
-            <p className="mb-8 text-slate-500 dark:text-slate-400">
-              Preencha o formulário abaixo e retornaremos em até 24 horas.
+            <p className="mb-7 text-sm text-black/55">
+              Preencha o formulário e retornaremos em até 24 horas.
             </p>
             <ContactForm />
           </div>
-        </ScrollReveal>
+        </div>
       </div>
     </section>
   )
 }
 
-function ContactForm() {
-  const form = useForm<ContactFormData>({
-    resolver: zodResolver(contactFormSchema),
-    defaultValues: {
-      name: '',
-      email: '',
-      subject: '',
-      message: '',
-    },
-  })
+// ─── Form ────────────────────────────────────────────────────────────────────
 
-  const isSubmitting = form.formState.isSubmitting
+function ContactForm() {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues: { name: '', email: '', subject: '', message: '' },
+  })
 
   async function onSubmit(data: ContactFormData) {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      toast.success('Mensagem enviada com sucesso! Retornaremos em breve.')
-      form.reset()
-      
+      // Replace with real server action when available
+      await new Promise<void>((resolve) => setTimeout(resolve, 1500))
       console.log('Form data:', data)
+      toast.success('Mensagem enviada com sucesso! Retornaremos em breve.')
+      reset()
     } catch {
       toast.error('Erro ao enviar mensagem. Tente novamente.')
     }
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nome</FormLabel>
-                <FormControl>
-                  <Input placeholder="Seu nome" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      {/* Name + Email */}
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-black/55">Nome</label>
+          <input
+            {...register('name')}
+            placeholder="Seu nome"
+            className={inputClass}
           />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>E-mail</FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="seu@email.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {errors.name && (
+            <span className="text-xs text-red-500">{errors.name.message}</span>
+          )}
         </div>
 
-        <FormField
-          control={form.control}
-          name="subject"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Assunto</FormLabel>
-              <FormControl>
-                <Input placeholder="Sobre o que deseja falar?" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-black/55">E-mail</label>
+          <input
+            {...register('email')}
+            type="email"
+            placeholder="seu@email.com"
+            className={inputClass}
+          />
+          {errors.email && (
+            <span className="text-xs text-red-500">{errors.email.message}</span>
           )}
-        />
+        </div>
+      </div>
 
-        <FormField
-          control={form.control}
-          name="message"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Mensagem</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Digite sua mensagem..."
-                  className="min-h-32 resize-none"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+      {/* Subject */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-black/55">Assunto</label>
+        <input
+          {...register('subject')}
+          placeholder="Sobre o que deseja falar?"
+          className={inputClass}
         />
+        {errors.subject && (
+          <span className="text-xs text-red-500">{errors.subject.message}</span>
+        )}
+      </div>
 
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full gap-2 py-6 text-base shadow-lg shadow-primary/20"
-        >
-          {isSubmitting ? (
-            <>
-              <IconLoader2 className="h-5 w-5 animate-spin" />
-              Enviando...
-            </>
-          ) : (
-            <>
-              <IconSend className="h-5 w-5" />
-              Enviar mensagem
-            </>
-          )}
-        </Button>
-      </form>
-    </Form>
+      {/* Message */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-black/55">Mensagem</label>
+        <textarea
+          {...register('message')}
+          placeholder="Digite sua mensagem..."
+          rows={5}
+          className={[
+            inputClass,
+            'h-auto resize-none py-3 leading-relaxed',
+          ].join(' ')}
+        />
+        {errors.message && (
+          <span className="text-xs text-red-500">
+            {errors.message.message}
+          </span>
+        )}
+      </div>
+
+      {/* Submit */}
+      <PglButton
+        type="submit"
+        variant="dark"
+        size="lg"
+        loading={isSubmitting}
+        className="w-full"
+      >
+        {!isSubmitting && <IconSend className="h-4 w-4" />}
+        {isSubmitting ? 'Enviando...' : 'Enviar mensagem'}
+      </PglButton>
+    </form>
   )
 }
+
+// ─── FAQ ─────────────────────────────────────────────────────────────────────
 
 function FAQSection() {
   const faqs = [
     {
       question: 'Quanto tempo leva para criar minha página?',
-      answer: 'Com nossa plataforma, você pode ter sua landing page pronta em menos de 5 minutos. Basta conectar seu Google Meu Negócio ou preencher as informações manualmente.',
+      answer:
+        'Com nossa plataforma, você pode ter sua landing page pronta em menos de 5 minutos. Basta conectar seu Google Meu Negócio ou preencher as informações manualmente.',
     },
     {
       question: 'Preciso de conhecimento técnico?',
-      answer: 'Não! O Decolou foi desenvolvido para ser simples e intuitivo. Nossa IA cuida de todo o conteúdo e otimização SEO para você.',
+      answer:
+        'Não! O Decolou foi desenvolvido para ser simples e intuitivo. Nossa IA cuida de todo o conteúdo e otimização SEO para você.',
     },
     {
       question: 'Posso usar meu próprio domínio?',
-      answer: 'Sim! Nos planos pagos você pode configurar seu domínio personalizado. Fornecemos todas as instruções para configuração.',
+      answer:
+        'Sim! Nos planos pagos você pode configurar seu domínio personalizado. Fornecemos todas as instruções para configuração.',
     },
     {
       question: 'Como funciona o suporte?',
-      answer: 'Oferecemos suporte via WhatsApp e e-mail em horário comercial. Para clientes Pro, também oferecemos suporte prioritário.',
+      answer:
+        'Oferecemos suporte via WhatsApp e e-mail em horário comercial. Para clientes Pro, também oferecemos suporte prioritário.',
     },
   ]
 
   return (
-    <section className="relative py-16">
-      <div className="container mx-auto px-4">
-        <ScrollReveal className="mb-12 text-center">
-          <h2 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-3xl">
+    <section className="py-16 md:py-20">
+      <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-14">
+        {/* Heading */}
+        <div className="mb-10 text-center">
+          <h2
+            className="text-2xl font-semibold text-black/80 md:text-3xl"
+            style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}
+          >
             Perguntas frequentes
           </h2>
-        </ScrollReveal>
+          <p className="mt-2 text-sm text-black/40">
+            Não encontrou o que procura? Entre em contato diretamente.
+          </p>
+        </div>
 
-        <ScrollReveal>
-          <div className="mx-auto max-w-2xl space-y-4">
-            {faqs.map((faq, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="rounded-xl border border-slate-200/40 bg-white/70 p-6 backdrop-blur-sm dark:border-slate-700/40 dark:bg-slate-900/70"
-              >
-                <h3 className="mb-2 font-semibold text-slate-900 dark:text-white">
-                  {faq.question}
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  {faq.answer}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </ScrollReveal>
+        {/* Items */}
+        <div className="mx-auto max-w-2xl space-y-3">
+          {faqs.map((faq, index) => (
+            <div
+              key={index}
+              className="rounded-2xl border border-black/[0.08] bg-white p-6"
+            >
+              <h3 className="mb-2 text-sm font-semibold text-black/80">
+                {faq.question}
+              </h3>
+              <p className="text-sm leading-relaxed text-black/55">
+                {faq.answer}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )

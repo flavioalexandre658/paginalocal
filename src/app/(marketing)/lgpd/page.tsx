@@ -1,9 +1,6 @@
 import { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
-import { db } from '@/db'
-import { subscription } from '@/db/schema'
-import { eq, and, or } from 'drizzle-orm'
 import { IconShieldLock } from '@tabler/icons-react'
 import { LegalPageLayout, LegalSection, LegalHighlight } from '../_components/legal-page-layout'
 
@@ -12,37 +9,17 @@ export const metadata: Metadata = {
   description: 'Saiba como o Decolou está em conformidade com a LGPD e protege seus dados pessoais.',
 }
 
-async function getUserHasSubscription(userId: string): Promise<boolean> {
-  const [userSubscription] = await db
-    .select({ id: subscription.id })
-    .from(subscription)
-    .where(
-      and(
-        eq(subscription.userId, userId),
-        or(
-          eq(subscription.status, 'ACTIVE'),
-          eq(subscription.status, 'TRIALING')
-        )
-      )
-    )
-    .limit(1)
-
-  return !!userSubscription
-}
-
 export default async function LGPDPage() {
   const session = await auth.api.getSession({ headers: await headers() })
-  const isLoggedIn = !!session?.user?.id
-  const hasSubscription = isLoggedIn ? await getUserHasSubscription(session.user.id) : false
 
   return (
     <LegalPageLayout
-      icon={<IconShieldLock className="h-8 w-8" />}
+      icon={<IconShieldLock className="size-6" />}
       title="LGPD"
       description="Nosso compromisso com a Lei Geral de Proteção de Dados e a segurança das suas informações."
       lastUpdated="04 de fevereiro de 2026"
-      isLoggedIn={isLoggedIn}
-      hasSubscription={hasSubscription}
+      breadcrumbLabel="LGPD"
+      isLoggedIn={!!session?.user?.id}
     >
       <LegalHighlight variant="info">
         <strong>Compromisso com sua privacidade:</strong> O Decolou está em total conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), garantindo transparência e segurança no tratamento dos seus dados.

@@ -1,9 +1,6 @@
 import { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
-import { db } from '@/db'
-import { subscription } from '@/db/schema'
-import { eq, and, or } from 'drizzle-orm'
 import { IconFileText } from '@tabler/icons-react'
 import { LegalPageLayout, LegalSection, LegalHighlight } from '../_components/legal-page-layout'
 
@@ -12,37 +9,17 @@ export const metadata: Metadata = {
   description: 'Termos e condições de uso da plataforma Decolou. Leia antes de utilizar nossos serviços.',
 }
 
-async function getUserHasSubscription(userId: string): Promise<boolean> {
-  const [userSubscription] = await db
-    .select({ id: subscription.id })
-    .from(subscription)
-    .where(
-      and(
-        eq(subscription.userId, userId),
-        or(
-          eq(subscription.status, 'ACTIVE'),
-          eq(subscription.status, 'TRIALING')
-        )
-      )
-    )
-    .limit(1)
-
-  return !!userSubscription
-}
-
 export default async function TermosDeUsoPage() {
   const session = await auth.api.getSession({ headers: await headers() })
-  const isLoggedIn = !!session?.user?.id
-  const hasSubscription = isLoggedIn ? await getUserHasSubscription(session.user.id) : false
 
   return (
     <LegalPageLayout
-      icon={<IconFileText className="h-8 w-8" />}
+      icon={<IconFileText className="size-6" />}
       title="Termos de Uso"
       description="Condições gerais que regem o uso da plataforma Decolou."
       lastUpdated="04 de fevereiro de 2026"
-      isLoggedIn={isLoggedIn}
-      hasSubscription={hasSubscription}
+      breadcrumbLabel="Termos de Uso"
+      isLoggedIn={!!session?.user?.id}
     >
       <LegalHighlight variant="warning">
         <strong>Importante:</strong> Ao utilizar a plataforma Decolou, você concorda com estes Termos de Uso. Se você não concordar com algum dos termos, por favor, não utilize nossos serviços.

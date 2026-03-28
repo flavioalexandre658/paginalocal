@@ -1,45 +1,22 @@
-'use client'
+import Link from "next/link"
+import { IconChevronRight } from "@tabler/icons-react"
+import { cn } from "@/lib/utils"
+import { MarketingHeader } from "./marketing-header"
+import { MarketingFooter } from "./marketing-footer"
 
-import { useRef } from 'react'
-import { motion, useInView } from 'framer-motion'
-import { MarketingHeader } from './marketing-header'
-import { MarketingFooter } from './marketing-footer'
-import { Breadcrumb } from '@/components/shared/breadcrumb'
-
-const revealVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const } 
-  }
-}
-
-function ScrollReveal({ children, className }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-50px' })
-
-  return (
-    <motion.div
-      ref={ref}
-      initial="hidden"
-      animate={isInView ? 'visible' : 'hidden'}
-      variants={revealVariants}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  )
-}
+/* ------------------------------------------------------------------ */
+/*  Layout                                                              */
+/* ------------------------------------------------------------------ */
 
 interface LegalPageLayoutProps {
   icon: React.ReactNode
   title: string
   description: string
-  lastUpdated: string
-  children: React.ReactNode
+  lastUpdated?: string
+  breadcrumbLabel: string
   isLoggedIn?: boolean
   hasSubscription?: boolean
+  children: React.ReactNode
 }
 
 export function LegalPageLayout({
@@ -47,60 +24,53 @@ export function LegalPageLayout({
   title,
   description,
   lastUpdated,
+  breadcrumbLabel,
+  isLoggedIn,
   children,
-  isLoggedIn = false,
-  hasSubscription = false,
 }: LegalPageLayoutProps) {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+    <main className="min-h-dvh bg-white" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
+      <MarketingHeader isLoggedIn={isLoggedIn} />
 
-      <MarketingHeader isLoggedIn={isLoggedIn} hasSubscription={hasSubscription} />
-      <Breadcrumb items={[{ label: title }]} />
+      <div className="mx-auto max-w-[800px] px-4 pt-12 pb-8 sm:px-6 md:pt-20">
+        {/* Breadcrumb */}
+        <nav className="mb-8 flex items-center gap-1.5 text-sm text-black/40">
+          <Link href="/" className="transition-colors hover:text-black/80">Inicio</Link>
+          <IconChevronRight className="size-3.5" />
+          <span className="text-black/80">{breadcrumbLabel}</span>
+        </nav>
 
-      <section className="relative py-12 md:py-16">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mx-auto max-w-3xl text-center"
+        {/* Header */}
+        <div className="mb-12">
+          <div className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-[#6366f1]/[0.08] text-[#6366f1]">
+            {icon}
+          </div>
+          <h1
+            className="text-[32px] font-medium leading-[1.1] tracking-[-0.02em] text-black/80 md:text-[40px]"
+            style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
           >
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary shadow-lg shadow-primary/10">
-              {icon}
-            </div>
-
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl lg:text-5xl">
-              {title}
-            </h1>
-
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-500 dark:text-slate-400">
-              {description}
-            </p>
-
-            <p className="mt-4 text-sm text-slate-400">
-              Última atualização: {lastUpdated}
-            </p>
-          </motion.div>
+            {title}
+          </h1>
+          <p className="mt-3 text-base text-black/55">{description}</p>
+          {lastUpdated && (
+            <p className="mt-2 text-sm text-black/30">Ultima atualizacao: {lastUpdated}</p>
+          )}
         </div>
-      </section>
 
-      <section className="relative pb-24">
-        <div className="container mx-auto px-4">
-          <ScrollReveal>
-            <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200/60 bg-white/70 p-8 shadow-xl shadow-slate-200/50 backdrop-blur-xl dark:border-slate-700/60 dark:bg-slate-900/70 dark:shadow-slate-900/50 md:p-12">
-              <div className="prose prose-slate max-w-none dark:prose-invert prose-headings:font-semibold prose-headings:tracking-tight prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3 prose-p:text-slate-600 prose-p:dark:text-slate-300 prose-li:text-slate-600 prose-li:dark:text-slate-300 prose-strong:text-slate-900 prose-strong:dark:text-white">
-                {children}
-              </div>
-            </div>
-          </ScrollReveal>
+        {/* Content */}
+        <div className="space-y-10">
+          {children}
         </div>
-      </section>
+      </div>
 
       <MarketingFooter />
     </main>
   )
 }
+
+/* ------------------------------------------------------------------ */
+/*  Section                                                             */
+/* ------------------------------------------------------------------ */
 
 interface LegalSectionProps {
   id?: string
@@ -111,26 +81,32 @@ interface LegalSectionProps {
 export function LegalSection({ id, title, children }: LegalSectionProps) {
   return (
     <section id={id} className="scroll-mt-24">
-      <h2>{title}</h2>
-      {children}
+      <h2 className="mb-4 text-lg font-semibold text-black/80">{title}</h2>
+      <div className="space-y-3 text-sm leading-relaxed text-black/55 [&_ul]:ml-4 [&_ul]:list-disc [&_ul]:space-y-1.5 [&_li]:text-black/55 [&_strong]:font-medium [&_strong]:text-black/80 [&_a]:text-[#6366f1] [&_a]:underline [&_a]:underline-offset-2">
+        {children}
+      </div>
     </section>
   )
 }
 
+/* ------------------------------------------------------------------ */
+/*  Highlight box                                                       */
+/* ------------------------------------------------------------------ */
+
 interface LegalHighlightProps {
+  variant?: "info" | "warning" | "success"
   children: React.ReactNode
-  variant?: 'info' | 'warning' | 'success'
 }
 
-export function LegalHighlight({ children, variant = 'info' }: LegalHighlightProps) {
-  const variants = {
-    info: 'border-blue-500/20 bg-blue-500/5 text-blue-700 dark:text-blue-300',
-    warning: 'border-amber-500/20 bg-amber-500/5 text-amber-700 dark:text-amber-300',
-    success: 'border-emerald-500/20 bg-emerald-500/5 text-emerald-700 dark:text-emerald-300',
-  }
+const highlightStyles = {
+  info: "border-[#6366f1]/20 bg-[#6366f1]/[0.04] text-[#6366f1]",
+  warning: "border-amber-500/20 bg-amber-500/[0.04] text-amber-700",
+  success: "border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-700",
+}
 
+export function LegalHighlight({ variant = "info", children }: LegalHighlightProps) {
   return (
-    <div className={`my-6 rounded-xl border p-4 ${variants[variant]}`}>
+    <div className={cn("rounded-xl border px-4 py-3 text-sm leading-relaxed", highlightStyles[variant])}>
       {children}
     </div>
   )
