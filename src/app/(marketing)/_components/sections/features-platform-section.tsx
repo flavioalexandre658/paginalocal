@@ -22,41 +22,41 @@ const FEATURES = [
   {
     id: "design",
     icon: IconBrush,
-    title: "Projetos profissionais",
+    title: "Design profissional automatico",
     description:
-      "Designs de sites impressionantes que convertem visitantes em clientes.",
+      "Nossa IA cria um site completo com layout, cores e tipografia pensados para converter visitantes em clientes.",
   },
   {
     id: "content",
     icon: IconPencil,
-    title: "Escrito com maestria",
+    title: "Textos escritos por IA",
     description:
-      "Conteudo criado por IA que fala diretamente com seus clientes.",
+      "Todo o conteudo do seu site — titulos, descricoes, servicos — e gerado por inteligencia artificial e otimizado para SEO.",
   },
   {
     id: "mobile",
     icon: IconDeviceMobile,
-    title: "Prioridade para dispositivos moveis",
+    title: "100% responsivo",
     description:
-      "Sites responsivos que funcionam perfeitamente em qualquer tela.",
+      "Seu site funciona perfeitamente em celular, tablet e computador. Pronto para receber clientes de qualquer dispositivo.",
   },
   {
     id: "seo",
     icon: IconSearch,
-    title: "Otimizado para pesquisa e IA",
-    description: "Apareca no topo do Google e do ChatGPT.",
+    title: "SEO nativo para Google",
+    description: "Meta tags, codigo limpo e carregamento ultra-rapido. Seu negocio aparece no topo das buscas.",
   },
   {
     id: "domains",
     icon: IconWorld,
-    title: "Dominios personalizados",
-    description: "Use seu proprio dominio para um visual profissional.",
+    title: "Dominio personalizado",
+    description: "Conecte seu proprio dominio (seunegocio.com.br) ao site. Nos cuidamos da configuracao tecnica.",
   },
   {
-    id: "analytics",
-    icon: IconChartBar,
-    title: "Analises",
-    description: "Acompanhe visitas, contatos e conversoes em tempo real.",
+    id: "google",
+    icon: IconSearch,
+    title: "Integracao com Google",
+    description: "Importamos fotos, avaliacoes e horarios direto do Google Meu Negocio para seu site.",
   },
 ]
 
@@ -92,10 +92,10 @@ export function FeaturesPlatformSection() {
                 {/* Bottom label */}
                 <div className="mt-8">
                   <p className="text-base font-semibold text-white/90">
-                    Construtor de Sites com IA no 1
+                    Construtor de Sites com IA
                   </p>
                   <p className="mt-1 max-w-xs text-sm text-white/50 leading-relaxed">
-                    O construtor de sites com IA mais rapido e poderoso. Mais de 10 milhoes de sites criados.
+                    Seu site profissional pronto em segundos. IA gera design, textos e SEO otimizado para seu negocio.
                   </p>
                 </div>
               </div>

@@ -45,7 +45,7 @@ function WebsiteBuilderVisual() {
   )
 }
 
-function ImageStudioVisual() {
+function GoogleBusinessVisual() {
   return (
     <div className="flex h-48 items-center justify-center px-6">
       <div className="relative">
@@ -69,7 +69,7 @@ function ImageStudioVisual() {
   )
 }
 
-function DiscoverabilityVisual() {
+function SEOVisual() {
   return (
     <div className="flex h-48 flex-col items-center justify-center px-6">
       {/* Chart mockup */}
@@ -95,55 +95,46 @@ function DiscoverabilityVisual() {
   )
 }
 
-function InvoicingVisual() {
+function DomainVisual() {
   return (
-    <div className="relative flex h-48 items-center justify-center px-6">
-      {/* Back invoice */}
-      <div className="absolute left-8 top-6 w-32 -rotate-6 rounded-xl border border-black/[0.06] bg-white p-3 shadow-md">
-        <div className="h-2 w-16 rounded bg-black/[0.08]" />
-        <div className="mt-2 h-2 w-full rounded bg-black/[0.04]" />
-        <div className="mt-1 h-2 w-3/4 rounded bg-black/[0.04]" />
-        <div className="mt-3 flex justify-end">
-          <div className="rounded-full bg-emerald-500 px-2 py-0.5 text-[8px] font-bold text-white">Pago</div>
+    <div className="flex h-48 flex-col items-center justify-center gap-3 px-6">
+      {/* Domain card connected */}
+      <div className="w-full max-w-[220px] rounded-xl border border-black/[0.06] bg-white p-3 shadow-md">
+        <div className="flex items-center gap-2">
+          <div className="size-2 rounded-full bg-emerald-500" />
+          <div className="text-[10px] font-semibold text-black/80">seunegocio.com.br</div>
+        </div>
+        <div className="mt-2 flex items-center justify-between">
+          <div className="text-[9px] text-emerald-600">DNS configurado</div>
+          <div className="rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[8px] font-bold text-emerald-600">Ativo</div>
         </div>
       </div>
-      {/* Front invoice */}
-      <div className="relative z-10 w-36 rotate-3 rounded-xl border border-black/[0.06] bg-white p-3 shadow-lg">
-        <div className="h-2.5 w-20 rounded bg-black/[0.08]" />
-        <div className="mt-1 h-2 w-12 rounded bg-black/[0.04]" />
-        <div className="mt-3 space-y-1.5">
-          <div className="flex items-center justify-between">
-            <div className="h-2 w-16 rounded bg-black/[0.06]" />
-            <div className="h-2 w-8 rounded bg-black/[0.06]" />
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="h-2 w-12 rounded bg-black/[0.06]" />
-            <div className="h-2 w-10 rounded bg-black/[0.06]" />
-          </div>
-        </div>
-        <div className="mt-3 flex justify-end">
-          <div className="rounded-full bg-emerald-500 px-2 py-0.5 text-[8px] font-bold text-white">Pago</div>
-        </div>
+      {/* Arrow */}
+      <div className="h-4 w-px bg-black/10" />
+      {/* Subdomain card */}
+      <div className="w-full max-w-[220px] rounded-xl border border-black/[0.04] bg-black/[0.02] p-3">
+        <div className="text-[9px] text-black/40">Subdominio gratuito</div>
+        <div className="mt-1 text-[10px] font-medium text-black/55">seunegocio.decolou.com</div>
       </div>
     </div>
   )
 }
 
-function CRMVisual() {
+function WhatsAppVisual() {
   return (
     <div className="flex h-48 flex-col items-center justify-center gap-2 px-6">
-      {/* Lead notifications */}
-      {[1, 2, 3].map((i) => (
+      {/* WhatsApp notifications */}
+      {["Ola! Vi seu site e quero um orcamento", "Quanto custa o servico?", "Voces atendem na minha regiao?"].map((msg, i) => (
         <div key={i} className={cn(
-          "flex w-full max-w-[220px] items-center gap-2.5 rounded-xl border border-black/[0.06] bg-white px-3 py-2.5 shadow-sm transition-all",
-          i === 1 && "shadow-md",
+          "flex w-full max-w-[220px] items-center gap-2.5 rounded-xl border border-black/[0.06] bg-white px-3 py-2.5 shadow-sm",
+          i === 0 && "shadow-md",
         )}>
-          <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
-            <div className="text-[10px] font-bold text-emerald-600">↑</div>
+          <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#25D366]/10">
+            <div className="text-[10px] font-bold text-[#25D366]">W</div>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-semibold text-emerald-600">Novo lider</div>
-            <div className="mt-0.5 h-2 w-28 rounded bg-black/[0.06]" />
+            <div className="truncate text-[9px] text-black/80">{msg}</div>
+            <div className="mt-0.5 text-[8px] text-black/30">Agora</div>
           </div>
         </div>
       ))}
@@ -151,7 +142,7 @@ function CRMVisual() {
   )
 }
 
-function AnalyticsVisual() {
+function EditorVisual() {
   return (
     <div className="flex h-48 flex-col items-center justify-center px-6">
       {/* Mini metrics */}
@@ -186,33 +177,33 @@ function AnalyticsVisual() {
 const TOOLS: { visual: React.ReactNode; name: string; description: string }[] = [
   {
     visual: <WebsiteBuilderVisual />,
-    name: "Construtor de Sites com IA no 1",
-    description: "O construtor de sites com IA mais rapido e poderoso. Mais de 10 milhoes de sites criados.",
+    name: "Construtor de Sites com IA",
+    description: "Seu site profissional criado em segundos. Basta informar seu negocio e a IA faz o resto.",
   },
   {
-    visual: <ImageStudioVisual />,
-    name: "Estudio de imagem com IA",
-    description: "Crie facilmente imagens que estejam alinhadas a sua marca para logotipos, anuncios e seu site.",
+    visual: <GoogleBusinessVisual />,
+    name: "Integracao Google Meu Negocio",
+    description: "Importamos fotos, avaliacoes, horarios e endereco direto do Google para o seu site.",
   },
   {
-    visual: <DiscoverabilityVisual />,
-    name: "Capacidade de descoberta",
-    description: "Gere leads de alta qualidade com IA do Google e ChatGPT.",
+    visual: <SEOVisual />,
+    name: "SEO otimizado para sua cidade",
+    description: "Meta tags, codigo limpo e conteudo otimizado para seu negocio aparecer no topo do Google.",
   },
   {
-    visual: <InvoicingVisual />,
-    name: "Faturamento",
-    description: "Receba seu pagamento mais rapido.",
+    visual: <DomainVisual />,
+    name: "Dominio personalizado",
+    description: "Conecte seu proprio dominio ao site. Nos configuramos tudo para voce.",
   },
   {
-    visual: <CRMVisual />,
-    name: "CRM",
-    description: "Todos os seus leads e clientes em um so lugar.",
+    visual: <WhatsAppVisual />,
+    name: "WhatsApp integrado",
+    description: "Botao de WhatsApp em todo o site. Receba contatos direto no seu celular.",
   },
   {
-    visual: <AnalyticsVisual />,
-    name: "Analytics",
-    description: "Acompanhe visitas, contatos e conversoes em tempo real.",
+    visual: <EditorVisual />,
+    name: "Editor visual intuitivo",
+    description: "Edite textos, cores, fontes e temas do seu site com um clique. Sem codigo.",
   },
 ]
 

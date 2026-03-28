@@ -8,13 +8,13 @@ import { cn } from "@/lib/utils"
 /* ------------------------------------------------------------------ */
 
 const TOOL_PILLS = [
-  { label: "Pagamentos", price: "R$ 49", color: "bg-red-500", rotate: "-12deg", top: "18%", left: "8%" },
-  { label: "CRM", price: "R$ 89", color: "bg-orange-500", rotate: "-6deg", top: "5%", left: "30%" },
-  { label: "Imagens de IA", price: "R$ 59", color: "bg-amber-500", rotate: "8deg", top: "10%", left: "52%" },
-  { label: "SEO", price: "R$ 249", color: "bg-gray-400", rotate: "4deg", top: "2%", left: "74%" },
-  { label: "Site", price: "R$ 79", color: "bg-emerald-500", rotate: "2deg", top: "58%", left: "22%" },
-  { label: "Faturamento", price: "R$ 69", color: "bg-orange-400", rotate: "-3deg", top: "55%", left: "42%" },
-  { label: "Chat com IA", price: "R$ 39", color: "bg-teal-500", rotate: "10deg", top: "52%", left: "64%" },
+  { label: "Site profissional", price: "R$ 150", color: "bg-emerald-500", rotate: "2deg", top: "18%", left: "8%" },
+  { label: "Hospedagem", price: "R$ 40", color: "bg-orange-500", rotate: "-6deg", top: "5%", left: "32%" },
+  { label: "SEO", price: "R$ 300", color: "bg-gray-400", rotate: "4deg", top: "10%", left: "58%" },
+  { label: "Dominio", price: "R$ 50", color: "bg-blue-500", rotate: "-8deg", top: "2%", left: "78%" },
+  { label: "Designer", price: "R$ 500", color: "bg-red-500", rotate: "-3deg", top: "55%", left: "12%" },
+  { label: "Redator SEO", price: "R$ 200", color: "bg-amber-500", rotate: "8deg", top: "52%", left: "38%" },
+  { label: "Manutencao", price: "R$ 100", color: "bg-teal-500", rotate: "10deg", top: "58%", left: "65%" },
 ]
 
 /* ------------------------------------------------------------------ */
@@ -44,7 +44,7 @@ export function ComparisonSection() {
           {/* Subtitle */}
           <ScrollReveal className="mt-4 text-center">
             <p className="text-base text-white/50">
-              Substitua 7 assinaturas por um plano simples.
+              Tudo o que uma agencia cobraria milhares por mes, em um unico plano.
             </p>
           </ScrollReveal>
 
@@ -78,7 +78,7 @@ export function ComparisonSection() {
               <div className="text-center">
                 <p className="text-sm text-white/40">Gastos tipicos</p>
                 <p className="mt-2 font-heading text-[28px] text-white/50 line-through decoration-red-400/60 decoration-2 md:text-[36px]">
-                  R$ 633/m
+                  R$ 1.340/m
                 </p>
               </div>
 
@@ -86,7 +86,7 @@ export function ComparisonSection() {
               <div className="text-center">
                 <p className="text-sm text-white/40">Plano de crescimento sustentavel</p>
                 <p className="mt-2 font-heading text-[28px] text-white/90 md:text-[36px]">
-                  R$ 29,90/mes
+                  R$ 59,90/mes
                 </p>
               </div>
             </div>

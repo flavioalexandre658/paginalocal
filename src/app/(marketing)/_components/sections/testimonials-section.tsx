@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 const TESTIMONIALS = [
   {
     quote:
-      "Com o Decolou tudo ficou muito simples. Meu site ficou profissional e os clientes ja comecaram a me encontrar no Google. Tambem adorei o CRM.",
+      "Com o Decolou tudo ficou muito simples. Meu site ficou profissional e os clientes ja comecaram a me encontrar no Google. Melhor investimento que fiz.",
     name: "Marina Silva",
     business: "Salao Bela Vista",
     initials: "M",

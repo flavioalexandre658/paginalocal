@@ -40,7 +40,7 @@ export function HeroSection({ shouldRedirectToWhatsApp }: Props) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.12 }}
           >
-            O Construtor de Sites com IA que impulsiona o seu negocio, atrai clientes e coloca voce em 1o lugar no Google e no ChatGPT.
+            Crie um site profissional com IA, otimizado para SEO, pronto para aparecer no Google e receber clientes pelo WhatsApp.
           </motion.p>
 
           {/* CTA */}

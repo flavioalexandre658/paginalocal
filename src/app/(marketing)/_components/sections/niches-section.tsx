@@ -6,34 +6,34 @@ import { ScrollReveal, StaggerGroup, StaggerItem } from "@/components/marketing/
 
 const CATEGORIES = [
   {
-    title: "Servicos Domiciliares",
-    description: "Paisagismo, reparos e manutencao residencial.",
-    href: "/servicos-domiciliares",
+    title: "Oficinas e Auto Centers",
+    description: "Mecanicas, borracharias, lava-jatos e auto centers.",
+    href: "/oficinas",
   },
   {
-    title: "Saude e bem-estar",
-    description: "Servicos de fitness, beleza e bem-estar.",
-    href: "/saude-bem-estar",
+    title: "Beleza e Estetica",
+    description: "Saloes, barbearias, clinicas de estetica e nail designers.",
+    href: "/saloes",
   },
   {
-    title: "Servicos profissionais",
-    description: "Consultoria, financas e apoio empresarial.",
-    href: "/servicos-profissionais",
+    title: "Alimentacao",
+    description: "Restaurantes, pizzarias, hamburguers, cafeterias e delivery.",
+    href: "/restaurantes",
   },
   {
-    title: "Comida e eventos",
-    description: "Servicos de catering, eventos e gastronomia local.",
-    href: "/comida-eventos",
+    title: "Saude e Bem-estar",
+    description: "Academias, clinicas, dentistas, pilates e nutricionistas.",
+    href: "/saude",
   },
   {
-    title: "Animais de estimacao e automoveis",
-    description: "Servicos de cuidados com animais de estimacao e veiculos.",
-    href: "/pets-automoveis",
+    title: "Pet Shops e Veterinarias",
+    description: "Pet shops, banho e tosa, clinicas veterinarias.",
+    href: "/pet-shops",
   },
   {
-    title: "Criatividade e Digital",
-    description: "Design, conteudo e marketing.",
-    href: "/criatividade-digital",
+    title: "Comercio e Servicos",
+    description: "Lojas, imobiliarias, contabilidade e servicos gerais.",
+    href: "/comercio",
   },
 ]
 

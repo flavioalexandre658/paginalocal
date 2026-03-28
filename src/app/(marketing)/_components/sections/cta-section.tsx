@@ -33,7 +33,7 @@ export function CTASection({ shouldRedirectToWhatsApp }: Props) {
 
             {/* Description */}
             <p className="relative mx-auto mt-6 max-w-md text-base text-white/50 leading-relaxed md:text-lg">
-              Junte-se a mais de 2.000 empresarios que ja estao atraindo clientes com um site profissional feito por IA.
+              Seu concorrente ja esta no Google recebendo os clientes que poderiam ser seus. Crie seu site profissional agora com IA.
             </p>
 
             {/* CTA button */}

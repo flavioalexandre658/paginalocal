@@ -10,28 +10,28 @@ import {
 
 const FAQS = [
   {
-    q: "Preciso de algo mais do que apenas um site para minha empresa. O Decolou pode me ajudar?",
-    a: "Com certeza. O Decolou foi projetado como uma plataforma completa para criacao de negocios. Alem do site, voce tem CRM integrado, faturamento, analytics, ferramentas de SEO e assistencia de IA — tudo em uma unica plataforma, sem precisar contratar servicos separados.",
-  },
-  {
-    q: "Como o Decolou me ajuda a administrar meu negocio no dia a dia?",
-    a: "O Decolou vai muito alem da criacao do seu site. Ele ajuda voce a escrever conteudo de marketing, otimizar seu SEO, acompanhar leads pelo CRM, gerar faturas e fornece insights de desempenho do seu negocio — tudo automatizado por inteligencia artificial.",
-  },
-  {
-    q: "Se eu usar o Decolou, precisarei pagar por varias ferramentas?",
-    a: "Nao. O Decolou elimina a necessidade de contratar separadamente construtores de sites, sistemas de CRM, softwares de faturamento e ferramentas de marketing. Tudo em uma unica plataforma com uma assinatura simples a partir de R$ 29,90/mes.",
-  },
-  {
-    q: "O Decolou e apenas para novas empresas, ou empresas ja estabelecidas tambem podem usa-lo?",
-    a: "O Decolou funciona para ambos os casos. Seja voce um iniciante que precisa entrar online rapidamente ou uma empresa consolidada que quer modernizar sua presenca digital, a plataforma se adapta ao seu momento.",
+    q: "Como o Decolou cria meu site com IA?",
+    a: "Basta digitar o nome do seu negocio. Nossa IA busca suas informacoes no Google — fotos, avaliacoes, endereco e horarios — e cria um site profissional completo em segundos. Voce pode personalizar tudo depois no editor visual.",
   },
   {
     q: "Posso personalizar o design do site gerado pela IA?",
-    a: "Sim, totalmente. Voce pode alterar cores, fontes, textos e imagens clicando diretamente no site. O editor visual permite ajustes em tempo real sem precisar de conhecimento tecnico — basta clicar e editar.",
+    a: "Sim, totalmente. O editor visual permite alterar cores, fontes, temas, textos e imagens clicando diretamente no site. Voce edita tudo em tempo real, sem precisar de conhecimento tecnico e sem tocar em codigo.",
+  },
+  {
+    q: "Meu site sera otimizado para SEO?",
+    a: "Sim. Todos os sites incluem meta tags otimizadas, codigo limpo, carregamento ultra-rapido e sao totalmente responsivos. O conteudo e gerado pela IA ja pensando em SEO para sua cidade e seu nicho, ajudando seu negocio a aparecer no topo do Google.",
+  },
+  {
+    q: "Como funciona a integracao com o Google Meu Negocio?",
+    a: "Ao criar seu site, importamos automaticamente as fotos, avaliacoes, nota, horario de funcionamento e endereco do seu perfil no Google. Isso deixa seu site completo desde o primeiro momento, sem voce precisar preencher nada manualmente.",
   },
   {
     q: "Posso usar o construtor de sites de graca?",
-    a: "Sim. Voce pode criar e testar seu site gratuitamente. Para publicar e acessar recursos premium como dominio personalizado, analytics e CRM, escolha um dos nossos planos.",
+    a: "Sim. Voce pode criar e visualizar seu site gratuitamente. Para publicar online e acessar recursos como dominio personalizado e rastreamento de contatos, escolha um dos nossos planos a partir de R$ 59,90/mes.",
+  },
+  {
+    q: "Como funciona o dominio personalizado?",
+    a: "Com um plano ativo, voce pode conectar seu proprio dominio (ex: seunegocio.com.br) ao site. Nos cuidamos de toda a configuracao tecnica de DNS para voce — basta informar o dominio e a gente faz o resto.",
   },
 ]
 
@@ -39,7 +39,6 @@ export function FAQSection() {
   return (
     <section className="bg-white pt-24 md:pt-32">
       <div className="mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-14">
-        {/* Two-column layout: heading left, accordion right */}
         <div className="flex flex-col gap-12 lg:flex-row lg:gap-24">
 
           {/* Left — sticky heading */}
