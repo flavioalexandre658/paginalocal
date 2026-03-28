@@ -75,7 +75,7 @@ export function FooterMinimal({ content, tokens }: Props) {
             <span className="mx-2" style={{ opacity: 0.3 }}>
               |
             </span>
-            <span>Desenvolvido por Página Local</span>
+            <span>Desenvolvido por Decolou</span>
           </div>
         </div>
       </div>

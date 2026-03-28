@@ -18,22 +18,22 @@ export const metadata: Metadata = {
     'site otimizado SEO preço',
   ],
   openGraph: {
-    title: 'Planos e Preços | Site para Negócio Local | Página Local',
+    title: 'Planos e Preços | Site para Negócio Local | Decolou',
     description: 'Tenha o site do seu negócio local a partir de R$29/mês. SEO otimizado para aparecer no topo do Google.',
     type: 'website',
-    url: 'https://www.paginalocal.com.br/planos',
+    url: 'https://www.decolou.com/planos',
     images: [
       {
-        url: 'https://paginalocal.com.br/assets/images/seo/previa_social.jpg',
+        url: 'https://decolou.com/assets/images/seo/previa_social.jpg',
         width: 1200,
         height: 630,
-        alt: 'Página Local - Seu negócio no topo do Google',
+        alt: 'Decolou - Seu negócio no topo do Google',
         type: 'image/jpeg',
       },
     ],
   },
   alternates: {
-    canonical: 'https://www.paginalocal.com.br/planos',
+    canonical: 'https://www.decolou.com/planos',
   },
 }
 

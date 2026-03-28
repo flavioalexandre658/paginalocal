@@ -123,13 +123,13 @@ export function CookieConsent() {
               <p className="flex-1 text-xs text-slate-600 sm:text-sm dark:text-slate-300">
                 <span className="hidden sm:inline">
                   Usamos cookies para melhorar sua experiência.{' '}
-                  <Link href="https://paginalocal.com.br/politica-de-privacidade" className="text-primary hover:underline">
+                  <Link href="https://decolou.com/politica-de-privacidade" className="text-primary hover:underline">
                     Saiba mais
                   </Link>
                 </span>
                 <span className="sm:hidden">
                   Usamos cookies.{' '}
-                  <Link href="https://paginalocal.com.br/politica-de-privacidade" className="text-primary hover:underline">
+                  <Link href="https://decolou.com/politica-de-privacidade" className="text-primary hover:underline">
                     Saiba mais
                   </Link>
                 </span>
@@ -228,13 +228,13 @@ function StoreCookieConsent({
               <p className="flex-1 text-xs sm:text-sm" style={{ color: c.textMuted }}>
                 <span className="hidden sm:inline">
                   Usamos cookies para melhorar sua experiência.{' '}
-                  <Link href="https://paginalocal.com.br/politica-de-privacidade" className="underline underline-offset-2 hover:no-underline" style={{ color: c.accent }}>
+                  <Link href="https://decolou.com/politica-de-privacidade" className="underline underline-offset-2 hover:no-underline" style={{ color: c.accent }}>
                     Saiba mais
                   </Link>
                 </span>
                 <span className="sm:hidden">
                   Usamos cookies.{' '}
-                  <Link href="https://paginalocal.com.br/politica-de-privacidade" className="underline underline-offset-2 hover:no-underline" style={{ color: c.accent }}>
+                  <Link href="https://decolou.com/politica-de-privacidade" className="underline underline-offset-2 hover:no-underline" style={{ color: c.accent }}>
                     Saiba mais
                   </Link>
                 </span>

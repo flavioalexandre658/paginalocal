@@ -27,7 +27,7 @@ export default async function robots({ params }: RobotsParams): Promise<Metadata
 
   const baseUrl = storeResult[0].customDomain
     ? `https://${storeResult[0].customDomain}`
-    : `https://${slug}.paginalocal.com.br`
+    : `https://${slug}.decolou.com`
 
   return {
     rules: {

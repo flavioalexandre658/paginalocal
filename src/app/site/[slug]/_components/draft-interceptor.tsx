@@ -18,7 +18,7 @@ const INTERCEPTED_PATTERNS = [
   'waze.com',
 ]
 
-const MAIN_DOMAIN = process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'
+const MAIN_DOMAIN = process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'
 
 export function DraftInterceptor({ isDraft }: DraftInterceptorProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -154,13 +154,13 @@ export function DraftInterceptor({ isDraft }: DraftInterceptorProps) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/assets/images/icon/favicon.ico"
-              alt="Página Local"
+              alt="Decolou"
               width={24}
               height={24}
               className="rounded-lg"
             />
             <span className="text-sm font-semibold tracking-tight text-white">
-              Página Local
+              Decolou
             </span>
           </div>
           <h3 className="text-base font-semibold tracking-tight text-white">

@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: '/',
       disallow: ['/painel/', '/admin/', '/api/', '/onboarding/', '/entrar/', '/cadastro/', '/recuperar-senha/', '/redefinir-senha/'],
     },
-    sitemap: 'https://paginalocal.com.br/sitemap.xml',
+    sitemap: 'https://decolou.com/sitemap.xml',
   }
 }

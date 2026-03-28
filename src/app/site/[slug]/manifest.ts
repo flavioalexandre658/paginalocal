@@ -26,7 +26,7 @@ export default async function manifest({ params }: ManifestProps): Promise<Metad
 
   if (!data) {
     return {
-      name: 'Página Local',
+      name: 'Decolou',
       short_name: 'PGL',
       start_url: '/',
       display: 'standalone',

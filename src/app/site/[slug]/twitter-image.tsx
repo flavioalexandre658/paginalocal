@@ -198,7 +198,7 @@ export default async function TwitterImage({ params }: TwitterImageProps) {
               transform: 'rotate(180deg)',
             }}
           >
-            paginalocal.com.br
+            decolou.com
           </span>
         </div>
       </div>

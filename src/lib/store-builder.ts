@@ -182,15 +182,15 @@ function buildCategorySeoContent(name: string) {
     seoKeywords: [`${lower} perto de mim`, lower, `melhor ${lower}`],
     heroTitle: truncate(`Encontre ${name} Perto de Você`, 100)!,
     heroSubtitle: `Compare avaliações reais, veja endereços e entre em contato pelo WhatsApp com ${lower} da sua cidade.`,
-    longDescription: `Procurando ${lower} perto de você? No Página Local você encontra ${lower} com avaliações reais de clientes, endereço completo e contato direto por WhatsApp. Compare preços e serviços, veja quem atende na sua região e escolha a melhor opção para você.`,
+    longDescription: `Procurando ${lower} perto de você? No Decolou você encontra ${lower} com avaliações reais de clientes, endereço completo e contato direto por WhatsApp. Compare preços e serviços, veja quem atende na sua região e escolha a melhor opção para você.`,
     faqs: [
       {
         question: `Qual a melhor ${lower} perto de mim?`,
-        answer: `No Página Local você encontra ${lower} com avaliações reais de clientes na sua cidade. Compare notas, serviços e localização para escolher a melhor opção perto de você.`,
+        answer: `No Decolou você encontra ${lower} com avaliações reais de clientes na sua cidade. Compare notas, serviços e localização para escolher a melhor opção perto de você.`,
       },
       {
         question: `Como entrar em contato com ${lower}?`,
-        answer: `Você pode entrar em contato pelo WhatsApp ou telefone, disponíveis no perfil de cada estabelecimento no Página Local.`,
+        answer: `Você pode entrar em contato pelo WhatsApp ou telefone, disponíveis no perfil de cada estabelecimento no Decolou.`,
       },
       {
         question: `${name} aceita cartão de crédito?`,

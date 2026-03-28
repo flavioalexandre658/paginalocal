@@ -175,7 +175,7 @@ export default async function OGImage({ params }: OGImageProps) {
               color: '#94a3b8',
             }}
           >
-            paginalocal.com.br
+            decolou.com
           </span>
           <span
             style={{

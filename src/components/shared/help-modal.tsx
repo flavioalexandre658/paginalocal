@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 // ─── Env constants ────────────────────────────────────────────────
 
-const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "contato@paginalocal.com.br";
+const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL ?? "contato@decolou.com";
 const SUPPORT_NUMBER = process.env.NEXT_PUBLIC_SUPPORT_NUMBER ?? "";
 
 // ─── Option card ──────────────────────────────────────────────────
@@ -78,7 +78,7 @@ export function HelpModal({ open, onClose }: Props) {
   const isPaid = hasActiveSubscription();
 
   const whatsappUrl = SUPPORT_NUMBER
-    ? `https://wa.me/55${SUPPORT_NUMBER}?text=${encodeURIComponent("Ola! Preciso de ajuda com minha conta no Pagina Local.")}`
+    ? `https://wa.me/55${SUPPORT_NUMBER}?text=${encodeURIComponent("Ola! Preciso de ajuda com minha conta no Decolou.")}`
     : null;
 
   return (

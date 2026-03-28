@@ -105,7 +105,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const baseUrl = storeData.customDomain
     ? `https://${storeData.customDomain}`
-    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'}`
+    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'}`
 
   const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
   const ogImage = storeData.coverUrl || storeData.logoUrl
@@ -171,7 +171,7 @@ export default async function PlanosPage({ params }: PageProps) {
 
   const baseUrl = storeData.customDomain
     ? `https://${storeData.customDomain}`
-    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'}`
+    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'}`
 
   function getPlanCtaUrl(plan: typeof plans[0]): string {
     if (plan.ctaMode === 'EXTERNAL_LINK' && plan.ctaExternalUrl) {

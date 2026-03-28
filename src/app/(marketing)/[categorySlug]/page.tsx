@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     }
   }
 
-  const title = category.seoTitle || `${category.name} - Encontre os Melhores | Página Local`
+  const title = category.seoTitle || `${category.name} - Encontre os Melhores | Decolou`
   const description = category.seoDescription || `Encontre os melhores ${category.name.toLowerCase()} da sua região. Veja avaliações, endereços e entre em contato pelo WhatsApp.`
 
   return {
@@ -53,8 +53,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
       description,
       type: 'website',
       locale: 'pt_BR',
-      siteName: 'Página Local',
-      url: `https://paginalocal.com.br/${categorySlug}`,
+      siteName: 'Decolou',
+      url: `https://decolou.com/${categorySlug}`,
     },
     twitter: {
       card: 'summary_large_image',
@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
       description,
     },
     alternates: {
-      canonical: `https://paginalocal.com.br/${categorySlug}`,
+      canonical: `https://decolou.com/${categorySlug}`,
     },
   }
 }
@@ -93,7 +93,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
-    name: category.heroTitle || `${category.name} - Página Local`,
+    name: category.heroTitle || `${category.name} - Decolou`,
     description: category.seoDescription || category.description,
     numberOfItems: stats.totalStores,
     itemListElement: storesData.stores.map((store, index) => ({
@@ -116,7 +116,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             reviewCount: store.googleReviewsCount || 1,
           },
         }),
-        url: `https://${store.slug}.paginalocal.com.br`,
+        url: `https://${store.slug}.decolou.com`,
       },
     })),
   }
@@ -128,8 +128,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     description: category.longDescription || category.description,
     provider: {
       '@type': 'Organization',
-      name: 'Página Local',
-      url: 'https://paginalocal.com.br',
+      name: 'Decolou',
+      url: 'https://decolou.com',
     },
     areaServed: {
       '@type': 'Country',
@@ -184,7 +184,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       )}
 
       <section className="sr-only" aria-hidden="false">
-        <h1>{category.heroTitle || `${category.name} - Página Local`}</h1>
+        <h1>{category.heroTitle || `${category.name} - Decolou`}</h1>
         <p>{categoryIntro}</p>
         {category.longDescription && <p>{category.longDescription}</p>}
         {stats.totalStores > 0 && (

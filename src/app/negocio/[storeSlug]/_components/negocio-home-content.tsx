@@ -47,7 +47,7 @@ function getGreeting(): string {
   return "Boa noite";
 }
 
-const DOMAIN = process.env.NEXT_PUBLIC_MAIN_DOMAIN ?? "paginalocal.com.br";
+const DOMAIN = process.env.NEXT_PUBLIC_MAIN_DOMAIN ?? "decolou.com";
 
 export function NegocioHomeContent({ storeId, storeName, storeSlug, isActive, customDomain }: Props) {
   const router = useRouter();
@@ -75,7 +75,7 @@ export function NegocioHomeContent({ storeId, storeName, storeSlug, isActive, cu
       <div className="flex flex-col items-start gap-4">
         <p className="text-xl font-semibold leading-tight text-black/80 md:text-2xl">
           <span className="block">{getGreeting()},</span>
-          <span className="block">bem-vindo ao Pagina Local</span>
+          <span className="block">bem-vindo ao Decolou</span>
         </p>
       </div>
 

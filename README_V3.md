@@ -83,7 +83,7 @@ Pronto! Sistema v3 funcionando.
 
 ```bash
 # Acesse uma loja ativa existente
-http://{slug}.paginalocal.com.br
+http://{slug}.decolou.com
 ```
 
 **Resultado esperado**: Visual idêntico ao anterior, todas as seções na mesma ordem.

@@ -322,7 +322,7 @@ export const createStoreManualAction = authActionClient
     }
 
     let subdomainCreated = false
-    const subdomain = `${newStore.slug}.paginalocal.com.br`
+    const subdomain = `${newStore.slug}.decolou.com`
     try {
       const domainResult = await addDomainToVercel(subdomain)
       subdomainCreated = domainResult.success

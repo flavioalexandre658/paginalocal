@@ -9,7 +9,7 @@ import { LegalPageLayout, LegalSection, LegalHighlight } from '../_components/le
 
 export const metadata: Metadata = {
   title: 'LGPD - Lei Geral de Proteção de Dados',
-  description: 'Saiba como o Página Local está em conformidade com a LGPD e protege seus dados pessoais.',
+  description: 'Saiba como o Decolou está em conformidade com a LGPD e protege seus dados pessoais.',
 }
 
 async function getUserHasSubscription(userId: string): Promise<boolean> {
@@ -45,7 +45,7 @@ export default async function LGPDPage() {
       hasSubscription={hasSubscription}
     >
       <LegalHighlight variant="info">
-        <strong>Compromisso com sua privacidade:</strong> O Página Local está em total conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), garantindo transparência e segurança no tratamento dos seus dados.
+        <strong>Compromisso com sua privacidade:</strong> O Decolou está em total conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018), garantindo transparência e segurança no tratamento dos seus dados.
       </LegalHighlight>
 
       <LegalSection title="O que é a LGPD?">
@@ -72,7 +72,7 @@ export default async function LGPDPage() {
 
       <LegalSection title="Bases legais para tratamento">
         <p>
-          O Página Local trata seus dados pessoais com base nas seguintes hipóteses legais previstas na LGPD:
+          O Decolou trata seus dados pessoais com base nas seguintes hipóteses legais previstas na LGPD:
         </p>
         <ul>
           <li><strong>Consentimento:</strong> Quando você autoriza expressamente o tratamento</li>
@@ -118,7 +118,7 @@ export default async function LGPDPage() {
         </ul>
 
         <LegalHighlight variant="success">
-          <strong>Contato do DPO:</strong> Para exercer seus direitos ou esclarecer dúvidas sobre proteção de dados, entre em contato pelo e-mail: <strong>privacidade@paginalocal.com.br</strong>
+          <strong>Contato do DPO:</strong> Para exercer seus direitos ou esclarecer dúvidas sobre proteção de dados, entre em contato pelo e-mail: <strong>privacidade@decolou.com</strong>
         </LegalHighlight>
       </LegalSection>
 

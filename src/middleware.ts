@@ -1,13 +1,27 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+const NEW_DOMAIN = 'decolou.com'
+
 const MAIN_DOMAINS = [
   'localhost',
   '127.0.0.1',
-  'paginalocal.com.br',
-  'paginalocal.com',
+  'decolou.com',
   process.env.NEXT_PUBLIC_MAIN_DOMAIN,
 ].filter(Boolean) as string[]
+
+// Old domains that should 301 redirect to the new domain
+const OLD_DOMAINS = [
+  'paginalocal.com',
+  'paginalocal.com.br',
+  'www.paginalocal.com',
+  'www.paginalocal.com.br',
+]
+
+const OLD_DOMAIN_SUFFIXES = [
+  '.paginalocal.com',
+  '.paginalocal.com.br',
+]
 
 const RESERVED_SUBDOMAINS = ['www', 'app', 'admin', 'api', 'painel']
 
@@ -69,20 +83,60 @@ async function resolveStoreSlug(domain: string, reqUrl: string): Promise<string 
   }
 }
 
-function extractSubdomain(host: string): string | null {
-  const cleanHost = host.toLowerCase().replace(/^www\./, '').split(':')[0]
-
-  if (cleanHost === 'paginalocal.com' || cleanHost === 'paginalocal.com.br') {
+/**
+ * 301 redirect from old domain to new domain.
+ * Preserves the full path and query string.
+ * - paginalocal.com.br/planos → decolou.com/planos
+ * - slug.paginalocal.com.br/about → slug.decolou.com/about
+ */
+function redirectOldDomain(request: NextRequest, cleanHost: string): NextResponse | null {
+  // Skip redirects for API and static assets (avoid breaking existing integrations)
+  const { pathname } = request.nextUrl
+  if (pathname.startsWith('/api') || pathname.startsWith('/_next')) {
     return null
   }
 
-  if (cleanHost.endsWith('.paginalocal.com.br')) {
-    const subdomain = cleanHost.replace('.paginalocal.com.br', '')
-    return subdomain || null
+  // Root old domain → new root domain
+  if (OLD_DOMAINS.includes(cleanHost)) {
+    const target = new URL(request.url)
+    target.hostname = NEW_DOMAIN
+    target.port = ''
+    target.protocol = 'https:'
+    return NextResponse.redirect(target.toString(), 301)
   }
 
-  if (cleanHost.endsWith('.paginalocal.com')) {
-    const subdomain = cleanHost.replace('.paginalocal.com', '')
+  // Subdomain on old domain → same subdomain on new domain
+  for (const suffix of OLD_DOMAIN_SUFFIXES) {
+    if (cleanHost.endsWith(suffix)) {
+      const subdomain = cleanHost.slice(0, -suffix.length)
+      if (subdomain && !RESERVED_SUBDOMAINS.includes(subdomain)) {
+        const target = new URL(request.url)
+        target.hostname = `${subdomain}.${NEW_DOMAIN}`
+        target.port = ''
+        target.protocol = 'https:'
+        return NextResponse.redirect(target.toString(), 301)
+      }
+      // Reserved subdomain on old domain → just redirect to new root
+      const target = new URL(request.url)
+      target.hostname = NEW_DOMAIN
+      target.port = ''
+      target.protocol = 'https:'
+      return NextResponse.redirect(target.toString(), 301)
+    }
+  }
+
+  return null
+}
+
+function extractSubdomain(host: string): string | null {
+  const cleanHost = host.toLowerCase().replace(/^www\./, '').split(':')[0]
+
+  if (cleanHost === 'decolou.com') {
+    return null
+  }
+
+  if (cleanHost.endsWith('.decolou.com')) {
+    const subdomain = cleanHost.replace('.decolou.com', '')
     return subdomain || null
   }
 
@@ -94,6 +148,7 @@ export async function middleware(request: NextRequest) {
   const host = request.headers.get('host') || ''
   const cleanHost = host.toLowerCase().replace(/^www\./, '').split(':')[0]
 
+  // Skip static assets early
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
@@ -102,8 +157,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // ── 301 redirect old domain → new domain ──
+  const oldDomainRedirect = redirectOldDomain(request, cleanHost)
+  if (oldDomainRedirect) {
+    return oldDomainRedirect
+  }
+
+  // ── Normal routing on new domain ──
   const isMainDomain = MAIN_DOMAINS.some(d => cleanHost === d)
-  const isSubdomain = cleanHost.endsWith('.paginalocal.com.br') || cleanHost.endsWith('.paginalocal.com')
+  const isSubdomain = cleanHost.endsWith('.decolou.com')
 
   let storeSlug: string | null = null
   let isCustomDomain = false

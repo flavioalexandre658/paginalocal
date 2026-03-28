@@ -1,21 +1,22 @@
 import Link from 'next/link'
-import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { cn } from '@/lib/utils'
+
 const sizeVariants = {
   sm: {
-    container: 'h-9 w-9 rounded-xl',
-    icon: 'h-5 w-5',
-    text: 'text-lg',
+    icon: 28,
+    text: 'text-xl',
+    gap: 'gap-1.5',
   },
   md: {
-    container: 'h-10 w-10 rounded-xl',
-    icon: 'h-5 w-5',
-    text: 'text-xl',
+    icon: 32,
+    text: 'text-2xl',
+    gap: 'gap-1.5',
   },
   lg: {
-    container: 'h-12 w-12 rounded-2xl',
-    icon: 'h-6 w-6',
-    text: 'text-2xl',
+    icon: 34,
+    text: 'text-3xl',
+    gap: 'gap-2',
   },
 }
 
@@ -30,17 +31,21 @@ export function Logo({ size = 'md', showText = true, href = '/', className }: Lo
   const variant = sizeVariants[size]
 
   const content = (
-    <div className={cn('flex items-center gap-2', size === 'lg' && 'gap-3', className)}>
-
-      <Image src="/assets/images/icon/favicon.ico" alt="Página Local" width={36} height={36} />
+    <div className={cn('flex items-center', variant.gap, className)}>
+      <Image
+        src="/assets/images/icon/icon.svg"
+        alt="Decolou"
+        width={variant.icon}
+        height={variant.icon}
+        className="shrink-0"
+        priority
+      />
       {showText && (
         <span
-          className={cn(
-            'font-semibold tracking-tight text-slate-900 dark:text-white',
-            variant.text
-          )}
+          className={cn('font-semibold tracking-tight text-black/80', variant.text)}
+          style={{ fontFamily: 'var(--font-geist-sans), system-ui, sans-serif' }}
         >
-          Página Local
+          decolou
         </span>
       )}
     </div>

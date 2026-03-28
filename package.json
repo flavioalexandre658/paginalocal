@@ -1,5 +1,5 @@
 {
-  "name": "pagina-local",
+  "name": "decolou",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -54,6 +54,7 @@
     "drizzle-orm": "^0.41.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.31.0",
+    "geist": "^1.7.0",
     "googleapis": "^171.2.0",
     "lucide-react": "^1.6.0",
     "next": "15.4.8",

@@ -321,7 +321,7 @@ function StoresSection({ stores, categoryName, cityName }: { stores: CategoryCit
                   <div className="flex gap-2">
                     {store.whatsapp && (
                       <a
-                        href={getWhatsAppUrl(store.whatsapp, `Olá! Vi o perfil de ${store.name} no Página Local.`)}
+                        href={getWhatsAppUrl(store.whatsapp, `Olá! Vi o perfil de ${store.name} no Decolou.`)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-500 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-600"

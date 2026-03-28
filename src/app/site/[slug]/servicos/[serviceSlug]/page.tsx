@@ -92,7 +92,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const baseUrl = storeData.customDomain
     ? `https://${storeData.customDomain}`
-    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'}`
+    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'}`
 
   const pageUrl = `${baseUrl}/servicos/${serviceSlug}`
   const ogImage = serviceData.heroImageUrl || serviceData.imageUrl || storeData.coverUrl || storeData.logoUrl
@@ -164,7 +164,7 @@ export default async function ServicePage({ params }: PageProps) {
 
   const baseUrl = storeData.customDomain
     ? `https://${storeData.customDomain}`
-    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'}`
+    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'}`
 
   const pageUrl = `${baseUrl}/servicos/${serviceSlug}`
 

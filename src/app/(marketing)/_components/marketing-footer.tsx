@@ -78,7 +78,7 @@ export function MarketingFooter() {
             {/* Bottom bar */}
             <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-black/[0.06] pt-8 md:flex-row">
               <p className="text-sm text-black/30">
-                &copy; {new Date().getFullYear()} Pagina Local. Todos os direitos reservados.
+                &copy; {new Date().getFullYear()} Decolou. Todos os direitos reservados.
               </p>
               <div className="flex items-center gap-6">
                 <Link href="/entrar" className="text-sm text-black/40 transition-[color] duration-150 hover:text-black/80">

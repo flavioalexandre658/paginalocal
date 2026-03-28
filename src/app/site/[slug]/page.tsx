@@ -129,7 +129,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const baseUrl = storeData.customDomain
     ? `https://${storeData.customDomain}`
-    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'}`
+    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'}`
 
   const ogImage = storeData.coverUrl || storeData.logoUrl
 
@@ -225,7 +225,7 @@ export default async function StorePage({ params }: PageProps) {
 
   const baseUrl = storeData.customDomain
     ? `https://${storeData.customDomain}`
-    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'}`
+    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'}`
 
   const reviewsForSchema = testimonials
     .filter(t => t.content && t.content.length > 20)

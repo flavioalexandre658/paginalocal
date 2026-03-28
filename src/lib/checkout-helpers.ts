@@ -46,6 +46,6 @@ export async function createActivationToken(email: string): Promise<string> {
 }
 
 export function buildActivationUrl(rawToken: string): string {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://paginalocal.com.br'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://decolou.com'
   return `${appUrl}/ativar-senha?token=${rawToken}`
 }

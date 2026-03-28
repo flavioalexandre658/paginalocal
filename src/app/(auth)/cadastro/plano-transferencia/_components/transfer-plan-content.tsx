@@ -197,7 +197,7 @@ export function TransferPlanContent({ plan, planParam, storeSlug }: TransferPlan
               </div>
 
               <p className="text-xs text-slate-500 sm:text-sm dark:text-slate-400">
-                Com o Página Local, tudo isso por apenas
+                Com o Decolou, tudo isso por apenas
               </p>
 
               <div className="mt-1.5 flex items-baseline justify-center gap-1 sm:mt-2">

@@ -33,7 +33,7 @@ export function PublishModal({
   const { executeAsync: saveBlueprint, isExecuting: isSavingBlueprint } = useAction(updateBlueprintAction);
   const { executeAsync: activateStore, isExecuting: isActivating } = useAction(activateStoreAction);
 
-  const domain = process.env.NEXT_PUBLIC_MAIN_DOMAIN ?? "paginalocal.com.br";
+  const domain = process.env.NEXT_PUBLIC_MAIN_DOMAIN ?? "decolou.com";
   const siteUrl = `https://${storeSlug}.${domain}`;
   const displayUrl = `https://${storeSlug}.${domain}`;
 

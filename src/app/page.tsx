@@ -31,8 +31,8 @@ export default async function HomePage() {
   const websiteJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Página Local',
-    url: 'https://paginalocal.com.br',
+    name: 'Decolou',
+    url: 'https://decolou.com',
     description: 'Plataforma de sites profissionais para negócios locais com SEO nativo. Coloque sua empresa no topo do Google e receba clientes pelo WhatsApp.',
     inLanguage: 'pt-BR',
   }
@@ -40,9 +40,9 @@ export default async function HomePage() {
   const organizationJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Página Local',
-    url: 'https://paginalocal.com.br',
-    logo: 'https://paginalocal.com.br/assets/images/icon/favicon.ico',
+    name: 'Decolou',
+    url: 'https://decolou.com',
+    logo: 'https://decolou.com/assets/images/icon/favicon.ico',
     description: 'Sites profissionais otimizados para SEO local. Ajudamos negócios locais a aparecerem no topo do Google e converterem visitantes em clientes pelo WhatsApp.',
     sameAs: [],
     contactPoint: {

@@ -1,12 +1,12 @@
 ---
-description: Design System, padrões visuais e UX para o projeto Página Local (PGL)
+description: Design System, padrões visuais e UX para o projeto Decolou (PGL)
 globs: **/*.{tsx,css}
 alwaysApply: false
 ---
 
 # PGL Design System - Stylization Rules
 
-Este documento define o padrão visual e de UX do projeto Página Local (PGL).
+Este documento define o padrão visual e de UX do projeto Decolou (PGL).
 Todas as interfaces devem seguir estas diretrizes para garantir consistência e qualidade.
 
 ## Filosofia de Design

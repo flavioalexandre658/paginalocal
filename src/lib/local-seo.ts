@@ -67,7 +67,7 @@ function parseHours(hoursString: string): { opens: string; closes: string } | nu
 export function generateLocalBusinessJsonLd(data: LocalBusinessData) {
   const url = data.customDomain
     ? `https://${data.customDomain}`
-    : `https://${data.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'}`
+    : `https://${data.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'}`
 
   const schema: Record<string, unknown> = {
     '@context': 'https://schema.org',
@@ -182,13 +182,13 @@ export function generateBreadcrumbJsonLd(data: {
         '@type': 'ListItem',
         position: 1,
         name: data.category,
-        item: `https://paginalocal.com.br/${data.category.toLowerCase().replace(/\s+/g, '-')}`,
+        item: `https://decolou.com/${data.category.toLowerCase().replace(/\s+/g, '-')}`,
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: `${data.category} em ${data.city}`,
-        item: `https://paginalocal.com.br/${data.category.toLowerCase().replace(/\s+/g, '-')}/${data.city.toLowerCase().replace(/\s+/g, '-')}`,
+        item: `https://decolou.com/${data.category.toLowerCase().replace(/\s+/g, '-')}/${data.city.toLowerCase().replace(/\s+/g, '-')}`,
       },
       {
         '@type': 'ListItem',

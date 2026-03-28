@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Logo } from '@/components/shared/logo'
 import { PglButton } from '@/components/ui/pgl-button'
-import { IconArrowRight, IconLayoutDashboard, IconMenu2, IconX } from '@tabler/icons-react'
+import { IconArrowRight, IconMenu2, IconX } from '@tabler/icons-react'
 import { cn } from '@/lib/utils'
 
 interface MarketingHeaderProps {
@@ -55,18 +55,10 @@ export function MarketingHeader({ isLoggedIn = false, hasSubscription = false }:
           <div className="flex items-center gap-2">
             {isLoggedIn ? (
               <>
-                {!hasSubscription && (
-                  <PglButton variant="dark" size="sm" asChild className="hidden sm:inline-flex">
-                    <Link href="/planos">
-                      Ativar site
-                      <IconArrowRight className="size-4" />
-                    </Link>
-                  </PglButton>
-                )}
-                <PglButton variant="ghost" size="sm" asChild>
+                <PglButton variant="dark" size="sm" asChild>
                   <Link href="/painel">
-                    <IconLayoutDashboard className="size-4" />
-                    <span className="hidden sm:inline">Ir para o aplicativo</span>
+                    Ir para o aplicativo
+                    <IconArrowRight className="size-4" />
                   </Link>
                 </PglButton>
               </>

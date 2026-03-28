@@ -230,7 +230,7 @@ export function SiteFooter({
                 </p>
                 {categorySlug && (
                   <Link
-                    href={`https://paginalocal.com.br/${categorySlug}`}
+                    href={`https://decolou.com/${categorySlug}`}
                     target="_blank"
                     rel="noopener"
                     className="mt-1 inline-block text-xs text-slate-400 transition-colors hover:text-primary dark:text-slate-500"
@@ -242,7 +242,7 @@ export function SiteFooter({
 
               {/* Criado por badge */}
               <a
-                href="https://paginalocal.com.br"
+                href="https://decolou.com"
                 target="_blank"
                 rel="noopener"
                 className="group inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-500 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-md dark:border-slate-700 dark:bg-slate-900 dark:hover:border-primary/40"
@@ -250,13 +250,13 @@ export function SiteFooter({
                 <span className="text-xs">Criado por</span>
                 <Image
                   src="/assets/images/icon/favicon.ico"
-                  alt="Página Local - Criação de Sites para Negócios Locais"
+                  alt="Decolou - Criação de Sites para Negócios Locais"
                   width={16}
                   height={16}
                   className="transition-transform duration-300 group-hover:scale-110"
                 />
                 <span className="text-xs font-bold tracking-tight text-slate-800 dark:text-white">
-                  Página Local
+                  Decolou
                 </span>
                 <IconExternalLink className="h-3 w-3 text-slate-400 transition-all duration-300 group-hover:text-primary" />
               </a>

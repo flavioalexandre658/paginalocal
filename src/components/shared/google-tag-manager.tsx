@@ -17,9 +17,9 @@ const EXCLUDED_PATHS = ["/store", "/platform", "/site"]
 const MAIN_DOMAINS = [
   "localhost",
   "127.0.0.1",
-  "paginalocal.com.br",
+  "decolou.com",
   "paginalocal.com",
-  "www.paginalocal.com.br",
+  "www.decolou.com",
   "www.paginalocal.com",
 ]
 
@@ -36,7 +36,7 @@ function isClientSite(): boolean {
     return false
   }
   
-  if (hostname.endsWith(".paginalocal.com.br") || hostname.endsWith(".paginalocal.com")) {
+  if (hostname.endsWith(".decolou.com") || hostname.endsWith(".paginalocal.com")) {
     return true
   }
   

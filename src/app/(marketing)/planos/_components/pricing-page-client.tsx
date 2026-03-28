@@ -260,7 +260,7 @@ export function PricingPageClient({ plans, isLoggedIn = false }: PricingPageClie
                 </div>
 
                 <p className="text-xs text-slate-500 sm:text-sm dark:text-slate-400">
-                  Com o Página Local, tudo isso por apenas
+                  Com o Decolou, tudo isso por apenas
                 </p>
 
                 <div className="mt-1.5 flex items-baseline justify-center gap-1 sm:mt-2">
@@ -364,7 +364,7 @@ export function PricingPageClient({ plans, isLoggedIn = false }: PricingPageClie
                 {/*<div className="flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
                   <EnhancedButton asChild size="lg" className="gap-2 shadow-lg shadow-primary/20">
 
-                    <a href={`https://wa.me/55${process.env.NEXT_PUBLIC_SUPPORT_NUMBER || '73981269904'}?text=${encodeURIComponent('Olá! Tenho dúvidas sobre os planos do Página Local.')}`}
+                    <a href={`https://wa.me/55${process.env.NEXT_PUBLIC_SUPPORT_NUMBER || '73981269904'}?text=${encodeURIComponent('Olá! Tenho dúvidas sobre os planos do Decolou.')}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => trackWhatsAppClick('planos_whatsapp')}
@@ -374,7 +374,7 @@ export function PricingPageClient({ plans, isLoggedIn = false }: PricingPageClie
                     </a>
                   </EnhancedButton>
                   <EnhancedButton asChild variant="outline" size="lg">
-                    <a href="mailto:contato@paginalocal.com.br">
+                    <a href="mailto:contato@decolou.com">
                       Enviar email
                     </a>
                   </EnhancedButton>

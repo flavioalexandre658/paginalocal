@@ -95,7 +95,7 @@ export function FooterCentered({ content, tokens }: Props) {
                 `\u00a9 ${new Date().getFullYear()} ${storeName}`}
             </span>
             <span className="mx-2 opacity-30">·</span>
-            <span>Desenvolvido por Página Local</span>
+            <span>Desenvolvido por Decolou</span>
           </div>
         </div>
       </div>

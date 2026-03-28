@@ -9,7 +9,7 @@ import { LegalPageLayout, LegalSection, LegalHighlight } from '../_components/le
 
 export const metadata: Metadata = {
   title: 'Política de Privacidade',
-  description: 'Entenda como o Página Local coleta, usa e protege seus dados pessoais.',
+  description: 'Entenda como o Decolou coleta, usa e protege seus dados pessoais.',
 }
 
 async function getUserHasSubscription(userId: string): Promise<boolean> {
@@ -45,7 +45,7 @@ export default async function PoliticaDePrivacidadePage() {
       hasSubscription={hasSubscription}
     >
       <LegalHighlight variant="info">
-        <strong>Sua privacidade importa:</strong> Esta política explica de forma clara e transparente como coletamos, usamos, armazenamos e protegemos seus dados pessoais ao usar a plataforma Página Local.
+        <strong>Sua privacidade importa:</strong> Esta política explica de forma clara e transparente como coletamos, usamos, armazenamos e protegemos seus dados pessoais ao usar a plataforma Decolou.
       </LegalHighlight>
 
       <LegalSection title="1. Informações que Coletamos">
@@ -203,9 +203,9 @@ export default async function PoliticaDePrivacidadePage() {
         </p>
         <LegalHighlight variant="success">
           <ul className="list-none p-0 m-0 space-y-2">
-            <li><strong>E-mail:</strong> privacidade@paginalocal.com.br</li>
-            <li><strong>Encarregado (DPO):</strong> dpo@paginalocal.com.br</li>
-            <li><strong>Suporte:</strong> contato@paginalocal.com.br</li>
+            <li><strong>E-mail:</strong> privacidade@decolou.com</li>
+            <li><strong>Encarregado (DPO):</strong> dpo@decolou.com</li>
+            <li><strong>Suporte:</strong> contato@decolou.com</li>
           </ul>
         </LegalHighlight>
       </LegalSection>

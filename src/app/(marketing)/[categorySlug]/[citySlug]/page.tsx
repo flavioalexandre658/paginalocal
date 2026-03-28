@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: CategoryCityPageProps): Promi
   }
 
   const cityName = formatCityFromSlug(citySlug)
-  const title = `${category.name} em ${cityName} | Página Local`
+  const title = `${category.name} em ${cityName} | Decolou`
   const description = `Encontre as melhores ${category.name.toLowerCase()} em ${cityName}. Veja avaliações, endereços e entre em contato pelo WhatsApp. Profissionais verificados!`
 
   return {
@@ -55,8 +55,8 @@ export async function generateMetadata({ params }: CategoryCityPageProps): Promi
       description,
       type: 'website',
       locale: 'pt_BR',
-      siteName: 'Página Local',
-      url: `https://paginalocal.com.br/${categorySlug}/${citySlug}`,
+      siteName: 'Decolou',
+      url: `https://decolou.com/${categorySlug}/${citySlug}`,
     },
     twitter: {
       card: 'summary_large_image',
@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: CategoryCityPageProps): Promi
       description,
     },
     alternates: {
-      canonical: `https://paginalocal.com.br/${categorySlug}/${citySlug}`,
+      canonical: `https://decolou.com/${categorySlug}/${citySlug}`,
     },
   }
 }
@@ -138,7 +138,7 @@ export default async function CategoryCityPage({ params }: CategoryCityPageProps
             longitude: store.longitude,
           },
         }),
-        url: `https://${store.slug}.paginalocal.com.br`,
+        url: `https://${store.slug}.decolou.com`,
       },
     })),
   }
@@ -150,27 +150,27 @@ export default async function CategoryCityPage({ params }: CategoryCityPageProps
       {
         '@type': 'ListItem',
         position: 1,
-        name: 'Página Local',
-        item: 'https://paginalocal.com.br',
+        name: 'Decolou',
+        item: 'https://decolou.com',
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: category.name,
-        item: `https://paginalocal.com.br/${categorySlug}`,
+        item: `https://decolou.com/${categorySlug}`,
       },
       {
         '@type': 'ListItem',
         position: 3,
         name: `${category.name} em ${storesData.cityName}`,
-        item: `https://paginalocal.com.br/${categorySlug}/${citySlug}`,
+        item: `https://decolou.com/${categorySlug}/${citySlug}`,
       },
     ],
   }
 
   const uniqueContentIntro = `Procurando ${category.name.toLowerCase()} em ${storesData.cityName}? Reunimos os melhores profissionais e estabelecimentos da região para facilitar sua busca.`
   const uniqueContentBody = stats.totalStores > 0
-    ? `${storesData.cityName} conta com ${stats.totalStores} ${category.name.toLowerCase()} cadastrados na Página Local${Number(stats.avgRating) > 0 ? `, com avaliação média de ${stats.avgRating} estrelas` : ''}${stats.totalReviews > 0 ? ` e mais de ${stats.totalReviews} avaliações de clientes reais` : ''}. Todos os profissionais listados foram verificados e estão disponíveis para contato direto pelo WhatsApp.`
+    ? `${storesData.cityName} conta com ${stats.totalStores} ${category.name.toLowerCase()} cadastrados na Decolou${Number(stats.avgRating) > 0 ? `, com avaliação média de ${stats.avgRating} estrelas` : ''}${stats.totalReviews > 0 ? ` e mais de ${stats.totalReviews} avaliações de clientes reais` : ''}. Todos os profissionais listados foram verificados e estão disponíveis para contato direto pelo WhatsApp.`
     : `Estamos expandindo a cobertura de ${category.name.toLowerCase()} em ${storesData.cityName}. Cadastre seu negócio para aparecer para clientes da região.`
 
   return (

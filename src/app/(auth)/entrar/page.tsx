@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 export default function SignInPage() {
   return (
     <AuthCard
-      title="Entrar no Pagina Local"
-      description="Bem-vindo de volta! Faca login para continuar"
+      title="Bem-vindo de volta!"
+      description="Faca login para continuar"
       footer={{
         text: "Nao tem uma conta?",
         linkText: "Sign up",

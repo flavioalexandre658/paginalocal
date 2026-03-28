@@ -1,6 +1,6 @@
-Documentação Técnica: Projeto Página Local (PGL)
+Documentação Técnica: Projeto Decolou (PGL)
 1. Visão Geral
-O Página Local é um SaaS Multi-tenant de "Presença Digital Instantânea". Diferente de um construtor de sites genérico, ele é um Gerador de Landing Pages de Alta Performance focado em SEO Local e conversão via WhatsApp.
+O Decolou é um SaaS Multi-tenant de "Presença Digital Instantânea". Diferente de um construtor de sites genérico, ele é um Gerador de Landing Pages de Alta Performance focado em SEO Local e conversão via WhatsApp.
 
 2. Diferenciais Técnicos (O que deve ser implementado/mantido)
 Zero-Config Tenant: O site do cliente deve ser gerado a partir de um JSON vindo do banco de dados, sem necessidade de processamento no lado do cliente (Client-side rendering pesado).
@@ -13,7 +13,7 @@ Google Maps Sync: Integração com a API do Google Places para que, ao cadastrar
 
 Conversão Flutuante: Widget de WhatsApp e botão "Ligar Agora" fixos na versão mobile (99% do tráfego).
 
-3. Guia de Refactoring (De PatioX para Página Local)
+3. Guia de Refactoring (De PatioX para Decolou)
 Para a IA realizar a limpeza do projeto patiox.com.br, siga estas diretrizes:
 
 A. Estrutura de Database (Prisma/Drizzle)
@@ -61,7 +61,7 @@ Remover a necessidade de login/senha para pequenas edições.
 Implementar a lógica de "Magic Link": O dono do negócio recebe um link com um token JWT via WhatsApp que o desloga em 24h, permitindo editar apenas o essencial (fotos/horário).
 
 4. Instrução para a IA (Copie e cole isto)
-"IA, estou migrando um projeto Next.js Multi-tenant chamado PatioX para um novo SaaS chamado Página Local.
+"IA, estou migrando um projeto Next.js Multi-tenant chamado PatioX para um novo SaaS chamado Decolou.
 
 O objetivo é simplificar:
 
@@ -75,13 +75,13 @@ O frontend deve ser ultra-leve (Server Components) e otimizado para mobile.
 
 Crie um componente de 'Botão de Conversão' que fica fixo no rodapé com WhatsApp e Telefone.
 
-Prepare o sistema para aceitar o subdomínio *.paginalocal.com.br.
+Prepare o sistema para aceitar o subdomínio *.decolou.com.
 
 middleware atual é uma base excelente, mas está "pesado" com regras específicas de veículos e uma arquitetura que dependia de um backend externo (porta 3333).
 
-Para o Página Local, vamos simplificar as rotas e ajustar a lógica de resolução para rodar dentro do próprio Next.js. Como você vai usar Next Only, a função resolveStoreSlug agora deve apontar para uma API Route interna do seu próprio projeto que consulta o NeonDB via Drizzle.
+Para o Decolou, vamos simplificar as rotas e ajustar a lógica de resolução para rodar dentro do próprio Next.js. Como você vai usar Next Only, a função resolveStoreSlug agora deve apontar para uma API Route interna do seu próprio projeto que consulta o NeonDB via Drizzle.
 
-Aqui está o middleware refatorado e "limpo" para o Página Local:
+Aqui está o middleware refatorado e "limpo" para o Decolou:
 
 TypeScript
 import { NextResponse } from 'next/server'
@@ -90,7 +90,7 @@ import type { NextRequest } from 'next/server'
 const MAIN_DOMAINS = [
   'localhost',
   '127.0.0.1',
-  'paginalocal.com.br',
+  'decolou.com',
   'paginalocal.com',
   process.env.NEXT_PUBLIC_MAIN_DOMAIN,
 ].filter(Boolean) as string[]
@@ -139,9 +139,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // 2. Lógica de Subdomínio (*.paginalocal.com.br)
+  // 2. Lógica de Subdomínio (*.decolou.com)
   const isMainDomain = MAIN_DOMAINS.some(d => cleanHost === d)
-  const isSubdomain = cleanHost.endsWith('.paginalocal.com.br') || cleanHost.endsWith('.paginalocal.com')
+  const isSubdomain = cleanHost.endsWith('.decolou.com') || cleanHost.endsWith('.paginalocal.com')
 
   let storeSlug: string | null = null
 

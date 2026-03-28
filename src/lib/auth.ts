@@ -18,8 +18,8 @@ export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL,
   trustedOrigins: [
     'http://localhost:3000',
-    'https://paginalocal.com.br',
-    'https://www.paginalocal.com.br',
+    'https://decolou.com',
+    'https://www.decolou.com',
     'https://paginalocal.com',
     'https://www.paginalocal.com',
     process.env.NEXT_PUBLIC_APP_URL || '',
@@ -48,7 +48,7 @@ export const auth = betterAuth({
     useSecureCookies: process.env.NODE_ENV === 'production',
     crossSubdomainCookies: {
       enabled: process.env.NODE_ENV === 'production',
-      domain: process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br',
+      domain: process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com',
     },
   },
 })

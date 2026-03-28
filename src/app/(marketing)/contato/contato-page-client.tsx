@@ -143,9 +143,9 @@ function ContactSection() {
     {
       icon: IconMail,
       title: 'E-mail',
-      description: 'contato@paginalocal.com.br',
+      description: 'contato@decolou.com',
       action: 'Enviar e-mail',
-      href: 'mailto:contato@paginalocal.com.br',
+      href: 'mailto:contato@decolou.com',
       color: 'from-blue-500/20 to-blue-500/5',
       iconColor: 'text-blue-500',
     },
@@ -343,7 +343,7 @@ function FAQSection() {
     },
     {
       question: 'Preciso de conhecimento técnico?',
-      answer: 'Não! O Página Local foi desenvolvido para ser simples e intuitivo. Nossa IA cuida de todo o conteúdo e otimização SEO para você.',
+      answer: 'Não! O Decolou foi desenvolvido para ser simples e intuitivo. Nossa IA cuida de todo o conteúdo e otimização SEO para você.',
     },
     {
       question: 'Posso usar meu próprio domínio?',

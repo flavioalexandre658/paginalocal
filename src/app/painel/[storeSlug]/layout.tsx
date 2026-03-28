@@ -88,7 +88,7 @@ export default async function DashboardLayout({ children, params }: LayoutProps)
               ) : (
                 <Image
                   src="/assets/images/icon/favicon.ico"
-                  alt="Página Local"
+                  alt="Decolou"
                   width={28}
                   height={28}
                 />

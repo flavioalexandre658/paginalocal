@@ -304,7 +304,7 @@ export function SeoTab({ store }: SeoTabProps) {
                         placeholder={store.slug}
                       />
                       <span className="shrink-0 bg-slate-50 px-3 py-2.5 font-mono text-xs text-slate-400 dark:bg-slate-800 dark:text-slate-500 border-l border-slate-200 dark:border-slate-700 select-none">
-                        .paginalocal.com.br
+                        .decolou.com
                       </span>
                       <div className="shrink-0 px-2">
                         {slugStatus === 'checking' && (

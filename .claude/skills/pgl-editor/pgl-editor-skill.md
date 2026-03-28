@@ -1,6 +1,6 @@
 ---
 name: pgl-inline-editor
-description: Skill para implementar edição inline de elementos no editor visual do PGL (Página Local). Cobre hover detection, seleção de elementos, edição inline de texto com cursor, manutenção de estilos accent, toolbar de seção, e barra de reescrita por IA. Referência visual: editor do Durable.
+description: Skill para implementar edição inline de elementos no editor visual do PGL (Decolou). Cobre hover detection, seleção de elementos, edição inline de texto com cursor, manutenção de estilos accent, toolbar de seção, e barra de reescrita por IA. Referência visual: editor do Durable.
 ---
 
 # PGL — Inline Editor (Fase 2)

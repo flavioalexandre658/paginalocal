@@ -595,7 +595,7 @@ Same data as current (PGL vs Agency vs DIY), but:
 - [ ] **Step 1: Build FAQ section using FAQAccordion compound**
 
 6 questions adapted for PGL:
-1. "Como o Pagina Local cria meu site com IA?"
+1. "Como o Decolou cria meu site com IA?"
 2. "Posso personalizar o design do site gerado pela IA?"
 3. "Meu site sera otimizado para SEO?"
 4. "Quais outras ferramentas estao incluidas?"

@@ -124,7 +124,7 @@ export function UpgradePanel({ plans, storeSlug, loading, currentPlanType }: Pro
             </div>
             <span className="text-xs font-medium text-black/40">Mais de 200 negocios</span>
           </div>
-          <span className="text-xs font-medium text-black/40">Construidos com Pagina Local</span>
+          <span className="text-xs font-medium text-black/40">Construidos com Decolou</span>
         </div>
       </div>
 

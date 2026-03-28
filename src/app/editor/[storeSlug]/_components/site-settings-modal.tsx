@@ -495,7 +495,7 @@ function DomainsTab({ storeId, storeSlug, onOpenUpgrade }: { storeId: string; st
                   className="rounded-[10px] px-[14px] py-[10px] text-[14px]"
                   style={{ backgroundColor: "#f5f5f4", border: "1px solid rgba(0,0,0,0.06)", outline: "none", flex: 1 }}
                 />
-                <span className="shrink-0 text-[13px]" style={{ color: "#737373" }}>.paginalocal.com.br</span>
+                <span className="shrink-0 text-[13px]" style={{ color: "#737373" }}>.decolou.com</span>
                 <PglButton variant="dark" size="xs" onClick={handleSaveSubdomain} disabled={savingSlug} loading={savingSlug}>
                   {!savingSlug && "Salvar"}
                 </PglButton>
@@ -504,8 +504,8 @@ function DomainsTab({ storeId, storeSlug, onOpenUpgrade }: { storeId: string; st
             ) : (
               <div className="flex items-center gap-2">
                 <IconWorld style={{ width: 14, height: 14, color: "#737373", flexShrink: 0 }} />
-                <span className="truncate text-[13px]" style={{ color: "#1a1a1a" }}>https://{storeSlug}.paginalocal.com.br</span>
-                <button onClick={() => { navigator.clipboard.writeText(`https://${storeSlug}.paginalocal.com.br`); toast.success("Copiado"); }} className="shrink-0 p-1" style={{ color: "#a3a3a3" }}>
+                <span className="truncate text-[13px]" style={{ color: "#1a1a1a" }}>https://{storeSlug}.decolou.com</span>
+                <button onClick={() => { navigator.clipboard.writeText(`https://${storeSlug}.decolou.com`); toast.success("Copiado"); }} className="shrink-0 p-1" style={{ color: "#a3a3a3" }}>
                   <IconCopy style={{ width: 14, height: 14 }} />
                 </button>
               </div>

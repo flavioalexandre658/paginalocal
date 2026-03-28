@@ -300,7 +300,7 @@ function BenefitsSection({ categoryName }: { categoryName: string }) {
         <ScrollReveal className="mb-10 text-center">
           <span className="mb-3 inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-600 dark:text-emerald-400">
             <IconSparkles className="h-4 w-4" />
-            Por que usar o Página Local
+            Por que usar o Decolou
           </span>
           <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-2xl lg:text-3xl">
             A forma mais fácil de encontrar {categoryName.toLowerCase()}
@@ -438,7 +438,7 @@ function FeaturedStoresSection({ stores, categoryName }: { stores: CategoryPageC
                   <div className="flex gap-2">
                     {store.whatsapp && (
                       <a
-                        href={getWhatsAppUrl(store.whatsapp, `Olá! Vi o perfil de ${store.name} no Página Local.`)}
+                        href={getWhatsAppUrl(store.whatsapp, `Olá! Vi o perfil de ${store.name} no Decolou.`)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-emerald-500 py-2 text-xs font-semibold text-white transition-colors hover:bg-emerald-600"

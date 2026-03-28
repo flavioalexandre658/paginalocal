@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 const TESTIMONIALS = [
   {
     quote:
-      "Com o Pagina Local tudo ficou muito simples. Meu site ficou profissional e os clientes ja comecaram a me encontrar no Google. Tambem adorei o CRM.",
+      "Com o Decolou tudo ficou muito simples. Meu site ficou profissional e os clientes ja comecaram a me encontrar no Google. Tambem adorei o CRM.",
     name: "Marina Silva",
     business: "Salao Bela Vista",
     initials: "M",
@@ -44,7 +44,7 @@ const TESTIMONIALS = [
   },
   {
     quote:
-      "O Pagina Local foi fundamental para dar credibilidade ao meu negocio, ampliando significativamente meu alcance profissional.",
+      "O Decolou foi fundamental para dar credibilidade ao meu negocio, ampliando significativamente meu alcance profissional.",
     name: "Chef Igor",
     business: "Chef particular",
     initials: "C",

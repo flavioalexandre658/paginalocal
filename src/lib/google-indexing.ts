@@ -98,7 +98,7 @@ export function buildStoreUrl(slug: string, customDomain?: string | null): strin
     return `https://${customDomain}`
   }
 
-  const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'
+  const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'
   return `https://${slug}.${mainDomain}`
 }
 

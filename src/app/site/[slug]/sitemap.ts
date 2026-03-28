@@ -22,7 +22,7 @@ export default async function sitemap({ params }: SitemapParams): Promise<Metada
 
   const baseUrl = storeResult[0].customDomain
     ? `https://${storeResult[0].customDomain}`
-    : `https://${slug}.paginalocal.com.br`
+    : `https://${slug}.decolou.com`
 
   const storeServices = await db
     .select({ slug: service.slug, updatedAt: service.updatedAt })

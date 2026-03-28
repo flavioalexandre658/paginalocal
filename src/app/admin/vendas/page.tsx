@@ -311,7 +311,7 @@ export default function VendasPage() {
   }
 
   const whatsappUrl = generatedUrl
-    ? `https://wa.me/?text=${encodeURIComponent(`Olá! Segue o link para assinar o seu plano na Página Local:\n\n${generatedUrl}`)}`
+    ? `https://wa.me/?text=${encodeURIComponent(`Olá! Segue o link para assinar o seu plano na Decolou:\n\n${generatedUrl}`)}`
     : null
 
   const selectedIntervalPrice =

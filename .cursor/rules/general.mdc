@@ -1,10 +1,10 @@
 ---
-description: Regras de arquitetura, padrões de código e stack técnica para o projeto Página Local (PGL)
+description: Regras de arquitetura, padrões de código e stack técnica para o projeto Decolou (PGL)
 globs: **/*.{ts,tsx}
 alwaysApply: false
 ---
 
-# Página Local (PGL) - Project Rules
+# Decolou (PGL) - Project Rules
 
 Você é um engenheiro de software sênior especializado em desenvolvimento web moderno, com profundo conhecimento em TypeScript, React 19, Next.js 16 (App Router), Postgres (NeonDB), Drizzle, shadcn/ui e Tailwind CSS. Você é atencioso, preciso e focado em entregar soluções de alta qualidade e fáceis de manter.
 
@@ -31,7 +31,7 @@ Você é um engenheiro de software sênior especializado em desenvolvimento web 
 
 ## Regras Gerais de Código
 
-- Nome do projeto: **Página Local (PGL)**
+- Nome do projeto: **Decolou (PGL)**
 - SEMPRE use TypeScript
 - Use nomes descritivos: `isLoading`, `hasError`, `handleSubmit`, `isStoreActive`
 - Use **kebab-case** para arquivos e pastas: `upsert-store.action.ts`

@@ -9,7 +9,7 @@ import { LegalPageLayout, LegalSection, LegalHighlight } from '../_components/le
 
 export const metadata: Metadata = {
   title: 'Termos de Uso',
-  description: 'Termos e condições de uso da plataforma Página Local. Leia antes de utilizar nossos serviços.',
+  description: 'Termos e condições de uso da plataforma Decolou. Leia antes de utilizar nossos serviços.',
 }
 
 async function getUserHasSubscription(userId: string): Promise<boolean> {
@@ -39,18 +39,18 @@ export default async function TermosDeUsoPage() {
     <LegalPageLayout
       icon={<IconFileText className="h-8 w-8" />}
       title="Termos de Uso"
-      description="Condições gerais que regem o uso da plataforma Página Local."
+      description="Condições gerais que regem o uso da plataforma Decolou."
       lastUpdated="04 de fevereiro de 2026"
       isLoggedIn={isLoggedIn}
       hasSubscription={hasSubscription}
     >
       <LegalHighlight variant="warning">
-        <strong>Importante:</strong> Ao utilizar a plataforma Página Local, você concorda com estes Termos de Uso. Se você não concordar com algum dos termos, por favor, não utilize nossos serviços.
+        <strong>Importante:</strong> Ao utilizar a plataforma Decolou, você concorda com estes Termos de Uso. Se você não concordar com algum dos termos, por favor, não utilize nossos serviços.
       </LegalHighlight>
 
       <LegalSection title="1. Aceitação dos Termos">
         <p>
-          Estes Termos de Uso constituem um acordo legal entre você (&quot;Usuário&quot;) e Página Local (&quot;nós&quot;, &quot;nosso&quot; ou &quot;Plataforma&quot;). Ao acessar ou usar nossos serviços, você declara ter lido, compreendido e concordado em estar vinculado a estes termos.
+          Estes Termos de Uso constituem um acordo legal entre você (&quot;Usuário&quot;) e Decolou (&quot;nós&quot;, &quot;nosso&quot; ou &quot;Plataforma&quot;). Ao acessar ou usar nossos serviços, você declara ter lido, compreendido e concordado em estar vinculado a estes termos.
         </p>
         <p>
           Se você está usando a plataforma em nome de uma empresa ou outra entidade legal, você declara ter autoridade para vincular essa entidade a estes termos.
@@ -59,7 +59,7 @@ export default async function TermosDeUsoPage() {
 
       <LegalSection title="2. Descrição do Serviço">
         <p>
-          O Página Local é uma plataforma de criação de landing pages otimizadas para SEO local, que permite:
+          O Decolou é uma plataforma de criação de landing pages otimizadas para SEO local, que permite:
         </p>
         <ul>
           <li>Criar páginas profissionais para negócios locais</li>
@@ -120,7 +120,7 @@ export default async function TermosDeUsoPage() {
 
       <LegalSection title="6. Propriedade Intelectual">
         <p>
-          A plataforma Página Local, incluindo seu código, design, funcionalidades, marca e conteúdo original, são protegidos por direitos autorais, marcas registradas e outras leis de propriedade intelectual.
+          A plataforma Decolou, incluindo seu código, design, funcionalidades, marca e conteúdo original, são protegidos por direitos autorais, marcas registradas e outras leis de propriedade intelectual.
         </p>
         <p>
           Você não pode copiar, modificar, distribuir, vender ou alugar qualquer parte de nossos serviços sem nossa autorização expressa por escrito.
@@ -154,7 +154,7 @@ export default async function TermosDeUsoPage() {
 
       <LegalSection title="9. Limitação de Responsabilidade">
         <p>
-          Na máxima extensão permitida por lei, o Página Local não será responsável por danos indiretos, incidentais, especiais ou consequenciais, incluindo perda de lucros, dados ou oportunidades de negócio.
+          Na máxima extensão permitida por lei, o Decolou não será responsável por danos indiretos, incidentais, especiais ou consequenciais, incluindo perda de lucros, dados ou oportunidades de negócio.
         </p>
         <p>
           Nossa responsabilidade total não excederá o valor pago pelo usuário nos últimos 12 meses.
@@ -184,7 +184,7 @@ export default async function TermosDeUsoPage() {
 
       <LegalSection title="12. Disposições Gerais">
         <p>
-          Estes termos constituem o acordo integral entre você e o Página Local. Se qualquer disposição for considerada inválida, as demais permanecerão em vigor.
+          Estes termos constituem o acordo integral entre você e o Decolou. Se qualquer disposição for considerada inválida, as demais permanecerão em vigor.
         </p>
         <p>
           Estes termos são regidos pelas leis do Brasil. Qualquer disputa será submetida ao foro da comarca de São Paulo/SP.
@@ -192,7 +192,7 @@ export default async function TermosDeUsoPage() {
       </LegalSection>
 
       <LegalHighlight variant="info">
-        <strong>Dúvidas?</strong> Entre em contato conosco pelo e-mail: <strong>contato@paginalocal.com.br</strong>
+        <strong>Dúvidas?</strong> Entre em contato conosco pelo e-mail: <strong>contato@decolou.com</strong>
       </LegalHighlight>
     </LegalPageLayout>
   )

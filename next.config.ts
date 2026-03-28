@@ -68,7 +68,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '*.paginalocal.com.br',
+        hostname: '*.decolou.com',
         pathname: '/**',
       },
       {

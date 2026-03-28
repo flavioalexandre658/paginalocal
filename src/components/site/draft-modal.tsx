@@ -9,7 +9,7 @@ interface DraftModalProps {
   isOwner: boolean
 }
 
-const MAIN_DOMAIN = process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'paginalocal.com.br'
+const MAIN_DOMAIN = process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'
 
 export function DraftModal({ storeName, isOwner }: DraftModalProps) {
   const [isOpen, setIsOpen] = useState(false)

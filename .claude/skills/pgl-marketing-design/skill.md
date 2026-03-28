@@ -1,6 +1,6 @@
 ---
 name: pgl-marketing-design
-description: Use when criando ou editando telas de marketing/landing pages/páginas públicas do PGL (Pagina Local). Cobre o design system completo: cores, tipografia, backgrounds, cards, seções, animações e padrões de componentes extraídos da landing page principal.
+description: Use when criando ou editando telas de marketing/landing pages/páginas públicas do PGL (Decolou). Cobre o design system completo: cores, tipografia, backgrounds, cards, seções, animações e padrões de componentes extraídos da landing page principal.
 ---
 
 # PGL Marketing Design System

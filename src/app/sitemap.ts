@@ -8,7 +8,7 @@ import { generateCitySlug } from '@/lib/utils'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://paginalocal.com.br'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://decolou.com'
 
 const STATIC_PAGES = [
   {
@@ -97,7 +97,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const storePages: MetadataRoute.Sitemap = activeStores.map((s) => {
     const storeUrl = s.customDomain
       ? `https://${s.customDomain}`
-      : `https://${s.slug}.paginalocal.com.br`
+      : `https://${s.slug}.decolou.com`
 
     return {
       url: storeUrl,
@@ -126,7 +126,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .map((s) => {
       const storeUrl = s.customDomain
         ? `https://${s.customDomain}`
-        : `https://${s.storeSlug}.paginalocal.com.br`
+        : `https://${s.storeSlug}.decolou.com`
 
       return {
         url: `${storeUrl}/servicos/${s.serviceSlug}`,

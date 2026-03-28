@@ -330,15 +330,19 @@ export function EditorSidebar({
   const router = useRouter();
 
   const handleSignOut = async () => {
-    const { signOut } = await import("@/lib/auth-client");
-    await signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          router.push("/entrar");
-          router.refresh();
+    try {
+      const { signOut } = await import("@/lib/auth-client");
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            window.location.href = "/entrar";
+          },
         },
-      },
-    });
+      });
+    } catch {
+      // Fallback: force redirect even if signOut fetch fails
+      window.location.href = "/entrar";
+    }
   };
 
   if (mobileOverlay) {

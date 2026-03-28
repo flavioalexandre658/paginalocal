@@ -77,7 +77,7 @@ async function createStripeProduct(planKey: keyof typeof PLANS_CONFIG) {
   console.log(`\n📦 Creating Stripe product for: ${planConfig.name}`)
 
   const product = await stripe.products.create({
-    name: `Página Local - ${planConfig.name}`,
+    name: `Decolou - ${planConfig.name}`,
     description: planConfig.description,
     metadata: {
       planType: planConfig.type,

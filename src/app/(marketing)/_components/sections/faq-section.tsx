@@ -10,20 +10,20 @@ import {
 
 const FAQS = [
   {
-    q: "Preciso de algo mais do que apenas um site para minha empresa. O Pagina Local pode me ajudar?",
-    a: "Com certeza. O Pagina Local foi projetado como uma plataforma completa para criacao de negocios. Alem do site, voce tem CRM integrado, faturamento, analytics, ferramentas de SEO e assistencia de IA — tudo em uma unica plataforma, sem precisar contratar servicos separados.",
+    q: "Preciso de algo mais do que apenas um site para minha empresa. O Decolou pode me ajudar?",
+    a: "Com certeza. O Decolou foi projetado como uma plataforma completa para criacao de negocios. Alem do site, voce tem CRM integrado, faturamento, analytics, ferramentas de SEO e assistencia de IA — tudo em uma unica plataforma, sem precisar contratar servicos separados.",
   },
   {
-    q: "Como o Pagina Local me ajuda a administrar meu negocio no dia a dia?",
-    a: "O Pagina Local vai muito alem da criacao do seu site. Ele ajuda voce a escrever conteudo de marketing, otimizar seu SEO, acompanhar leads pelo CRM, gerar faturas e fornece insights de desempenho do seu negocio — tudo automatizado por inteligencia artificial.",
+    q: "Como o Decolou me ajuda a administrar meu negocio no dia a dia?",
+    a: "O Decolou vai muito alem da criacao do seu site. Ele ajuda voce a escrever conteudo de marketing, otimizar seu SEO, acompanhar leads pelo CRM, gerar faturas e fornece insights de desempenho do seu negocio — tudo automatizado por inteligencia artificial.",
   },
   {
-    q: "Se eu usar o Pagina Local, precisarei pagar por varias ferramentas?",
-    a: "Nao. O Pagina Local elimina a necessidade de contratar separadamente construtores de sites, sistemas de CRM, softwares de faturamento e ferramentas de marketing. Tudo em uma unica plataforma com uma assinatura simples a partir de R$ 29,90/mes.",
+    q: "Se eu usar o Decolou, precisarei pagar por varias ferramentas?",
+    a: "Nao. O Decolou elimina a necessidade de contratar separadamente construtores de sites, sistemas de CRM, softwares de faturamento e ferramentas de marketing. Tudo em uma unica plataforma com uma assinatura simples a partir de R$ 29,90/mes.",
   },
   {
-    q: "O Pagina Local e apenas para novas empresas, ou empresas ja estabelecidas tambem podem usa-lo?",
-    a: "O Pagina Local funciona para ambos os casos. Seja voce um iniciante que precisa entrar online rapidamente ou uma empresa consolidada que quer modernizar sua presenca digital, a plataforma se adapta ao seu momento.",
+    q: "O Decolou e apenas para novas empresas, ou empresas ja estabelecidas tambem podem usa-lo?",
+    a: "O Decolou funciona para ambos os casos. Seja voce um iniciante que precisa entrar online rapidamente ou uma empresa consolidada que quer modernizar sua presenca digital, a plataforma se adapta ao seu momento.",
   },
   {
     q: "Posso personalizar o design do site gerado pela IA?",
@@ -49,7 +49,7 @@ export function FAQSection() {
                 Perguntas frequentes
               </h2>
               <p className="mt-4 text-base text-black/55 leading-relaxed">
-                Tire suas duvidas sobre o Pagina Local e descubra como podemos ajudar o seu negocio a crescer online.
+                Tire suas duvidas sobre o Decolou e descubra como podemos ajudar o seu negocio a crescer online.
               </p>
             </div>
           </ScrollReveal>

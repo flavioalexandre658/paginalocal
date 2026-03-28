@@ -64,7 +64,7 @@ export function getStoreUrl(slug: string): string {
   if (process.env.NODE_ENV === 'development') {
     return `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/site/${slug}`
   }
-  return `https://${slug}.paginalocal.com.br`
+  return `https://${slug}.decolou.com`
 }
 
 export function getProductPageUrl(storeSlug: string, productSlug: string): string {

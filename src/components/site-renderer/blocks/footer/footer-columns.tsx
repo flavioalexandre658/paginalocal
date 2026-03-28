@@ -125,7 +125,7 @@ export function FooterColumns({ content, tokens }: Props) {
             {copyrightText ||
               `\u00a9 ${new Date().getFullYear()} ${storeName}. Todos os direitos reservados.`}
           </span>
-          <span>Desenvolvido por Página Local</span>
+          <span>Desenvolvido por Decolou</span>
         </div>
       </div>
     </footer>

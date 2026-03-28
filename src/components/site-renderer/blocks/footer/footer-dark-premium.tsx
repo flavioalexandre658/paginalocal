@@ -164,7 +164,7 @@ export function FooterDarkPremium({ content, tokens }: Props) {
               `\u00a9 ${new Date().getFullYear()} ${storeName}. Todos os direitos reservados.`}
           </span>
           <span className="text-white/15">
-            Desenvolvido por Página Local
+            Desenvolvido por Decolou
           </span>
         </div>
       </div>

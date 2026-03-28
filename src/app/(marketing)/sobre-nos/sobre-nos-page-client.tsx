@@ -289,7 +289,7 @@ function CTASection() {
               Faça parte dessa história
             </h2>
             <p className="mx-auto mt-4 text-slate-500 dark:text-slate-400">
-              Junte-se a milhares de empreendedores que já estão no topo do Google com o Página Local.
+              Junte-se a milhares de empreendedores que já estão no topo do Google com o Decolou.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <a

@@ -2,6 +2,7 @@ import '@/app/globals.css'
 
 import type { Metadata, Viewport } from 'next'
 import { Inter, Fraunces, Playfair_Display } from 'next/font/google'
+import { GeistSans } from 'geist/font/sans'
 import { Toaster } from 'react-hot-toast'
 import { QueryProvider } from '@/components/providers/query-provider'
 import { CookieConsent } from '@/components/shared/cookie-consent'
@@ -12,35 +13,35 @@ export const metadata: Metadata = {
     'X-DNS-Prefetch-Control': 'on',
   },
   title: {
-    default: 'Site para Negócio Local | Apareça no Topo do Google | Página Local',
-    template: '%s | Página Local',
+    default: 'Site para Negócio Local | Apareça no Topo do Google | Decolou',
+    template: '%s | Decolou',
   },
   description: 'Tenha um site profissional para seu negócio local com SEO nativo para aparecer no topo do Google. Nós fazemos tudo por você. Receba clientes pelo WhatsApp em até 24 horas.',
   alternates: {
-    canonical: 'https://paginalocal.com.br',
+    canonical: 'https://decolou.com',
   },
   openGraph: {
-    title: 'Site para Negócio Local | Apareça no Topo do Google | Página Local',
+    title: 'Site para Negócio Local | Apareça no Topo do Google | Decolou',
     description: 'Sites otimizados para SEO local. Coloque sua empresa no topo do Google e receba clientes pelo WhatsApp. Nós cuidamos de tudo.',
-    url: 'https://paginalocal.com.br',
-    siteName: 'Página Local',
+    url: 'https://decolou.com',
+    siteName: 'Decolou',
     locale: 'pt_BR',
     type: 'website',
     images: [
       {
-        url: 'https://paginalocal.com.br/assets/images/seo/previa_social.jpg',
+        url: 'https://decolou.com/assets/images/seo/previa_social.jpg',
         width: 1200,
         height: 630,
-        alt: 'Página Local - Seu negócio no topo do Google',
+        alt: 'Decolou - Seu negócio no topo do Google',
         type: 'image/jpeg',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Site para Negócio Local | Apareça no Topo do Google | Página Local',
+    title: 'Site para Negócio Local | Apareça no Topo do Google | Decolou',
     description: 'Sites otimizados para SEO local. Coloque sua empresa no topo do Google e receba clientes pelo WhatsApp.',
-    images: ['https://paginalocal.com.br/assets/images/seo/previa_social.jpg'],
+    images: ['https://decolou.com/assets/images/seo/previa_social.jpg'],
   },
   robots: {
     index: true,
@@ -96,7 +97,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${fraunces.variable} ${playfair.variable}`} suppressHydrationWarning>
+    <html lang="pt-BR" className={`${inter.variable} ${fraunces.variable} ${playfair.variable} ${GeistSans.variable}`} suppressHydrationWarning>
       <head>
         <GoogleTagManagerNoScript />
       </head>

@@ -57,7 +57,7 @@ export default function AdminDashboardPage() {
           Dashboard Administrativo
         </h1>
         <p className="mt-1 text-slate-500 dark:text-slate-400">
-          Visão geral da plataforma Página Local
+          Visão geral da plataforma Decolou
         </p>
       </motion.div>
 

@@ -114,8 +114,8 @@ export const updateStoreAction = authActionClient
     revalidateStoreCache(currentSlug)
 
     if (slugChanged) {
-      const oldDomain = `${existingStore.slug}.paginalocal.com.br`
-      const newDomain = `${newSlug}.paginalocal.com.br`
+      const oldDomain = `${existingStore.slug}.decolou.com`
+      const newDomain = `${newSlug}.decolou.com`
 
       revalidateStoreCache(existingStore.slug)
 
