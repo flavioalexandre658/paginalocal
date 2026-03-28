@@ -21,27 +21,17 @@ export const metadata: Metadata = {
     canonical: 'https://decolou.com',
   },
   openGraph: {
-    title: 'Site para Negócio Local | Apareça no Topo do Google | Decolou',
-    description: 'Sites otimizados para SEO local. Coloque sua empresa no topo do Google e receba clientes pelo WhatsApp. Nós cuidamos de tudo.',
+    title: 'Crie seu site profissional com IA em 30 segundos | Decolou',
+    description: 'Design, textos e SEO gerados por inteligencia artificial. Sem codigo, sem designer. Comece gratis.',
     url: 'https://decolou.com',
     siteName: 'Decolou',
     locale: 'pt_BR',
     type: 'website',
-    images: [
-      {
-        url: 'https://decolou.com/assets/images/seo/previa_social.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'Decolou - Seu negócio no topo do Google',
-        type: 'image/jpeg',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Site para Negócio Local | Apareça no Topo do Google | Decolou',
-    description: 'Sites otimizados para SEO local. Coloque sua empresa no topo do Google e receba clientes pelo WhatsApp.',
-    images: ['https://decolou.com/assets/images/seo/previa_social.jpg'],
+    title: 'Crie seu site profissional com IA em 30 segundos | Decolou',
+    description: 'Design, textos e SEO gerados por inteligencia artificial. Sem codigo, sem designer.',
   },
   robots: {
     index: true,

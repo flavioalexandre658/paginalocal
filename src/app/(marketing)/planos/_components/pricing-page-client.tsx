@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { useSearchParams } from "next/navigation"
+import Link from "next/link"
 import { motion } from "framer-motion"
 import { useAction } from "next-safe-action/hooks"
 import toast from "react-hot-toast"
@@ -17,6 +18,7 @@ import {
   IconHeadset,
   IconLock,
   IconStar,
+  IconX,
 } from "@tabler/icons-react"
 import { cn } from "@/lib/utils"
 import { PglButton } from "@/components/ui/pgl-button"
@@ -27,8 +29,19 @@ import { createCheckoutSession } from "@/actions/subscriptions/create-checkout-s
 import type { IPlan, BillingInterval } from "@/interfaces/subscription.interface"
 
 /* ------------------------------------------------------------------ */
-/*  Features — exatamente como no upgrade-panel.tsx                     */
+/*  Features                                                            */
 /* ------------------------------------------------------------------ */
+
+const FREE_FEATURES = [
+  { label: "1 site", included: true },
+  { label: "Criacao com IA", included: true },
+  { label: "Editor visual", included: true },
+  { label: "Subdominio decolou.com", included: true },
+  { label: "SSL e hospedagem", included: true },
+  { label: "Dominio personalizado", included: false },
+  { label: "SEO avancado", included: false },
+  { label: "Analytics", included: false },
+]
 
 const PRO_FEATURES = [
   { label: "Dominio proprio", desc: "Conecte seu dominio profissional" },
@@ -69,9 +82,10 @@ function formatPrice(cents: number) {
 interface Props {
   plans: IPlan[]
   isLoggedIn?: boolean
+  currentPlanType?: string | null
 }
 
-export function PricingPageClient({ plans, isLoggedIn = false }: Props) {
+export function PricingPageClient({ plans, isLoggedIn = false, currentPlanType = null }: Props) {
   const searchParams = useSearchParams()
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
   const [interval, setInterval] = useState<BillingInterval>("MONTHLY")
@@ -84,6 +98,11 @@ export function PricingPageClient({ plans, isLoggedIn = false }: Props) {
   const filteredPlans = useMemo(() => plans.filter((p) => p.type !== "ESSENTIAL"), [plans])
   const proPlan = filteredPlans.find((p) => p.type === "PRO")
   const agencyPlan = filteredPlans.find((p) => p.type === "AGENCY")
+
+  // Show free card only if user is NOT logged in, or logged in with no paid plan
+  const hasPaidPlan = currentPlanType === "PRO" || currentPlanType === "AGENCY"
+  const showFreeCard = !hasPaidPlan
+  const isFreeCurrent = isLoggedIn && !currentPlanType
 
   async function handleSelect(planId: string) {
     if (!isLoggedIn) {
@@ -139,8 +158,8 @@ export function PricingPageClient({ plans, isLoggedIn = false }: Props) {
           >
             Planos simples, sem surpresas
           </h1>
-          <p className="mx-auto mt-5 max-w-lg text-base text-black/55 md:text-lg">
-            Tudo que voce precisa para ter seu negocio no topo do Google. Comece agora e veja resultados em dias.
+          <p className="mx-auto mt-4 max-w-md text-base text-black/55 md:text-lg">
+            Tudo que voce precisa para ter seu negocio no topo do Google. Comece gratis e faca upgrade quando quiser.
           </p>
         </ScrollReveal>
 
@@ -175,33 +194,108 @@ export function PricingPageClient({ plans, isLoggedIn = false }: Props) {
           </div>
         </ScrollReveal>
 
-        {/* ── Plan cards — side by side, large ── */}
-        <div className="mx-auto mt-14 grid max-w-[900px] gap-6 lg:grid-cols-2">
+        {/* ── Plan cards ── */}
+        <div className={cn(
+          "mx-auto mt-14 grid gap-6",
+          showFreeCard ? "max-w-[1100px] lg:grid-cols-3" : "max-w-[900px] lg:grid-cols-2",
+        )}>
+
+          {/* ── FREE ── */}
+          {showFreeCard && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0 }}
+            >
+              <div className={cn(
+                "relative flex h-full flex-col rounded-3xl border p-6 md:p-8",
+                isFreeCurrent
+                  ? "border-black/80 ring-1 ring-black/80"
+                  : "border-black/[0.08] bg-white",
+              )}>
+                {isFreeCurrent && (
+                  <div className="absolute -top-3 left-6">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-black/80 px-3 py-1 text-xs font-semibold text-white">
+                      Plano atual
+                    </span>
+                  </div>
+                )}
+
+                <h3 className="text-2xl font-semibold text-black/80">Gratis</h3>
+                <p className="mt-1 text-sm text-black/55">Para testar e criar seu primeiro site</p>
+
+                <div className="mt-6">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-5xl font-semibold tracking-tight text-black/80">R$ 0</span>
+                    <span className="text-base text-black/40">/mes</span>
+                  </div>
+                  <p className="mt-1.5 text-sm text-black/40">Gratis para sempre</p>
+                </div>
+
+                <div className="my-6 h-px bg-black/[0.06]" />
+
+                <div className="mb-8 flex flex-1 flex-col gap-3">
+                  {FREE_FEATURES.map((f) => (
+                    <div key={f.label} className="flex items-center gap-3">
+                      {f.included ? (
+                        <IconCheck className="size-5 shrink-0 text-emerald-500" />
+                      ) : (
+                        <IconX className="size-5 shrink-0 text-black/20" />
+                      )}
+                      <span className={cn("text-sm", f.included ? "text-black/80" : "text-black/30")}>
+                        {f.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {isFreeCurrent ? (
+                  <PglButton variant="default" size="lg" className="w-full" disabled>
+                    Plano atual
+                  </PglButton>
+                ) : (
+                  <PglButton variant="outline" size="lg" asChild className="w-full">
+                    <Link href="/cadastro">
+                      Comecar gratis
+                      <IconArrowRight className="size-4" />
+                    </Link>
+                  </PglButton>
+                )}
+              </div>
+            </motion.div>
+          )}
 
           {/* ── PRO ── */}
           {proPlan && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: showFreeCard ? 0.1 : 0 }}
             >
-              <div className="relative flex h-full flex-col overflow-hidden rounded-3xl border-2 border-[#6366f1] bg-white">
-                {/* Popular badge */}
-                <div className="bg-[#6366f1] px-6 py-2.5 text-center">
+              <div className={cn(
+                "relative flex h-full flex-col overflow-hidden rounded-3xl border-2 bg-white",
+                currentPlanType === "PRO" ? "border-black/80" : "border-[#6366f1]",
+              )}>
+                {/* Badge */}
+                <div className={cn(
+                  "px-6 py-2.5 text-center",
+                  currentPlanType === "PRO" ? "bg-black/80" : "bg-[#6366f1]",
+                )}>
                   <span className="flex items-center justify-center gap-1.5 text-sm font-semibold text-white">
-                    <IconStar className="size-4 fill-white" />
-                    Mais popular
+                    {currentPlanType === "PRO" ? (
+                      "Plano atual"
+                    ) : (
+                      <><IconStar className="size-4 fill-white" /> Mais popular</>
+                    )}
                   </span>
                 </div>
 
                 <div className="flex flex-1 flex-col p-6 md:p-8">
-                  {/* Name */}
                   <h3 className="text-2xl font-semibold text-black/80">{proPlan.name}</h3>
                   {proPlan.description && (
                     <p className="mt-1 text-sm text-black/55">{proPlan.description}</p>
                   )}
 
-                  {/* Price */}
                   <div className="mt-6">
                     <div className="flex items-baseline gap-1">
                       <span className="text-5xl font-semibold tracking-tight text-black/80">
@@ -212,16 +306,14 @@ export function PricingPageClient({ plans, isLoggedIn = false }: Props) {
                       </span>
                     </div>
                     {interval === "YEARLY" && getSavings(proPlan).savings > 0 && (
-                      <p className="mt-2 text-sm font-medium text-emerald-600">
+                      <p className="mt-1.5 text-sm font-medium text-emerald-600">
                         Economia de {formatPrice(getSavings(proPlan).savings)} ({getSavings(proPlan).pct}% off)
                       </p>
                     )}
                   </div>
 
-                  {/* Divider */}
                   <div className="my-6 h-px bg-black/[0.06]" />
 
-                  {/* Features */}
                   <div className="mb-8 flex flex-1 flex-col gap-4">
                     {PRO_FEATURES.map((f) => (
                       <div key={f.label} className="flex gap-3">
@@ -234,18 +326,25 @@ export function PricingPageClient({ plans, isLoggedIn = false }: Props) {
                     ))}
                   </div>
 
-                  {/* CTA */}
-                  <PglButton
-                    variant="dark"
-                    size="lg"
-                    className="w-full"
-                    onClick={() => handleSelect(proPlan.id)}
-                    loading={isExecuting && selectedPlanId === proPlan.id}
-                    disabled={isExecuting}
-                  >
-                    {!(isExecuting && selectedPlanId === proPlan.id) && "Comecar com Pro"}
-                    {!(isExecuting && selectedPlanId === proPlan.id) && <IconArrowRight className="size-4" />}
-                  </PglButton>
+                  {currentPlanType === "PRO" ? (
+                    <PglButton variant="default" size="lg" className="w-full" disabled>
+                      Plano atual
+                    </PglButton>
+                  ) : (
+                    <PglButton
+                      variant="dark"
+                      size="lg"
+                      className="w-full"
+                      onClick={() => handleSelect(proPlan.id)}
+                      loading={isExecuting && selectedPlanId === proPlan.id}
+                      disabled={isExecuting}
+                    >
+                      {!(isExecuting && selectedPlanId === proPlan.id) && (
+                        <>{currentPlanType === "AGENCY" ? "Fazer downgrade" : "Comecar com Pro"}</>
+                      )}
+                      {!(isExecuting && selectedPlanId === proPlan.id) && <IconArrowRight className="size-4" />}
+                    </PglButton>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -256,16 +355,27 @@ export function PricingPageClient({ plans, isLoggedIn = false }: Props) {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: showFreeCard ? 0.2 : 0.1 }}
             >
-              <div className="flex h-full flex-col rounded-3xl border border-black/[0.08] bg-white p-6 transition-all duration-150 hover:border-black/20 md:p-8">
-                {/* Name */}
+              <div className={cn(
+                "relative flex h-full flex-col rounded-3xl border bg-white p-6 transition-all duration-150 md:p-8",
+                currentPlanType === "AGENCY"
+                  ? "border-2 border-black/80"
+                  : "border-black/[0.08] hover:border-black/20",
+              )}>
+                {currentPlanType === "AGENCY" && (
+                  <div className="absolute -top-3 left-6">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-black/80 px-3 py-1 text-xs font-semibold text-white">
+                      Plano atual
+                    </span>
+                  </div>
+                )}
+
                 <h3 className="text-2xl font-semibold text-black/80">{agencyPlan.name}</h3>
                 {agencyPlan.description && (
                   <p className="mt-1 text-sm text-black/55">{agencyPlan.description}</p>
                 )}
 
-                {/* Price */}
                 <div className="mt-6">
                   <div className="flex items-baseline gap-1">
                     <span className="text-5xl font-semibold tracking-tight text-black/80">
@@ -276,16 +386,14 @@ export function PricingPageClient({ plans, isLoggedIn = false }: Props) {
                     </span>
                   </div>
                   {interval === "YEARLY" && getSavings(agencyPlan).savings > 0 && (
-                    <p className="mt-2 text-sm font-medium text-emerald-600">
+                    <p className="mt-1.5 text-sm font-medium text-emerald-600">
                       Economia de {formatPrice(getSavings(agencyPlan).savings)} ({getSavings(agencyPlan).pct}% off)
                     </p>
                   )}
                 </div>
 
-                {/* Divider */}
                 <div className="my-6 h-px bg-black/[0.06]" />
 
-                {/* Features */}
                 <div className="mb-8 flex flex-1 flex-col gap-4">
                   {AGENCY_FEATURES.map((f) => (
                     <div key={f.label} className="flex gap-3">
@@ -298,18 +406,23 @@ export function PricingPageClient({ plans, isLoggedIn = false }: Props) {
                   ))}
                 </div>
 
-                {/* CTA */}
-                <PglButton
-                  variant="outline"
-                  size="lg"
-                  className="w-full"
-                  onClick={() => handleSelect(agencyPlan.id)}
-                  loading={isExecuting && selectedPlanId === agencyPlan.id}
-                  disabled={isExecuting}
-                >
-                  {!(isExecuting && selectedPlanId === agencyPlan.id) && "Comecar com Agencia"}
-                  {!(isExecuting && selectedPlanId === agencyPlan.id) && <IconArrowRight className="size-4" />}
-                </PglButton>
+                {currentPlanType === "AGENCY" ? (
+                  <PglButton variant="default" size="lg" className="w-full" disabled>
+                    Plano atual
+                  </PglButton>
+                ) : (
+                  <PglButton
+                    variant="outline"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => handleSelect(agencyPlan.id)}
+                    loading={isExecuting && selectedPlanId === agencyPlan.id}
+                    disabled={isExecuting}
+                  >
+                    {!(isExecuting && selectedPlanId === agencyPlan.id) && "Comecar com Agencia"}
+                    {!(isExecuting && selectedPlanId === agencyPlan.id) && <IconArrowRight className="size-4" />}
+                  </PglButton>
+                )}
               </div>
             </motion.div>
           )}
