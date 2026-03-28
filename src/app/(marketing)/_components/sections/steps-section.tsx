@@ -192,12 +192,7 @@ function StepVisual({ type, span2 }: { type: string; span2: boolean }) {
                   </div>
                 ))}
               </div>
-              {/* Bottom upgrade card */}
-              <div className="mt-auto rounded-xl bg-white p-2 shadow-sm">
-                <div className="text-[8px] font-medium text-black/80">Publique seu site</div>
-                <div className="mt-0.5 text-[7px] text-black/40">Acesse recursos premium</div>
-                <div className="mt-1.5 flex h-5 items-center justify-center rounded-lg bg-black/80 text-[7px] font-medium text-white">Fazer upgrade</div>
-              </div>
+           
             </div>
 
             {/* Right column */}
