@@ -24,7 +24,8 @@ export function HeroSection({ shouldRedirectToWhatsApp }: Props) {
 
           {/* Heading */}
           <motion.h1
-            className="text-[56px] leading-[60px] font-heading text-black/80 md:text-8xl md:leading-[100px]"
+            className="text-[52px] font-medium leading-[1.05] tracking-[-0.02em] text-black/80 md:text-[88px]"
+            style={{ fontFamily: "var(--font-playfair), Georgia, serif" }}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
@@ -61,15 +62,6 @@ export function HeroSection({ shouldRedirectToWhatsApp }: Props) {
             </PglButton>
           </motion.div>
 
-          {/* Social proof */}
-          <motion.p
-            className="text-sm text-black/50"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.36 }}
-          >
-            Com a confianca de <span className="font-medium text-black/80">+2.000</span> empresarios
-          </motion.p>
         </div>
       </div>
 

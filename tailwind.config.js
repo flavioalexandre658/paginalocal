@@ -18,6 +18,7 @@ module.exports = {
 		extend: {
 			fontFamily: {
 				heading: ['var(--pgl-font-heading)', 'Georgia', 'serif'],
+				display: ['var(--font-playfair)', 'Georgia', 'serif'],
 				body: ['var(--pgl-font-body)', 'system-ui', 'sans-serif'],
 				accent: ['var(--pgl-font-accent)', 'serif'],
 			},

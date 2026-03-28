@@ -1,7 +1,7 @@
 import '@/app/globals.css'
 
 import type { Metadata, Viewport } from 'next'
-import { Inter, Fraunces } from 'next/font/google'
+import { Inter, Fraunces, Playfair_Display } from 'next/font/google'
 import { Toaster } from 'react-hot-toast'
 import { QueryProvider } from '@/components/providers/query-provider'
 import { CookieConsent } from '@/components/shared/cookie-consent'
@@ -82,13 +82,21 @@ const fraunces = Fraunces({
   preload: false,
 })
 
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-playfair',
+  display: 'swap',
+  preload: false,
+})
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${fraunces.variable}`} suppressHydrationWarning>
+    <html lang="pt-BR" className={`${inter.variable} ${fraunces.variable} ${playfair.variable}`} suppressHydrationWarning>
       <head>
         <GoogleTagManagerNoScript />
       </head>
