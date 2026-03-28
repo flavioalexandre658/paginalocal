@@ -4,17 +4,17 @@ import { cn } from '@/lib/utils'
 
 const sizeVariants = {
   sm: {
-    icon: 28,
+    icon: 22,
     text: 'text-xl',
     gap: 'gap-1.5',
   },
   md: {
-    icon: 32,
+    icon: 24,
     text: 'text-2xl',
     gap: 'gap-1.5',
   },
   lg: {
-    icon: 34,
+    icon: 28,
     text: 'text-3xl',
     gap: 'gap-2',
   },
@@ -33,7 +33,7 @@ export function Logo({ size = 'md', showText = true, href = '/', className }: Lo
   const content = (
     <div className={cn('flex items-center', variant.gap, className)}>
       <Image
-        src="/assets/images/icon/icon.svg"
+        src="/assets/images/icon/icon.ico"
         alt="Decolou"
         width={variant.icon}
         height={variant.icon}
