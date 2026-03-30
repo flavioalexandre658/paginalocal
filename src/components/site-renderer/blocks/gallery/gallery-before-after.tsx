@@ -124,13 +124,13 @@ function BeforeAfterSlider({ before, after, tokens }: BeforeAfterSliderProps) {
 
       {/* Labels */}
       <div
-        className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-[0.6rem] md:text-xs font-medium uppercase tracking-[0.15em] pointer-events-none text-white"
+        className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-xs md:text-xs font-medium uppercase tracking-[0.1em] pointer-events-none text-white"
         style={{ backgroundColor: `${tokens.palette.primary}90` }}
       >
         Antes
       </div>
       <div
-        className="absolute top-4 right-4 px-3 py-1.5 rounded-full text-[0.6rem] md:text-xs font-medium uppercase tracking-[0.15em] pointer-events-none text-white"
+        className="absolute top-4 right-4 px-3 py-1.5 rounded-full text-xs md:text-xs font-medium uppercase tracking-[0.1em] pointer-events-none text-white"
         style={{ backgroundColor: `${tokens.palette.accent}` }}
       >
         Depois
@@ -183,14 +183,14 @@ export function GalleryBeforeAfter({ content, tokens }: Props) {
           <StyledHeadline
             text={c.title}
             tokens={tokens}
-            className="pgl-fade-up text-3xl md:text-4xl lg:text-5xl leading-[1.05]"
+            className="pgl-fade-up text-3xl md:text-4xl lg:text-5xl leading-[1.1]"
             accentClassName="normal-case"
             data-pgl-path="title"
             data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
+              className="pgl-fade-up text-base leading-[1.6] font-light"
               style={{ color: mutedColor }}
               data-delay="1"
               data-pgl-path="subtitle"

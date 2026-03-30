@@ -44,7 +44,7 @@ function CatalogCarouselInner({ c, tokens, isDark }: InnerProps) {
             tokens={tokens}
             as="h2"
             className={cn(
-              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]",
+              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.1]",
               isDark ? "text-white" : undefined,
             )}
             data-pgl-path="title"
@@ -53,7 +53,7 @@ function CatalogCarouselInner({ c, tokens, isDark }: InnerProps) {
           <div className="flex items-center justify-end gap-3">
             {c.subtitle && (
               <p
-                className="pgl-fade-up text-sm md:text-base leading-[1.8] font-light flex-1"
+                className="pgl-fade-up text-sm md:text-base leading-[1.6] font-light flex-1"
                 style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
                 data-delay="1"
                 data-pgl-path="subtitle"
@@ -144,7 +144,7 @@ function CatalogCarouselInner({ c, tokens, isDark }: InnerProps) {
                 <div className="p-4 md:p-6">
                   <h3
                     className={cn(
-                      "text-[0.85rem] font-semibold uppercase tracking-[0.03em]",
+                      "text-base font-semibold uppercase tracking-[0.03em]",
                       isBold && "!font-extrabold",
                     )}
                     style={{
@@ -169,8 +169,8 @@ function CatalogCarouselInner({ c, tokens, isDark }: InnerProps) {
                   {category.productCount !== undefined && (
                     <p
                       className={cn(
-                        "text-[0.8rem] font-semibold tabular-nums mt-2",
-                        isBold && "text-[0.9rem] !font-extrabold",
+                        "text-sm font-semibold tabular-nums mt-2",
+                        isBold && "text-base font-semibold !font-extrabold",
                       )}
                       style={{ color: tokens.palette.primary }}
                     >

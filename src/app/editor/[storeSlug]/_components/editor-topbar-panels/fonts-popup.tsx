@@ -1,42 +1,29 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { IconChevronLeft } from "@tabler/icons-react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { IconChevronLeft, IconSearch } from "@tabler/icons-react";
 import { PglButton } from "@/components/ui/pgl-button";
 import { useEditor } from "../../_lib/editor-context";
 import type { DesignTokens } from "@/types/ai-generation";
+import {
+  getHeadingFonts,
+  getBodyFonts,
+  type FontOption,
+  type FontCategory,
+} from "@/lib/fonts";
+import { migrateFontPairing } from "@/lib/font-migration";
 
-type FontPairing = DesignTokens["fontPairing"];
+type ActiveTab = "heading" | "body";
+type CategoryFilter = "all" | FontCategory;
 
-interface FontOption {
-  id: FontPairing;
-  heading: string;
-  body: string;
-  previewHeading: string;
-  previewBody: string;
-}
-
-const FONT_OPTIONS: FontOption[] = [
-  { id: "inter+merriweather", heading: "Inter", body: "Merriweather", previewHeading: "'Inter', sans-serif", previewBody: "'Merriweather', serif" },
-  { id: "poppins+lora", heading: "Poppins", body: "Lora", previewHeading: "'Poppins', sans-serif", previewBody: "'Lora', serif" },
-  { id: "montserrat+opensans", heading: "Montserrat", body: "Open Sans", previewHeading: "'Montserrat', sans-serif", previewBody: "'Open Sans', sans-serif" },
-  { id: "playfair+source-sans", heading: "Playfair Display", body: "Source Sans", previewHeading: "'Playfair Display', serif", previewBody: "'Source Sans 3', sans-serif" },
-  { id: "dm-sans+dm-serif", heading: "DM Sans", body: "DM Serif Display", previewHeading: "'DM Sans', sans-serif", previewBody: "'DM Serif Display', serif" },
-  { id: "raleway+roboto", heading: "Raleway", body: "Roboto", previewHeading: "'Raleway', sans-serif", previewBody: "'Roboto', sans-serif" },
-  { id: "oswald+roboto", heading: "Oswald", body: "Roboto", previewHeading: "'Oswald', sans-serif", previewBody: "'Roboto', sans-serif" },
-  { id: "space-grotesk+inter", heading: "Space Grotesk", body: "Inter", previewHeading: "'Space Grotesk', sans-serif", previewBody: "'Inter', sans-serif" },
+const CATEGORY_LABELS: { value: CategoryFilter; label: string }[] = [
+  { value: "all", label: "Todas" },
+  { value: "sans-serif", label: "Sans" },
+  { value: "serif", label: "Serif" },
+  { value: "display", label: "Display" },
+  { value: "handwriting", label: "Script" },
+  { value: "decorative", label: "Decorativa" },
 ];
-
-const FONT_URLS: Record<string, string> = {
-  "inter+merriweather": "Inter:wght@400;700|Merriweather:wght@400;700",
-  "poppins+lora": "Poppins:wght@400;700|Lora:wght@400;700",
-  "montserrat+opensans": "Montserrat:wght@400;700|Open+Sans:wght@400;600",
-  "playfair+source-sans": "Playfair+Display:wght@400;700|Source+Sans+3:wght@400;600",
-  "dm-sans+dm-serif": "DM+Sans:wght@400;700|DM+Serif+Display:wght@400",
-  "raleway+roboto": "Raleway:wght@400;700|Roboto:wght@400;500",
-  "oswald+roboto": "Oswald:wght@400;700|Roboto:wght@400;500",
-  "space-grotesk+inter": "Space+Grotesk:wght@400;700|Inter:wght@400;500",
-};
 
 interface Props {
   onClose: () => void;
@@ -44,35 +31,66 @@ interface Props {
 
 export function FontsPopup({ onClose }: Props) {
   const { state, dispatch } = useEditor();
-  const currentFont = state.blueprint.designTokens.fontPairing;
-  const [selectedId, setSelectedId] = useState<FontPairing>(currentFont);
-  const snapshotRef = useRef(currentFont);
+
+  // Migrate legacy fontPairing to headingFont/bodyFont
+  const migratedTokens = useMemo(
+    () => migrateFontPairing(state.blueprint.designTokens),
+    [state.blueprint.designTokens]
+  );
+
+  const [headingSlug, setHeadingSlug] = useState(migratedTokens.headingFont ?? "inter");
+  const [bodySlug, setBodySlug] = useState(migratedTokens.bodyFont ?? "inter");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("heading");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+
+  const snapshotRef = useRef({ heading: headingSlug, body: bodySlug });
 
   useEffect(() => {
-    snapshotRef.current = currentFont;
+    snapshotRef.current = { heading: migratedTokens.headingFont ?? "inter", body: migratedTokens.bodyFont ?? "inter" };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    FONT_OPTIONS.forEach((opt) => {
-      const url = FONT_URLS[opt.id];
-      if (!url) return;
-      const href = `https://fonts.googleapis.com/css2?family=${url}&display=swap`;
-      if (document.querySelector(`link[href="${href}"]`)) return;
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = href;
-      document.head.appendChild(link);
-    });
-  }, []);
+  const fontsForTab = useMemo(() => {
+    const base = activeTab === "heading" ? getHeadingFonts() : getBodyFonts();
+    let filtered = base;
 
-  function selectFont(id: FontPairing) {
-    setSelectedId(id);
-    dispatch({ type: "UPDATE_DESIGN_TOKENS", tokens: { fontPairing: id } });
+    if (categoryFilter !== "all") {
+      filtered = filtered.filter((f) => f.category === categoryFilter);
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((f) => f.name.toLowerCase().includes(q));
+    }
+
+    return filtered;
+  }, [activeTab, categoryFilter, searchQuery]);
+
+  function selectFont(font: FontOption) {
+    if (activeTab === "heading") {
+      setHeadingSlug(font.slug);
+      dispatch({
+        type: "UPDATE_DESIGN_TOKENS",
+        tokens: { headingFont: font.slug },
+      });
+    } else {
+      setBodySlug(font.slug);
+      dispatch({
+        type: "UPDATE_DESIGN_TOKENS",
+        tokens: { bodyFont: font.slug },
+      });
+    }
   }
 
   function handleCancel() {
-    dispatch({ type: "UPDATE_DESIGN_TOKENS", tokens: { fontPairing: snapshotRef.current } });
+    dispatch({
+      type: "UPDATE_DESIGN_TOKENS",
+      tokens: {
+        headingFont: snapshotRef.current.heading,
+        bodyFont: snapshotRef.current.body,
+      },
+    });
     onClose();
   }
 
@@ -80,13 +98,15 @@ export function FontsPopup({ onClose }: Props) {
     onClose();
   }
 
+  const currentSlug = activeTab === "heading" ? headingSlug : bodySlug;
+
   return (
     <>
       <div className="fixed inset-0 z-[9994]" onClick={handleCancel} />
 
       <div className="fixed z-[9995] inset-x-0 top-14 flex justify-center pointer-events-none">
         <div
-          className="pointer-events-auto w-[480px] rounded-[16px] overflow-hidden"
+          className="pointer-events-auto w-[520px] max-h-[calc(100vh-80px)] flex flex-col rounded-[16px] overflow-hidden"
           style={{
             backgroundColor: "#ffffff",
             border: "1px solid rgba(0,0,0,0.06)",
@@ -97,50 +117,166 @@ export function FontsPopup({ onClose }: Props) {
         >
           {/* Handle */}
           <div className="flex justify-center pt-[10px] pb-[6px]">
-            <div className="rounded-full" style={{ width: 40, height: 4, backgroundColor: "rgba(0,0,0,0.15)" }} />
+            <div
+              className="rounded-full"
+              style={{ width: 40, height: 4, backgroundColor: "rgba(0,0,0,0.15)" }}
+            />
           </div>
 
           {/* Header */}
-          <div className="flex items-center gap-2 px-6 pb-4">
+          <div className="flex items-center gap-2 px-6 pb-3">
             <IconChevronLeft
               style={{ width: 18, height: 18, color: "#1a1a1a", cursor: "pointer" }}
               onClick={handleCancel}
             />
-            <p className="text-[16px] font-semibold" style={{ color: "#1a1a1a" }}>Tipografia</p>
+            <p className="text-[16px] font-semibold" style={{ color: "#1a1a1a" }}>
+              Tipografia
+            </p>
           </div>
 
-          {/* Grid */}
-          <div className="px-6 pb-4 max-h-[420px] overflow-y-auto">
-            <div className="grid grid-cols-2 gap-3">
-              {FONT_OPTIONS.map((opt) => {
-                const active = selectedId === opt.id;
+          {/* Preview */}
+          <div
+            className="mx-6 mb-3 rounded-[12px] p-4"
+            style={{ backgroundColor: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)" }}
+          >
+            <p
+              className="text-[24px] font-bold leading-tight"
+              style={{
+                fontFamily: `var(--pgl-font-heading), system-ui, sans-serif`,
+                color: "#1a1a1a",
+              }}
+            >
+              Titulo de exemplo
+            </p>
+            <p
+              className="mt-1.5 text-[14px] leading-relaxed"
+              style={{
+                fontFamily: `var(--pgl-font-body), system-ui, sans-serif`,
+                color: "#737373",
+              }}
+            >
+              Este e o texto de corpo do seu site. As fontes selecionadas serao
+              aplicadas em todo o conteudo.
+            </p>
+          </div>
+
+          {/* Tab pills */}
+          <div className="flex gap-1 mx-6 mb-3 p-[3px] rounded-full" style={{ backgroundColor: "rgba(0,0,0,0.04)" }}>
+            <button
+              onClick={() => { setActiveTab("heading"); setSearchQuery(""); setCategoryFilter("all"); }}
+              className="flex-1 py-1.5 rounded-full text-[13px] font-medium transition-all duration-150"
+              style={{
+                backgroundColor: activeTab === "heading" ? "#fff" : "transparent",
+                color: activeTab === "heading" ? "rgba(0,0,0,0.8)" : "rgba(0,0,0,0.45)",
+                boxShadow: activeTab === "heading" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+              }}
+            >
+              Titulos
+            </button>
+            <button
+              onClick={() => { setActiveTab("body"); setSearchQuery(""); setCategoryFilter("all"); }}
+              className="flex-1 py-1.5 rounded-full text-[13px] font-medium transition-all duration-150"
+              style={{
+                backgroundColor: activeTab === "body" ? "#fff" : "transparent",
+                color: activeTab === "body" ? "rgba(0,0,0,0.8)" : "rgba(0,0,0,0.45)",
+                boxShadow: activeTab === "body" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+              }}
+            >
+              Texto
+            </button>
+          </div>
+
+          {/* Search */}
+          <div className="mx-6 mb-2">
+            <div
+              className="flex items-center gap-2 rounded-[10px] px-3 py-2"
+              style={{ border: "1px solid rgba(0,0,0,0.1)", backgroundColor: "#fff" }}
+            >
+              <IconSearch style={{ width: 16, height: 16, color: "rgba(0,0,0,0.3)" }} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar fonte..."
+                className="flex-1 bg-transparent text-[13px] outline-none placeholder:text-black/30"
+                style={{ color: "rgba(0,0,0,0.8)" }}
+              />
+            </div>
+          </div>
+
+          {/* Category pills */}
+          <div className="flex gap-1.5 mx-6 mb-3 overflow-x-auto scrollbar-hide">
+            {CATEGORY_LABELS.map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => setCategoryFilter(cat.value)}
+                className="shrink-0 rounded-full px-3 py-1 text-[12px] font-medium transition-colors duration-150"
+                style={{
+                  backgroundColor: categoryFilter === cat.value ? "rgba(0,0,0,0.8)" : "rgba(0,0,0,0.04)",
+                  color: categoryFilter === cat.value ? "#fff" : "rgba(0,0,0,0.55)",
+                }}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Font list */}
+          <div className="flex-1 overflow-y-auto px-6 pb-3 min-h-0" style={{ maxHeight: "320px" }}>
+            <div className="flex flex-col gap-1">
+              {fontsForTab.map((font) => {
+                const isActive = font.slug === currentSlug;
                 return (
                   <button
-                    key={opt.id}
-                    onClick={() => selectFont(opt.id)}
-                    className="rounded-[14px] px-5 py-4 text-left transition-all duration-150"
+                    key={font.slug}
+                    onClick={() => selectFont(font)}
+                    className="flex items-center justify-between rounded-[10px] px-4 py-3 text-left transition-all duration-150"
                     style={{
-                      backgroundColor: active ? "#f5f5f4" : "#ffffff",
-                      border: active ? "2px solid #171717" : "1.5px solid rgba(0,0,0,0.08)",
+                      backgroundColor: isActive ? "rgba(0,0,0,0.03)" : "transparent",
+                      border: isActive ? "1.5px solid rgba(0,0,0,0.8)" : "1.5px solid transparent",
                     }}
-                    onMouseEnter={(e) => { if (!active) e.currentTarget.style.borderColor = "rgba(0,0,0,0.18)"; }}
-                    onMouseLeave={(e) => { if (!active) e.currentTarget.style.borderColor = active ? "#171717" : "rgba(0,0,0,0.08)"; }}
+                    onMouseEnter={(e) => {
+                      if (!isActive)
+                        e.currentTarget.style.backgroundColor = "rgba(0,0,0,0.02)";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) e.currentTarget.style.backgroundColor = "transparent";
+                    }}
                   >
-                    <p
-                      className="text-[22px] font-bold leading-tight"
-                      style={{ fontFamily: opt.previewHeading, color: "#1a1a1a" }}
+                    <span
+                      className="text-[18px] truncate"
+                      style={{ fontFamily: `${font.family}, system-ui, sans-serif`, color: "#1a1a1a" }}
                     >
-                      {opt.heading}
-                    </p>
-                    <p
-                      className="mt-1.5 text-[14px]"
-                      style={{ fontFamily: opt.previewBody, color: "#737373" }}
+                      {font.name}
+                    </span>
+                    <span
+                      className="shrink-0 ml-3 text-[11px] font-medium rounded-full px-2 py-0.5"
+                      style={{
+                        backgroundColor: "rgba(0,0,0,0.04)",
+                        color: "rgba(0,0,0,0.4)",
+                      }}
                     >
-                      {opt.body}
-                    </p>
+                      {font.category === "sans-serif"
+                        ? "Sans"
+                        : font.category === "serif"
+                        ? "Serif"
+                        : font.category === "display"
+                        ? "Display"
+                        : font.category === "handwriting"
+                        ? "Script"
+                        : "Deco"}
+                    </span>
                   </button>
                 );
               })}
+              {fontsForTab.length === 0 && (
+                <p
+                  className="py-8 text-center text-[13px]"
+                  style={{ color: "rgba(0,0,0,0.35)" }}
+                >
+                  Nenhuma fonte encontrada
+                </p>
+              )}
             </div>
           </div>
 
@@ -149,18 +285,26 @@ export function FontsPopup({ onClose }: Props) {
             className="flex items-center justify-end gap-3 px-6 py-4"
             style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
           >
-            <PglButton variant="ghost" size="sm" onClick={handleCancel}>Cancelar</PglButton>
-            <PglButton variant="dark" size="sm" onClick={handleDone}>Aplicar</PglButton>
+            <PglButton variant="ghost" size="sm" onClick={handleCancel}>
+              Cancelar
+            </PglButton>
+            <PglButton variant="dark" size="sm" onClick={handleDone}>
+              Aplicar
+            </PglButton>
           </div>
         </div>
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @keyframes pgl-slide-down {
           from { opacity: 0; transform: translateY(-8px); }
           to { opacity: 1; transform: translateY(0); }
         }
-      `}} />
+      `,
+        }}
+      />
     </>
   );
 }

@@ -26,7 +26,7 @@ function FaqItem({ item, tokens, isElegant, isWarm, isBold, originalIndex }: Faq
         }}
       >
         <h3
-          className="text-[0.925rem] font-bold tracking-tight uppercase leading-[1.1]"
+          className="text-base font-bold tracking-tight uppercase leading-[1.1]"
           style={{ color: tokens.palette.text }}
           data-pgl-path={`items.${originalIndex}.question`}
           data-pgl-edit="text"
@@ -34,7 +34,7 @@ function FaqItem({ item, tokens, isElegant, isWarm, isBold, originalIndex }: Faq
           {item.question}
         </h3>
         <p
-          className="text-[0.875rem] leading-[1.8] font-light max-w-[540px]"
+          className="text-sm leading-relaxed font-light max-w-[540px]"
           style={{ color: tokens.palette.textMuted }}
           data-pgl-path={`items.${originalIndex}.answer`}
           data-pgl-edit="text"
@@ -57,7 +57,7 @@ function FaqItem({ item, tokens, isElegant, isWarm, isBold, originalIndex }: Faq
       <h3
         className={cn(
           "font-bold tracking-tight uppercase leading-[1.1]",
-          isBold ? "text-base md:text-lg" : "text-[0.925rem]",
+          isBold ? "text-base md:text-lg" : "text-base",
         )}
         style={{ color: tokens.palette.text }}
         data-pgl-path={`items.${originalIndex}.question`}
@@ -66,7 +66,7 @@ function FaqItem({ item, tokens, isElegant, isWarm, isBold, originalIndex }: Faq
         {item.question}
       </h3>
       <p
-        className="text-[0.875rem] leading-[1.8] font-light max-w-[540px]"
+        className="text-sm leading-relaxed font-light max-w-[540px]"
         style={{ color: tokens.palette.textMuted }}
         data-pgl-path={`items.${originalIndex}.answer`}
         data-pgl-edit="text"
@@ -102,13 +102,13 @@ export function FaqTwoColumns({ content, tokens }: Props) {
         <StyledHeadline
           text={c.title}
           tokens={tokens}
-          className="text-3xl md:text-4xl lg:text-5xl leading-[1.05]"
+          className="text-3xl md:text-4xl lg:text-5xl leading-[1.1]"
           data-pgl-path="title"
           data-pgl-edit="text"
         />
         {c.subtitle && (
           <p
-            className="mt-4 text-[0.925rem] leading-[1.7] font-light max-w-2xl"
+            className="mt-4 text-base md:text-lg leading-[1.6] font-light max-w-2xl"
             style={{ color: tokens.palette.textMuted }}
             data-pgl-path="subtitle"
             data-pgl-edit="text"

@@ -74,7 +74,7 @@ export function ContactSplitMap({ content, tokens }: Props) {
             text={c.title}
             tokens={tokens}
             className={cn(
-              "leading-[1.05] mb-4",
+              "leading-[1.1] mb-4",
               isBold
                 ? "text-4xl md:text-5xl lg:text-6xl"
                 : "text-3xl md:text-4xl lg:text-5xl"
@@ -84,7 +84,7 @@ export function ContactSplitMap({ content, tokens }: Props) {
           />
           {c.subtitle && (
             <p
-              className="text-[0.925rem] leading-[1.7] font-light mb-10"
+              className="text-base leading-[1.6] font-light mb-10"
               style={{ color: tokens.palette.textMuted }}
               data-pgl-path="subtitle"
               data-pgl-edit="text"
@@ -118,7 +118,7 @@ export function ContactSplitMap({ content, tokens }: Props) {
                     {item.label}
                   </div>
                   <div
-                    className="text-[0.875rem] font-normal"
+                    className="text-sm font-normal"
                     style={{ color: tokens.palette.text }}
                     data-pgl-path={item.field}
                     data-pgl-edit="text"
@@ -155,7 +155,7 @@ export function ContactSplitMap({ content, tokens }: Props) {
                 {c.formFields.includes("name") && (
                   <div>
                     <label
-                      className="block text-[0.75rem] font-medium uppercase tracking-[0.08em] mb-2"
+                      className="block text-sm font-medium uppercase tracking-[0.08em] mb-2"
                       style={{ color: tokens.palette.text }}
                     >
                       Nome
@@ -164,7 +164,7 @@ export function ContactSplitMap({ content, tokens }: Props) {
                       type="text"
                       placeholder="Seu nome"
                       className={cn(
-                        "w-full px-4 py-3 md:py-3.5 text-[0.875rem] outline-none focus:border-current",
+                        "w-full px-4 py-3 md:py-3.5 text-sm outline-none focus:border-current",
                         isMinimal
                           ? "border-b bg-transparent border-t-0 border-x-0"
                           : "border"
@@ -182,7 +182,7 @@ export function ContactSplitMap({ content, tokens }: Props) {
                 {c.formFields.includes("message") && (
                   <div>
                     <label
-                      className="block text-[0.75rem] font-medium uppercase tracking-[0.08em] mb-2"
+                      className="block text-sm font-medium uppercase tracking-[0.08em] mb-2"
                       style={{ color: tokens.palette.text }}
                     >
                       Mensagem
@@ -191,7 +191,7 @@ export function ContactSplitMap({ content, tokens }: Props) {
                       rows={3}
                       placeholder="Descreva o que precisa..."
                       className={cn(
-                        "w-full px-4 py-3 md:py-3.5 text-[0.875rem] outline-none resize-none focus:border-current",
+                        "w-full px-4 py-3 md:py-3.5 text-sm outline-none resize-none focus:border-current",
                         isMinimal
                           ? "border-b bg-transparent border-t-0 border-x-0"
                           : "border"

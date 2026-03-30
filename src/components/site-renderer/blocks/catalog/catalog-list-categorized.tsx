@@ -39,7 +39,7 @@ function CatalogListCategorizedInner({ c, tokens, isDark }: InnerProps) {
             tokens={tokens}
             as="h2"
             className={cn(
-              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]",
+              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.1]",
               isDark ? "text-white" : undefined,
             )}
             data-pgl-path="title"
@@ -47,7 +47,7 @@ function CatalogListCategorizedInner({ c, tokens, isDark }: InnerProps) {
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-sm md:text-base leading-[1.8] font-light"
+              className="pgl-fade-up text-sm md:text-base leading-[1.6] font-light"
               style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -66,7 +66,7 @@ function CatalogListCategorizedInner({ c, tokens, isDark }: InnerProps) {
                 key={cat.name}
                 onClick={() => setActiveTab(cat.name)}
                 className={cn(
-                  "text-[0.75rem] font-medium tracking-[0.08em] uppercase px-5 py-2.5",
+                  "text-sm font-medium tracking-[0.08em] uppercase px-5 py-2.5",
                   isBold && activeTab === cat.name && "!font-extrabold",
                 )}
                 style={{
@@ -145,7 +145,7 @@ function CatalogListCategorizedInner({ c, tokens, isDark }: InnerProps) {
                   {cat.productCount !== undefined && (
                     <p
                       className={cn(
-                        "text-[0.8rem] font-medium mt-3 tabular-nums",
+                        "text-sm font-medium mt-3 tabular-nums",
                         isBold && "text-[0.9rem] !font-extrabold",
                       )}
                       style={{ color: tokens.palette.accent }}

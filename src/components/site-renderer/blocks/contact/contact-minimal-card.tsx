@@ -43,7 +43,7 @@ export function ContactMinimalCard({ content, tokens }: Props) {
             text={c.title}
             tokens={tokens}
             className={cn(
-              "leading-[1.05] mb-4",
+              "leading-[1.1] mb-4",
               isBold
                 ? "text-4xl md:text-5xl"
                 : "text-3xl md:text-4xl"
@@ -53,7 +53,7 @@ export function ContactMinimalCard({ content, tokens }: Props) {
           />
           {c.subtitle && (
             <p
-              className="text-[0.925rem] leading-[1.7] font-light max-w-md mx-auto"
+              className="text-base leading-[1.6] font-light max-w-md mx-auto"
               style={{ color: tokens.palette.textMuted }}
               data-pgl-path="subtitle"
               data-pgl-edit="text"
@@ -89,7 +89,7 @@ export function ContactMinimalCard({ content, tokens }: Props) {
                   {item.label}
                 </div>
                 <div
-                  className="text-[0.875rem] font-normal"
+                  className="text-sm font-normal"
                   style={{ color: tokens.palette.text }}
                   data-pgl-path={item.field}
                   data-pgl-edit="text"
@@ -125,7 +125,7 @@ export function ContactMinimalCard({ content, tokens }: Props) {
             {c.phone && (
               <a
                 href={`tel:${c.phone.replace(/\D/g, "")}`}
-                className="block text-[0.82rem] font-medium tracking-[0.04em] hover:opacity-70"
+                className="block text-sm font-medium tracking-[0.04em] hover:opacity-70"
                 style={{
                   color: tokens.palette.text,
                   transition: `opacity var(--transition-speed)`,
@@ -139,7 +139,7 @@ export function ContactMinimalCard({ content, tokens }: Props) {
             {c.email && (
               <a
                 href={`mailto:${c.email}`}
-                className="block text-[0.82rem] font-light hover:opacity-70"
+                className="block text-sm font-light hover:opacity-70"
                 style={{
                   color: tokens.palette.textMuted,
                   transition: `opacity var(--transition-speed)`,

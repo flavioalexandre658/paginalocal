@@ -40,13 +40,13 @@ export function TeamFeatured({ content, tokens }: Props) {
             text={c.title}
             tokens={tokens}
             as="h2"
-            className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]"
+            className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.1]"
             data-pgl-path="title"
             data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
+              className="pgl-fade-up text-base leading-[1.6] font-light"
               style={{ color: tokens.palette.textMuted }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -156,9 +156,9 @@ export function TeamFeatured({ content, tokens }: Props) {
             </h3>
             <p
               className={cn(
-                "text-[0.7rem] font-medium tracking-[0.12em] mt-1",
+                "text-[0.7rem] font-medium tracking-[0.1em] mt-1",
                 isIndustrial && "uppercase",
-                isBold && "text-[0.75rem] !font-semibold inline-block px-2 py-0.5 mt-2",
+                isBold && "text-sm !font-semibold inline-block px-2 py-0.5 mt-2",
               )}
               style={{
                 color: isBold ? "#fff" : tokens.palette.accent,
@@ -176,7 +176,7 @@ export function TeamFeatured({ content, tokens }: Props) {
             </p>
             {featured.bio && (
               <p
-                className="text-[0.925rem] font-light leading-[1.85] mt-4 max-w-prose"
+                className="text-base font-light leading-[1.85] mt-4 max-w-prose"
                 style={{ color: tokens.palette.textMuted }}
                 data-pgl-path="members.0.bio"
                 data-pgl-edit="text"
@@ -243,7 +243,7 @@ export function TeamFeatured({ content, tokens }: Props) {
                     )}
                     <div className="flex-1 min-w-0">
                       <h3
-                        className="text-[0.8rem] font-semibold tracking-[0.02em]"
+                        className="text-sm font-semibold tracking-[0.02em]"
                         style={{
                           fontFamily: "var(--pgl-font-heading)",
                           color: tokens.palette.text,
@@ -254,7 +254,7 @@ export function TeamFeatured({ content, tokens }: Props) {
                         {member.name}
                       </h3>
                       <p
-                        className="text-[0.65rem] font-medium tracking-[0.08em] mt-0.5"
+                        className="text-xs font-medium tracking-[0.08em] mt-0.5"
                         style={{ color: tokens.palette.accent }}
                         data-pgl-path={`members.${index + 1}.role`}
                         data-pgl-edit="text"
@@ -316,7 +316,7 @@ export function TeamFeatured({ content, tokens }: Props) {
 
                     <h3
                       className={cn(
-                        "text-[0.85rem] font-semibold tracking-[0.03em]",
+                        "text-sm font-semibold tracking-[0.03em]",
                         (isIndustrial || isBold) && "uppercase",
                         isBold && "text-[0.9rem] !font-bold",
                       )}
@@ -331,7 +331,7 @@ export function TeamFeatured({ content, tokens }: Props) {
                     </h3>
                     <p
                       className={cn(
-                        "text-[0.65rem] font-medium tracking-[0.1em] mt-0.5",
+                        "text-xs font-medium tracking-[0.1em] mt-0.5",
                         isIndustrial && "uppercase",
                         isBold && "!font-semibold px-2 py-0.5 inline-block mt-1",
                       )}
@@ -351,7 +351,7 @@ export function TeamFeatured({ content, tokens }: Props) {
                     </p>
                     {member.bio && (
                       <p
-                        className="text-[0.8rem] font-light line-clamp-3 mt-2"
+                        className="text-sm font-light line-clamp-3 mt-2"
                         style={{ color: tokens.palette.textMuted }}
                         data-pgl-path={`members.${index + 1}.bio`}
                         data-pgl-edit="text"

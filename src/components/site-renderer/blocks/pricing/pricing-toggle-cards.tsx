@@ -50,7 +50,7 @@ function PricingToggleCardsInner({
             tokens={tokens}
             as="h2"
             className={cn(
-              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]",
+              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.1]",
               isDark ? "text-white" : undefined,
             )}
             data-pgl-path="title"
@@ -58,7 +58,7 @@ function PricingToggleCardsInner({
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
+              className="pgl-fade-up text-base md:text-lg leading-[1.6] font-light"
               style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -161,7 +161,7 @@ function PricingToggleCardsInner({
               >
                 {plan.highlighted && !isMinimal && (
                   <span
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-[0.65rem] font-medium tracking-[0.08em] uppercase px-4 py-1.5 text-white whitespace-nowrap"
+                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-[0.7rem] font-medium tracking-[0.08em] uppercase px-4 py-1.5 text-white whitespace-nowrap"
                     style={{
                       backgroundColor: tokens.palette.accent,
                       borderRadius: "var(--btn-radius)",
@@ -173,7 +173,7 @@ function PricingToggleCardsInner({
 
                 <div className="mb-6">
                   <p
-                    className="text-[0.7rem] font-medium uppercase tracking-[0.12em] mb-3"
+                    className="text-[0.7rem] font-medium uppercase tracking-[0.1em] mb-3"
                     style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
                   >
                     {plan.name}
@@ -194,7 +194,7 @@ function PricingToggleCardsInner({
                   </p>
                   {plan.description && (
                     <p
-                      className="text-[0.875rem] font-light"
+                      className="text-sm leading-relaxed font-light"
                       style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
                     >
                       {plan.description}
@@ -231,7 +231,7 @@ function PricingToggleCardsInner({
                         )}
                         <span
                           className={cn(
-                            "text-[0.875rem] font-light",
+                            "text-sm leading-relaxed font-light",
                             isExcluded && "line-through",
                           )}
                           style={{

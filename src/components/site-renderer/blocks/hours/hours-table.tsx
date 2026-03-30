@@ -90,7 +90,7 @@ export function HoursTable({ content, tokens }: Props) {
                 data-delay={i + 2}
               >
                 <span
-                  className="text-[0.85rem] capitalize"
+                  className="text-sm capitalize"
                   style={{
                     fontFamily: "var(--pgl-font-heading)",
                     fontWeight: "var(--label-weight, 500)" as unknown as undefined,
@@ -114,7 +114,7 @@ export function HoursTable({ content, tokens }: Props) {
                   )}
                 </span>
                 <span
-                  className="text-[0.85rem] tabular-nums"
+                  className="text-sm tabular-nums"
                   style={{
                     color: closed ? tokens.palette.textMuted : tokens.palette.text,
                     fontStyle: closed ? "italic" : "normal",
@@ -130,7 +130,7 @@ export function HoursTable({ content, tokens }: Props) {
 
         {c.note && (
           <p
-            className="mt-5 text-xs leading-[1.7] font-light pgl-fade-up"
+            className="mt-5 text-xs leading-[1.6] font-light pgl-fade-up"
             style={{ color: tokens.palette.textMuted }}
             data-delay="5"
             data-pgl-path="note"

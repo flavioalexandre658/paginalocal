@@ -42,7 +42,7 @@ export function FeaturedHighlightGrid({ content, tokens, isDark }: Props) {
             tokens={tokens}
             as="h2"
             className={cn(
-              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]",
+              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.1]",
               isDark ? "text-white" : undefined,
             )}
             data-pgl-path="title"
@@ -50,7 +50,7 @@ export function FeaturedHighlightGrid({ content, tokens, isDark }: Props) {
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-sm md:text-base leading-[1.8] font-light"
+              className="pgl-fade-up text-sm md:text-base leading-[1.6] font-light"
               style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -107,7 +107,7 @@ export function FeaturedHighlightGrid({ content, tokens, isDark }: Props) {
               {featured.badge && (
                 <span
                   className={cn(
-                    "absolute top-4 left-4 text-[0.65rem] font-medium tracking-[0.08em] uppercase px-3 py-1.5 text-white",
+                    "absolute top-4 left-4 text-xs font-medium tracking-[0.08em] uppercase px-3 py-1.5 text-white",
                     isBold && "!font-bold px-4 py-2",
                   )}
                   style={{
@@ -161,7 +161,7 @@ export function FeaturedHighlightGrid({ content, tokens, isDark }: Props) {
                 )}
                 {featured.originalPrice && (
                   <span
-                    className="text-[0.8rem] line-through tabular-nums"
+                    className="text-sm line-through tabular-nums"
                     style={{ color: isDark ? "rgba(255,255,255,0.35)" : tokens.palette.textMuted }}
                   >
                     {featured.originalPrice}
@@ -209,7 +209,7 @@ export function FeaturedHighlightGrid({ content, tokens, isDark }: Props) {
                 {item.badge && (
                   <span
                     className={cn(
-                      "absolute top-3 left-3 text-[0.65rem] font-medium tracking-[0.08em] uppercase px-2.5 py-1 text-white",
+                      "absolute top-3 left-3 text-xs font-medium tracking-[0.08em] uppercase px-2.5 py-1 text-white",
                       isBold && "!font-bold px-3 py-1.5",
                     )}
                     style={{
@@ -225,7 +225,7 @@ export function FeaturedHighlightGrid({ content, tokens, isDark }: Props) {
               <div className="p-4 md:p-6">
                 <h3
                   className={cn(
-                    "text-[0.85rem] font-semibold uppercase tracking-[0.03em]",
+                    "text-sm font-semibold uppercase tracking-[0.03em]",
                     isBold && "!font-extrabold",
                   )}
                   style={{
@@ -263,7 +263,7 @@ export function FeaturedHighlightGrid({ content, tokens, isDark }: Props) {
                   )}
                   {item.originalPrice && (
                     <span
-                      className="text-[0.75rem] line-through tabular-nums"
+                      className="text-sm line-through tabular-nums"
                       style={{ color: isDark ? "rgba(255,255,255,0.35)" : tokens.palette.textMuted }}
                     >
                       {item.originalPrice}

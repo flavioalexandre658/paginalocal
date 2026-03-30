@@ -121,7 +121,7 @@ export function HeroVideoBackground({ content, tokens }: Props) {
               style={{ backgroundColor: tokens.palette.accent }}
             />
             <span
-              className="text-[0.7rem] font-medium tracking-[0.15em] uppercase"
+              className="text-[0.7rem] font-medium tracking-[0.1em] uppercase"
               data-pgl-path="tagline"
               data-pgl-edit="text"
             >
@@ -138,7 +138,7 @@ export function HeroVideoBackground({ content, tokens }: Props) {
             text={c.headline}
             tokens={tokens}
             as="h1"
-            className="pgl-fade-up leading-[1.0] text-white text-3xl sm:text-4xl md:text-5xl lg:text-7xl"
+            className="pgl-fade-up leading-[1.1] text-white text-3xl sm:text-4xl md:text-5xl lg:text-7xl"
             accentClassName={cn(
               (isIndustrial || isBold) && "normal-case",
               isElegant && "italic"
@@ -150,7 +150,7 @@ export function HeroVideoBackground({ content, tokens }: Props) {
           {/* Subheadline — always light on dark */}
           <p
             className={cn(
-              "pgl-fade-up mt-6 text-base md:text-lg leading-[1.75] max-w-[520px] mx-auto font-light",
+              "pgl-fade-up mt-6 text-base md:text-lg leading-[1.6] max-w-xl mx-auto font-light",
               isElegant
                 ? "text-white/85"
                 : isWarm
@@ -193,7 +193,7 @@ export function HeroVideoBackground({ content, tokens }: Props) {
 
       {/* Scroll indicator */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-        <span className="text-[0.65rem] tracking-[0.15em] uppercase text-white/25">
+        <span className="text-xs tracking-[0.1em] uppercase text-white/25">
           scroll
         </span>
         <div className="w-px h-10 bg-gradient-to-b from-white/25 to-transparent" />

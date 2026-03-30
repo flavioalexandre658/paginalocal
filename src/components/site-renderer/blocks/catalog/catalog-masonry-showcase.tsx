@@ -28,7 +28,7 @@ export function CatalogMasonryShowcase({ content, tokens, isDark }: Props) {
             tokens={tokens}
             as="h2"
             className={cn(
-              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]",
+              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.1]",
               isDark ? "text-white" : undefined,
             )}
             data-pgl-path="title"
@@ -36,7 +36,7 @@ export function CatalogMasonryShowcase({ content, tokens, isDark }: Props) {
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-sm md:text-base leading-[1.8] font-light"
+              className="pgl-fade-up text-sm md:text-base leading-[1.6] font-light"
               style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -162,7 +162,7 @@ export function CatalogMasonryShowcase({ content, tokens, isDark }: Props) {
                       </p>
                     )}
                     {category.productCount !== undefined && (
-                      <p className="text-[0.65rem] text-white/40 uppercase tracking-[0.08em] font-normal mt-2 tabular-nums">
+                      <p className="text-xs text-white/40 uppercase tracking-[0.08em] font-normal mt-2 tabular-nums">
                         {category.productCount} produtos
                       </p>
                     )}

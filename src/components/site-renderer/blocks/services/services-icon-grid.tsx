@@ -43,14 +43,14 @@ export function ServicesIconGrid({ content, tokens }: Props) {
           <StyledHeadline
             text={c.title}
             tokens={tokens}
-            className="pgl-fade-up text-2xl md:text-3xl lg:text-5xl leading-[1.05]"
+            className="pgl-fade-up text-2xl md:text-3xl lg:text-5xl leading-[1.1]"
             accentClassName="normal-case"
             data-pgl-path="title"
             data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
+              className="pgl-fade-up text-base md:text-lg leading-[1.6] font-light"
               style={{ color: mutedColor }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -95,7 +95,7 @@ export function ServicesIconGrid({ content, tokens }: Props) {
                       {item.name}
                     </h3>
                     <p
-                      className="text-[0.875rem] leading-[1.75] font-light"
+                      className="text-sm leading-relaxed font-light"
                       style={{ color: mutedColor }}
                       data-pgl-path={`items.${i}.description`}
                       data-pgl-edit="text"
@@ -211,7 +211,7 @@ export function ServicesIconGrid({ content, tokens }: Props) {
                 {/* Description */}
                 <p
                   className={cn(
-                    "text-[0.875rem] leading-[1.75] font-light",
+                    "text-sm leading-relaxed font-light",
                     !isElegant && !isWarm && "group-hover:text-white/70",
                   )}
                   style={{
@@ -249,7 +249,7 @@ export function ServicesIconGrid({ content, tokens }: Props) {
                       href={item.ctaLink}
                       variant="secondary"
                       tokens={tokens}
-                      className="text-[0.8rem]"
+                      className="text-sm"
                       data-pgl-path={`items.${i}.ctaText`}
                       data-pgl-edit="button"
                     >

@@ -15,6 +15,8 @@ import {
 } from "@/types/ai-generation";
 import { buildPrompt } from "./prompt-builder";
 import { fetchAndSaveUnsplashImages } from "@/lib/unsplash-fallback";
+import { getFontBySlug } from "@/lib/fonts"
+import { migrateFontPairing } from "@/lib/font-migration"
 
 export type GenerationModel = "sonnet" | "gpt-5.4-nano" | "gemini";
 
@@ -156,6 +158,27 @@ async function normalizeAndValidate(
         }
       });
     });
+  }
+
+  // Normalize font fields: migrate old fontPairing → headingFont/bodyFont
+  const dt = raw.designTokens as Record<string, unknown> | undefined;
+  if (dt) {
+    // If AI returns old fontPairing format, migrate
+    if (dt.fontPairing && !dt.headingFont) {
+      const migrated = migrateFontPairing(dt as any);
+      dt.headingFont = (migrated as any).headingFont;
+      dt.bodyFont = (migrated as any).bodyFont;
+    }
+    // Validate font slugs exist, fallback to "inter"
+    if (dt.headingFont && !getFontBySlug(dt.headingFont as string)) {
+      dt.headingFont = "inter";
+    }
+    if (dt.bodyFont && !getFontBySlug(dt.bodyFont as string)) {
+      dt.bodyFont = "inter";
+    }
+    // Ensure defaults
+    if (!dt.headingFont) dt.headingFont = "inter";
+    if (!dt.bodyFont) dt.bodyFont = "inter";
   }
 
   try {

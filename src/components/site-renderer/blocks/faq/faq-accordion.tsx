@@ -45,13 +45,13 @@ function FaqAccordionInner({ c, tokens }: InnerProps) {
             <StyledHeadline
               text={c.title}
               tokens={tokens}
-              className="text-3xl md:text-4xl lg:text-5xl leading-[1.05]"
+              className="text-3xl md:text-4xl lg:text-5xl leading-[1.1]"
               data-pgl-path="title"
               data-pgl-edit="text"
             />
             {c.subtitle && (
               <p
-                className="mt-4 text-[0.925rem] leading-[1.7] font-light"
+                className="mt-4 text-base md:text-lg leading-[1.6] font-light"
                 style={{ color: tokens.palette.textMuted }}
                 data-pgl-path="subtitle"
                 data-pgl-edit="text"
@@ -75,13 +75,13 @@ function FaqAccordionInner({ c, tokens }: InnerProps) {
             <StyledHeadline
               text={c.title}
               tokens={tokens}
-              className="text-3xl md:text-4xl lg:text-5xl leading-[1.05]"
+              className="text-3xl md:text-4xl lg:text-5xl leading-[1.1]"
               data-pgl-path="title"
               data-pgl-edit="text"
             />
             {c.subtitle && (
               <p
-                className="mt-4 text-[0.925rem] leading-[1.7] font-light max-w-2xl"
+                className="mt-4 text-base md:text-lg leading-[1.6] font-light max-w-2xl"
                 style={{ color: tokens.palette.textMuted }}
                 data-pgl-path="subtitle"
                 data-pgl-edit="text"
@@ -122,7 +122,7 @@ function FaqAccordionInner({ c, tokens }: InnerProps) {
                     className="w-full flex items-center justify-between gap-5 px-6 py-5 text-left group"
                   >
                     <span
-                      className="text-[0.925rem] font-medium tracking-tight transition-colors duration-[400ms] group-hover:!text-[--accent]"
+                      className="text-base font-medium tracking-tight transition-colors duration-[400ms] group-hover:!text-[--accent]"
                       style={
                         {
                           color: tokens.palette.text,
@@ -157,7 +157,7 @@ function FaqAccordionInner({ c, tokens }: InnerProps) {
                   >
                     <div className="overflow-hidden">
                       <p
-                        className="px-6 pb-6 text-[0.875rem] leading-[1.8] font-light max-w-[540px]"
+                        className="px-6 pb-6 text-sm leading-relaxed font-light max-w-[540px]"
                         style={{ color: tokens.palette.textMuted }}
                         data-pgl-path={`items.${i}.answer`}
                         data-pgl-edit="text"
@@ -192,7 +192,7 @@ function FaqAccordionInner({ c, tokens }: InnerProps) {
                       "group-hover:!text-[--accent]",
                       isBold
                         ? "text-base md:text-lg font-bold"
-                        : "text-[0.925rem]",
+                        : "text-base",
                     )}
                     style={
                       {
@@ -230,7 +230,7 @@ function FaqAccordionInner({ c, tokens }: InnerProps) {
                 >
                   <div className="overflow-hidden">
                     <p
-                      className="px-4 pb-6 text-[0.875rem] leading-[1.8] font-light max-w-[540px]"
+                      className="px-4 pb-6 text-sm leading-relaxed font-light max-w-[540px]"
                       style={{ color: tokens.palette.textMuted }}
                       data-pgl-path={`items.${i}.answer`}
                       data-pgl-edit="text"

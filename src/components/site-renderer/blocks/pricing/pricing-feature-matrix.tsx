@@ -55,7 +55,7 @@ export function PricingFeatureMatrix({ content, tokens, isDark }: Props) {
             tokens={tokens}
             as="h2"
             className={cn(
-              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]",
+              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.1]",
               isDark ? "text-white" : undefined,
             )}
             data-pgl-path="title"
@@ -63,7 +63,7 @@ export function PricingFeatureMatrix({ content, tokens, isDark }: Props) {
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
+              className="pgl-fade-up text-base md:text-lg leading-[1.6] font-light"
               style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -103,7 +103,7 @@ export function PricingFeatureMatrix({ content, tokens, isDark }: Props) {
                   >
                     {plan.highlighted && (
                       <span
-                        className="mb-2 inline-block text-[0.6rem] font-medium tracking-[0.08em] uppercase px-3 py-1 text-white whitespace-nowrap"
+                        className="mb-2 inline-block text-[0.7rem] font-medium tracking-[0.08em] uppercase px-3 py-1 text-white whitespace-nowrap"
                         style={{
                           backgroundColor: tokens.palette.accent,
                           borderRadius: "var(--btn-radius)",
@@ -114,7 +114,7 @@ export function PricingFeatureMatrix({ content, tokens, isDark }: Props) {
                     )}
                     <p
                       className={cn(
-                        "text-[0.7rem] font-medium uppercase tracking-[0.12em] mb-2",
+                        "text-[0.7rem] font-medium uppercase tracking-[0.1em] mb-2",
                       )}
                       style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
                     >
@@ -141,7 +141,7 @@ export function PricingFeatureMatrix({ content, tokens, isDark }: Props) {
               {allFeatures.map((feature, fIndex) => (
                 <tr key={fIndex}>
                   <td
-                    className="p-4 md:p-5 text-[0.875rem] font-light"
+                    className="p-4 md:p-5 text-sm leading-relaxed font-light"
                     style={{
                       color: isDark ? "rgba(255,255,255,0.7)" : tokens.palette.text,
                       borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : `${tokens.palette.text}06`}`,
@@ -241,7 +241,7 @@ export function PricingFeatureMatrix({ content, tokens, isDark }: Props) {
             >
               {plan.highlighted && (
                 <span
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 text-[0.6rem] font-medium tracking-[0.08em] uppercase px-3 py-1 text-white whitespace-nowrap"
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 text-[0.7rem] font-medium tracking-[0.08em] uppercase px-3 py-1 text-white whitespace-nowrap"
                   style={{
                     backgroundColor: tokens.palette.accent,
                     borderRadius: "var(--btn-radius)",
@@ -253,7 +253,7 @@ export function PricingFeatureMatrix({ content, tokens, isDark }: Props) {
 
               <div className="mb-5">
                 <p
-                  className="text-[0.7rem] font-medium uppercase tracking-[0.12em] mb-2"
+                  className="text-[0.7rem] font-medium uppercase tracking-[0.1em] mb-2"
                   style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
                 >
                   {plan.name}
@@ -272,7 +272,7 @@ export function PricingFeatureMatrix({ content, tokens, isDark }: Props) {
                 </p>
                 {plan.description && (
                   <p
-                    className="text-[0.8rem] font-light mt-1"
+                    className="text-sm font-light mt-1"
                     style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
                   >
                     {plan.description}
@@ -311,7 +311,7 @@ export function PricingFeatureMatrix({ content, tokens, isDark }: Props) {
                       )}
                       <span
                         className={cn(
-                          "text-[0.85rem] font-light",
+                          "text-sm leading-relaxed font-light",
                           !hasFeature && "line-through opacity-50",
                         )}
                         style={{

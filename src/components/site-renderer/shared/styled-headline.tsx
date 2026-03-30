@@ -69,12 +69,10 @@ function AccentWord({
 function getAccentStyles(tokens: DesignTokens): React.CSSProperties {
   const s = tokens.style;
   const accent = tokens.palette.accent;
-  const serifFont = getSerifFont(tokens.fontPairing);
-
   switch (s) {
     case "industrial":
       return {
-        fontFamily: serifFont,
+        fontFamily: "var(--pgl-font-accent), serif",
         fontStyle: "italic",
         fontWeight: 700,
         color: accent,
@@ -83,7 +81,7 @@ function getAccentStyles(tokens: DesignTokens): React.CSSProperties {
 
     case "elegant":
       return {
-        fontFamily: serifFont,
+        fontFamily: "var(--pgl-font-accent), serif",
         fontStyle: "normal",
         fontWeight: 700,
         color: accent,
@@ -131,18 +129,4 @@ function getAccentStyles(tokens: DesignTokens): React.CSSProperties {
     default:
       return { color: accent };
   }
-}
-
-function getSerifFont(fontPairing: string): string {
-  const serifs: Record<string, string> = {
-    "oswald+roboto": "'Playfair Display', serif",
-    "montserrat+opensans": "'Playfair Display', serif",
-    "inter+merriweather": "'Merriweather', serif",
-    "poppins+lora": "'Lora', serif",
-    "playfair+source-sans": "'Playfair Display', serif",
-    "dm-sans+dm-serif": "'DM Serif Display', serif",
-    "raleway+roboto": "'Playfair Display', serif",
-    "space-grotesk+inter": "'DM Serif Display', serif",
-  };
-  return serifs[fontPairing] || "'Playfair Display', serif";
 }

@@ -131,7 +131,7 @@ export function HoursVisual({ content, tokens }: Props) {
 
               {closed ? (
                 <span
-                  className="text-[0.8rem] font-light"
+                  className="text-sm font-light"
                   style={{
                     color: tokens.palette.textMuted,
                     fontStyle: "italic",
@@ -155,7 +155,7 @@ export function HoursVisual({ content, tokens }: Props) {
                     }}
                   />
                   <span
-                    className="text-[0.8rem] tabular-nums shrink-0"
+                    className="text-sm tabular-nums shrink-0"
                     style={{ color: tokens.palette.text }}
                   >
                     {hours}
@@ -169,7 +169,7 @@ export function HoursVisual({ content, tokens }: Props) {
 
       {c.note && (
         <p
-          className="mt-6 text-xs leading-[1.7] font-light max-w-md pgl-fade-up"
+          className="mt-6 text-xs leading-[1.6] font-light max-w-md pgl-fade-up"
           style={{ color: tokens.palette.textMuted }}
           data-delay="5"
           data-pgl-path="note"

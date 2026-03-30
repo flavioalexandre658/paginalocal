@@ -20,26 +20,11 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-function getSerifFont(fontPairing: string): string {
-  const serifs: Record<string, string> = {
-    "oswald+roboto": "'Playfair Display', serif",
-    "montserrat+opensans": "'Playfair Display', serif",
-    "inter+merriweather": "'Merriweather', serif",
-    "poppins+lora": "'Lora', serif",
-    "playfair+source-sans": "'Playfair Display', serif",
-    "dm-sans+dm-serif": "'DM Serif Display', serif",
-    "raleway+roboto": "'Playfair Display', serif",
-    "space-grotesk+inter": "'DM Serif Display', serif",
-  };
-  return serifs[fontPairing] || "'Playfair Display', serif";
-}
-
 export function TestimonialsGrid({ content, tokens }: Props) {
   const parsed = TestimonialsContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
 
-  const serifFont = getSerifFont(tokens.fontPairing);
   const style = tokens.style;
 
   /* -- style-dependent card rendering -- */
@@ -58,7 +43,7 @@ export function TestimonialsGrid({ content, tokens }: Props) {
         />
         {c.subtitle && (
           <p
-            className="mt-4 text-[0.95rem] leading-[1.8] font-light max-w-2xl mx-auto"
+            className="mt-4 text-base leading-[1.6] font-light max-w-2xl mx-auto"
             style={{ color: tokens.palette.textMuted }}
             data-pgl-path="subtitle"
             data-pgl-edit="text"
@@ -134,7 +119,7 @@ export function TestimonialsGrid({ content, tokens }: Props) {
                 <span
                   className="block text-5xl leading-none select-none pointer-events-none mb-4"
                   style={{
-                    fontFamily: serifFont,
+                    fontFamily: "var(--pgl-font-accent), serif",
                     color: tokens.palette.accent,
                     opacity: 0.12,
                   }}
@@ -148,7 +133,7 @@ export function TestimonialsGrid({ content, tokens }: Props) {
                 <span
                   className="block text-6xl leading-none select-none pointer-events-none mb-2"
                   style={{
-                    fontFamily: serifFont,
+                    fontFamily: "var(--pgl-font-accent), serif",
                     color: tokens.palette.accent,
                     opacity: 0.3,
                   }}
@@ -161,11 +146,11 @@ export function TestimonialsGrid({ content, tokens }: Props) {
                 className={cn(
                   "mb-8",
                   style === "minimal"
-                    ? "text-[0.95rem] leading-[1.8] font-normal border-l-2 pl-4"
-                    : "text-[0.95rem] leading-[1.8] font-medium",
+                    ? "text-base leading-[1.6] font-normal border-l-2 pl-4"
+                    : "text-base leading-[1.6] font-medium",
                 )}
                 style={{
-                  fontFamily: style === "minimal" ? "var(--pgl-font-body)" : serifFont,
+                  fontFamily: style === "minimal" ? "var(--pgl-font-body)" : "var(--pgl-font-accent), serif",
                   fontStyle: style === "minimal" || style === "bold" ? "normal" : "italic",
                   color: tokens.palette.text,
                   ...(style === "minimal"
@@ -206,7 +191,7 @@ export function TestimonialsGrid({ content, tokens }: Props) {
                 )}
                 <div className="min-w-0">
                   <div
-                    className="text-[0.8rem] font-semibold"
+                    className="text-sm font-semibold"
                     style={{
                       fontFamily: "var(--pgl-font-heading)",
                       color: tokens.palette.text,

@@ -27,7 +27,7 @@ export function LocationMapFull({ content, tokens }: Props) {
           text={c.title}
           tokens={tokens}
           className={cn(
-            "leading-[1.05] mb-4",
+            "leading-[1.1] mb-4",
             isBold
               ? "text-4xl md:text-5xl lg:text-6xl"
               : "text-3xl md:text-4xl lg:text-5xl"
@@ -81,7 +81,7 @@ export function LocationMapFull({ content, tokens }: Props) {
                 Endereço
               </div>
               <div
-                className="text-[0.825rem] font-normal"
+                className="text-sm font-normal"
                 style={{ color: tokens.palette.text }}
                 data-pgl-path="address"
                 data-pgl-edit="text"
@@ -98,7 +98,7 @@ export function LocationMapFull({ content, tokens }: Props) {
           href={`https://maps.google.com/maps?q=${encodeURIComponent(c.address)}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[0.82rem] font-medium tracking-[0.04em] hover:opacity-70"
+          className="text-sm font-medium tracking-[0.04em] hover:opacity-70"
           style={{
             color: tokens.palette.accent,
             transition: `opacity var(--transition-speed)`,

@@ -32,13 +32,13 @@ export function MenuCardsImages({ content, tokens }: Props) {
             text={c.title}
             tokens={tokens}
             as="h2"
-            className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]"
+            className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.1]"
             data-pgl-path="title"
             data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
+              className="pgl-fade-up text-base md:text-lg leading-[1.6] font-light"
               style={{ color: tokens.palette.textMuted }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -60,8 +60,8 @@ export function MenuCardsImages({ content, tokens }: Props) {
             <div className="flex items-center gap-3 mb-4 md:mb-6">
               <span
                 className={cn(
-                  "text-[0.7rem] font-medium uppercase tracking-[0.15em]",
-                  isBold && "text-[0.8rem] !font-bold",
+                  "text-[0.7rem] font-medium uppercase tracking-[0.1em]",
+                  isBold && "text-sm !font-bold",
                 )}
                 style={{ color: tokens.palette.accent }}
                 data-pgl-path={`categories.${catIndex}.name`}
@@ -143,9 +143,9 @@ export function MenuCardsImages({ content, tokens }: Props) {
                   >
                     <h3
                       className={cn(
-                        "text-[0.85rem] font-semibold tracking-[0.03em]",
+                        "text-base font-semibold tracking-[0.03em]",
                         (isIndustrial || isBold) && "uppercase",
-                        isBold && "text-[0.9rem] !font-bold",
+                        isBold && "text-base !font-bold",
                         (isIndustrial || isBold) &&
                           "group-hover:text-white transition-colors duration-[400ms]",
                       )}
@@ -161,7 +161,7 @@ export function MenuCardsImages({ content, tokens }: Props) {
                     {item.description && (
                       <p
                         className={cn(
-                          "text-[0.8rem] font-light line-clamp-2 flex-1 mt-1",
+                          "text-sm font-light line-clamp-2 flex-1 mt-1",
                           (isIndustrial || isBold) &&
                             "group-hover:text-white/70 transition-colors duration-[400ms]",
                         )}
@@ -188,7 +188,7 @@ export function MenuCardsImages({ content, tokens }: Props) {
                       </span>
                       {item.badge && (
                         <span
-                          className="text-[0.6rem] font-medium tracking-[0.08em] uppercase px-2 py-0.5 text-white"
+                          className="text-[0.7rem] font-medium tracking-[0.08em] uppercase px-2 py-0.5 text-white"
                           style={{
                             backgroundColor: tokens.palette.accent,
                             borderRadius: "var(--btn-radius)",

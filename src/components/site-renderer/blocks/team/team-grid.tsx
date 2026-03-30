@@ -37,13 +37,13 @@ export function TeamGrid({ content, tokens }: Props) {
             text={c.title}
             tokens={tokens}
             as="h2"
-            className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]"
+            className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.1]"
             data-pgl-path="title"
             data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
+              className="pgl-fade-up text-base leading-[1.6] font-light"
               style={{ color: tokens.palette.textMuted }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -111,7 +111,7 @@ export function TeamGrid({ content, tokens }: Props) {
                   )}
                   <div className="flex-1 min-w-0">
                     <h3
-                      className="text-[0.875rem] font-semibold tracking-[0.02em]"
+                      className="text-sm font-semibold tracking-[0.02em]"
                       style={{
                         fontFamily: "var(--pgl-font-heading)",
                         color: tokens.palette.text,
@@ -198,7 +198,7 @@ export function TeamGrid({ content, tokens }: Props) {
                     className={cn(
                       "text-[0.7rem] font-medium tracking-[0.1em] mt-1",
                       isIndustrial && "uppercase",
-                      isBold && "text-[0.75rem] !font-semibold px-2 py-0.5 inline-block mt-2",
+                      isBold && "text-sm !font-semibold px-2 py-0.5 inline-block mt-2",
                     )}
                     style={{
                       color: isBold ? "#fff" : tokens.palette.accent,
@@ -216,7 +216,7 @@ export function TeamGrid({ content, tokens }: Props) {
                   </p>
                   {member.bio && (
                     <p
-                      className="text-[0.8rem] font-light line-clamp-3 mt-3"
+                      className="text-sm font-light line-clamp-3 mt-3"
                       style={{ color: tokens.palette.textMuted }}
                       data-pgl-path={`members.${index}.bio`}
                       data-pgl-edit="text"

@@ -35,14 +35,14 @@ export function ServicesListPrices({ content, tokens }: Props) {
           <StyledHeadline
             text={c.title}
             tokens={tokens}
-            className="pgl-fade-up text-2xl md:text-3xl lg:text-5xl leading-[1.05]"
+            className="pgl-fade-up text-2xl md:text-3xl lg:text-5xl leading-[1.1]"
             accentClassName="normal-case"
             data-pgl-path="title"
             data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
+              className="pgl-fade-up text-base md:text-lg leading-[1.6] font-light"
               style={{ color: mutedColor }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -91,7 +91,7 @@ export function ServicesListPrices({ content, tokens }: Props) {
                     />
                   ) : (
                     <span
-                      className="text-[0.7rem] font-medium tracking-[0.12em] uppercase"
+                      className="text-xs font-medium tracking-[0.1em] uppercase"
                       style={{ color: tokens.palette.accent }}
                     >
                       {String(i + 1).padStart(2, "0")}
@@ -128,7 +128,7 @@ export function ServicesListPrices({ content, tokens }: Props) {
 
                 <p
                   className={cn(
-                    "text-[0.875rem] leading-[1.75] font-light",
+                    "text-sm leading-relaxed font-light",
                     !isMinimal && "ml-9",
                   )}
                   style={{ color: mutedColor }}
@@ -144,7 +144,7 @@ export function ServicesListPrices({ content, tokens }: Props) {
                       href={item.ctaLink}
                       variant="secondary"
                       tokens={tokens}
-                      className="text-[0.8rem] opacity-0 group-hover:opacity-100"
+                      className="text-sm opacity-0 group-hover:opacity-100"
                       data-pgl-path={`items.${i}.ctaText`}
                       data-pgl-edit="button"
                     >

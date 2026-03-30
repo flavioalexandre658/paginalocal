@@ -27,7 +27,7 @@ export function FooterPremium({ tokens, globalContent, navigation, storeName }: 
               {storeName}
             </div>
             {globalContent.tagline && (
-              <p className="text-[0.825rem] leading-[1.7] text-white/30 font-light max-w-xs">
+              <p className="text-sm leading-[1.6] text-white/30 font-light max-w-xs">
                 {globalContent.tagline}
               </p>
             )}
@@ -36,7 +36,7 @@ export function FooterPremium({ tokens, globalContent, navigation, storeName }: 
           {/* Navigation */}
           <div>
             <h4
-              className="text-[0.75rem] font-semibold tracking-[0.12em] uppercase text-white/45 mb-4"
+              className="text-sm font-semibold tracking-[0.1em] uppercase text-white/45 mb-4"
               style={{ fontFamily: "var(--pgl-font-heading)" }}
             >
               Navega\u00e7\u00e3o
@@ -46,7 +46,7 @@ export function FooterPremium({ tokens, globalContent, navigation, storeName }: 
                 <a
                   key={i}
                   href={item.href}
-                  className="block text-[0.825rem] text-white/30 font-light transition-colors duration-200 hover:text-white/70"
+                  className="block text-sm text-white/30 font-light transition-colors duration-200 hover:text-white/70"
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   style={{ "--accent": tokens.palette.accent } as any}
                 >
@@ -59,12 +59,12 @@ export function FooterPremium({ tokens, globalContent, navigation, storeName }: 
           {/* Contact summary */}
           <div>
             <h4
-              className="text-[0.75rem] font-semibold tracking-[0.12em] uppercase text-white/45 mb-4"
+              className="text-sm font-semibold tracking-[0.1em] uppercase text-white/45 mb-4"
               style={{ fontFamily: "var(--pgl-font-heading)" }}
             >
               Contato
             </h4>
-            <div className="space-y-2.5 text-[0.825rem] text-white/30 font-light">
+            <div className="space-y-2.5 text-sm text-white/30 font-light">
               <p>WhatsApp dispon\u00edvel</p>
               <p>Seg - S\u00e1b, 07:10 - 18:00</p>
             </div>
@@ -73,7 +73,7 @@ export function FooterPremium({ tokens, globalContent, navigation, storeName }: 
 
         {/* Bottom */}
         <div
-          className="pt-8 flex flex-wrap justify-between gap-4 text-[0.72rem] text-white/20 tracking-[0.03em]"
+          className="pt-8 flex flex-wrap justify-between gap-4 text-xs text-white/20 tracking-[0.03em]"
           style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
         >
           <span>{globalContent.footerText || `\u00a9 ${new Date().getFullYear()} ${storeName}`}</span>

@@ -32,13 +32,13 @@ export function MenuCategorizedList({ content, tokens }: Props) {
             text={c.title}
             tokens={tokens}
             as="h2"
-            className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]"
+            className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.1]"
             data-pgl-path="title"
             data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
+              className="pgl-fade-up text-base md:text-lg leading-[1.6] font-light"
               style={{ color: tokens.palette.textMuted }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -60,8 +60,8 @@ export function MenuCategorizedList({ content, tokens }: Props) {
             <div className="flex items-center gap-3 mb-4 md:mb-5">
               <span
                 className={cn(
-                  "text-[0.7rem] font-medium uppercase tracking-[0.15em]",
-                  isBold && "text-[0.8rem] !font-bold",
+                  "text-[0.7rem] font-medium uppercase tracking-[0.1em]",
+                  isBold && "text-sm !font-bold",
                 )}
                 style={{ color: tokens.palette.accent }}
                 data-pgl-path={`categories.${catIndex}.name`}
@@ -106,7 +106,7 @@ export function MenuCategorizedList({ content, tokens }: Props) {
                       {/* industrial/bold: numbered items */}
                       {(isIndustrial || isBold) && (
                         <span
-                          className="text-[0.65rem] font-bold tabular-nums"
+                          className="text-xs font-bold tabular-nums"
                           style={{ color: `${tokens.palette.text}26` }}
                         >
                           {String(itemIndex + 1).padStart(2, "0")}
@@ -114,9 +114,9 @@ export function MenuCategorizedList({ content, tokens }: Props) {
                       )}
                       <h3
                         className={cn(
-                          "text-[0.9rem] font-semibold tracking-[0.02em]",
+                          "text-base font-semibold tracking-[0.02em]",
                           (isIndustrial || isBold) && "uppercase",
-                          isBold && "text-[0.95rem] !font-bold",
+                          isBold && "text-base !font-bold",
                         )}
                         style={{
                           fontFamily: "var(--pgl-font-heading)",
@@ -129,7 +129,7 @@ export function MenuCategorizedList({ content, tokens }: Props) {
                       </h3>
                       {item.badge && (
                         <span
-                          className="text-[0.6rem] font-medium tracking-[0.08em] uppercase px-2 py-0.5 text-white"
+                          className="text-[0.7rem] font-medium tracking-[0.08em] uppercase px-2 py-0.5 text-white"
                           style={{
                             backgroundColor: tokens.palette.accent,
                             borderRadius: "var(--btn-radius)",
@@ -141,7 +141,7 @@ export function MenuCategorizedList({ content, tokens }: Props) {
                     </div>
                     {item.description && (
                       <p
-                        className="text-[0.8rem] font-light mt-0.5"
+                        className="text-sm font-light mt-0.5"
                         style={{ color: tokens.palette.textMuted }}
                         data-pgl-path={`categories.${catIndex}.items.${itemIndex}.description`}
                         data-pgl-edit="text"
@@ -152,7 +152,7 @@ export function MenuCategorizedList({ content, tokens }: Props) {
                   </div>
                   <span
                     className={cn(
-                      "text-[0.9rem] font-semibold tabular-nums shrink-0",
+                      "text-base font-semibold tabular-nums shrink-0",
                       isBold && "text-[1rem] !font-bold",
                     )}
                     style={{ color: tokens.palette.primary }}

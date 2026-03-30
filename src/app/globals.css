@@ -5,6 +5,35 @@
 :root {
   --pgl-font-heading: var(--font-playfair), 'Georgia', serif;
   --pgl-font-body: var(--font-inter), system-ui, -apple-system, sans-serif;
+
+  /* ═══ PGL Typography Scale ═══
+     Based on 1.25 ratio (Major Third)
+     H1: 64px → 40px mobile | H2: 48px → 30px | H3: 36px → 24px
+     Body Large: 20px | Body: 16px | Small: 14px | XS: 12px
+  */
+  --pgl-text-h1: clamp(2.5rem, 4vw + 1rem, 4rem);
+  --pgl-text-h2: clamp(1.875rem, 3vw + 0.5rem, 3rem);
+  --pgl-text-h3: clamp(1.5rem, 2vw + 0.5rem, 2.25rem);
+  --pgl-text-h4: clamp(1.125rem, 1.5vw + 0.5rem, 1.5rem);
+  --pgl-text-body-lg: 1.25rem;
+  --pgl-text-body: 1rem;
+  --pgl-text-sm: 0.875rem;
+  --pgl-text-xs: 0.75rem;
+  --pgl-text-label: 0.7rem;
+
+  /* Line heights */
+  --pgl-leading-h: 1.1;
+  --pgl-leading-h-relaxed: 1.2;
+  --pgl-leading-sub: 1.35;
+  --pgl-leading-body: 1.6;
+  --pgl-leading-body-relaxed: 1.8;
+
+  /* Letter spacing */
+  --pgl-tracking-h: -0.02em;
+  --pgl-tracking-h-tight: -0.03em;
+  --pgl-tracking-caps: 0.1em;
+  --pgl-tracking-body: 0;
+  --pgl-tracking-cta: 0.03em;
 }
 
 /* Force Playfair on all font-heading utilities (Tailwind v4 workaround) */
@@ -287,6 +316,10 @@ html {
   --card-border: none;
   --section-radius: 0px;
   --transition-speed: 0.4s;
+  --heading-leading: 1.05;
+  --body-leading: 1.6;
+  --sub-weight: 400;
+  --sub-leading: 1.4;
 }
 
 [data-style="elegant"] {
@@ -308,6 +341,10 @@ html {
   --card-border: 0.5px solid rgba(0,0,0,0.06);
   --section-radius: 16px;
   --transition-speed: 0.5s;
+  --heading-leading: 1.15;
+  --body-leading: 1.7;
+  --sub-weight: 400;
+  --sub-leading: 1.5;
 }
 
 [data-style="warm"] {
@@ -329,6 +366,10 @@ html {
   --card-border: 0.5px solid rgba(0,0,0,0.06);
   --section-radius: 12px;
   --transition-speed: 0.35s;
+  --heading-leading: 1.15;
+  --body-leading: 1.7;
+  --sub-weight: 400;
+  --sub-leading: 1.5;
 }
 
 [data-style="bold"] {
@@ -350,6 +391,10 @@ html {
   --card-border: 2px solid transparent;
   --section-radius: 4px;
   --transition-speed: 0.25s;
+  --heading-leading: 1.05;
+  --body-leading: 1.6;
+  --sub-weight: 500;
+  --sub-leading: 1.4;
 }
 
 [data-style="minimal"] {
@@ -371,6 +416,10 @@ html {
   --card-border: none;
   --section-radius: 0px;
   --transition-speed: 0.6s;
+  --heading-leading: 1.2;
+  --body-leading: 1.8;
+  --sub-weight: 300;
+  --sub-leading: 1.5;
 }
 
 /* ============================================
@@ -540,4 +589,1376 @@ html {
     opacity: 1 !important;
     transform: none !important;
   }
+}
+
+@font-face {
+  font-family: Buycat;
+  src: url(../app/fonts/Buycat-e99on.otf);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Shade;
+  src: url(../app/fonts/Shade.ttf);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Portico;
+  src: url(../app/fonts/Portico.ttf);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: BenguiatStd-Bold;
+  src: url(../app/fonts/BenguiatStd-Bold);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: HennyPenny-Regular;
+  src: url(../app/fonts/HennyPenny-Regular.ttf);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Vanilla;
+  src: url(../app/fonts/Vanilla.ttf);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: JosefinSans-Bold;
+  src: url(../app/fonts/JosefinSans-Bold.ttf);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Caprasimo-Regular;
+  src: url(../app/fonts/Caprasimo-Regular.ttf);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Caveat-SemiBold;
+  src: url(../app/fonts/Caveat-SemiBold.ttf);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Montserrat-Black;
+  src: url(../app/fonts/Montserrat-Black.ttf);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Montserrat-Light;
+  src: url(../app/fonts/Montserrat-Light.ttf);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: PlayfairDisplay-Black;
+  src: url(../app/fonts/PlayfairDisplay-Black.ttf);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Borel-Regular;
+  src: url(../app/fonts/Borel-Regular.ttf);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: DePixelBreit;
+  src: url(../app/fonts/DePixelBreit);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: SNACKID;
+  src: url(../app/fonts/SNACKID);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: RammettoOne-Regular;
+  src: url(../app/fonts/RammettoOne-Regular.ttf);
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "GeneralSans";
+  src: url(../app/fonts/GeneralSans.woff) format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Roboto";
+  src: url(../app/fonts/Roboto.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PlaywriteNZ";
+  src: url(../app/fonts/PlaywriteNZ.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Lucida Sans Unicode";
+  src: url(../app/fonts/Lucida-Sans-Unicode.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Tahoma";
+  src: url(../app/fonts/Tahoma.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Golden Avocado";
+  src: url(../app/fonts/Golden-Avocado.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Redhawk";
+  src: url(../app/fonts/Redhawk.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Quick Jelly";
+  src: url(../app/fonts/Quick-Jelly.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Best Racer";
+  src: url(../app/fonts/Best-Racer.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Autolink";
+  src: url(../app/fonts/Autolink.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Barakat";
+  src: url(../app/fonts/Barakat.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Barbie";
+  src: url(../app/fonts/Barbie.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Aldrich";
+  src: url(../app/fonts/Aldrich.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Audiowide";
+  src: url(../app/fonts/Audiowide.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Baloo";
+  src: url(../app/fonts/Baloo.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bungee";
+  src: url(../app/fonts/Bungee.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Shade";
+  src: url(../app/fonts/Shade.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Calligraffitti";
+  src: url(../app/fonts/Calligraffitti.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Chewy";
+  src: url(../app/fonts/Chewy.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Concert";
+  src: url(../app/fonts/Concert.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Cookie";
+  src: url(../app/fonts/Cookie.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dancing";
+  src: url(../app/fonts/Dancing.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fredoka";
+  src: url(../app/fonts/Fredoka.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Gentium";
+  src: url(../app/fonts/Gentium.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Handlee";
+  src: url(../app/fonts/Handlee.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Homemade";
+  src: url(../app/fonts/Homemade.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Lobster";
+  src: url(../app/fonts/Lobster.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Molengo";
+  src: url(../app/fonts/Molengo.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "OpenSans";
+  src: url(../app/fonts/OpenSans.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Orbitron";
+  src: url(../app/fonts/Orbitron.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Oswald";
+  src: url(../app/fonts/Oswald.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pacifico";
+  src: url(../app/fonts/Pacifico.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Playball";
+  src: url(../app/fonts/Playball.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "NarrowSans";
+  src: url(../app/fonts/NarrowSans.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Righteous";
+  src: url(../app/fonts/Righteous.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "RockSalt";
+  src: url(../app/fonts/RockSalt.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Unica";
+  src: url(../app/fonts/Unica.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "SpicyRice";
+  src: url(../app/fonts/SpicyRice.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "aLancet";
+  src: url(../app/fonts/aLancet.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ABOVE";
+  src: url(../app/fonts/ABOVE.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Japanese";
+  src: url(../app/fonts/Japanese.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Articulat";
+  src: url(../app/fonts/Articulat.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "BARBATRI";
+  src: url(../app/fonts/BARBATRI.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Blazed";
+  src: url(../app/fonts/Blazed.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Block";
+  src: url(../app/fonts/Block.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "bubble";
+  src: url(../app/fonts/bubble.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "BurgerFrog";
+  src: url(../app/fonts/BurgerFrog.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "CaviarDreams";
+  src: url(../app/fonts/CaviarDreams.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DolceVita";
+  src: url(../app/fonts/DolceVita.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "EightOne";
+  src: url(../app/fonts/EightOne.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ELRIOTT2";
+  src: url(../app/fonts/ELRIOTT2.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fabada";
+  src: url(../app/fonts/Fabada.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "fenwick";
+  src: url(../app/fonts/fenwick.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Sparkly";
+  src: url(../app/fonts/Sparkly.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "FONTH";
+  src: url(../app/fonts/FONTH.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "bardeo";
+  src: url(../app/fonts/bardeo.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "FONTSHUI";
+  src: url(../app/fonts/FONTSHUI.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Ganton";
+  src: url(../app/fonts/Ganton.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "ghost";
+  src: url(../app/fonts/ghost.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GOOD";
+  src: url(../app/fonts/GOOD.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "October";
+  src: url(../app/fonts/October.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Gretoon";
+  src: url(../app/fonts/Gretoon.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Hasteristico";
+  src: url(../app/fonts/Hasteristico.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "iArnold";
+  src: url(../app/fonts/iArnold.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IMPOS10";
+  src: url(../app/fonts/IMPOS10.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Island";
+  src: url(../app/fonts/Island.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Blocks123";
+  src: url(../app/fonts/Blocks123.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "KGAll";
+  src: url(../app/fonts/KGAll.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Chasing";
+  src: url(../app/fonts/Chasing.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Kirvy";
+  src: url(../app/fonts/Kirvy.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "lethal";
+  src: url(../app/fonts/lethal.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Magettas";
+  src: url(../app/fonts/Magettas.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "mexican";
+  src: url(../app/fonts/mexican.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Mishaland";
+  src: url(../app/fonts/Mishaland.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Miss";
+  src: url(../app/fonts/Miss.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "monkey";
+  src: url(../app/fonts/monkey.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Multicolore";
+  src: url(../app/fonts/Multicolore.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Spice";
+  src: url(../app/fonts/Spice.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Peace";
+  src: url(../app/fonts/Peace.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pink";
+  src: url(../app/fonts/Pink.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Plexus";
+  src: url(../app/fonts/Plexus.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "pricedown";
+  src: url(../app/fonts/pricedown.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Raceway";
+  src: url(../app/fonts/Raceway.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Republica";
+  src: url(../app/fonts/Republica.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Rimouski";
+  src: url(../app/fonts/Rimouski.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "shanghai";
+  src: url(../app/fonts/shanghai.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "SNOW";
+  src: url(../app/fonts/SNOW.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "stentiga";
+  src: url(../app/fonts/stentiga.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "SWAT";
+  src: url(../app/fonts/SWAT.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "TitanOne";
+  src: url(../app/fonts/TitanOne.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Turtles";
+  src: url(../app/fonts/Turtles.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Vonique";
+  src: url(../app/fonts/Vonique.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Walibi";
+  src: url(../app/fonts/Walibi.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "wood";
+  src: url(../app/fonts/wood.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "cutter";
+  src: url(../app/fonts/cutter.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Mocca";
+  src: url(../app/fonts/Mocca.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Ornette";
+  src: url(../app/fonts/Ornette.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Outerlord";
+  src: url(../app/fonts/Outerlord.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Paduka";
+  src: url(../app/fonts/Paduka.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Futuro";
+  src: url(../app/fonts/Futuro.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Quesha";
+  src: url(../app/fonts/Quesha.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geometry";
+  src: url(../app/fonts/Geometry.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Quadranta";
+  src: url(../app/fonts/Quadranta.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "modithorson";
+  src: url(../app/fonts/modithorson.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Florida";
+  src: url(../app/fonts/Florida.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "space";
+  src: url(../app/fonts/space.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "_IO";
+  src: url(../app/fonts/_IO.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "StarNext";
+  src: url(../app/fonts/StarNext.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "OpTic";
+  src: url(../app/fonts/OpTic.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Pompe";
+  src: url(../app/fonts/Pompe.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Mental";
+  src: url(../app/fonts/Mental.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Mocca;
+  src: url(../app/fonts/Mocca.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Multicolore;
+  src: url(../app/fonts/Multicolore.otf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Peace;
+  src: url(../app/fonts/Peace.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Molengo;
+  src: url(../app/fonts/Molengo.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Walibi;
+  src: url(../app/fonts/Walibi.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Lobster;
+  src: url(../app/fonts/Lobster.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Fonth;
+  src: url(../app/fonts/FONTH.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Bungee;
+  src: url(../app/fonts/Bungee.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: AR;
+  src: url(../app/fonts/Adelle-Regular.otf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Naruto;
+  src: url(../app/fonts/njnaruto.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Aristotelica Bold;
+  src: url(../app/fonts/Aristotelica-bold.ttf) format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Aristotelica;
+  src: url(../app/fonts/Aristotelica-regular.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Aristotelica Condensed;
+  src: url(../app/fonts/Aristotelica-condensed.ttf) format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Adumu;
+  src: url(../app/fonts/Adumu.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Adumu Inline;
+  src: url(../app/fonts/Adumu-Inline.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Glacial Indifference;
+  src: url(../app/fonts/GlacialIndifference-Regular.otf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Glacial Indifference Bold;
+  src: url(../app/fonts/GlacialIndifference-Bold.otf) format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: CocoBiker;
+  src: url(../app/fonts/CocoBiker.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Paw Patrol;
+  src: url(../app/fonts/Aachen-Regular-font.ttf) format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Futura;
+  src: url(../app/fonts/FuturaTLig.ttf) format("truetype");
+  font-weight: 800;
+  font-style: bold;
+}
+@font-face {
+  font-family: Gloria Hallelujah;
+  src: url(../app/fonts/gloriahallelujah.ttf) format("truetype");
+  font-weight: 800;
+  font-style: bold;
+}
+@font-face {
+  font-family: Childo;
+  src: url(../app/fonts/Childo.otf) format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Sacramento;
+  src: url(../app/fonts/Sacramento.ttf) format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Childos Arabic;
+  src: url(../app/fonts/ChildosArabicDEMO-Light.otf) format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Futura Bold;
+  src: url(../app/fonts/FuturaStd-Bold.ttf) format("truetype");
+  font-weight: 800;
+  font-style: bold;
+}
+@font-face {
+  font-family: Scriptina;
+  src: url(../app/fonts/SCRIPTIN.ttf) format("truetype");
+  font-weight: 800;
+  font-style: bold;
+}
+@font-face {
+  font-family: Guld Script;
+  src: url(../app/fonts/GuldScript_PersonalUseOnly.ttf) format("truetype");
+  font-weight: 800;
+  font-style: bold;
+}
+@font-face {
+  font-family: Paw Patrol Bold;
+  src: url(../app/fonts/Aachen-BT-Bold-font.ttf) format("truetype");
+  font-weight: 800;
+  font-style: bold;
+}
+@font-face {
+  font-family: Buka Bird;
+  src: url(../app/fonts/Buka-Bird.ttf) format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: Magnolia Script;
+  src: url(../app/fonts/Magnolia-Script.otf) format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: TT Phobos Inline;
+  src: url(../app/fonts/TT-Phobos-Trial-Inline.otf) format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Dancing Script Regular";
+  src: url(../app/fonts/DancingScript-Regular.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Dancing Script Bold";
+  src: url(../app/fonts/DancingScript-Bold.ttf) format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Manter abreviações para compatibilidade */
+@font-face {
+  font-family: DR;
+  src: url(../app/fonts/DancingScript-Regular.ttf) format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: DB;
+  src: url(../app/fonts/DancingScript-Bold.ttf) format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: ASB;
+  src: url(../app/fonts/Adelle-SemiBold.otf) format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: AB;
+  src: url(../app/fonts/Adelle-Bold.otf) format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: NR;
+  src: url(../app/fonts/Northland.otf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: RSB;
+  src: url(../app/fonts/Raleway-SemiBold.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Milkshake;
+  src: url(../app/fonts/Milkshake%20400.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MSB;
+  src: url(../app/fonts/Montserrat-Bold.ttf) format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: AD;
+  src: url(../app/fonts/AllerDisplay.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: OSR;
+  src: url(../app/fonts/OpenSans-Regular.ttf) format("truetype");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: CFD;
+  src: url(../app/fonts/Crocodile%20Feet%20DEMO.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Crocodile Feet DEMO";
+  src: url(../app/fonts/Crocodile%20Feet%20DEMO.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: AMTWR;
+  src: url(../app/fonts/AMTW-1.otf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: OPS;
+  src: url(../app/fonts/OpenSans-Regular.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: AMTW;
+  src: url(../app/fonts/AMTW-1.otf) format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: BR;
+  src: url(../app/fonts/Baloo-Regular.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: BB;
+  src: url(../app/fonts/Baloo-Regular.ttf) format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: CFR;
+  src: url(../app/fonts/Crocodile%20Feet%20DEMO.otf) format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  crossorigin: "anonymous";
+}
+
+@font-face {
+  font-family: CFB;
+  src: url(../app/fonts/Crocodile%20Feet%20DEMO.otf) format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  crossorigin: "anonymous";
+}
+
+@font-face {
+  font-family: PP;
+  src: url(../app/fonts/Poppins-Regular.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: NVR;
+  src: url(../app/fonts/Novecento%20Normal.otf) format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: OPSB;
+  src: url(../app/fonts/OpenSans-Bold.ttf) format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Intro Script B Base";
+  src: url(../app/fonts/IntroScriptB-Base.otf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Manter abreviações para compatibilidade */
+@font-face {
+  font-family: IS;
+  src: url(../app/fonts/IntroScriptB-Base.otf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: ISB;
+  src: url(../app/fonts/IntroScriptB-Base.otf) format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: NN;
+  src: url(../app/fonts/Nunito-VariableFont_wght.ttf) format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Bison Bold;
+  src: url(../app/fonts/bison-bold.ttf) format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("../app/fonts/Roboto-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("../app/fonts/Roboto-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("../app/fonts/Roboto-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Roboto";
+  src: url("../app/fonts/Roboto-BoldItalic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Montserrat Regular";
+  src: url("../app/fonts/Montserrat-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  font-size: 10px;
 }

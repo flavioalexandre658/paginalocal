@@ -20,27 +20,12 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-function getSerifFont(fontPairing: string): string {
-  const serifs: Record<string, string> = {
-    "oswald+roboto": "'Playfair Display', serif",
-    "montserrat+opensans": "'Playfair Display', serif",
-    "inter+merriweather": "'Merriweather', serif",
-    "poppins+lora": "'Lora', serif",
-    "playfair+source-sans": "'Playfair Display', serif",
-    "dm-sans+dm-serif": "'DM Serif Display', serif",
-    "raleway+roboto": "'Playfair Display', serif",
-    "space-grotesk+inter": "'DM Serif Display', serif",
-  };
-  return serifs[fontPairing] || "'Playfair Display', serif";
-}
-
 export function TestimonialsFeatured({ content, tokens }: Props) {
   const parsed = TestimonialsContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
 
   const featured = c.items[0];
-  const serifFont = getSerifFont(tokens.fontPairing);
   const style = tokens.style;
 
   return (
@@ -88,7 +73,7 @@ export function TestimonialsFeatured({ content, tokens }: Props) {
             <span
               className="block text-[6rem] md:text-[8rem] leading-none select-none pointer-events-none -mb-8 md:-mb-10"
               style={{
-                fontFamily: serifFont,
+                fontFamily: "var(--pgl-font-accent), serif",
                 color: tokens.palette.accent,
                 opacity: 0.08,
               }}
@@ -102,7 +87,7 @@ export function TestimonialsFeatured({ content, tokens }: Props) {
             <span
               className="block text-[6rem] md:text-[8rem] leading-none select-none pointer-events-none -mb-6 md:-mb-8"
               style={{
-                fontFamily: serifFont,
+                fontFamily: "var(--pgl-font-accent), serif",
                 color: tokens.palette.accent,
                 opacity: 0.25,
               }}
@@ -121,13 +106,13 @@ export function TestimonialsFeatured({ content, tokens }: Props) {
 
           <blockquote
             className={cn(
-              "leading-[1.7] font-bold",
+              "leading-[1.6] font-bold",
               style === "minimal"
                 ? "text-lg md:text-xl lg:text-2xl border-l-2 pl-6 text-left"
                 : "text-lg md:text-xl lg:text-2xl",
             )}
             style={{
-              fontFamily: style === "minimal" ? "var(--pgl-font-body)" : serifFont,
+              fontFamily: style === "minimal" ? "var(--pgl-font-body)" : "var(--pgl-font-accent), serif",
               fontStyle: style === "minimal" || style === "bold" ? "normal" : "italic",
               color: tokens.palette.text,
               fontWeight: style === "bold" ? 800 : style === "minimal" ? 400 : 700,
@@ -146,7 +131,7 @@ export function TestimonialsFeatured({ content, tokens }: Props) {
             <span
               className="block text-[4rem] md:text-[6rem] leading-none select-none pointer-events-none -mt-2 text-right"
               style={{
-                fontFamily: serifFont,
+                fontFamily: "var(--pgl-font-accent), serif",
                 color: tokens.palette.accent,
                 opacity: 0.25,
               }}

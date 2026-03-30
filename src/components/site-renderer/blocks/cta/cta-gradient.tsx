@@ -71,14 +71,14 @@ export function CtaGradient({ content, tokens }: Props) {
           <StyledHeadline
             text={c.title}
             tokens={tokens}
-            className="text-2xl md:text-3xl lg:text-5xl text-white leading-[1.08]"
+            className="text-2xl md:text-3xl lg:text-5xl text-white leading-[1.1]"
             accentClassName="normal-case"
             data-pgl-path="title"
             data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
-              className="mt-4 text-sm md:text-base leading-[1.7] text-white/50 font-light"
+              className="mt-4 text-sm md:text-base leading-[1.6] text-white/50 font-light"
               data-pgl-path="subtitle"
               data-pgl-edit="text"
             >

@@ -37,13 +37,13 @@ export function PricingComparison({ content, tokens }: Props) {
             text={c.title}
             tokens={tokens}
             as="h2"
-            className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]"
+            className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.1]"
             data-pgl-path="title"
             data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
+              className="pgl-fade-up text-base md:text-lg leading-[1.6] font-light"
               style={{ color: tokens.palette.textMuted }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -96,7 +96,7 @@ export function PricingComparison({ content, tokens }: Props) {
                   >
                     {plan.highlighted && (
                       <span
-                        className="mb-2 inline-block text-[0.6rem] font-medium tracking-[0.08em] uppercase px-3 py-1 text-white whitespace-nowrap"
+                        className="mb-2 inline-block text-[0.7rem] font-medium tracking-[0.08em] uppercase px-3 py-1 text-white whitespace-nowrap"
                         style={{
                           backgroundColor: tokens.palette.accent,
                           borderRadius: "var(--btn-radius)",
@@ -107,7 +107,7 @@ export function PricingComparison({ content, tokens }: Props) {
                     )}
                     <div
                       className={cn(
-                        "text-[0.85rem] font-semibold tracking-[0.03em]",
+                        "text-base font-semibold tracking-[0.03em]",
                         (isIndustrial || isBold) && "uppercase",
                       )}
                       style={{
@@ -138,7 +138,7 @@ export function PricingComparison({ content, tokens }: Props) {
                   style={{ borderColor: `${tokens.palette.text}08` }}
                 >
                   <td
-                    className="py-3.5 pr-6 text-[0.875rem] font-light"
+                    className="py-3.5 pr-6 text-sm leading-relaxed font-light"
                     style={{ color: tokens.palette.text }}
                   >
                     {feature}
@@ -255,7 +255,7 @@ export function PricingComparison({ content, tokens }: Props) {
             >
               {plan.highlighted && !isMinimal && (
                 <span
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 text-[0.6rem] font-medium tracking-[0.08em] uppercase px-3 py-1 text-white whitespace-nowrap"
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 text-[0.7rem] font-medium tracking-[0.08em] uppercase px-3 py-1 text-white whitespace-nowrap"
                   style={{
                     backgroundColor: tokens.palette.accent,
                     borderRadius: "var(--btn-radius)",
@@ -268,7 +268,7 @@ export function PricingComparison({ content, tokens }: Props) {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <p
-                    className="text-[0.7rem] font-medium uppercase tracking-[0.12em]"
+                    className="text-[0.7rem] font-medium uppercase tracking-[0.1em]"
                     style={{ color: tokens.palette.textMuted }}
                   >
                     {plan.name}
@@ -304,7 +304,7 @@ export function PricingComparison({ content, tokens }: Props) {
                       )}
                       <span
                         className={cn(
-                          "text-[0.875rem] font-light",
+                          "text-sm leading-relaxed font-light",
                           isExcluded && "line-through",
                         )}
                         style={{

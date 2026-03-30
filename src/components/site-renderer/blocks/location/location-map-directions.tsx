@@ -28,7 +28,7 @@ export function LocationMapDirections({ content, tokens }: Props) {
           text={c.title}
           tokens={tokens}
           className={cn(
-            "leading-[1.05] mb-4",
+            "leading-[1.1] mb-4",
             isBold
               ? "text-4xl md:text-5xl lg:text-6xl"
               : "text-3xl md:text-4xl lg:text-5xl"
@@ -58,7 +58,7 @@ export function LocationMapDirections({ content, tokens }: Props) {
         {/* Directions info */}
         <div className="pgl-fade-up" data-delay="2">
           <h3
-            className="text-[0.75rem] font-semibold uppercase tracking-[0.12em] mb-6"
+            className="text-sm font-semibold uppercase tracking-[0.1em] mb-6"
             style={{
               color: tokens.palette.accent,
               fontFamily: "var(--pgl-font-heading)",
@@ -88,7 +88,7 @@ export function LocationMapDirections({ content, tokens }: Props) {
                 Endereço
               </div>
               <div
-                className="text-[0.875rem] font-normal"
+                className="text-sm font-normal"
                 style={{ color: tokens.palette.text }}
                 data-pgl-path="address"
                 data-pgl-edit="text"
@@ -100,7 +100,7 @@ export function LocationMapDirections({ content, tokens }: Props) {
 
           {c.instructions && (
             <p
-              className="text-[0.925rem] leading-[1.7] font-light mb-8"
+              className="text-base leading-[1.6] font-light mb-8"
               style={{ color: tokens.palette.textMuted }}
               data-pgl-path="instructions"
               data-pgl-edit="text"

@@ -51,14 +51,14 @@ export function ServicesAccordion({ content, tokens }: Props) {
             <StyledHeadline
               text={c.title}
               tokens={tokens}
-              className="pgl-fade-up text-2xl md:text-3xl lg:text-5xl leading-[1.05]"
+              className="pgl-fade-up text-2xl md:text-3xl lg:text-5xl leading-[1.1]"
               accentClassName="normal-case"
               data-pgl-path="title"
               data-pgl-edit="text"
             />
             {c.subtitle && (
               <p
-                className="pgl-fade-up mt-5 text-[0.925rem] leading-[1.7] font-light"
+                className="pgl-fade-up mt-5 text-base md:text-lg leading-[1.6] font-light"
                 style={{ color: mutedColor }}
                 data-delay="1"
                 data-pgl-path="subtitle"
@@ -107,7 +107,7 @@ export function ServicesAccordion({ content, tokens }: Props) {
                           />
                         ) : (
                           <span
-                            className="text-[0.7rem] font-medium tracking-[0.12em] uppercase"
+                            className="text-xs font-medium tracking-[0.1em] uppercase"
                             style={{ color: tokens.palette.accent }}
                           >
                             {String(i + 1).padStart(2, "0")}
@@ -115,7 +115,7 @@ export function ServicesAccordion({ content, tokens }: Props) {
                         )}
                         <h3
                           className={cn(
-                            "text-[0.925rem] font-medium text-left group-hover/trigger:text-[--hover-c]",
+                            "text-lg font-semibold text-left group-hover/trigger:text-[--hover-c]",
                             isBold && "!font-bold",
                           )}
                           style={
@@ -153,7 +153,7 @@ export function ServicesAccordion({ content, tokens }: Props) {
                         />
                       )}
                       <p
-                        className="text-[0.875rem] leading-[1.8] font-light max-w-[540px]"
+                        className="text-sm leading-relaxed font-light max-w-[540px]"
                         style={{ color: mutedColor }}
                         data-pgl-path={`items.${i}.description`}
                         data-pgl-edit="text"
@@ -166,7 +166,7 @@ export function ServicesAccordion({ content, tokens }: Props) {
                             href={item.ctaLink}
                             variant="secondary"
                             tokens={tokens}
-                            className="text-[0.8rem]"
+                            className="text-sm"
                             data-pgl-path={`items.${i}.ctaText`}
                             data-pgl-edit="button"
                           >

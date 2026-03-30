@@ -132,6 +132,8 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       if (incoming.palette) {
         blueprint.designTokens.palette = { ...blueprint.designTokens.palette, ...incoming.palette };
       }
+      if (incoming.headingFont) blueprint.designTokens.headingFont = incoming.headingFont;
+      if (incoming.bodyFont) blueprint.designTokens.bodyFont = incoming.bodyFont;
       if (incoming.fontPairing) blueprint.designTokens.fontPairing = incoming.fontPairing;
       if (incoming.style) blueprint.designTokens.style = incoming.style;
       if (incoming.borderRadius) blueprint.designTokens.borderRadius = incoming.borderRadius;

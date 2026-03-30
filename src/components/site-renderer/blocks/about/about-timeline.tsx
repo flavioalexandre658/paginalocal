@@ -65,7 +65,7 @@ export function AboutTimeline({ content, tokens }: Props) {
             {/* Label with extending line */}
             <div className="pgl-fade-up flex items-center gap-3 mb-5">
               <span
-                className="text-[0.7rem] font-medium tracking-[0.15em] uppercase"
+                className="text-[0.7rem] font-medium tracking-[0.1em] uppercase"
                 style={{ color: tokens.palette.accent }}
               >
                 Nossa historia
@@ -80,7 +80,7 @@ export function AboutTimeline({ content, tokens }: Props) {
               <StyledHeadline
                 text={c.title}
                 tokens={tokens}
-                className="pgl-fade-up text-2xl md:text-3xl lg:text-[2.8rem] leading-[1.08]"
+                className="pgl-fade-up text-2xl md:text-3xl lg:text-[2.8rem] leading-[1.1]"
                 accentClassName="normal-case"
                 data-pgl-path="title"
                 data-pgl-edit="text"
@@ -89,7 +89,7 @@ export function AboutTimeline({ content, tokens }: Props) {
 
             {c.subtitle && (
               <p
-                className="pgl-fade-up mt-4 text-[0.95rem] leading-[1.8] font-light"
+                className="pgl-fade-up mt-4 text-base leading-[1.6] font-light"
                 style={{ color: subtitleColor }}
                 data-delay="1"
                 data-pgl-path="subtitle"
@@ -105,7 +105,7 @@ export function AboutTimeline({ content, tokens }: Props) {
             {c.paragraphs.map((p, i) => (
               <p
                 key={i}
-                className="text-[0.925rem] leading-[1.85] font-light max-w-[500px]"
+                className="text-base leading-[1.85] font-light max-w-[500px]"
                 style={{ color: mutedColor }}
                 data-pgl-path={`paragraphs.${i}`}
                 data-pgl-edit="text"
@@ -191,7 +191,7 @@ export function AboutTimeline({ content, tokens }: Props) {
                     )}
                     <div
                       className={cn(
-                        "text-[0.75rem] uppercase tracking-[0.1em] font-normal leading-relaxed",
+                        "text-sm uppercase tracking-[0.1em] font-normal leading-relaxed",
                         isMinimal && "mt-2",
                       )}
                       style={{ color: highlightLabelColor, opacity: 0.6 }}

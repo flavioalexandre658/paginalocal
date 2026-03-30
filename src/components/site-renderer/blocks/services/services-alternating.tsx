@@ -41,14 +41,14 @@ export function ServicesAlternating({ content, tokens }: Props) {
           <StyledHeadline
             text={c.title}
             tokens={tokens}
-            className="pgl-fade-up text-2xl md:text-3xl lg:text-5xl leading-[1.05]"
+            className="pgl-fade-up text-2xl md:text-3xl lg:text-5xl leading-[1.1]"
             accentClassName="normal-case"
             data-pgl-path="title"
             data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up mt-5 text-[0.95rem] leading-[1.8] font-light max-w-xl"
+              className="pgl-fade-up mt-5 text-base md:text-lg leading-[1.6] font-light max-w-xl"
               style={{ color: mutedColor }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -135,7 +135,7 @@ export function ServicesAlternating({ content, tokens }: Props) {
                     {/* Number label */}
                     {!isMinimal && (
                       <span
-                        className="text-[0.7rem] font-medium tracking-[0.15em] uppercase"
+                        className="text-xs font-medium tracking-[0.1em] uppercase"
                         style={{ color: tokens.palette.accent }}
                       >
                         {String(i + 1).padStart(2, "0")}
@@ -174,7 +174,7 @@ export function ServicesAlternating({ content, tokens }: Props) {
                     )}
 
                     <p
-                      className="text-[0.9rem] leading-[1.8] font-light max-w-md"
+                      className="text-sm leading-relaxed font-light max-w-md"
                       style={{ color: mutedColor }}
                       data-pgl-path={`items.${i}.description`}
                       data-pgl-edit="text"
@@ -198,7 +198,7 @@ export function ServicesAlternating({ content, tokens }: Props) {
                         href={item.ctaLink}
                         variant="secondary"
                         tokens={tokens}
-                        className="text-[0.82rem]"
+                        className="text-sm"
                         data-pgl-path={`items.${i}.ctaText`}
                         data-pgl-edit="button"
                       >

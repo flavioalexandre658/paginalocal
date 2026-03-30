@@ -1,6 +1,7 @@
 import type { BusinessContext } from "@/types/ai-generation";
 import { SITE_TYPE_CONFIGS, type SiteTypeConfig } from "@/config/site-type-configs";
 import { BLOCK_VARIANTS } from "@/config/block-variants";
+import { getFontRecommendations } from "@/config/niche-font-recommendations"
 
 /** Pre-select random variants for each block type to force diversity */
 function randomizeVariants(
@@ -23,6 +24,7 @@ export function buildPrompt(ctx: BusinessContext): {
   const config = SITE_TYPE_CONFIGS[ctx.siteType];
   const nicheKey = findNicheKey(ctx.category, config);
   const nicheHint = nicheKey ? config.nicheHints[nicheKey] : null;
+  const fontRecs = getFontRecommendations(ctx.category);
 
   // Pre-randomize style from compatible options
   const styleOptions = nicheHint?.style ?? ["minimal"];
@@ -55,7 +57,8 @@ ESTRUTURA OBRIGATÓRIA — USE EXATAMENTE ESSES NOMES DE CAMPOS:
       "text": "#0f172a",
       "textMuted": "#64748b"
     },
-    "fontPairing": "montserrat+opensans",
+    "headingFont": "montserrat",
+    "bodyFont": "open-sans",
     "style": "minimal",
     "borderRadius": "md",
     "spacing": "normal"
@@ -106,9 +109,11 @@ ESTRUTURA OBRIGATÓRIA — USE EXATAMENTE ESSES NOMES DE CAMPOS:
 VALORES PERMITIDOS — USE EXATAMENTE ESSES:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-designTokens.fontPairing (escolha UM):
-  inter+merriweather | poppins+lora | montserrat+opensans | playfair+source-sans
-  dm-sans+dm-serif | raleway+roboto | oswald+roboto | space-grotesk+inter
+designTokens.headingFont (escolha UM slug para titulos):
+  ${fontRecs.heading.join(" | ")}
+
+designTokens.bodyFont (escolha UM slug para texto de corpo):
+  ${fontRecs.body.join(" | ")}
 
 designTokens.style (escolha UM):
   minimal | bold | elegant | warm | industrial
@@ -118,6 +123,36 @@ designTokens.borderRadius (escolha UM):
 
 designTokens.spacing (escolha UM):
   compact | normal | spacious
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REGRAS DE TIPOGRAFIA (OBRIGATÓRIO):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PAREAMENTO DE FONTES:
+- Máximo 2 famílias: 1 Display/Heading + 1 Body
+- headingFont: pode ser serif, display ou sans expressiva (personalidade da marca)
+- bodyFont: DEVE ser sans-serif legível (Inter, Open Sans, Roboto, DM Sans, Poppins, Nunito, Raleway)
+- NUNCA use a mesma fonte para heading e body (exceto se for uma sans versátil como Inter)
+
+FÓRMULAS DE PAREAMENTO:
+- Serif + Sans: heading serif (Playfair, Lora) + body sans (Inter, Open Sans) = premium, editorial
+- Display + Sans: heading display (Oswald, Bison Bold) + body sans (Roboto, Montserrat) = impacto, esportivo
+- Sans Geometric + Sans Humanist: heading (Montserrat, Space Grotesk) + body (Inter, DM Sans) = tech, moderno
+- Script + Sans: heading script (Sacramento, Pacifico) + body sans (Poppins) = artesanal, feminino
+
+HIERARQUIA VISUAL NOS TEXTOS:
+- Headline (H1 hero): curto, impactante, máx 8-10 palavras
+- Subtítulo: 1-2 linhas, complementa o headline
+- CTA: verbo + benefício, máx 4 palavras ("Agende seu Horário")
+- Títulos de seção (H2): claros, 3-6 palavras
+- Descrições: 2-3 linhas, linguagem acessível
+
+CONTRASTE DE PESO:
+- Headlines: bold (600-800) para impacto
+- Subtítulos: light/regular (300-400) para contraste
+- Labels/badges: medium (500) + uppercase
+- Body: regular (400) para legibilidade
+- CTAs: bold (600-700)
 
 blockType em sections (escolha APENAS destes):
   header | hero | about | services | contact | faq | cta | testimonials
@@ -237,187 +272,187 @@ AUTOMOTIVO (lava car, estética automotiva, detailing, garagem, funilaria):
   primary: navy premium (#1a1a2e) ou charcoal (#2d2d2d)
   secondary: azul profundo (#0f3460) ou grafite (#404040)
   accent: vermelho (#dc2626) ou laranja (#ea580c)
-  style: industrial ou bold | fontPairing: oswald+roboto ou dm-sans+dm-serif | borderRadius: sm ou none
+  style: industrial ou bold | borderRadius: sm ou none
 
 BARBEARIA / BARBER SHOP:
   primary: preto (#1a1a1a) ou marrom escuro (#2c1810)
   secondary: dourado escuro (#8b6914) ou cobre (#a0522d)
   accent: dourado (#b8860b) ou âmbar (#d97706)
-  style: industrial | fontPairing: oswald+roboto ou playfair+source-sans | borderRadius: none ou sm
+  style: industrial | borderRadius: none ou sm
 
 SALÃO DE BELEZA / ESTÉTICA / SPA:
   primary: rosa escuro (#831843) ou roxo profundo (#581c87)
   secondary: rosa suave (#be185d) ou lilás (#7c3aed)
   accent: dourado rosé (#d4a574) ou coral (#f472b6)
-  style: elegant | fontPairing: playfair+source-sans ou dm-sans+dm-serif | borderRadius: lg ou full
+  style: elegant | borderRadius: lg ou full
 
 RESTAURANTE / GASTRONOMIA / PIZZARIA / HAMBURGUERIA:
   primary: terracota (#9a3412) ou verde escuro (#14532d)
   secondary: creme (#92400e) ou marrom (#78350f)
   accent: laranja (#ea580c) ou vermelho tomate (#dc2626)
-  style: warm | fontPairing: playfair+source-sans ou dm-sans+dm-serif | borderRadius: md ou lg
+  style: warm | borderRadius: md ou lg
 
 CAFÉ / PADARIA / DOCERIA / CONFEITARIA:
   primary: marrom café (#3e2723) ou caramelo escuro (#78350f)
   secondary: bege (#92400e) ou creme (#a16207)
   accent: coral (#fb923c) ou rosa (#f472b6)
-  style: warm | fontPairing: playfair+source-sans ou poppins+lora | borderRadius: lg
+  style: warm | borderRadius: lg
 
 BAR / CERVEJARIA / PUB / BALADA:
   primary: preto (#111827) ou verde escuro (#052e16)
   secondary: dourado (#854d0e) ou âmbar (#92400e)
   accent: amarelo (#eab308) ou laranja (#f97316)
-  style: bold ou industrial | fontPairing: oswald+roboto ou montserrat+opensans | borderRadius: sm ou none
+  style: bold ou industrial | borderRadius: sm ou none
 
 CLÍNICA MÉDICA / CONSULTÓRIO / HOSPITAL:
   primary: azul profundo (#1e3a5f) ou verde hospitalar (#065f46)
   secondary: azul claro (#1d4ed8) ou verde menta (#059669)
   accent: verde suave (#10b981) ou azul (#3b82f6)
-  style: minimal | fontPairing: inter+merriweather ou dm-sans+dm-serif | borderRadius: md
+  style: minimal | borderRadius: md
 
 CLÍNICA ODONTOLÓGICA / DENTISTA:
   primary: azul petróleo (#155e75) ou verde azulado (#0d9488)
   secondary: ciano (#0891b2) ou azul (#0284c7)
   accent: branco (#ffffff) ou verde claro (#34d399)
-  style: minimal | fontPairing: inter+merriweather ou montserrat+opensans | borderRadius: md ou lg
+  style: minimal | borderRadius: md ou lg
 
 CLÍNICA VETERINÁRIA / PET SHOP:
   primary: verde floresta (#166534) ou azul petróleo (#155e75)
   secondary: verde (#15803d) ou teal (#0d9488)
   accent: laranja (#f97316) ou amarelo (#eab308)
-  style: warm | fontPairing: poppins+lora ou montserrat+opensans | borderRadius: lg ou full
+  style: warm | borderRadius: lg ou full
 
 ACADEMIA / CROSSFIT / PERSONAL TRAINER / FITNESS:
   primary: preto (#111111) ou vermelho escuro (#7f1d1d)
   secondary: cinza escuro (#1f2937) ou vermelho (#991b1b)
   accent: laranja (#ea580c) ou lima (#84cc16) ou vermelho (#ef4444)
-  style: bold | fontPairing: oswald+roboto ou montserrat+opensans | borderRadius: none ou sm
+  style: bold | borderRadius: none ou sm
 
 PILATES / YOGA / MEDITAÇÃO:
   primary: verde sage (#4a5c3a) ou lilás (#6b21a8)
   secondary: verde oliva (#65784b) ou lavanda (#7c3aed)
   accent: dourado (#d4a574) ou rosa (#ec4899)
-  style: elegant ou minimal | fontPairing: playfair+source-sans ou dm-sans+dm-serif | borderRadius: lg ou full
+  style: elegant ou minimal | borderRadius: lg ou full
 
 ESCRITÓRIO DE ADVOCACIA / CONTABILIDADE / CONSULTORIA:
   primary: navy (#1c2541) ou cinza escuro (#1f2937)
   secondary: azul aço (#334155) ou grafite (#374151)
   accent: dourado sutil (#b8860b) ou bronze (#a0522d)
-  style: elegant ou minimal | fontPairing: playfair+source-sans ou dm-sans+dm-serif | borderRadius: sm ou md
+  style: elegant ou minimal | borderRadius: sm ou md
 
 IMOBILIÁRIA / CORRETOR:
   primary: azul escuro (#1e3a5f) ou verde escuro (#14532d)
   secondary: azul (#1d4ed8) ou dourado (#854d0e)
   accent: laranja (#f97316) ou verde (#16a34a)
-  style: minimal ou bold | fontPairing: montserrat+opensans ou inter+merriweather | borderRadius: md
+  style: minimal ou bold | borderRadius: md
 
 OFICINA MECÂNICA / AUTOCENTER / BORRACHARIA:
   primary: cinza escuro (#1f2937) ou azul petróleo (#0c4a6e)
   secondary: cinza (#374151) ou azul aço (#1e40af)
   accent: amarelo (#eab308) ou laranja (#f97316) ou vermelho (#ef4444)
-  style: industrial | fontPairing: oswald+roboto ou montserrat+opensans | borderRadius: none ou sm
+  style: industrial | borderRadius: none ou sm
 
 LOJA DE ROUPAS / MODA / BOUTIQUE:
   primary: preto (#111111) ou verde escuro (#1a2e1a)
   secondary: cinza (#374151) ou off-white (#d4d4d4)
   accent: dourado (#b8860b) ou rosa (#ec4899)
-  style: elegant ou minimal | fontPairing: playfair+source-sans ou dm-sans+dm-serif | borderRadius: none ou sm
+  style: elegant ou minimal | borderRadius: none ou sm
 
 LOJA DE CALÇADOS / TÊNIS:
   primary: preto (#111111) ou navy (#1e293b)
   secondary: cinza (#475569) ou branco (#f8fafc)
   accent: vermelho (#ef4444) ou laranja (#f97316)
-  style: bold | fontPairing: montserrat+opensans ou oswald+roboto | borderRadius: sm ou md
+  style: bold | borderRadius: sm ou md
 
 FLORICULTURA / JARDINAGEM / PAISAGISMO:
   primary: verde profundo (#14532d) ou verde escuro (#166534)
   secondary: verde (#15803d) ou bege (#a16207)
   accent: rosa (#ec4899) ou laranja (#fb923c) ou amarelo (#eab308)
-  style: warm ou elegant | fontPairing: playfair+source-sans ou dm-sans+dm-serif | borderRadius: lg
+  style: warm ou elegant | borderRadius: lg
 
 PAPELARIA / PRESENTES / ARTESANATO:
   primary: rosa escuro (#9d174d) ou roxo (#7e22ce)
   secondary: rosa (#be185d) ou coral (#e11d48)
   accent: amarelo (#fbbf24) ou turquesa (#06b6d4)
-  style: warm | fontPairing: poppins+lora ou dm-sans+dm-serif | borderRadius: lg ou full
+  style: warm | borderRadius: lg ou full
 
 ELETRÔNICOS / INFORMÁTICA / ASSISTÊNCIA TÉCNICA:
   primary: azul escuro (#1e3a5f) ou cinza (#1f2937)
   secondary: azul (#2563eb) ou ciano (#0891b2)
   accent: verde (#22c55e) ou azul claro (#38bdf8)
-  style: minimal | fontPairing: space-grotesk+inter ou inter+merriweather | borderRadius: md
+  style: minimal | borderRadius: md
 
 MATERIAIS DE CONSTRUÇÃO / SERRALHERIA / MARCENARIA:
   primary: marrom escuro (#422006) ou cinza (#292524)
   secondary: marrom (#78350f) ou laranja escuro (#9a3412)
   accent: amarelo (#eab308) ou laranja (#f97316)
-  style: industrial | fontPairing: oswald+roboto ou montserrat+opensans | borderRadius: none ou sm
+  style: industrial | borderRadius: none ou sm
 
 ESCOLA / CURSO / EDUCAÇÃO / TREINAMENTO:
   primary: azul escuro (#1e3a5f) ou verde (#14532d)
   secondary: azul (#2563eb) ou laranja (#ea580c)
   accent: amarelo (#eab308) ou verde (#16a34a)
-  style: minimal ou warm | fontPairing: inter+merriweather ou poppins+lora | borderRadius: md ou lg
+  style: minimal ou warm | borderRadius: md ou lg
 
 HOTEL / POUSADA / RESORT / AQUA PARQUE:
   primary: azul oceano (#0c4a6e) ou verde tropical (#065f46)
   secondary: ciano (#0e7490) ou verde (#047857)
   accent: amarelo (#fbbf24) ou laranja (#fb923c)
-  style: bold ou warm | fontPairing: montserrat+opensans ou poppins+lora | borderRadius: lg
+  style: bold ou warm | borderRadius: lg
 
 LAVANDERIA / COSTURA / ATELIÊ:
   primary: azul suave (#1e40af) ou lilás (#6d28d9)
   secondary: azul (#3b82f6) ou roxo (#8b5cf6)
   accent: rosa (#ec4899) ou verde água (#14b8a6)
-  style: minimal | fontPairing: dm-sans+dm-serif ou inter+merriweather | borderRadius: md ou lg
+  style: minimal | borderRadius: md ou lg
 
 FARMÁCIA / DROGARIA / MANIPULAÇÃO:
   primary: verde (#166534) ou azul (#1d4ed8)
   secondary: verde claro (#15803d) ou azul claro (#2563eb)
   accent: vermelho (#dc2626) ou branco (#ffffff)
-  style: minimal | fontPairing: inter+merriweather ou montserrat+opensans | borderRadius: md
+  style: minimal | borderRadius: md
 
 FOTÓGRAFO / ESTÚDIO / VIDEOMAKER:
   primary: preto (#0a0a0a) ou cinza escuro (#18181b)
   secondary: cinza (#27272a) ou branco (#fafafa)
   accent: dourado (#d4a574) ou vermelho (#ef4444)
-  style: minimal ou elegant | fontPairing: playfair+source-sans ou space-grotesk+inter | borderRadius: none ou sm
+  style: minimal ou elegant | borderRadius: none ou sm
 
 GRÁFICA / COMUNICAÇÃO VISUAL / DESIGN:
   primary: preto (#111111) ou magenta escuro (#86198f)
   secondary: cinza (#374151) ou roxo (#7e22ce)
   accent: ciano (#06b6d4) ou amarelo (#fbbf24) ou magenta (#d946ef)
-  style: bold ou minimal | fontPairing: space-grotesk+inter ou montserrat+opensans | borderRadius: sm ou md
+  style: bold ou minimal | borderRadius: sm ou md
 
 SEGURANÇA / VIGILÂNCIA / PORTARIA:
   primary: navy (#0f172a) ou cinza (#1f2937)
   secondary: azul (#1e40af) ou grafite (#374151)
   accent: vermelho (#dc2626) ou amarelo (#eab308)
-  style: industrial ou bold | fontPairing: oswald+roboto ou montserrat+opensans | borderRadius: none ou sm
+  style: industrial ou bold | borderRadius: none ou sm
 
 MUDANÇA / FRETE / TRANSPORTE / LOGÍSTICA:
   primary: azul escuro (#1e3a5f) ou laranja escuro (#9a3412)
   secondary: azul (#2563eb) ou amarelo (#ca8a04)
   accent: laranja (#f97316) ou verde (#16a34a)
-  style: bold | fontPairing: oswald+roboto ou montserrat+opensans | borderRadius: sm
+  style: bold | borderRadius: sm
 
 IGREJA / RELIGIÃO / ONG / INSTITUIÇÃO:
   primary: roxo (#581c87) ou azul escuro (#1e3a5f)
   secondary: dourado (#854d0e) ou roxo (#7c3aed)
   accent: dourado (#d4a574) ou branco (#ffffff)
-  style: elegant | fontPairing: playfair+source-sans ou dm-sans+dm-serif | borderRadius: md ou lg
+  style: elegant | borderRadius: md ou lg
 
 SAAS / TECNOLOGIA / STARTUP / APP:
   primary: preto (#09090b) ou azul escuro (#0f172a)
   secondary: cinza (#18181b) ou roxo (#5b21b6)
   accent: azul (#3b82f6) ou verde (#22c55e) ou roxo (#8b5cf6)
-  style: minimal | fontPairing: space-grotesk+inter ou inter+merriweather | borderRadius: md ou lg
+  style: minimal | borderRadius: md ou lg
 
 REGRA DE FALLBACK — Para QUALQUER nicho não listado acima:
 1. Se o negócio é "sério/profissional": primary escura (navy, cinza, preto) + style minimal ou elegant
 2. Se o negócio é "casual/acessível": primary quente (terracota, verde, marrom) + style warm ou bold
-3. Se público "premium": accent dourado/bronze + fontPairing com serif (playfair, dm-serif)
-4. Se público "popular": accent vibrante (laranja, verde) + fontPairing sans (montserrat, poppins)
+3. Se público "premium": accent dourado/bronze + headingFont serif (ver lista acima)
+4. Se público "popular": accent vibrante (laranja, verde) + headingFont sans (ver lista acima)
 5. NUNCA usar azul médio (#3b82f6) como fallback — se em dúvida, use navy (#1e293b)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -588,7 +623,8 @@ CHECKLIST OBRIGATÓRIO — VERIFIQUE ANTES DE RESPONDER:
 Estrutura raiz:
 ✓ "blockType" (NÃO "type") em cada section
 ✓ "palette" (NÃO "colors") em designTokens
-✓ "fontPairing" = um dos 8 valores exatos permitidos
+✓ "headingFont" = um dos slugs de fonte para titulo listados acima
+✓ "bodyFont" = um dos slugs de fonte para corpo listados acima
 ✓ "navigation" array no root
 ✓ "jsonLd" objeto no root (NÃO dentro de "seo")
 ✓ "globalContent" objeto no root

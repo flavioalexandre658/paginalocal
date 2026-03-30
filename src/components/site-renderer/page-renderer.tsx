@@ -61,7 +61,7 @@ export function PageRenderer({
           backgroundColor: "var(--pgl-background)",
           color: "var(--pgl-text)",
           fontFamily: "var(--pgl-font-body), system-ui, sans-serif",
-          fontWeight: 300,
+          fontWeight: "var(--body-weight, 400)" as unknown as undefined,
           WebkitFontSmoothing: "antialiased",
         }}
         data-preview={isPreview}

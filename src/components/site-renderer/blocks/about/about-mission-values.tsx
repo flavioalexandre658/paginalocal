@@ -70,7 +70,7 @@ export function AboutMissionValues({ content, tokens }: Props) {
               style={{ backgroundColor: lineLabelBg }}
             />
             <span
-              className="text-[0.7rem] font-medium tracking-[0.15em] uppercase"
+              className="text-xs font-medium tracking-[0.1em] uppercase"
               style={{ color: tokens.palette.accent }}
             >
               Nossa missao
@@ -85,7 +85,7 @@ export function AboutMissionValues({ content, tokens }: Props) {
             <StyledHeadline
               text={c.title}
               tokens={tokens}
-              className="pgl-fade-up text-2xl md:text-3xl lg:text-[2.8rem] leading-[1.08]"
+              className="pgl-fade-up text-2xl md:text-3xl lg:text-[2.8rem] leading-[1.1]"
               accentClassName="normal-case"
               data-pgl-path="title"
               data-pgl-edit="text"
@@ -94,7 +94,7 @@ export function AboutMissionValues({ content, tokens }: Props) {
 
           {c.subtitle && (
             <p
-              className="pgl-fade-up mt-5 text-[0.95rem] leading-[1.8] font-light max-w-xl mx-auto"
+              className="pgl-fade-up mt-5 text-base leading-[1.6] font-light max-w-xl mx-auto"
               style={{ color: subtitleColor }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -132,7 +132,7 @@ export function AboutMissionValues({ content, tokens }: Props) {
                 {c.paragraphs.map((p, i) => (
                   <p
                     key={i}
-                    className="text-[0.925rem] leading-[1.85] font-light max-w-[500px]"
+                    className="text-base leading-[1.85] font-light max-w-[500px]"
                     style={{ color: mutedColor }}
                     data-pgl-path={`paragraphs.${i}`}
                     data-pgl-edit="text"
@@ -185,7 +185,7 @@ export function AboutMissionValues({ content, tokens }: Props) {
                       {h.value}
                     </div>
                     <div
-                      className="mt-2 text-[0.65rem] uppercase tracking-[0.1em] font-normal"
+                      className="mt-2 text-xs uppercase tracking-[0.1em] font-normal"
                       style={{ color: highlightLabelColor, opacity: 0.6 }}
                       data-pgl-path={`highlights.${i}.label`}
                       data-pgl-edit="text"

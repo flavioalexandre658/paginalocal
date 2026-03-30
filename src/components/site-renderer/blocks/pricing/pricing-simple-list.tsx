@@ -31,13 +31,13 @@ export function PricingSimpleList({ content, tokens }: Props) {
             text={c.title}
             tokens={tokens}
             as="h2"
-            className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]"
+            className="pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.1]"
             data-pgl-path="title"
             data-pgl-edit="text"
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-[0.95rem] leading-[1.8] font-light"
+              className="pgl-fade-up text-base md:text-lg leading-[1.6] font-light"
               style={{ color: tokens.palette.textMuted }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -94,7 +94,7 @@ export function PricingSimpleList({ content, tokens }: Props) {
                   </p>
                   {plan.highlighted && (
                     <span
-                      className="text-[0.6rem] font-medium tracking-[0.08em] uppercase px-2.5 py-1 text-white"
+                      className="text-[0.7rem] font-medium tracking-[0.08em] uppercase px-2.5 py-1 text-white"
                       style={{
                         backgroundColor: tokens.palette.accent,
                         borderRadius: "var(--btn-radius)",
@@ -106,7 +106,7 @@ export function PricingSimpleList({ content, tokens }: Props) {
                 </div>
                 {plan.description && (
                   <p
-                    className="text-[0.875rem] font-light mt-1"
+                    className="text-sm leading-relaxed font-light mt-1"
                     style={{ color: tokens.palette.textMuted }}
                   >
                     {plan.description}
@@ -121,7 +121,7 @@ export function PricingSimpleList({ content, tokens }: Props) {
                         <span
                           key={fIndex}
                           className={cn(
-                            "inline-flex items-center gap-1.5 text-[0.75rem] font-light",
+                            "inline-flex items-center gap-1.5 text-sm font-light",
                             isExcluded && "line-through",
                           )}
                           style={{

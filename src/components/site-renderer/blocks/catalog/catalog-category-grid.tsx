@@ -28,7 +28,7 @@ export function CatalogCategoryGrid({ content, tokens, isDark }: Props) {
             tokens={tokens}
             as="h2"
             className={cn(
-              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.05]",
+              "pgl-fade-up text-3xl sm:text-4xl md:text-5xl leading-[1.1]",
               isDark ? "text-white" : undefined,
             )}
             data-pgl-path="title"
@@ -36,7 +36,7 @@ export function CatalogCategoryGrid({ content, tokens, isDark }: Props) {
           />
           {c.subtitle && (
             <p
-              className="pgl-fade-up text-sm md:text-base leading-[1.8] font-light"
+              className="pgl-fade-up text-sm md:text-base leading-[1.6] font-light"
               style={{ color: isDark ? "rgba(255,255,255,0.5)" : tokens.palette.textMuted }}
               data-delay="1"
               data-pgl-path="subtitle"
@@ -98,7 +98,7 @@ export function CatalogCategoryGrid({ content, tokens, isDark }: Props) {
               <div className="absolute bottom-0 left-0 right-0 p-4 md:p-5">
                 <h3
                   className={cn(
-                    "text-[1.1rem] font-semibold text-white uppercase tracking-[0.03em]",
+                    "text-base font-semibold text-white uppercase tracking-[0.03em]",
                     isBold && "!font-extrabold",
                   )}
                   style={{ fontFamily: "var(--pgl-font-heading)" }}
