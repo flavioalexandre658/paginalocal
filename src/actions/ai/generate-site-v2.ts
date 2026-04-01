@@ -17,6 +17,8 @@ import { getImageFields, blockNeedsImages } from "@/config/block-image-fields";
 import { getContentMapForTemplate } from "@/templates/content-maps";
 import { buildSectionPrompt } from "@/templates/content-map-utils";
 import { generateAndFillImages } from "@/lib/ai-image-pipeline";
+import { createTracker, trackContent, trackImages, trackTemplate, persistMetrics } from "@/lib/generation-tracker";
+import type { ContentUsage } from "@/lib/generation-tracker";
 
 export type GenerationModel = "sonnet" | "opus" | "gemini";
 
@@ -37,11 +39,15 @@ export async function generateAndPersistBlueprint(
   userId: string,
   model: GenerationModel = "sonnet"
 ): Promise<SiteBlueprint> {
+  const tracker = createTracker();
+
   const template = await getBestTemplate(ctx.category);
   const fontRecs = getFontRecommendations(ctx.category);
+  trackTemplate(tracker, template.id, template.name, template.defaultSections.length);
 
   const contentPrompt = buildContentPrompt(ctx, template, fontRecs);
-  const aiContent = await generateContentWithClaude(contentPrompt, model);
+  const { content: aiContent, usage: contentUsage } = await generateContentWithClaude(contentPrompt, model);
+  trackContent(tracker, contentUsage);
 
   const design = aiContent.design || {};
   const headingFont =
@@ -77,7 +83,14 @@ export async function generateAndPersistBlueprint(
     contentMap,
     imageQueries,
   });
-  console.log("[generateAndPersistBlueprint] images:", imageResult);
+  trackImages(tracker, {
+    totalCount: imageResult.totalImages,
+    successCount: imageResult.bananaSuccessCount,
+    fallbackCount: imageResult.unsplashFallbackCount,
+    failedCount: imageResult.failedCount,
+    durationMs: imageResult.durationMs,
+    costUsd: imageResult.costUsd,
+  });
 
   await db
     .update(store)
@@ -87,6 +100,8 @@ export async function generateAndPersistBlueprint(
       useV2Renderer: true,
     })
     .where(and(eq(store.id, ctx.storeId), eq(store.userId, userId)));
+
+  await persistMetrics(tracker, ctx.storeId);
 
   return blueprint;
 }
@@ -287,11 +302,17 @@ interface AIContent {
   imageQueries?: { hero?: string; gallery?: string[] };
 }
 
+interface ContentGenerationResult {
+  content: AIContent;
+  usage: ContentUsage;
+}
+
 async function generateContentWithClaude(
   prompt: string,
   model: GenerationModel = "sonnet"
-): Promise<AIContent> {
+): Promise<ContentGenerationResult> {
   const modelId = MODEL_MAP[model] || MODEL_MAP.sonnet;
+  const startMs = Date.now();
 
   const response = await anthropic.messages.create({
     model: modelId,
@@ -301,6 +322,8 @@ async function generateContentWithClaude(
     messages: [{ role: "user", content: prompt }],
   });
 
+  const durationMs = Date.now() - startMs;
+
   console.log(
     "[generateContent] model:",
     modelId,
@@ -309,8 +332,18 @@ async function generateContentWithClaude(
     "| input_tokens:",
     response.usage.input_tokens,
     "| output_tokens:",
-    response.usage.output_tokens
+    response.usage.output_tokens,
+    "| duration:",
+    durationMs + "ms"
   );
+
+  const usage: ContentUsage = {
+    model: modelId,
+    inputTokens: response.usage.input_tokens,
+    outputTokens: response.usage.output_tokens,
+    stopReason: response.stop_reason || "unknown",
+    durationMs,
+  };
 
   const text =
     response.content[0].type === "text" ? response.content[0].text : "";
@@ -339,18 +372,21 @@ async function generateContentWithClaude(
       console.warn("[generateContent] Paleta genérica detectada, será corrigida no assembler");
     }
 
-    return parsed;
+    return { content: parsed, usage };
   } catch (e) {
     console.error("[generateContent] JSON parse failed:", e);
     console.error("[generateContent] raw:", cleaned.slice(0, 500));
     return {
-      sections: [],
-      globalContent: {
-        brandVoice: "Profissional e acolhedor",
-        tagline: "Seu negócio merece destaque",
-        ctaDefaultText: "Fale conosco",
-        ctaDefaultType: "whatsapp",
+      content: {
+        sections: [],
+        globalContent: {
+          brandVoice: "Profissional e acolhedor",
+          tagline: "Seu negócio merece destaque",
+          ctaDefaultText: "Fale conosco",
+          ctaDefaultType: "whatsapp",
+        },
       },
+      usage,
     };
   }
 }

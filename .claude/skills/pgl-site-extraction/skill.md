@@ -626,10 +626,11 @@ Um arquivo `content-map.ts` por template que diz a IA **exatamente** quais campo
 src/templates/[nome]/content-map.ts
 ```
 
-#### Interface
+#### Interfaces
 
 ```typescript
 // Em src/templates/types.ts
+
 interface FieldSpec {
   key: string;                   // "headline", "items", "highlights"
   type: "string" | "array" | "object";
@@ -639,15 +640,36 @@ interface FieldSpec {
   description: string;           // o que a IA deve gerar
 }
 
+export interface ImageSpec {
+  aspectRatio: "16:9" | "1:1" | "4:3" | "3:4";
+  style: string;       // "cinematic professional photo", "headshot portrait"
+  subject: string;     // O que a imagem deve mostrar
+  avoid: string[];     // O que evitar na geracao
+  count?: number;      // Quantas imagens gerar (para arrays)
+}
+
 export interface SectionContentMap {
   blockType: string;
   variant: number;
   fields: FieldSpec[];
   contentGuidance: string;       // tom, tamanho, contexto visual (em PT-BR)
-  imageQueryHint?: string;       // hint para busca Unsplash
+  imageQueryHint?: string;       // hint para busca Unsplash (fallback)
   exampleOutput?: Record<string, unknown>; // few-shot example
+  imageSpec?: ImageSpec;         // spec para geracao de imagem AI (Gemini)
+  imageSpecs?: Record<string, ImageSpec>; // multiplos campos de imagem
 }
 ```
+
+#### ImageSpec por blockType (padrao)
+
+| blockType | aspectRatio | style | Descricao |
+|---|---|---|---|
+| hero (backgroundImage) | 16:9 | cinematic professional | cena do negocio |
+| about (image) | 4:3 | documentary editorial | equipe/espaco |
+| services (items[].image) | 4:3 | clean service photo | servico em acao |
+| testimonials (items[].image) | 1:1 | headshot portrait | pessoa sorrindo |
+| gallery (images[].url) | 4:3 | editorial project | trabalho concluido |
+| cta (backgroundImage) | 16:9 | atmospheric | ambiente inspirador |
 
 #### Como criar
 
@@ -698,7 +720,22 @@ const CONTENT_MAPS = { [templateId]: NOME_CONTENT_MAP };
 export function getContentMapForTemplate(id: string) { return CONTENT_MAPS[id]; }
 ```
 
+**OBRIGATORIO**: Apos criar o content map, SEMPRE adicionar o import e a entry no `CONTENT_MAPS` record em `src/templates/content-maps.ts`.
+
 O `generate-site-v2.ts` usa `buildSectionPrompt(contentMap[i], i)` que serializa os FieldSpec em instrucoes formatadas para a IA, incluindo o exampleOutput como few-shot.
+
+O prompt inclui: `EXATAMENTE N secoes, nesta ordem` — a IA e obrigada a gerar 1 objeto por secao do template.
+
+#### Normalizacao de dados da IA no assembleBlueprint
+
+A IA as vezes gera dados em formato diferente do esperado pelo schema Zod. O `assembleBlueprint()` normaliza automaticamente:
+
+- `paragraphs`: IA gera `[{text: "..."}]` → normalizado para `["..."]`
+- `rating`: IA gera `"5"` (string) → normalizado para `5` (number)
+
+Se um schema Zod rejeita o conteudo da IA (`safeParse` falha), o componente retorna `null` e a secao desaparece. Por isso:
+- Schemas devem ser TOLERANTES (limits altos, coerce numbers, optional fields)
+- Componentes devem normalizar dados antes do safeParse como defesa extra
 
 ---
 
@@ -807,10 +844,15 @@ Sempre em PT-BR:
 - [ ] Pagina de preview criada e testada desktop + mobile
 - [ ] Background alterna automaticamente (page-renderer aplica background/surface)
 - [ ] **CONTENT MAP**: `content-map.ts` criado com 1 entry por secao (FieldSpec tipado)
-- [ ] **CONTENT MAP**: Registrado em `src/templates/content-maps.ts`
+- [ ] **CONTENT MAP**: Registrado em `src/templates/content-maps.ts` (import + entry no CONTENT_MAPS)
+- [ ] **CONTENT MAP**: `imageSpec` em secoes com imagens (hero, about, services, testimonials, gallery)
+- [ ] **CONTENT MAP**: `exampleOutput` em secoes criticas (hero, about, stats, testimonials)
 - [ ] **ACCENT PARSE**: `renderAccentText()` em TODOS os titulos (H1, H2, H3)
 - [ ] **ZERO HARDCODED**: Nenhum texto em ingles, nenhum label de botao usando campo longo
-- [ ] **FORMULARIOS**: Inputs com placeholders PT-BR, botoes com texto curto fixo
+- [ ] **ZERO CORES HARDCODED**: Todas as cores vem de `tokens.palette.*` ou CSS vars
+- [ ] **FORMULARIOS**: `useSubmitFormLead` hook, inputs PT-BR, botoes com texto curto
+- [ ] **SCHEMAS TOLERANTES**: max generoso em arrays, `z.coerce.number()` para rating, optional em tudo que pode faltar
+- [ ] **NORMALIZACAO**: Componentes normalizam `paragraphs` (object→string) antes do safeParse
 - [ ] `npx tsc --noEmit` sem erros
 - [ ] Preview ~95% fiel ao desktop original
 - [ ] Preview ~90% fiel ao mobile original
@@ -861,6 +903,32 @@ NUNCA usar `c.subtitle` ou qualquer campo longo como texto de botao. Botoes de f
 ### ❌ Esquecer o Content Map
 Template sem `content-map.ts` = IA gera "conteudo adequado" sem saber a estrutura. O about nao tera tabs, a gallery nao tera captions, os stats terao numeros em vez de nomes de ferramentas.
 
+### ❌ Cores hardcoded de marca no template
+NUNCA usar `#142F45`, `#CDF660`, `#FF5E15` ou qualquer cor de marca diretamente nos componentes. TODA cor deve vir de:
+- `const accent = tokens.palette.accent` (do props)
+- `const primary = tokens.palette.primary` (do props)
+- `var(--pgl-text)`, `var(--pgl-text-muted)`, `var(--pgl-background)`, `var(--pgl-surface)`, `var(--pgl-primary)`, `var(--pgl-accent)` (CSS vars)
+Cores aceitaveis como hardcoded: `#fff` (contraste em fundo escuro), `rgba(255,255,255,X)` e `rgba(0,0,0,X)` (transparencias relativas).
+
+### ❌ ScrollReveal quebrando layout flex
+Quando `ScrollReveal` envolve um elemento que participa de flex layout (flex-1, w-full, etc.), o sizing pode quebrar. Solucao: colocar o sizing num `<div>` wrapper EXTERNO e o `ScrollReveal` DENTRO so na animacao.
+```tsx
+// ❌ ERRADO — ScrollReveal come o flex sizing
+<ScrollReveal className="w-full md:flex-1">
+  <div>...</div>
+</ScrollReveal>
+
+// ✅ CORRETO — div externo controla sizing
+<div className="w-full md:flex-1">
+  <ScrollReveal>
+    <div>...</div>
+  </ScrollReveal>
+</div>
+```
+
+### ❌ Esquecer de registrar no content-maps.ts
+Criar o `content-map.ts` do template mas nao adicionar o import + entry no `src/templates/content-maps.ts`. Sem isso, o pipeline nao encontra o mapa e usa o switch/case legado.
+
 ---
 
 ## Arquivos Envolvidos
@@ -880,10 +948,19 @@ Template sem `content-map.ts` = IA gera "conteudo adequado" sem saber a estrutur
 | `src/components/site-renderer/page-renderer.tsx` | Renderiza com alternancia bg |
 | `src/components/site-renderer/section-block.tsx` | Resolve template → componente |
 | `src/app/(marketing)/preview-[nome]/page.tsx` | Preview |
-| `src/templates/[nome]/content-map.ts` | Mapa de conteudo para IA (FieldSpec tipado) |
+| `src/templates/[nome]/content-map.ts` | Mapa de conteudo para IA (FieldSpec + ImageSpec) |
 | `src/templates/content-maps.ts` | Registry central de content maps |
 | `src/templates/content-map-utils.ts` | fieldSpecToPrompt, buildSectionPrompt |
-| `src/templates/types.ts` | FieldSpec, SectionContentMap interfaces |
+| `src/templates/types.ts` | FieldSpec, ImageSpec, SectionContentMap |
+| `src/lib/banana-nano.ts` | API client Gemini para geracao de imagens |
+| `src/lib/banana-prompt-builder.ts` | Construtor de prompts de imagem |
+| `src/lib/ai-image-pipeline.ts` | Orquestrador: Gemini → S3, Unsplash fallback |
+| `src/lib/generation-tracker.ts` | Tracking de tokens, custos e tempo |
+| `src/db/schema/site-generation-log.schema.ts` | Tabela de log de geracao |
+| `src/db/schema/image-generation-log.schema.ts` | Tabela de log de imagens |
+| `src/components/site-renderer/store-context.tsx` | StoreProvider para forms de lead |
+| `src/hooks/use-submit-form-lead.ts` | Hook para submit de formularios |
+| `src/actions/leads/submit-form-lead.action.ts` | Action para salvar lead (source: form) |
 | `memory/site_palette_[nome].md` | Paleta documentada |
 
 ---
@@ -892,13 +969,39 @@ Template sem `content-map.ts` = IA gera "conteudo adequado" sem saber a estrutur
 
 ```
 1. Onboarding → categoria do negocio
-2. getBestTemplate(categoria) → busca no banco (com normalizacao de acentos)
-3. getContentMapForTemplate(templateId) → carrega content map tipado
-4. buildSectionPrompt(contentMap[i], i) → serializa FieldSpec em instrucao formatada
-5. IA recebe: campos tipados + contentGuidance + exampleOutput (few-shot)
-6. IA gera conteudo textual + paleta + fontes respeitando a estrutura
-7. Sistema monta blueprint (template sections + AI content)
-8. Unsplash preenche imagens (imageQueryHint como fallback)
-9. page-renderer renderiza com alternancia background/surface
-10. section-block resolve componentes via TEMPLATE_REGISTRY
+2. createTracker() → inicia cronometro de metricas
+3. getBestTemplate(categoria) → busca no banco (com normalizacao de acentos)
+4. getContentMapForTemplate(templateId) → carrega content map tipado
+5. buildSectionPrompt(contentMap[i], i) → serializa FieldSpec em instrucao
+6. Prompt inclui "EXATAMENTE N secoes" → IA obrigada a gerar todas
+7. generateContentWithClaude() → retorna content + usage (tokens, modelo, tempo)
+8. assembleBlueprint() → normaliza dados da IA (paragraphs, rating)
+9. generateAndFillImages() → Gemini primary (rate-limited) + Unsplash fallback
+   - Coleta imageSlots de todas secoes
+   - Constroi prompts com style prefix global + imageSpec
+   - Envia em chunks de 2 com delay para respeitar rate limits
+   - Otimiza com Sharp (WebP) + upload S3/CloudFront
+10. persistMetrics(tracker, storeId) → salva tokens, custo, tempo no banco
+11. page-renderer renderiza (template path: sem alternancia de bg)
+12. section-block resolve componentes via TEMPLATE_REGISTRY
 ```
+
+## Formularios de Lead
+
+Templates com formularios (quick-form, cta com form) devem:
+1. Usar o hook `useSubmitFormLead()` de `@/hooks/use-submit-form-lead`
+2. O hook le `storeId` do `StoreProvider` (contexto)
+3. O `SiteV2Renderer` envolve o site com `<StoreProvider storeId={...}>`
+4. A action `submitFormLeadAction` salva na tabela `lead` com `source: 'form'`
+5. Campos: `name`, `email`, `phone`, `message` (email e message adicionados na tabela)
+6. Placeholders sempre em PT-BR
+7. Botao de submit com texto CURTO fixo (nunca usar campo de conteudo longo)
+
+## WhatsApp Float Button
+
+O componente `whatsapp-pill.tsx` herda o estilo do template automaticamente:
+- `backgroundColor: tokens.palette.accent`
+- `borderRadius: var(--pgl-radius)`
+- `fontFamily: var(--pgl-font-body)`
+- `color`: auto-detecta via `isColorDark()` — branco se accent escuro, primary se claro
+- `boxShadow`: sombra na cor accent com 26% opacity
