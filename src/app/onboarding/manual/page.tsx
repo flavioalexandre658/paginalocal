@@ -64,12 +64,12 @@ const REVENUE_OPTIONS = [
 
 const HUMANIZED_LOGS = [
   { icon: IconSparkles, text: 'Analisando seu negócio...' },
-  { icon: IconMapPin, text: 'Buscando bairros próximos...' },
-  { icon: IconSparkles, text: 'Gerando conteúdo com IA...' },
-  { icon: IconFileText, text: 'Criando descrições para SEO...' },
-  { icon: IconSparkles, text: 'Desenhando o layout...' },
-  { icon: IconSparkles, text: 'Escolhendo cores e fontes...' },
-  { icon: IconSparkles, text: 'Montando as seções...' },
+  { icon: IconSparkles, text: 'Escolhendo o melhor template...' },
+  { icon: IconSparkles, text: 'Definindo paleta de cores...' },
+  { icon: IconSparkles, text: 'Selecionando fontes ideais...' },
+  { icon: IconFileText, text: 'Gerando conteúdo otimizado para SEO...' },
+  { icon: IconSparkles, text: 'Montando as seções do site...' },
+  { icon: IconSparkles, text: 'Buscando imagens profissionais...' },
   { icon: IconRocket, text: 'Finalizando seu site!' },
 ]
 
@@ -116,45 +116,62 @@ export default function ManualOnboardingPage() {
     return () => clearInterval(interval)
   }, [step])
 
-  // Auto-detect location on mount
+  // Auto-detect location when user reaches the location step
+  const [geoAttempted, setGeoAttempted] = useState(false)
   useEffect(() => {
+    if (step !== 'location' || geoAttempted || selectedLocation) return
+    setGeoAttempted(true)
     if (typeof navigator === 'undefined' || !navigator.geolocation) return
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         try {
+          const { latitude, longitude } = position.coords
           const res = await fetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.coords.latitude},${position.coords.longitude}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}&language=pt-BR`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=pt-BR&addressdetails=1`,
+            { headers: { 'User-Agent': 'Decolou/1.0' } }
           )
           const data = await res.json()
-          if (data.results?.[0]) {
-            const components = data.results[0].address_components
-            const city = components?.find((c: { types: string[] }) => c.types.includes('administrative_area_level_2'))?.long_name
-            const state = components?.find((c: { types: string[] }) => c.types.includes('administrative_area_level_1'))?.short_name
+          if (data.address) {
+            const addr = data.address
+
+            // Nominatim Brasil: cidade vem em city, town, ou city_district
+            const city = addr.city || addr.town || addr.city_district || addr.county || ''
+
+            // Estado: extrair sigla de ISO3166-2-lvl4 "BR-BA" → "BA"
+            const isoState = addr['ISO3166-2-lvl4'] as string | undefined
+            const state = isoState
+              ? isoState.replace('BR-', '')
+              : (addr.state?.substring(0, 2).toUpperCase() || '')
+
+            const neighborhood = addr.suburb || addr.neighbourhood || addr.city_district || ''
+            const zipCode = addr.postcode || ''
+
             if (city && state) {
               setLocationQuery(`${city}, ${state}`)
               setSelectedLocation({
-                placeId: data.results[0].place_id || '',
+                placeId: `nominatim-${data.place_id || ''}`,
                 city,
                 state,
-                fullAddress: data.results[0].formatted_address,
-                street: '',
-                streetNumber: '',
-                neighborhood: components?.find((c: { types: string[] }) => c.types.includes('sublocality_level_1'))?.long_name || '',
-                zipCode: components?.find((c: { types: string[] }) => c.types.includes('postal_code'))?.long_name || '',
-                latitude: position.coords.latitude,
-                longitude: position.coords.longitude,
+                fullAddress: data.display_name || `${city}, ${state}`,
+                street: addr.road || '',
+                streetNumber: addr.house_number || '',
+                neighborhood,
+                zipCode,
+                latitude,
+                longitude,
                 locationScope: 'city',
               })
             }
           }
         } catch {
-          // Silently fail
+          // Silently fail — user can type location manually
         }
       },
-      () => { /* denied or unavailable */ },
-      { timeout: 5000 }
+      () => { /* denied or unavailable — user types manually */ },
+      { timeout: 8000 }
     )
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, geoAttempted])
 
   // Location search
   const handleLocationSearch = useCallback(async (query: string) => {
@@ -240,8 +257,9 @@ export default function ManualOnboardingPage() {
     if (result?.data) {
       try {
         await generateSiteV2({ storeId: result.data.store.id })
-      } catch {
-        // Generation errors are non-blocking
+      } catch (err) {
+        console.error('[Onboarding] Blueprint generation failed:', err)
+        toast.error('Erro ao gerar o site. Tente novamente pelo editor.')
       }
       router.push(`/negocio/${result.data.slug}/site`)
     } else {
@@ -774,22 +792,43 @@ function CreatingStep({
 
           <SiteSkeletonPreview />
 
-          <div className="mt-5 space-y-1.5">
-            {HUMANIZED_LOGS.map((log, index) => (
-              <OnboardingCreatingItem
-                key={index}
-                icon={log.icon}
-                label={log.text}
-                status={
-                  index < currentLogIndex
-                    ? 'done'
-                    : index === currentLogIndex
-                      ? 'active'
-                      : 'pending'
-                }
-              />
-            ))}
+          {/* Single shimmer label that cycles through steps */}
+          <div className="mt-6 flex items-center justify-center gap-2">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={currentLogIndex}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.3 }}
+                className="shimmer-text text-sm font-medium"
+                style={{ color: 'rgba(0,0,0,0.55)' }}
+              >
+                {HUMANIZED_LOGS[currentLogIndex]?.text || 'Preparando...'}
+              </motion.p>
+            </AnimatePresence>
           </div>
+          <style dangerouslySetInnerHTML={{ __html: `
+            .shimmer-text {
+              background: linear-gradient(
+                90deg,
+                rgba(0,0,0,0.45) 0%,
+                rgba(0,0,0,0.45) 40%,
+                rgba(0,0,0,0.15) 50%,
+                rgba(0,0,0,0.45) 60%,
+                rgba(0,0,0,0.45) 100%
+              );
+              background-size: 200% 100%;
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              background-clip: text;
+              animation: shimmer-sweep 2s ease-in-out infinite;
+            }
+            @keyframes shimmer-sweep {
+              0% { background-position: 200% center; }
+              100% { background-position: -200% center; }
+            }
+          `}} />
         </div>
       </div>
       <OnboardingProgress current={4} total={5} className="p-8" />

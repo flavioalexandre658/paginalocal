@@ -21,6 +21,7 @@ interface PageRendererProps {
   designTokens: DesignTokens;
   isPreview?: boolean;
   navigation?: { label: string; href: string; isExternal?: boolean }[];
+  templateId?: string;
 }
 
 /** Pick the best section to render as dark (~65 % down the page) */
@@ -45,6 +46,7 @@ export function PageRenderer({
   designTokens,
   isPreview,
   navigation,
+  templateId,
 }: PageRendererProps) {
   const sortedSections = [...page.sections]
     .filter((s) => s.visible)
@@ -67,9 +69,22 @@ export function PageRenderer({
         data-preview={isPreview}
       >
         {sortedSections.map((section, idx) => {
+          // Templates: each section controls its own background — no wrappers
+          if (templateId) {
+            return (
+              <SectionBlock
+                key={section.id}
+                block={section}
+                designTokens={designTokens}
+                navigation={section.blockType === "header" || section.blockType === "footer" ? navigation : undefined}
+                templateId={templateId}
+              />
+            );
+          }
+
+          // Legacy (no template) — apply background alternation
           const selfBg = SELF_BG_BLOCKS.has(section.blockType);
-          const isAlwaysDark = false; // About controls its own bg now
-          const isDark = isAlwaysDark || idx === darkIdx;
+          const isDark = idx === darkIdx;
 
           let sectionStyle: React.CSSProperties = {};
           if (isDark) {
@@ -88,7 +103,6 @@ export function PageRenderer({
             vizIdx++;
           }
 
-          // Generous padding for non-self-bg blocks
           const needsPadding = !selfBg;
 
           return (
@@ -98,7 +112,8 @@ export function PageRenderer({
                   block={section}
                   designTokens={designTokens}
                   isDark={isDark}
-                  navigation={section.blockType === "header" ? navigation : undefined}
+                  navigation={section.blockType === "header" || section.blockType === "footer" ? navigation : undefined}
+                  templateId={templateId}
                 />
               </div>
             </div>

@@ -329,6 +329,7 @@ export function EditorPreview({ previewMode }: Props) {
       designTokens={state.blueprint.designTokens}
       navigation={state.blueprint.navigation}
       previewMode={previewMode}
+      templateId={state.blueprint.templateId}
     />
   );
 

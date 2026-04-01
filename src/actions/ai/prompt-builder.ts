@@ -1,38 +1,23 @@
 import type { BusinessContext } from "@/types/ai-generation";
 import { SITE_TYPE_CONFIGS, type SiteTypeConfig } from "@/config/site-type-configs";
-import { BLOCK_VARIANTS } from "@/config/block-variants";
 import { getFontRecommendations } from "@/config/niche-font-recommendations"
+import { getBestTemplate } from "@/config/template-catalog"
 
-/** Pre-select random variants for each block type to force diversity */
-function randomizeVariants(
-  blocks: string[]
-): Record<string, number> {
-  const result: Record<string, number> = {};
-  for (const bt of blocks) {
-    const variants = BLOCK_VARIANTS[bt as keyof typeof BLOCK_VARIANTS];
-    if (!variants) continue;
-    const keys = Object.keys(variants).map(Number);
-    result[bt] = keys[Math.floor(Math.random() * keys.length)];
-  }
-  return result;
-}
-
-export function buildPrompt(ctx: BusinessContext): {
+export async function buildPrompt(ctx: BusinessContext): Promise<{
   systemPrompt: string;
   userMessage: string;
-} {
+  templateId: string;
+}> {
   const config = SITE_TYPE_CONFIGS[ctx.siteType];
   const nicheKey = findNicheKey(ctx.category, config);
   const nicheHint = nicheKey ? config.nicheHints[nicheKey] : null;
   const fontRecs = getFontRecommendations(ctx.category);
 
-  // Pre-randomize style from compatible options
-  const styleOptions = nicheHint?.style ?? ["minimal"];
-  const selectedStyle = styleOptions[Math.floor(Math.random() * styleOptions.length)];
+  // Select template based on business category
+  const template = await getBestTemplate(ctx.category);
 
-  // Pre-randomize variants to inject diversity
-  const allBlocks = [...config.requiredBlocks, ...config.optionalBlocks];
-  const suggestedVariants = randomizeVariants(allBlocks);
+  // Style is forced by the template
+  const selectedStyle = template.forceStyle;
 
   const systemPrompt = `Você é um web designer especialista em negócios locais brasileiros.
 Gere um SiteBlueprint JSON completo para o negócio descrito.
@@ -49,19 +34,19 @@ ESTRUTURA OBRIGATÓRIA — USE EXATAMENTE ESSES NOMES DE CAMPOS:
   "siteType": "${ctx.siteType}",
   "designTokens": {
     "palette": {
-      "primary": "#3b82f6",
-      "secondary": "#1e40af",
-      "accent": "#f59e0b",
-      "background": "#f8fafc",
-      "surface": "#ffffff",
-      "text": "#0f172a",
-      "textMuted": "#64748b"
+      "primary": "(GERE uma cor adequada ao nicho — NÃO use #3b82f6)",
+      "secondary": "(tom complementar ao primary)",
+      "accent": "(cor vibrante de destaque para CTAs e badges)",
+      "background": "(off-white sutil: #fafaf9, #f8f9fa ou #fefefe)",
+      "surface": "(diferente do background: #f1f5f9, #f0ece6 ou #f3f4f6)",
+      "text": "(escuro: #1a1a1a, #0f172a ou #111827)",
+      "textMuted": "(cinza medio: #64748b, #6b7280 ou #605f5f)"
     },
-    "headingFont": "montserrat",
-    "bodyFont": "open-sans",
-    "style": "minimal",
-    "borderRadius": "md",
-    "spacing": "normal"
+    "headingFont": "${template.recommendedHeadingFont || "inter"}",
+    "bodyFont": "${template.recommendedBodyFont || "inter"}",
+    "style": "${template.forceStyle}",
+    "borderRadius": "${template.forceRadius}",
+    "spacing": "spacious"
   },
   "globalContent": {
     "brandVoice": "...",
@@ -167,7 +152,11 @@ DESIGN PARA ESTE NEGÓCIO:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Nicho: "${ctx.category}"
-${nicheHint ? `Estilo OBRIGATÓRIO para este site: "${selectedStyle}" — use EXATAMENTE este valor no campo designTokens.style` : ""}
+Template: "${template.id}" — ${template.description}
+${template.recommendedHeadingFont ? `Fonte heading recomendada: "${template.recommendedHeadingFont}"` : ""}
+${template.recommendedBodyFont ? `Fonte body recomendada: "${template.recommendedBodyFont}"` : ""}
+borderRadius recomendado: "${template.forceRadius}"
+${nicheHint ? `Estilo OBRIGATÓRIO para este site: "${selectedStyle}" — use EXATAMENTE este valor no campo designTokens.style` : `Estilo OBRIGATÓRIO: "${selectedStyle}"`}
 ${nicheHint ? `Tom recomendado: "${nicheHint.tone}"` : ""}
 ${ctx.primaryColor ? `Cor primária do cliente: "${ctx.primaryColor}" — use como base da palette.primary` : ""}
 ${ctx.accentColor ? `Cor accent do cliente: "${ctx.accentColor}" — use como palette.accent` : ""}
@@ -177,25 +166,26 @@ Exemplos: "Barbearia do Zé" → feminino singular (a). "Os Barbudos" → mascul
 Use o artigo correto ao se referir ao negócio nos textos gerados.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PÁGINAS E BLOCOS:
+SEÇÕES DO TEMPLATE (OBRIGATÓRIO — gere EXATAMENTE estas seções, nesta ordem):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Tipo de site: ${ctx.siteType}
-Blocos obrigatórios: ${config.requiredBlocks.join(", ")}
-Footer: OBRIGATÓRIO — sempre a ÚLTIMA seção da homepage (order mais alto)
-Header: OBRIGATÓRIO — sempre a PRIMEIRA seção (order: 0). Se o negócio tem logo, use logoUrl. Se não tem, deixe logoUrl vazio — o nome será exibido automaticamente.
-Blocos opcionais (use os mais relevantes): ${config.optionalBlocks.join(", ")}
-Mínimo ${config.minSections} seções, máximo ${config.maxSections} seções na homepage.
-Páginas a gerar: ${config.defaultPages.join(", ")}
+Template: "${template.id}" (${template.name})
+Gere APENAS 1 página (homepage) com EXATAMENTE estas seções:
 
-VARIANTES DISPONÍVEIS POR BLOCO:
-${formatVariantsForPrompt(config.requiredBlocks.concat(config.optionalBlocks))}
+${template.defaultSections.map((s, i) => `  order ${i}: blockType "${s.blockType}", variant ${s.variant} — ${s.name}: ${s.description}`).join("\n")}
 
-VARIANTES SUGERIDAS PARA ESTA GERAÇÃO (use EXATAMENTE estas):
-${Object.entries(suggestedVariants).map(([bt, v]) => `  ${bt}: variant ${v}`).join("\n")}
+Adicione também ao final:
+  blockType "whatsapp-float", variant 1
 
-IMPORTANTE: Use as variantes sugeridas acima. Elas foram pré-selecionadas para criar um layout único.
-Você pode ajustar APENAS se a variante sugerida for claramente incompatível com o conteúdo disponível.
+REGRAS ABSOLUTAS:
+- Gere EXATAMENTE as seções listadas acima, na ordem indicada. NÃO adicione nem remova seções.
+- Use EXATAMENTE os blockType e variant indicados. NÃO mude os variant numbers.
+- Cada seção DEVE ter conteúdo completo e real (não genérico ou vazio).
+- Header SEMPRE order 0 (primeira seção). Footer SEMPRE último order.
+- Se o blockType "services" aparece 2x com variants diferentes, gere content diferente para cada (ex: process steps + features).
+- NÃO gere páginas adicionais — apenas a homepage.
+- Para "testimonials", gere pelo menos 6 items (metade para case studies, metade para quotes).
+- Para "faq", gere pelo menos 5 items.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SCHEMA EXATO DO CONTENT DE CADA BLOCKTYPE:
@@ -642,20 +632,7 @@ Content de cada bloco:
 ✓ whatsapp-float → "number" (NÃO "phone"), "message", "position"
 ✓ Todos: "title" (NÃO "sectionTitle" ou "headline" exceto hero)`;
 
-  return { systemPrompt, userMessage };
-}
-
-function formatVariantsForPrompt(blockTypes: string[]): string {
-  return blockTypes
-    .filter((bt) => BLOCK_VARIANTS[bt as keyof typeof BLOCK_VARIANTS])
-    .map((bt) => {
-      const variants = BLOCK_VARIANTS[bt as keyof typeof BLOCK_VARIANTS];
-      const lines = Object.entries(variants)
-        .map(([num, v]) => `  ${num}: "${v.name}" — ${v.description}`)
-        .join("\n");
-      return `${bt}:\n${lines}`;
-    })
-    .join("\n\n");
+  return { systemPrompt, userMessage, templateId: template.id };
 }
 
 const NICHE_KEYWORDS: Record<string, string[]> = {

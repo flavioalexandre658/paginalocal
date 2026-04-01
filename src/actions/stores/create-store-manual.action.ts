@@ -3,46 +3,18 @@
 import { z } from 'zod'
 import { authActionClient } from '@/lib/safe-action'
 import { db } from '@/db'
-import { store, service } from '@/db/schema'
-import { eq, and } from 'drizzle-orm'
+import { store } from '@/db/schema'
 import { generateSlug } from '@/lib/utils'
-import {
-  generateMarketingCopy,
-  generateFallbackServices,
-  generateFallbackFAQ,
-  generateOptimizedSlug,
-  type MarketingCopy,
-  type ServiceItem,
-  type FAQItem,
-} from '@/lib/gemini'
+import { generateOptimizedSlug } from '@/lib/gemini'
 import { checkCanCreateStore, getUserPlanContext } from '@/lib/plan-middleware'
 import { addDomainToVercel } from '@/actions/vercel/add-domain'
-import { getDefaultSectionsForMode } from '@/lib/store-sections'
 import { inferSiteType } from '@/lib/infer-site-type'
-
-async function generateUniqueServiceSlugForStore(storeId: string, name: string): Promise<string> {
-  const baseSlug = generateSlug(name)
-  let slug = baseSlug
-  let counter = 1
-
-  while (true) {
-    const [existing] = await db
-      .select({ id: service.id })
-      .from(service)
-      .where(and(eq(service.storeId, storeId), eq(service.slug, slug)))
-      .limit(1)
-
-    if (!existing) return slug
-    slug = `${baseSlug}-${counter}`
-    counter++
-  }
-}
 
 const BRAZILIAN_STATES = [
   'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
   'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
   'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
-  'BR', // Brasil inteiro
+  'BR',
 ] as const
 
 const createStoreManualSchema = z.object({
@@ -57,76 +29,20 @@ const createStoreManualSchema = z.object({
   zipCode: z.string().optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
-  neighborhoods: z.array(z.string()).optional(),
-  differential: z.string().max(500).optional(),
+  differential: z.string().max(2000).optional(),
   whatsapp: z.string().regex(/^\d{10,11}$/, 'WhatsApp inválido (apenas números, 10 ou 11 dígitos)'),
   monthlyRevenue: z.string().max(30).optional(),
   mode: z.enum(['LOCAL_BUSINESS', 'PRODUCT_CATALOG', 'SERVICE_PRICING', 'HYBRID']).optional(),
   primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   secondaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  selectedStyle: z.string().optional(),
   termGender: z.enum(['MASCULINE', 'FEMININE']).optional(),
   termNumber: z.enum(['SINGULAR', 'PLURAL']).optional(),
 })
 
-function capitalizeWords(str: string): string {
-  return str
-    .toLowerCase()
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-}
-
 function truncate(str: string | undefined | null, maxLength: number): string | undefined {
   if (!str) return undefined
   return str.length > maxLength ? str.substring(0, maxLength) : str
-}
-
-function getCoverageLabel(city: string, state: string): string {
-  if (state === 'BR') return 'em todo o Brasil'
-  const stateNames: Record<string, string> = {
-    AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas', BA: 'Bahia',
-    CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás',
-    MA: 'Maranhão', MT: 'Mato Grosso', MS: 'Mato Grosso do Sul', MG: 'Minas Gerais',
-    PA: 'Pará', PB: 'Paraíba', PR: 'Paraná', PE: 'Pernambuco', PI: 'Piauí',
-    RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul',
-    RO: 'Rondônia', RR: 'Roraima', SC: 'Santa Catarina', SP: 'São Paulo',
-    SE: 'Sergipe', TO: 'Tocantins',
-  }
-  if (stateNames[state] === city) return `em todo o ${city}`
-  return `em ${city}`
-}
-
-function buildSeoH1(category: string, city: string, state: string, displayName: string): string {
-  return `${category} ${getCoverageLabel(city, state)} – ${displayName}`
-}
-
-function buildSeoSubtitle(category: string, city: string, state: string): string {
-  return `${capitalizeWords(category)} ${getCoverageLabel(city, state)} com atendimento rápido e de confiança`
-}
-
-function buildSeoDescription(displayName: string, category: string, city: string, state: string): string {
-  return `${displayName} é referência em ${category.toLowerCase()} ${getCoverageLabel(city, state)}, oferecendo serviços de qualidade com rapidez e atendimento de confiança.`
-}
-
-function fixOpeningHoursInFAQ(faq: FAQItem[], storeName: string): FAQItem[] {
-  return faq.map(item => {
-    const questionLower = item.question.toLowerCase()
-    if (
-      questionLower.includes('horário') ||
-      questionLower.includes('horario') ||
-      questionLower.includes('funcionamento') ||
-      questionLower.includes('abre') ||
-      questionLower.includes('fecha')
-    ) {
-      return {
-        question: `Qual o horário de funcionamento da ${storeName}?`,
-        answer: 'Entre em contato pelo WhatsApp ou telefone para confirmar nosso horário de funcionamento atualizado.',
-      }
-    }
-    return item
-  })
 }
 
 export const createStoreManualAction = authActionClient
@@ -140,14 +56,6 @@ export const createStoreManualAction = authActionClient
     const planContext = await getUserPlanContext(ctx.userId)
     const shouldActivateStore = planContext.hasActiveSubscription
 
-    console.log('[Manual Creation] Plan context:', {
-      userId: ctx.userId,
-      hasActiveSubscription: planContext.hasActiveSubscription,
-      planType: planContext.planType,
-      planName: planContext.planName,
-      shouldActivateStore,
-    })
-
     const {
       name,
       businessType,
@@ -160,17 +68,19 @@ export const createStoreManualAction = authActionClient
       zipCode,
       latitude,
       longitude,
-      neighborhoods: inputNeighborhoods,
       differential: inputDifferential,
       whatsapp,
       monthlyRevenue,
       primaryColor,
+      secondaryColor,
+      accentColor,
       termGender: inputTermGender,
       termNumber: inputTermNumber,
     } = parsedInput
 
     const displayName = name.trim()
 
+    // Classificar categoria se nao fornecida
     let categoryId = inputCategoryId
     let categoryName = inputCategoryName || businessType
 
@@ -201,11 +111,10 @@ export const createStoreManualAction = authActionClient
     const categoryFormatted = categoryName === 'Outro' ? businessType || 'Serviços' : (categoryName || businessType)
     const differential = inputDifferential || categoryFormatted
 
+    // Gerar slug unico
     const baseSlug = generateOptimizedSlug(categoryFormatted, displayName, city)
-
     let slug = baseSlug
     let counter = 1
-
     while (true) {
       const existing = await db.query.store.findFirst({
         where: (s, { eq }) => eq(s.slug, slug),
@@ -215,56 +124,10 @@ export const createStoreManualAction = authActionClient
       counter++
     }
 
-    const heroTitle = buildSeoH1(categoryFormatted, city, state, displayName)
-    const heroSubtitle = buildSeoSubtitle(categoryFormatted, city, state)
-    const aboutSection = buildSeoDescription(displayName, categoryFormatted, city, state)
-
-    let marketingCopy: MarketingCopy | null = null
-    try {
-      marketingCopy = await generateMarketingCopy({
-        businessName: displayName,
-        category: categoryFormatted,
-        city,
-        state,
-        googleAbout: differential,
-      })
-    } catch (error) {
-      console.error('[Manual Creation] Erro ao gerar marketing copy:', error)
-    }
-
-    const coverageLabel = getCoverageLabel(city, state)
-    const seoTitle = truncate(
-      `${categoryFormatted} ${coverageLabel} | ${displayName}`,
-      70
-    )
-    const seoDescription = truncate(
-      marketingCopy?.seoDescription || `${displayName} - ${categoryFormatted} ${coverageLabel}. Entre em contato pelo WhatsApp!`,
-      160
-    )
-
-    const finalServices: ServiceItem[] = (marketingCopy?.services && marketingCopy.services.length >= 4)
-      ? marketingCopy.services.slice(0, 6)
-      : generateFallbackServices(categoryFormatted)
-
-    const rawFAQ: FAQItem[] = (marketingCopy?.faq && marketingCopy.faq.length >= 6)
-      ? marketingCopy.faq.slice(0, 8)
-      : generateFallbackFAQ(displayName, city, categoryFormatted)
-
-    const finalFAQ = fixOpeningHoursInFAQ(rawFAQ, displayName)
-
-    let finalNeighborhoods: string[] = []
-    if (inputNeighborhoods && inputNeighborhoods.length > 0) {
-      finalNeighborhoods = inputNeighborhoods
-    } else if (latitude && longitude) {
-      const { fetchNearbyNeighborhoods } = await import('@/lib/google-places')
-      finalNeighborhoods = await fetchNearbyNeighborhoods(latitude, longitude, city)
-    }
-    if (finalNeighborhoods.length === 0 && marketingCopy?.neighborhoods && marketingCopy.neighborhoods.length > 0) {
-      finalNeighborhoods = marketingCopy.neighborhoods
-    }
-
+    const siteType = parsedInput.mode ?? inferSiteType(categoryFormatted, displayName).siteType
     const address = inputAddress || [neighborhood, city, state].filter(Boolean).join(', ')
 
+    // Criar store com dados basicos — conteudo sera gerado pelo blueprint V2
     const [newStore] = await db
       .insert(store)
       .values({
@@ -283,67 +146,39 @@ export const createStoreManualAction = authActionClient
         longitude: longitude?.toString(),
         creationSource: 'MANUAL_CREATION',
         monthlyRevenue: monthlyRevenue || null,
-        heroTitle: truncate(marketingCopy?.heroTitle || heroTitle, 100),
-        heroSubtitle: truncate(marketingCopy?.heroSubtitle || heroSubtitle, 200),
-        description: marketingCopy?.aboutSection || aboutSection,
-        seoTitle,
-        seoDescription,
-        faq: finalFAQ,
-        neighborhoods: finalNeighborhoods,
-        mode: parsedInput.mode ?? inferSiteType(categoryFormatted, displayName).siteType,
-        sections: getDefaultSectionsForMode(parsedInput.mode ?? inferSiteType(categoryFormatted, displayName).siteType),
-        templateId: 'default',
-        templateConfig: null,
-        termGender: inputTermGender ?? marketingCopy?.termGender ?? 'FEMININE',
-        termNumber: inputTermNumber ?? marketingCopy?.termNumber ?? 'SINGULAR',
-        primaryColor: primaryColor ?? '#3b82f6',
+        heroTitle: `${categoryFormatted} em ${city} – ${displayName}`,
+        heroSubtitle: `${displayName} — ${categoryFormatted} em ${city}, ${state}`,
+        description: `${displayName} é referência em ${categoryFormatted.toLowerCase()} em ${city}.`,
+        seoTitle: truncate(`${categoryFormatted} em ${city} | ${displayName}`, 70),
+        seoDescription: truncate(`${displayName} - ${categoryFormatted} em ${city}, ${state}. Entre em contato pelo WhatsApp!`, 160),
+        mode: siteType,
         differential,
+        primaryColor: primaryColor ?? undefined,
+        secondaryColor: secondaryColor ?? undefined,
+        accentColor: accentColor ?? undefined,
+        termGender: inputTermGender ?? 'FEMININE',
+        termNumber: inputTermNumber ?? 'SINGULAR',
         isActive: false,
       })
       .returning()
 
-    for (let i = 0; i < finalServices.length; i++) {
-      const svc = finalServices[i]
-      const svcSlug = await generateUniqueServiceSlugForStore(newStore.id, svc.name)
-      await db
-        .insert(service)
-        .values({
-          storeId: newStore.id,
-          name: svc.name,
-          slug: svcSlug,
-          description: svc.description,
-          seoTitle: svc.seoTitle ? svc.seoTitle.substring(0, 70) : null,
-          seoDescription: svc.seoDescription ? svc.seoDescription.substring(0, 160) : null,
-          longDescription: svc.longDescription || null,
-          iconName: svc.iconName || null,
-          position: i + 1,
-          isActive: true,
-        })
-    }
-
+    // Criar subdominio na Vercel
     let subdomainCreated = false
     const subdomain = `${newStore.slug}.decolou.com`
     try {
       const domainResult = await addDomainToVercel(subdomain)
       subdomainCreated = domainResult.success
       if (!domainResult.success) {
-        console.error('[Manual Creation] Erro ao criar subdomínio na Vercel:', domainResult.error)
+        console.error('[Manual Creation] Erro subdominio:', domainResult.error)
       }
     } catch (error) {
-      console.error('[Manual Creation] Erro ao criar subdomínio na Vercel:', error)
+      console.error('[Manual Creation] Erro subdominio:', error)
     }
-
-    // V2: Páginas institucionais e indexação são feitas após o blueprint v2 ser gerado
-    // Store começa inativa — só é ativada após pagamento
 
     return {
       store: newStore,
       slug: newStore.slug,
       name: newStore.name,
-      marketingGenerated: !!marketingCopy,
-      servicesGenerated: finalServices.length,
-      faqGenerated: finalFAQ.length,
-      neighborhoodsGenerated: finalNeighborhoods.length,
       subdomainCreated,
       isActive: shouldActivateStore,
     }

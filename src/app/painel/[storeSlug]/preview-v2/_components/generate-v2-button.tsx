@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { triggerV2Generation } from "@/actions/ai/trigger-v2-generation";
 import { cn } from "@/lib/utils";
 
-type Model = "sonnet" | "gpt-5.4-nano" | "gemini";
+type Model = "sonnet" | "opus" | "gemini";
 
 const MODELS: { id: Model; label: string; color: string }[] = [
   { id: "sonnet", label: "Sonnet", color: "bg-violet-600 hover:bg-violet-700" },
-  { id: "gpt-5.4-nano", label: "gpt-5.4-nano", color: "bg-emerald-600 hover:bg-emerald-700" },
+  { id: "opus", label: "Opus", color: "bg-emerald-600 hover:bg-emerald-700" },
   { id: "gemini", label: "Gemini", color: "bg-blue-600 hover:bg-blue-700" },
 ];
 

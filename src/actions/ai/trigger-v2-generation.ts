@@ -9,7 +9,7 @@ import { generateAndPersistBlueprint } from "./generate-site-v2";
 export const triggerV2Generation = authActionClient
   .schema(z.object({
     storeSlug: z.string(),
-    model: z.enum(["sonnet", "gpt-5.4-nano", "gemini"]).default("sonnet"),
+    model: z.enum(["sonnet", "opus", "gemini"]).default("sonnet"),
   }))
   .action(async ({ parsedInput: { storeSlug, model }, ctx: { userId } }) => {
     const storeData = await db.query.store.findFirst({

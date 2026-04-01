@@ -1,0 +1,58 @@
+import type { TemplateConfig } from "../types";
+
+export const ROOFORA_CONFIG: TemplateConfig = {
+  id: "roofora",
+  name: "Apex",
+  description: "Design dark premium com accent lime green. Tipografia Urbanist, cards escuros, botoes pill accent vibrante. Ideal para construcao, telhados e reformas.",
+  thumbnail: "/templates/roofora/thumbnail.png",
+  bestFor: [
+    "telhado", "telhados", "roofing",
+    "solar", "energia-solar", "painel-solar",
+    "construcao", "construtora", "construction",
+    "impermeabilizacao", "waterproofing",
+    "reforma", "reformas", "remodeling",
+    "arquitetura", "architecture",
+    "engenharia", "engineering",
+    "terraplanagem", "excavation",
+    "fundacao", "foundation",
+    "estrutura-metalica", "steel",
+    "gesso", "drywall",
+    "pisos", "flooring",
+    "fachada", "facade",
+    "paisagismo", "landscaping",
+    "piscina", "pool",
+    "iluminacao", "lighting",
+  ],
+
+  forceStyle: "bold" as const,
+  forceRadius: "full" as const,
+  recommendedHeadingFont: "urbanist",
+  recommendedBodyFont: "urbanist",
+
+  defaultSections: [
+    { blockType: "header", variant: 1, name: "Header Dark", description: "Nav escuro com logo, links e CTA accent lime" },
+    { blockType: "hero", variant: 1, name: "Hero Bold", description: "Hero com titulo grande, 2 CTAs, feature badges abaixo" },
+    { blockType: "about", variant: 1, name: "About Split", description: "Imagem + texto + feature list com icones" },
+    { blockType: "services", variant: 1, name: "Services Grid", description: "Grid de cards de servicos com icones" },
+    { blockType: "stats", variant: 1, name: "Stats Counter", description: "Contadores animados de metricas" },
+    { blockType: "gallery", variant: 1, name: "Projects Grid", description: "Portfolio grid com imagens e labels" },
+    { blockType: "services", variant: 2, name: "How It Works", description: "3 passos numerados com CTA" },
+    { blockType: "testimonials", variant: 1, name: "Reviews Dark", description: "Depoimentos sobre fundo escuro" },
+    { blockType: "faq", variant: 1, name: "FAQ Accordion", description: "Perguntas e respostas com accordion" },
+    { blockType: "cta", variant: 1, name: "Newsletter CTA", description: "CTA com newsletter subscribe" },
+    { blockType: "footer", variant: 1, name: "Footer Dark", description: "Footer escuro com 4 colunas e social" },
+  ],
+
+  availableVariants: {
+    header: [1],
+    hero: [1],
+    about: [1],
+    services: [1, 2],
+    stats: [1],
+    gallery: [1],
+    testimonials: [1],
+    faq: [1],
+    cta: [1],
+    footer: [1],
+  },
+};

@@ -34,8 +34,10 @@ export interface EditableField {
  */
 export const BLOCK_EDIT_MAP: Record<BlockType, EditableField[]> = {
   hero: [
+    { path: "tagline", mode: "text", label: "Tagline" },
     { path: "headline", mode: "text", label: "Título" },
     { path: "subheadline", mode: "text", label: "Subtítulo" },
+    { path: "badgeText", mode: "text", label: "Badge" },
     { path: "ctaText", mode: "button", label: "Botão principal", linkPath: "ctaLink", typePath: "ctaType" },
     { path: "secondaryCtaText", mode: "button", label: "Botão secundário", linkPath: "secondaryCtaLink" },
     { path: "backgroundImage", mode: "image", label: "Imagem de fundo" },
@@ -123,6 +125,7 @@ export const BLOCK_EDIT_MAP: Record<BlockType, EditableField[]> = {
     { path: "title", mode: "text", label: "Título" },
     { path: "items.*.value", mode: "text", label: "Valor" },
     { path: "items.*.label", mode: "text", label: "Label" },
+    { path: "items.*.image", mode: "image", label: "Imagem" },
   ],
 
   team: [

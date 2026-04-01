@@ -83,6 +83,7 @@ export const DesignTokensSchema = z.object({
   style: z.enum(["minimal", "bold", "elegant", "warm", "industrial"]),
   borderRadius: z.enum(["none", "sm", "md", "lg", "full"]),
   spacing: z.enum(["compact", "normal", "spacious"]).default("normal"),
+  highlightStyle: z.string().optional(),
 });
 
 export type DesignTokens = z.infer<typeof DesignTokensSchema>;
@@ -123,6 +124,10 @@ export const HeroContentSchema = z.object({
   secondaryCtaLink: z.string().optional(),
   backgroundImage: z.string().optional(),
   overlayOpacity: z.number().min(0).max(1).default(0.5),
+  brands: z.array(z.object({
+    name: z.string(),
+    logoUrl: z.string().optional(),
+  })).optional(),
 });
 
 export const ServicesContentSchema = z.object({
@@ -334,6 +339,7 @@ export const StatsContentSchema = z.object({
         value: z.string(),
         label: z.string(),
         icon: z.string().optional(),
+        image: z.string().optional(),
       })
     )
     .min(2)
@@ -405,7 +411,7 @@ export type ContentForBlock<T extends BlockType> = z.infer<
 export const SectionBlockSchema = z.object({
   id: z.string().uuid(),
   blockType: BlockTypeEnum,
-  variant: z.number().min(1).max(5),
+  variant: z.number().min(1).max(20),
   content: z.record(z.string(), z.unknown()),
   order: z.number().min(0),
   visible: z.boolean().default(true),
@@ -427,7 +433,8 @@ export const PageBlueprintSchema = z.object({
 export type PageBlueprint = z.infer<typeof PageBlueprintSchema>;
 
 export const SiteBlueprintSchema = z.object({
-  version: z.literal("2.0"),
+  version: z.enum(["2.0", "3.0"]).default("2.0"),
+  templateId: z.string().optional(),
   generatedAt: z.string().datetime(),
   siteType: z.enum([
     "LOCAL_BUSINESS",
@@ -463,6 +470,8 @@ export const SiteBlueprintSchema = z.object({
     telephone: z.string().optional(),
     openingHours: z.array(z.string()).optional(),
     priceRange: z.string().optional(),
+    areaServed: z.unknown().optional(),
+    knowsAbout: z.array(z.string()).optional(),
   }),
 });
 

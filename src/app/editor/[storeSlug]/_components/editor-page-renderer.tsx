@@ -32,6 +32,7 @@ interface Props {
   designTokens: DesignTokens;
   navigation?: { label: string; href: string; isExternal?: boolean }[];
   previewMode?: boolean;
+  templateId?: string;
 }
 
 function findDarkIndex(sections: SectionBlockType[]): number {
@@ -50,7 +51,7 @@ function findDarkIndex(sections: SectionBlockType[]): number {
   return best;
 }
 
-export function EditorPageRenderer({ page, designTokens, navigation, previewMode }: Props) {
+export function EditorPageRenderer({ page, designTokens, navigation, previewMode, templateId }: Props) {
   // Editor shows ALL sections (including hidden), sorted by order
   const sortedSections = [...page.sections].sort((a, b) => a.order - b.order);
 
@@ -74,6 +75,34 @@ export function EditorPageRenderer({ page, designTokens, navigation, previewMode
         }}
       >
         {sortedSections.map((section) => {
+          // Templates: no background alternation, no extra padding
+          if (templateId) {
+            if (PLACEHOLDER_BLOCKS.has(section.blockType)) {
+              const label = BLOCK_TYPE_LABELS[section.blockType as BlockType] ?? section.blockType;
+              return (
+                <EditorSectionWrapper key={section.id} section={section} previewMode={previewMode} openDrawerOnClick>
+                  <div className="flex items-center justify-center gap-3 rounded-lg border border-dashed border-slate-200 bg-slate-50 py-5 text-sm text-slate-400">
+                    <IconBrandWhatsapp className="h-5 w-5 text-green-500" />
+                    <span className="font-medium text-slate-500">{label}</span>
+                    <span className="text-[11px] text-slate-300">clique para editar</span>
+                  </div>
+                </EditorSectionWrapper>
+              );
+            }
+
+            return (
+              <EditorSectionWrapper key={section.id} section={section} previewMode={previewMode}>
+                <SectionBlock
+                  block={section}
+                  designTokens={designTokens}
+                  navigation={section.blockType === "header" || section.blockType === "footer" ? navigation : undefined}
+                  templateId={templateId}
+                />
+              </EditorSectionWrapper>
+            );
+          }
+
+          // Legacy: background alternation
           const selfBg = SELF_BG_BLOCKS.has(section.blockType);
           const isDark = section.id === darkSectionId;
 
@@ -96,8 +125,6 @@ export function EditorPageRenderer({ page, designTokens, navigation, previewMode
 
           const needsPadding = !selfBg;
 
-          // Blocks with fixed+bottom positioning can't work inside a scroll
-          // container. Show a compact placeholder instead.
           if (PLACEHOLDER_BLOCKS.has(section.blockType)) {
             const label = BLOCK_TYPE_LABELS[section.blockType as BlockType] ?? section.blockType;
             return (
@@ -134,7 +161,8 @@ export function EditorPageRenderer({ page, designTokens, navigation, previewMode
                   block={section}
                   designTokens={designTokens}
                   isDark={isDark}
-                  navigation={isHeader ? navigation : undefined}
+                  navigation={isHeader || section.blockType === "footer" ? navigation : undefined}
+                  templateId={templateId}
                 />
               </div>
             </EditorSectionWrapper>

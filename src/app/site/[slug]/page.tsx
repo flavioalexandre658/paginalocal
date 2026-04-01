@@ -9,23 +9,10 @@ import { eq, asc, desc, and } from 'drizzle-orm'
 import { generateLocalBusinessJsonLd, generateBreadcrumbJsonLd } from '@/lib/local-seo'
 import { auth } from '@/lib/auth'
 import { getStoreSections, getActiveSections } from '@/lib/store-sections'
-import { HeroSection } from './_components/hero-section'
-import { AboutSection } from './_components/about-section'
-import { ServicesSection } from './_components/services-section'
-import { ContactSection } from './_components/contact-section'
-import { SiteFooter } from './_components/site-footer'
-import { ProductsSection } from './_components/products-section'
-import { PricingPlansSection } from './_components/pricing-plans-section'
 import { generateFAQJsonLd } from '@/lib/faq-json-ld'
 import type { SiteBlueprint } from '@/types/ai-generation'
 import { SiteV2Renderer } from './_components/site-v2-renderer'
 
-const StatsSection = dynamic(() => import('./_components/stats-section').then(m => m.StatsSection))
-const TestimonialsSection = dynamic(() => import('./_components/testimonials-section').then(m => m.TestimonialsSection))
-const FloatingContact = dynamic(() => import('./_components/floating-contact').then(m => m.FloatingContact))
-const FAQSection = dynamic(() => import('./_components/faq-section').then(m => m.FAQSection))
-const AreasSection = dynamic(() => import('./_components/areas-section').then(m => m.AreasSection))
-const GallerySection = dynamic(() => import('./_components/gallery-section').then(m => m.GallerySection))
 const PageviewTracker = dynamic(() => import('./_components/pageview-tracker').then(m => m.PageviewTracker))
 const DraftInterceptor = dynamic(() => import('./_components/draft-interceptor').then(m => m.DraftInterceptor))
 
@@ -382,263 +369,26 @@ export default async function StorePage({ params }: PageProps) {
 
       <DraftInterceptor isDraft={!storeData.isActive} />
 
-      {/* V2 Blueprint rendering */}
+      {/* SEMPRE V2 — nunca renderizar V1 */}
       {storeData.siteBlueprintV2 ? (
-        <SiteV2Renderer blueprint={storeData.siteBlueprintV2 as unknown as SiteBlueprint} />
+        <SiteV2Renderer blueprint={storeData.siteBlueprintV2 as unknown as SiteBlueprint} storeId={storeData.id} />
       ) : (
-
-      <main className={''}>
-        {activeSections.map((section) => {
-          switch (section.type) {
-            case 'HERO':
-              return (
-                <HeroSection
-                  key="hero"
-                  store={{
-                    ...storeData,
-                    heroTitle: storeData.heroTitle || undefined,
-                    heroSubtitle: storeData.heroSubtitle || undefined,
-                    coverUrl: heroImage?.url || storeData.coverUrl,
-                    showWhatsappButton: storeData.showWhatsappButton,
-                    showCallButton: storeData.showCallButton,
-                  }}
-                  heroImageAlt={heroImage?.alt}
-                  isOwner={isOwner}
-                />
-              )
-
-            case 'STATS':
-              return (
-                <StatsSection
-                  key="stats"
-                  stats={storeData.stats as import('@/db/schema/stores.schema').StoreStat[] | null}
-                  category={storeData.category}
-                />
-              )
-
-            case 'ABOUT':
-              return (
-                <AboutSection
-                  key="about"
-                  name={storeData.name}
-                  category={storeData.category}
-                  city={storeData.city}
-                  state={storeData.state}
-                  description={storeData.description}
-                  neighborhoods={neighborhoods}
-                  openingHours={storeData.openingHours as Record<string, string> | null}
-                  serviceNames={services.map(s => s.name)}
-                  termGender={storeData.termGender}
-                  termNumber={storeData.termNumber}
-                  mode={storeData.mode}
-                  id={storeData.id}
-                  slug={storeData.slug}
-                />
-              )
-
-            case 'SERVICES':
-              return services.length > 0 ? (
-                <ServicesSection
-                  key="services"
-                  services={services}
-                  storeName={storeData.name}
-                  storeSlug={storeData.slug}
-                  category={storeData.category}
-                  city={storeData.city}
-                  termGender={storeData.termGender}
-                  termNumber={storeData.termNumber}
-                  mode={storeData.mode}
-                  id={storeData.id}
-                  slug={storeData.slug}
-                />
-              ) : null
-
-            case 'PRODUCTS':
-              return products.length > 0 ? (
-                <ProductsSection
-                  key="products"
-                  products={products}
-                  storeName={storeData.name}
-                  storeSlug={storeData.slug}
-                  category={storeData.category}
-                  city={storeData.city}
-                  state={storeData.state}
-                  mode={storeData.mode}
-                  id={storeData.id}
-                  slug={storeData.slug}
-                />
-              ) : null
-
-            case 'PRICING_PLANS':
-              return pricingPlans.length > 0 ? (
-                <PricingPlansSection
-                  key="pricing-plans"
-                  plans={pricingPlans}
-                  storeName={storeData.name}
-                  storeSlug={storeData.slug}
-                  storeWhatsapp={storeData.whatsapp}
-                  category={storeData.category}
-                  city={storeData.city}
-                  state={storeData.state}
-                  mode={storeData.mode}
-                  id={storeData.id}
-                  slug={storeData.slug}
-                />
-              ) : null
-
-            case 'GALLERY':
-              return galleryImages.length > 0 ? (
-                <GallerySection
-                  key="gallery"
-                  images={galleryImages}
-                  storeName={storeData.name}
-                  city={storeData.city}
-                  category={storeData.category}
-                  mode={storeData.mode}
-                  id={storeData.id}
-                  slug={storeData.slug}
-                />
-              ) : null
-
-            case 'AREAS':
-              return neighborhoods.length > 0 ? (
-                <AreasSection
-                  key="areas"
-                  neighborhoods={neighborhoods}
-                  city={storeData.city}
-                  state={storeData.state}
-                  category={storeData.category}
-                  storeName={storeData.name}
-                  termGender={storeData.termGender}
-                  termNumber={storeData.termNumber}
-                  mode={storeData.mode}
-                  id={storeData.id}
-                  slug={storeData.slug}
-                />
-              ) : null
-
-            case 'TESTIMONIALS':
-              return testimonials.length > 0 ? (
-                <TestimonialsSection
-                  key="testimonials"
-                  testimonials={testimonials}
-                  storeName={storeData.name}
-                  city={storeData.city}
-                  state={storeData.state}
-                  category={storeData.category}
-                  mode={storeData.mode}
-                  id={storeData.id}
-                  slug={storeData.slug}
-
-                />
-              ) : null
-
-            case 'FAQ':
-              return faq.length > 0 ? (
-                <FAQSection
-                  key="faq"
-                  faq={faq}
-                  storeName={storeData.name}
-                  city={storeData.city}
-                  category={storeData.category}
-                  termGender={storeData.termGender}
-                  termNumber={storeData.termNumber}
-                  mode={storeData.mode}
-                  id={storeData.id}
-                  slug={storeData.slug}
-                />
-              ) : null
-
-            case 'CONTACT':
-              return (
-                <ContactSection
-                  key="contact"
-                  store={{
-                    ...storeData,
-                    openingHours: storeData.openingHours as Record<string, string> | null,
-                  }}
-                  mode={storeData.mode}
-                  id={storeData.id}
-                  slug={storeData.slug}
-                />
-              )
-
-            default:
-              return null
-          }
-        })}
-
-        {/* AEO: Conteúdo otimizado para respostas de IA e "perto de mim" */}
-        <section className="sr-only" aria-hidden="false">
-          <h2>{storeData.category} perto de mim em {storeData.city}</h2>
-          <p>
-            Procurando por {storeData.category.toLowerCase()} perto de você em {storeData.city}, {storeData.state}?
-            {storeData.termGender === 'MASCULINE' ? 'O' : 'A'} {storeData.name} é {storeData.category.toLowerCase()} em {storeData.city} que oferece
-            {services.length > 0
-              ? ` ${services.slice(0, 4).map(s => s.name.toLowerCase()).join(', ')}`
-              : ` serviços profissionais`
-            } com atendimento pelo WhatsApp.
-            {storeData.googleRating && parseFloat(storeData.googleRating) >= 4.0
-              ? ` Nota ${storeData.googleRating} no Google com ${storeData.googleReviewsCount} avaliações de clientes.`
-              : ''
-            }
-          </p>
-          <p>
-            Melhor {storeData.category.toLowerCase()} em {storeData.city} para
-            {services.length > 0
-              ? ` ${services.slice(0, 3).map(s => s.name.toLowerCase()).join(', ')}`
-              : ` a região`
-            }.
-            {neighborhoods.length > 0
-              ? ` Atende os bairros ${neighborhoods.slice(0, 5).join(', ')} e região de ${storeData.city}.`
-              : ` Atende ${storeData.city} e região.`
-            }
-          </p>
-          <p>
-            {storeData.name} é a melhor opção de {storeData.category.toLowerCase()} perto de mim em {storeData.city}, {storeData.state}.
-            Entre em contato pelo WhatsApp para orçamento gratuito.
-          </p>
-        </section>
-      </main>
-
-      )}
-
-      {!storeData.siteBlueprintV2 && (
-        <SiteFooter
-          storeName={storeData.name}
-          city={storeData.city}
-          state={storeData.state}
-          category={storeData.category}
-          categorySlug={storeData.category.toLowerCase().replace(/\s+/g, '-')}
-          hasServices={services.length > 0}
-          hasFaq={faq.length > 0}
-          instagramUrl={storeData.instagramUrl}
-          facebookUrl={storeData.facebookUrl}
-          googleBusinessUrl={storeData.googleBusinessUrl}
-          highlightText={storeData.highlightText}
-          storeSlug={storeData.slug}
-          services={services.map(s => ({ name: s.name, slug: s.slug || '' }))}
-          institutionalPages={institutionalPages}
-          logoUrl={storeData.logoUrl}
-        />
-      )}
-
-      {!storeData.siteBlueprintV2 && (
-        <FloatingContact
-          store={{
-            id: storeData.id,
-            name: storeData.name,
-            slug: storeData.slug,
-            whatsapp: storeData.whatsapp,
-            phone: storeData.phone,
-            whatsappDefaultMessage: storeData.whatsappDefaultMessage,
-            isActive: storeData.isActive,
-            showWhatsappButton: storeData.showWhatsappButton,
-            showCallButton: storeData.showCallButton,
-            buttonColor: storeData.buttonColor,
-          }}
-          isOwner={isOwner}
-        />
+        /* Blueprint V2 ainda nao gerado — mostrar placeholder */
+        <main className="min-h-screen flex items-center justify-center" style={{ backgroundColor: "#fafaf9" }}>
+          <div className="text-center px-6 py-20">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-black/5 mb-6">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: "rgba(0,0,0,0.4)" }}>
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+              </svg>
+            </div>
+            <h1 style={{ fontFamily: "system-ui", fontSize: 24, fontWeight: 500, color: "rgba(0,0,0,0.8)", margin: "0 0 8px" }}>
+              Gerando seu site...
+            </h1>
+            <p style={{ fontFamily: "system-ui", fontSize: 16, color: "rgba(0,0,0,0.45)", margin: 0 }}>
+              Estamos criando o design do seu site com IA. Isso pode levar alguns segundos.
+            </p>
+          </div>
+        </main>
       )}
     </>
   )

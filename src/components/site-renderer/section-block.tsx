@@ -7,6 +7,7 @@ import type {
   DesignTokens,
 } from "@/types/ai-generation";
 import { BLOCK_REGISTRY } from "./blocks/registry";
+import { TEMPLATE_REGISTRY } from "@/templates/registry";
 
 interface BlockProps {
   content: Record<string, unknown>;
@@ -20,6 +21,7 @@ interface SectionBlockProps {
   designTokens: DesignTokens;
   isDark?: boolean;
   navigation?: { label: string; href: string; isExternal?: boolean }[];
+  templateId?: string;
 }
 
 interface ErrorBoundaryState {
@@ -71,14 +73,34 @@ export function SectionBlock({
   designTokens,
   isDark,
   navigation,
+  templateId,
 }: SectionBlockProps) {
   const [LoadedComponent, setLoadedComponent] =
     useState<ComponentType<BlockProps> | null>(null);
 
   useEffect(() => {
-    const variants = BLOCK_REGISTRY[block.blockType];
-    if (!variants) return;
-    const loader = variants[block.variant] ?? variants[1];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let loader: (() => Promise<{ default: any }>) | undefined;
+
+    // 1. Try TEMPLATE_REGISTRY first (if templateId exists)
+    if (templateId) {
+      const templateSections = TEMPLATE_REGISTRY[templateId];
+      if (templateSections) {
+        const blockVariants = templateSections[block.blockType];
+        if (blockVariants) {
+          loader = blockVariants[block.variant] ?? blockVariants[1];
+        }
+      }
+    }
+
+    // 2. Fallback to BLOCK_REGISTRY (legacy/universal blocks)
+    if (!loader) {
+      const blockVariants = BLOCK_REGISTRY[block.blockType];
+      if (blockVariants) {
+        loader = blockVariants[block.variant] ?? blockVariants[1];
+      }
+    }
+
     if (!loader) return;
 
     let cancelled = false;
@@ -90,22 +112,20 @@ export function SectionBlock({
     return () => {
       cancelled = true;
     };
-  }, [block.blockType, block.variant]);
+  }, [block.blockType, block.variant, templateId]);
 
   if (!LoadedComponent) {
-    return <div className="h-32" />;
+    return null;
   }
 
   return (
     <SectionErrorBoundary blockType={block.blockType}>
-      <section id={block.blockType}>
-        <LoadedComponent
-          content={block.content}
-          tokens={designTokens}
-          isDark={isDark}
-          navigation={navigation}
-        />
-      </section>
+      <LoadedComponent
+        content={block.content}
+        tokens={designTokens}
+        isDark={isDark}
+        navigation={navigation}
+      />
     </SectionErrorBoundary>
   );
 }
