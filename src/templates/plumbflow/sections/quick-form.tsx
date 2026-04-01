@@ -26,7 +26,7 @@ export function PlumbflowQuickForm({ content, tokens }: Props) {
   if (!parsed.success) return null;
   const c = parsed.data;
 
-  const accent = tokens.palette.accent || "#FF5E15";
+  const accent = tokens.palette.accent;
   const { submit, isSubmitting, submitted } = useSubmitFormLead();
 
   const [name, setName] = useState("");
@@ -43,12 +43,12 @@ export function PlumbflowQuickForm({ content, tokens }: Props) {
     height: 51,
     padding: "12px 24px",
     backgroundColor: "#fff",
-    border: "1px solid rgba(20,47,69,0.1)",
+    border: "1px solid var(--pgl-border, rgba(20,47,69,0.1))",
     borderRadius: 56,
     fontFamily: "var(--pgl-font-body), system-ui, sans-serif",
     fontSize: 16,
     fontWeight: 400,
-    color: "var(--pgl-text, #2C282B)",
+    color: "var(--pgl-text)",
     outline: "none",
   };
 
@@ -69,8 +69,8 @@ export function PlumbflowQuickForm({ content, tokens }: Props) {
           style={{
             width: "100%",
             maxWidth: 1296,
-            backgroundColor: "var(--pgl-surface, #F1F2FA)",
-            border: "1px solid rgba(20,47,69,0.1)",
+            backgroundColor: "var(--pgl-surface)",
+            border: "1px solid var(--pgl-border, rgba(20,47,69,0.1))",
             borderRadius: 16,
             padding: "40px 32px",
           }}
@@ -87,7 +87,7 @@ export function PlumbflowQuickForm({ content, tokens }: Props) {
                 fontWeight: 700,
                 letterSpacing: "-1px",
                 lineHeight: "1.3em",
-                color: "var(--pgl-text, #142F45)",
+                color: "var(--pgl-text)",
                 margin: 0,
                 flexShrink: 0,
                 maxWidth: 380,
@@ -182,7 +182,7 @@ export function PlumbflowQuickForm({ content, tokens }: Props) {
                 fontFamily: "var(--pgl-font-body), system-ui, sans-serif",
                 fontSize: 14,
                 fontWeight: 400,
-                color: "var(--pgl-text-muted, #4B5554)",
+                color: "var(--pgl-text-muted)",
                 margin: "16px 0 0",
                 maxWidth: 600,
               }}

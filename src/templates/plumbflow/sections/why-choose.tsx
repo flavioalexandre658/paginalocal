@@ -44,8 +44,8 @@ export function PlumbflowWhyChoose({ content, tokens }: Props) {
   if (!parsed.success) return null;
   const c = parsed.data;
 
-  const accent = tokens.palette.accent || "#FF5E15";
-  const primary = tokens.palette.primary || "#142F45";
+  const accent = tokens.palette.accent;
+  const primary = tokens.palette.primary;
 
   return (
     <section
@@ -220,7 +220,7 @@ export function PlumbflowWhyChoose({ content, tokens }: Props) {
                         fontWeight: 400,
                         letterSpacing: "0px",
                         lineHeight: "1.4em",
-                        color: "var(--pgl-text-muted, #4B5554)",
+                        color: "var(--pgl-text-muted)",
                         margin: 0,
                       }}
                       data-pgl-path={`items.${idx}.description`}

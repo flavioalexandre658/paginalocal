@@ -22,6 +22,7 @@ export function RooforaHeader({ content, tokens, navigation }: Props) {
   const ctaLink = typeof content.ctaLink === "string" ? content.ctaLink : "#contato";
 
   const accent = tokens.palette.accent || "#CDF660";
+  const primary = tokens.palette.primary || "#0E1201";
 
   useEffect(() => {
     if (menuOpen) {
@@ -58,7 +59,7 @@ export function RooforaHeader({ content, tokens, navigation }: Props) {
         data-pgl-path="nav"
         role="banner"
         className="sticky top-0 left-0 right-0 z-50"
-        style={{ backgroundColor: "#0E1201" }}
+        style={{ backgroundColor: primary }}
       >
         {/* ═══ MAIN NAV ═══ */}
         <div style={{ display: "flex", justifyContent: "center" }}>
@@ -169,14 +170,14 @@ export function RooforaHeader({ content, tokens, navigation }: Props) {
                     fontSize: 16,
                     fontWeight: 600,
                     letterSpacing: "-0.01em",
-                    color: "#0E1201",
+                    color: primary,
                     whiteSpace: "nowrap",
                   }}
                 >
                   {ctaText}
                 </span>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-                  <path d="M3 8h10M9 4l4 4-4 4" stroke="#0E1201" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M3 8h10M9 4l4 4-4 4" stroke={primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </a>
             )}
@@ -274,7 +275,7 @@ export function RooforaHeader({ content, tokens, navigation }: Props) {
                   fontFamily: "var(--pgl-font-body), system-ui, sans-serif",
                   fontSize: 16,
                   fontWeight: 600,
-                  color: "#0E1201",
+                  color: primary,
                   textDecoration: "none",
                 }}
               >

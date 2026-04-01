@@ -11,12 +11,12 @@ interface Props {
   isDark?: boolean;
 }
 
-function StarIcon() {
+function StarIcon({ color = "currentColor" }: { color?: string }) {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
       <path
         d="M10 1.5l2.47 5.01 5.53.8-4 3.9.94 5.49L10 14.26l-4.94 2.44.94-5.49-4-3.9 5.53-.8L10 1.5z"
-        fill="#FF5E15"
+        fill={color}
       />
     </svg>
   );
@@ -45,8 +45,8 @@ export function PlumbflowTestimonials({ content, tokens }: Props) {
   if (!parsed.success) return null;
   const c = parsed.data;
 
-  const accent = tokens.palette.accent || "#FF5E15";
-  const primary = tokens.palette.primary || "#142F45";
+  const accent = tokens.palette.accent;
+  const primary = tokens.palette.primary;
 
   const [currentPage, setCurrentPage] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -183,7 +183,7 @@ export function PlumbflowTestimonials({ content, tokens }: Props) {
                     {/* Stars */}
                     <div style={{ display: "flex", flexDirection: "row", gap: 4 }}>
                       {[...Array(item.rating || 5)].map((_, i) => (
-                        <StarIcon key={i} />
+                        <StarIcon key={i} color={accent} />
                       ))}
                     </div>
 
@@ -192,7 +192,7 @@ export function PlumbflowTestimonials({ content, tokens }: Props) {
                       style={{
                         fontFamily: "var(--pgl-font-body), system-ui, sans-serif",
                         fontSize: 18, fontWeight: 400, letterSpacing: "0px",
-                        lineHeight: "1.4em", color: "var(--pgl-text-muted, #4B5554)", margin: 0,
+                        lineHeight: "1.4em", color: "var(--pgl-text-muted)", margin: 0,
                       }}
                       data-pgl-path={`items.${globalIdx}.text`}
                       data-pgl-edit="text"
@@ -257,7 +257,7 @@ export function PlumbflowTestimonials({ content, tokens }: Props) {
                           style={{
                             fontFamily: "var(--pgl-font-body), system-ui, sans-serif",
                             fontSize: 14, fontWeight: 500, letterSpacing: "0px",
-                            lineHeight: "1.7em", color: "var(--pgl-text-muted, #4B5554)",
+                            lineHeight: "1.7em", color: "var(--pgl-text-muted)",
                           }}
                           data-pgl-path={`items.${globalIdx}.role`}
                           data-pgl-edit="text"

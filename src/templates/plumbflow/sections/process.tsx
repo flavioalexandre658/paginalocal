@@ -26,8 +26,8 @@ export function PlumbflowProcess({ content, tokens }: Props) {
   if (!parsed.success) return null;
   const c = parsed.data;
 
-  const accent = tokens.palette.accent || "#FF5E15";
-  const primary = tokens.palette.primary || "#142F45";
+  const accent = tokens.palette.accent;
+  const primary = tokens.palette.primary;
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
@@ -188,7 +188,7 @@ export function PlumbflowProcess({ content, tokens }: Props) {
               }}>
                 <div style={{
                   width: 25, height: 25, borderRadius: "50%",
-                  backgroundColor: isActive ? accent : "rgba(20,47,69,0.15)",
+                  backgroundColor: isActive ? accent : `${primary}26`,
                   display: "flex", alignItems: "center", justifyContent: "center",
                   transition: "background-color 0.4s ease", flexShrink: 0,
                 }}>
@@ -199,7 +199,7 @@ export function PlumbflowProcess({ content, tokens }: Props) {
                 {idx < totalSteps - 1 && (
                   <div style={{
                     width: 3, flex: 1, minHeight: 60,
-                    backgroundColor: "rgba(20,47,69,0.1)",
+                    backgroundColor: `${primary}1a`,
                     position: "relative", overflow: "hidden",
                   }}>
                     <div style={{

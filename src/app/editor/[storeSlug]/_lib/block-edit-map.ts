@@ -70,6 +70,7 @@ export const BLOCK_EDIT_MAP: Record<BlockType, EditableField[]> = {
     { path: "paragraphs.*", mode: "text", label: "Parágrafo" },
     { path: "highlights.*.label", mode: "text", label: "Label do destaque" },
     { path: "highlights.*.value", mode: "text", label: "Valor do destaque" },
+    { path: "ctaText", mode: "button", label: "Botão CTA", linkPath: "ctaLink" },
     { path: "image", mode: "image", label: "Imagem" },
   ],
 

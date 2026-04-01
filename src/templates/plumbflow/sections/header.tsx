@@ -49,6 +49,8 @@ function ClockIcon({ color = "#fff", size = 16 }: { color?: string; size?: numbe
 /* ────────────────────────────────────────────── Component ─── */
 
 export function PlumbflowHeader({ content, tokens, navigation }: Props) {
+  const accent = tokens.palette.accent;
+  const primary = tokens.palette.primary;
   const navItems = navigation || [];
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -95,7 +97,7 @@ export function PlumbflowHeader({ content, tokens, navigation }: Props) {
         data-pgl-path="nav"
         role="banner"
         className="sticky top-0 left-0 right-0 z-50"
-        style={{ backgroundColor: "var(--pgl-primary, #142F45)" }}
+        style={{ backgroundColor: "var(--pgl-primary)" }}
       >
         {/* ═══ TOP BAR — só exibe se tem phone, email ou tagline ═══ */}
         {(phone || email || tagline) && (
@@ -251,7 +253,7 @@ export function PlumbflowHeader({ content, tokens, navigation }: Props) {
                     transition: "color 0.2s",
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = tokens.palette.accent || "#FF5E15";
+                    e.currentTarget.style.color = accent;
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.color = "#fff";
@@ -276,7 +278,7 @@ export function PlumbflowHeader({ content, tokens, navigation }: Props) {
                   justifyContent: "center",
                   gap: 10,
                   padding: "12px 24px",
-                  backgroundColor: tokens.palette.accent || "#F96339",
+                  backgroundColor: accent,
                   borderRadius: 58,
                   boxShadow: "rgba(255,255,255,0.4) 0px 4px 7px 0px inset",
                   textDecoration: "none",
@@ -348,7 +350,7 @@ export function PlumbflowHeader({ content, tokens, navigation }: Props) {
             menuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
           )}
           style={{
-            backgroundColor: "rgba(20,47,69,0.98)",
+            backgroundColor: "var(--pgl-primary)",
             borderTop: "1px solid rgba(241,242,250,0.1)",
           }}
         >
@@ -435,7 +437,7 @@ export function PlumbflowHeader({ content, tokens, navigation }: Props) {
                   gap: 10,
                   height: 48,
                   padding: "12px 24px",
-                  backgroundColor: tokens.palette.accent || "#F96339",
+                  backgroundColor: accent,
                   borderRadius: 58,
                   boxShadow: "rgba(255,255,255,0.4) 0px 4px 7px 0px inset",
                   fontFamily: "var(--pgl-font-body), system-ui, sans-serif",

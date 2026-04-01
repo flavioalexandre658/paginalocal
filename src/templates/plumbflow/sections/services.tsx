@@ -11,7 +11,7 @@ interface Props {
   isDark?: boolean;
 }
 
-function ArrowIcon({ color = "#142F45" }: { color?: string }) {
+function ArrowIcon({ color = "var(--pgl-text)" }: { color?: string }) {
   return (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style={{ flexShrink: 0 }}>
       <path d="M6 14h16M16 8l6 6-6 6" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -34,15 +34,15 @@ export function PlumbflowServices({ content, tokens }: Props) {
   if (!parsed.success) return null;
   const c = parsed.data;
 
-  const accent = tokens.palette.accent || "#FF5E15";
-  const primary = tokens.palette.primary || "#142F45";
+  const accent = tokens.palette.accent;
+  const primary = tokens.palette.primary;
   const [activeIdx, setActiveIdx] = useState(0);
   const activeItem = c.items[activeIdx];
 
   return (
     <section
       id="services"
-      style={{ backgroundColor: "var(--pgl-surface, #F1F2FA)", overflow: "hidden" }}
+      style={{ backgroundColor: "var(--pgl-surface)", overflow: "hidden" }}
     >
       <div
         className="px-5 md:px-[30px] py-16 md:py-[120px]"

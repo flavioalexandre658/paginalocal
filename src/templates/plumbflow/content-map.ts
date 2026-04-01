@@ -38,6 +38,12 @@ export const PLUMBFLOW_CONTENT_MAP: SectionContentMap[] = [
       },
     ],
     imageQueryHint: "professional worker service technician",
+    imageSpec: {
+      aspectRatio: "16:9",
+      style: "cinematic professional photo, dramatic lighting",
+      subject: "skilled technician or plumber working on-site with professional tools in a modern home",
+      avoid: ["stock photo feel", "clipart", "text overlays", "watermarks", "blurry"],
+    },
     contentGuidance:
       "Hero de impacto com título grande em branco, accent laranja na palavra destacada. Dois CTAs (primário pill laranja, secundário outline). Badge estatístico flutuante e barra de logos de parceiros na base.",
     exampleOutput: {
@@ -92,6 +98,12 @@ export const PLUMBFLOW_CONTENT_MAP: SectionContentMap[] = [
       },
     ],
     imageQueryHint: "professional team office workspace",
+    imageSpec: {
+      aspectRatio: "4:3",
+      style: "documentary editorial photo, natural lighting",
+      subject: "professional team at work in a clean workshop or job site",
+      avoid: ["posed group photo", "generic office", "stock feel"],
+    },
     contentGuidance:
       "Seção sobre a empresa com 3 tabs clicáveis (Missão, Expertise, Valores). Cada tab revela um parágrafo descritivo. À direita, imagem profissional. Abaixo, checklist com ícones de check e frases curtas de diferenciais.",
     exampleOutput: {
@@ -159,6 +171,13 @@ export const PLUMBFLOW_CONTENT_MAP: SectionContentMap[] = [
       },
     ],
     imageQueryHint: "professional service repair maintenance",
+    imageSpec: {
+      aspectRatio: "4:3",
+      style: "clean service documentation photo",
+      subject: "professional performing the specific service, tools visible, clean environment",
+      avoid: ["stock photo", "generic", "blurry", "low quality"],
+      count: 5,
+    },
     contentGuidance:
       "Seção de serviços com tabs laterais à esquerda. Ao clicar em uma tab, exibe descrição do serviço com botão CTA e imagem ilustrativa à direita. Estilo clean com fundo claro.",
   },
@@ -204,6 +223,12 @@ export const PLUMBFLOW_CONTENT_MAP: SectionContentMap[] = [
       },
     ],
     imageQueryHint: "certified professional team working",
+    imageSpec: {
+      aspectRatio: "4:3",
+      style: "professional team photo, natural setting",
+      subject: "certified professional team in branded uniform at a job site",
+      avoid: ["generic office", "stock feel"],
+    },
     contentGuidance:
       "Seção 'Por que nos escolher' com 3 cards lado a lado. Cada card tem ícone, título em negrito e descrição. Imagem de equipe ao fundo ou ao lado. Fundo claro com accent nos ícones.",
   },
@@ -229,6 +254,13 @@ export const PLUMBFLOW_CONTENT_MAP: SectionContentMap[] = [
       },
     ],
     imageQueryHint: "happy customer portrait brazilian",
+    imageSpec: {
+      aspectRatio: "1:1",
+      style: "professional headshot portrait, studio lighting",
+      subject: "friendly Brazilian person, natural warm smile, clean neutral background, professional appearance",
+      avoid: ["full body", "group photo", "sunglasses", "heavy filters", "cartoon"],
+      count: 7,
+    },
     contentGuidance:
       "Carrossel de depoimentos com cards contendo 5 estrelas amarelas, texto de avaliação entre aspas, nome do autor em negrito e profissão abaixo. Fundo escuro com cards claros.",
   },
@@ -252,6 +284,13 @@ export const PLUMBFLOW_CONTENT_MAP: SectionContentMap[] = [
       },
     ],
     imageQueryHint: "plumbing hvac repair installation work",
+    imageSpec: {
+      aspectRatio: "4:3",
+      style: "editorial project documentation photo",
+      subject: "completed professional work, before/after quality, clean result",
+      avoid: ["messy", "unfinished", "stock photo", "clipart"],
+      count: 5,
+    },
     contentGuidance:
       "Grid estilo bento com 5 imagens em tamanhos variados. A primeira imagem ocupa mais espaço. Cada imagem tem legenda em overlay semi-transparente na base. Cantos arredondados e gap entre as imagens.",
   },

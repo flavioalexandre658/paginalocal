@@ -21,29 +21,29 @@ function renderAccentText(text: string, accentColor: string) {
 }
 
 /* ── Feature badge icons ── */
-function ShieldIcon() {
+function ShieldIcon({ color = "#CDF660" }: { color?: string }) {
   return (
     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-      <path d="M16 3L5 8v7c0 7.73 4.66 14.96 11 17 6.34-2.04 11-9.27 11-17V8L16 3z" stroke="#CDF660" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M11 16l3 3 7-7" stroke="#CDF660" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16 3L5 8v7c0 7.73 4.66 14.96 11 17 6.34-2.04 11-9.27 11-17V8L16 3z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M11 16l3 3 7-7" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
-function ToolIcon() {
+function ToolIcon({ color = "#CDF660" }: { color?: string }) {
   return (
     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-      <path d="M19.5 12.5L28 4l-4-1-1 4-4 1 1-4-1-1-8.5 8.5a5 5 0 1 0 7 7L26 10" stroke="#CDF660" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="12" cy="20" r="3" stroke="#CDF660" strokeWidth="2" />
+      <path d="M19.5 12.5L28 4l-4-1-1 4-4 1 1-4-1-1-8.5 8.5a5 5 0 1 0 7 7L26 10" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="20" r="3" stroke={color} strokeWidth="2" />
     </svg>
   );
 }
 
-function ClockIcon() {
+function ClockIcon({ color = "#CDF660" }: { color?: string }) {
   return (
     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-      <circle cx="16" cy="16" r="12" stroke="#CDF660" strokeWidth="2" />
-      <path d="M16 8v8l5 3" stroke="#CDF660" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="16" cy="16" r="12" stroke={color} strokeWidth="2" />
+      <path d="M16 8v8l5 3" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -56,6 +56,7 @@ export function RooforaHero({ content, tokens }: Props) {
   const c = parsed.data;
 
   const accent = tokens.palette.accent || "#CDF660";
+  const primary = tokens.palette.primary || "#0E1201";
 
   /* Build feature badges from brands array or use defaults */
   const defaultBadges = [
@@ -74,7 +75,7 @@ export function RooforaHero({ content, tokens }: Props) {
         width: "100%",
         position: "relative",
         overflow: "hidden",
-        backgroundColor: "#0E1201",
+        backgroundColor: primary,
       }}
     >
       {/* ═══ Background image ═══ */}
@@ -101,7 +102,7 @@ export function RooforaHero({ content, tokens }: Props) {
             style={{
               width: "100%",
               height: "100%",
-              background: "linear-gradient(135deg, #0E1201 0%, #1a2006 40%, #0E1201 100%)",
+              background: `linear-gradient(135deg, ${primary} 0%, #1a2006 40%, ${primary} 100%)`,
             }}
           />
         )}
@@ -246,14 +247,14 @@ export function RooforaHero({ content, tokens }: Props) {
                       fontSize: 16,
                       fontWeight: 600,
                       letterSpacing: "-0.01em",
-                      color: "#0E1201",
+                      color: primary,
                       whiteSpace: "nowrap",
                     }}
                   >
                     {c.ctaText}
                   </span>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-                    <path d="M3 8h10M9 4l4 4-4 4" stroke="#0E1201" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M3 8h10M9 4l4 4-4 4" stroke={primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </a>
 
@@ -330,7 +331,7 @@ export function RooforaHero({ content, tokens }: Props) {
                     }}
                   >
                     <div style={{ flexShrink: 0, marginTop: 2 }}>
-                      <IconComp />
+                      <IconComp color={accent} />
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                       <span

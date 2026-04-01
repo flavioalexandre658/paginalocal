@@ -27,6 +27,7 @@ export function RooforaFaq({ content, tokens }: Props) {
   const c = parsed.data;
 
   const accent = tokens.palette.accent || "#CDF660";
+  const primary = tokens.palette.primary || "#0E1201";
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggle = (i: number) => {
@@ -57,7 +58,7 @@ export function RooforaFaq({ content, tokens }: Props) {
                   fontSize: 16,
                   fontWeight: 500,
                   lineHeight: "1.6em",
-                  color: "var(--pgl-text, #000)",
+                  color: "var(--pgl-text)",
                   margin: 0,
                   marginBottom: 12,
                   opacity: 0.6,
@@ -77,7 +78,7 @@ export function RooforaFaq({ content, tokens }: Props) {
                 fontWeight: 700,
                 letterSpacing: "-1px",
                 lineHeight: "1.15em",
-                color: "var(--pgl-text, #000)",
+                color: "var(--pgl-text)",
                 margin: 0,
               }}
             >
@@ -121,7 +122,7 @@ export function RooforaFaq({ content, tokens }: Props) {
                         fontFamily: "var(--pgl-font-heading, 'Urbanist'), system-ui, sans-serif",
                         fontSize: "clamp(16px, 2vw, 20px)",
                         fontWeight: 600,
-                        color: "var(--pgl-text, #000)",
+                        color: "var(--pgl-text)",
                         lineHeight: "1.4em",
                       }}
                     >
@@ -135,14 +136,14 @@ export function RooforaFaq({ content, tokens }: Props) {
                         width: 36,
                         height: 36,
                         borderRadius: "50%",
-                        border: "2px solid var(--pgl-text, #000)",
+                        border: "2px solid var(--pgl-text)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         transition: "transform 0.3s ease, background-color 0.3s ease",
                         transform: isOpen ? "rotate(45deg)" : "rotate(0deg)",
                         backgroundColor: isOpen ? accent : "transparent",
-                        borderColor: isOpen ? accent : "var(--pgl-text, #000)",
+                        borderColor: isOpen ? accent : "var(--pgl-text)",
                       }}
                     >
                       <svg
@@ -154,13 +155,13 @@ export function RooforaFaq({ content, tokens }: Props) {
                       >
                         <line
                           x1="7" y1="0" x2="7" y2="14"
-                          stroke={isOpen ? "#0E1201" : "var(--pgl-text, #000)"}
+                          stroke={isOpen ? primary : "var(--pgl-text)"}
                           strokeWidth="2"
                           strokeLinecap="round"
                         />
                         <line
                           x1="0" y1="7" x2="14" y2="7"
-                          stroke={isOpen ? "#0E1201" : "var(--pgl-text, #000)"}
+                          stroke={isOpen ? primary : "var(--pgl-text)"}
                           strokeWidth="2"
                           strokeLinecap="round"
                         />

@@ -16,6 +16,7 @@ import { fetchAndSaveUnsplashImages } from "@/lib/unsplash-fallback";
 import { getImageFields, blockNeedsImages } from "@/config/block-image-fields";
 import { getContentMapForTemplate } from "@/templates/content-maps";
 import { buildSectionPrompt } from "@/templates/content-map-utils";
+import { generateAndFillImages } from "@/lib/ai-image-pipeline";
 
 export type GenerationModel = "sonnet" | "opus" | "gemini";
 
@@ -58,7 +59,7 @@ export async function generateAndPersistBlueprint(
     aiContent,
   });
 
-  // Usa queries contextuais da IA + hints do content map como fallback
+  // Gera imagens via Banana Nano 2 (primary) + Unsplash (fallback)
   const imageQueries = (aiContent as any).imageQueries || {};
   const contentMap = getContentMapForTemplate(template.id);
   if (contentMap) {
@@ -69,7 +70,14 @@ export async function generateAndPersistBlueprint(
       }
     });
   }
-  await fillImages(blueprint, ctx.category, ctx.storeId, imageQueries);
+  const imageResult = await generateAndFillImages({
+    blueprint,
+    businessContext: ctx,
+    storeId: ctx.storeId,
+    contentMap,
+    imageQueries,
+  });
+  console.log("[generateAndPersistBlueprint] images:", imageResult);
 
   await db
     .update(store)
@@ -214,11 +222,15 @@ ${ctx.primaryColor ? `O cliente SUGERE a cor ${ctx.primaryColor} — use como in
 Pense: qual é a PERSONALIDADE VISUAL de uma ${ctx.category} em ${ctx.city}?
 Que emoção o visitante deve sentir ao abrir o site?
 
-## SEÇÕES
+## SEÇÕES (EXATAMENTE ${template.defaultSections.length} seções, nesta ordem)
+
+REGRA CRÍTICA: Gere EXATAMENTE ${template.defaultSections.length} objetos no array "sections", UM para CADA seção listada abaixo, NA MESMA ORDEM. Se o template pede 11 seções, o array DEVE ter 11 objetos. NUNCA pule, omita ou agrupe seções.
 
 ${sectionInstructions}
 
 ## JSON ESPERADO
+
+IMPORTANTE: "sections" DEVE ser um array com EXATAMENTE ${template.defaultSections.length} objetos, um por seção acima.
 
 {
   "design": {
@@ -235,7 +247,7 @@ ${sectionInstructions}
       "textMuted": "#hex (40-50% mais claro que text)"
     }
   },
-  "sections": [ ... ],
+  "sections": [ /* EXATAMENTE ${template.defaultSections.length} objetos, um por seção */ ],
   "globalContent": {
     "brandVoice": "tom em 1 frase",
     "tagline": "slogan curto e memorável",
@@ -403,6 +415,21 @@ function assembleBlueprint({
     ? `https://wa.me/${ctx.whatsapp.replace(/\D/g, "")}`
     : "#contact";
 
+  console.log(`[assembleBlueprint] Template has ${template.defaultSections.length} sections, AI generated ${aiContent.sections.length} sections`);
+
+  // Pad sections array if AI generated fewer than expected
+  while (aiContent.sections.length < template.defaultSections.length) {
+    const missingIdx = aiContent.sections.length;
+    const missingType = template.defaultSections[missingIdx]?.blockType || "unknown";
+    console.warn(`[assembleBlueprint] Padding missing section [${missingIdx}] ${missingType} with empty object`);
+    aiContent.sections.push({});
+  }
+
+  template.defaultSections.forEach((s, i) => {
+    const hasContent = !!aiContent.sections[i] && Object.keys(aiContent.sections[i]).length > 0;
+    console.log(`[assembleBlueprint]   [${i}] ${s.blockType} v${s.variant}: ${hasContent ? "✓" : "✗ EMPTY"}`);
+  });
+
   const sections = template.defaultSections.map((tplSection, i) => {
     let aiSection = aiContent.sections[i] || {};
 
@@ -413,6 +440,22 @@ function assembleBlueprint({
     // Also handle { content: {...} } wrapper
     if (aiSection.content && typeof aiSection.content === "object" && !aiSection.title && !aiSection.headline && !aiSection.storeName) {
       aiSection = { ...aiSection.content as Record<string, unknown> };
+    }
+
+    // Normalize paragraphs: AI sometimes sends [{text:"..."}, ...] instead of ["..."]
+    if (Array.isArray(aiSection.paragraphs)) {
+      aiSection.paragraphs = (aiSection.paragraphs as unknown[]).map((p) =>
+        typeof p === "string" ? p : typeof p === "object" && p !== null && "text" in (p as Record<string, unknown>) ? String((p as Record<string, unknown>).text) : String(p)
+      );
+    }
+
+    // Normalize rating: AI sends "5" (string) instead of 5 (number)
+    if (Array.isArray(aiSection.items)) {
+      (aiSection.items as Record<string, unknown>[]).forEach((item) => {
+        if (typeof item.rating === "string") {
+          item.rating = parseInt(item.rating as string, 10) || 5;
+        }
+      });
     }
 
     if (typeof aiSection.ctaLink === "string" && aiSection.ctaLink === "") {

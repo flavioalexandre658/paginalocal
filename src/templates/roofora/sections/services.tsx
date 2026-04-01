@@ -77,11 +77,12 @@ export function RooforaServices({ content, tokens }: Props) {
   const c = parsed.data;
 
   const accent = tokens.palette.accent || "#CDF660";
+  const primary = tokens.palette.primary || "#0E1201";
 
   return (
     <section
       id="services"
-      style={{ backgroundColor: "var(--pgl-background, #fff)", overflow: "hidden" }}
+      style={{ backgroundColor: primary, overflow: "hidden" }}
     >
       <div
         className="px-5 md:px-[30px] py-16 md:py-[100px]"
@@ -134,7 +135,7 @@ export function RooforaServices({ content, tokens }: Props) {
                   fontWeight: 600,
                   letterSpacing: "-0.03em",
                   lineHeight: "1.15em",
-                  color: "var(--pgl-text, #000)",
+                  color: "#fff",
                   margin: 0,
                   maxWidth: 550,
                 }}
@@ -177,14 +178,14 @@ export function RooforaServices({ content, tokens }: Props) {
                   fontSize: 16,
                   fontWeight: 600,
                   letterSpacing: "-0.01em",
-                  color: "#0E1201",
+                  color: primary,
                   whiteSpace: "nowrap",
                 }}
               >
                 Ver Todos os Servicos
               </span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="#0E1201" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M3 8h10M9 4l4 4-4 4" stroke={primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </a>
           </ScrollReveal>
@@ -203,18 +204,18 @@ export function RooforaServices({ content, tokens }: Props) {
                   flexDirection: "column",
                   padding: 32,
                   borderRadius: 20,
-                  border: "1px solid rgba(0,0,0,0.08)",
-                  backgroundColor: "var(--pgl-background, #fff)",
+                  border: "1px solid rgba(252,255,245,0.15)",
+                  backgroundColor: "rgba(255,255,255,0.04)",
                   transition: "border-color 0.3s, box-shadow 0.3s",
                   cursor: "pointer",
                   height: "100%",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = accent;
-                  e.currentTarget.style.boxShadow = `0 8px 32px rgba(0,0,0,0.06)`;
+                  e.currentTarget.style.boxShadow = `0 8px 32px rgba(0,0,0,0.3)`;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = "rgba(0,0,0,0.08)";
+                  e.currentTarget.style.borderColor = "rgba(252,255,245,0.15)";
                   e.currentTarget.style.boxShadow = "none";
                 }}
               >
@@ -224,7 +225,7 @@ export function RooforaServices({ content, tokens }: Props) {
                     width: 64,
                     height: 64,
                     borderRadius: 16,
-                    backgroundColor: "#0E1201",
+                    backgroundColor: primary,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -243,7 +244,7 @@ export function RooforaServices({ content, tokens }: Props) {
                     fontWeight: 600,
                     letterSpacing: "-0.02em",
                     lineHeight: "1.3em",
-                    color: "var(--pgl-text, #000)",
+                    color: "#fff",
                     margin: 0,
                     marginBottom: 12,
                   }}
@@ -260,7 +261,7 @@ export function RooforaServices({ content, tokens }: Props) {
                     fontSize: 15,
                     fontWeight: 400,
                     lineHeight: "1.7em",
-                    color: "rgba(0,0,0,0.6)",
+                    color: "rgba(255,255,255,0.5)",
                     margin: 0,
                     flex: 1,
                   }}
@@ -296,7 +297,7 @@ export function RooforaServices({ content, tokens }: Props) {
                       fontSize: 15,
                       fontWeight: 600,
                       letterSpacing: "-0.01em",
-                      color: "#0E1201",
+                      color: "rgba(255,255,255,0.6)",
                     }}
                   >
                     {item.ctaText || "Saiba Mais"}
@@ -313,7 +314,7 @@ export function RooforaServices({ content, tokens }: Props) {
                       flexShrink: 0,
                     }}
                   >
-                    <ArrowRightIcon color="#0E1201" />
+                    <ArrowRightIcon color={primary} />
                   </div>
                 </a>
               </div>

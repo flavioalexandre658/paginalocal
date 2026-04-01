@@ -71,6 +71,17 @@ export interface FieldSpec {
 }
 
 /**
+ * Especificacao de uma imagem para geracao AI (Banana Nano 2).
+ */
+export interface ImageSpec {
+  aspectRatio: "16:9" | "1:1" | "4:3" | "3:4";
+  style: string;
+  subject: string;
+  avoid: string[];
+  count?: number;
+}
+
+/**
  * Mapa de conteudo de uma secao — diz a IA exatamente
  * quais campos gerar, com que formato e tom.
  */
@@ -81,6 +92,8 @@ export interface SectionContentMap {
   contentGuidance: string;
   imageQueryHint?: string;
   exampleOutput?: Record<string, unknown>;
+  imageSpec?: ImageSpec;
+  imageSpecs?: Record<string, ImageSpec>;
 }
 
 /**

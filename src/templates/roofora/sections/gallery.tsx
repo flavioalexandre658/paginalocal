@@ -127,6 +127,7 @@ export function RooforaGallery({ content, tokens }: Props) {
   const c = parsed.data;
 
   const accent = tokens.palette.accent || "#CDF660";
+  const primary = tokens.palette.primary || "#0E1201";
   const images = c.images || [];
 
   return (
@@ -172,7 +173,7 @@ export function RooforaGallery({ content, tokens }: Props) {
                   fontWeight: 600,
                   letterSpacing: "-0.04em",
                   lineHeight: "1.15em",
-                  color: "var(--pgl-text, #0E1201)",
+                  color: "var(--pgl-text)",
                   margin: 0,
                 }}
                 data-pgl-path="title"
@@ -216,13 +217,13 @@ export function RooforaGallery({ content, tokens }: Props) {
                   fontSize: 16,
                   fontWeight: 600,
                   letterSpacing: "-0.01em",
-                  color: "#0E1201",
+                  color: primary,
                 }}
               >
                 Ver Todos
               </span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="#0E1201" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M3 8h10M9 4l4 4-4 4" stroke={primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </a>
           </ScrollReveal>

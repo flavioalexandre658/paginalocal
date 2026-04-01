@@ -152,7 +152,7 @@ export const ServicesContentSchema = z.object({
 export const AboutContentSchema = z.object({
   title: z.string(),
   subtitle: z.string().optional(),
-  paragraphs: z.array(z.string()).min(1).max(4),
+  paragraphs: z.array(z.string()).min(1).max(10),
   highlights: z
     .array(
       z.object({
@@ -161,6 +161,8 @@ export const AboutContentSchema = z.object({
       })
     )
     .optional(),
+  ctaText: z.string().optional(),
+  ctaLink: z.string().optional(),
   image: z.string().optional(),
 });
 
@@ -172,13 +174,13 @@ export const TestimonialsContentSchema = z.object({
       z.object({
         text: z.string(),
         author: z.string(),
-        rating: z.number().min(1).max(5).optional(),
+        rating: z.coerce.number().min(1).max(5).optional(),
         role: z.string().optional(),
         image: z.string().optional(),
       })
     )
     .min(1)
-    .max(8),
+    .max(12),
 });
 
 export const GalleryContentSchema = z.object({

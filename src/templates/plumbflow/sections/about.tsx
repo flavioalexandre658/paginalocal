@@ -11,7 +11,7 @@ interface Props {
   isDark?: boolean;
 }
 
-function CheckIcon({ color = "#FF5E15" }: { color?: string }) {
+function CheckIcon({ color = "currentColor" }: { color?: string }) {
   return (
     <svg width="20" height="21" viewBox="0 0 20 21" fill="none" style={{ flexShrink: 0 }}>
       <circle cx="10" cy="10.5" r="9" stroke={color} strokeWidth="1.5" opacity="0.3" />
@@ -31,12 +31,18 @@ function renderAccentText(text: string, accentColor: string) {
 }
 
 export function PlumbflowAbout({ content, tokens }: Props) {
+  if (Array.isArray(content.paragraphs)) {
+    content.paragraphs = (content.paragraphs as unknown[]).map((p) =>
+      typeof p === "string" ? p : typeof p === "object" && p !== null && "text" in p ? String((p as Record<string, unknown>).text) : String(p)
+    );
+  }
+
   const parsed = AboutContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
 
-  const accent = tokens.palette.accent || "#FF5E15";
-  const primary = tokens.palette.primary || "#142F45";
+  const accent = tokens.palette.accent;
+  const primary = tokens.palette.primary;
 
   // highlights = tabs (label = tab name, value = tab description)
   // paragraphs = bullet points for the checklist (same for all tabs)
@@ -177,7 +183,7 @@ export function PlumbflowAbout({ content, tokens }: Props) {
                       cursor: "pointer",
                       background: "none",
                       border: "none",
-                      borderBottom: `2px solid ${activeTab === i ? accent : "#F1F2FA"}`,
+                      borderBottom: `2px solid ${activeTab === i ? accent : "var(--pgl-surface)"}`,
                       padding: "14px 28px",
                       fontFamily: "var(--pgl-font-heading), system-ui, sans-serif",
                       fontSize: 22,
@@ -208,7 +214,7 @@ export function PlumbflowAbout({ content, tokens }: Props) {
                 fontWeight: 400,
                 letterSpacing: "0px",
                 lineHeight: "1.4em",
-                color: "var(--pgl-text-muted, #4B5554)",
+                color: "var(--pgl-text-muted)",
                 margin: 0,
                 marginTop: 24,
               }}
@@ -240,7 +246,7 @@ export function PlumbflowAbout({ content, tokens }: Props) {
                         fontWeight: 400,
                         letterSpacing: "0px",
                         lineHeight: "1.4em",
-                        color: "var(--pgl-text-muted, #4B5554)",
+                        color: "var(--pgl-text-muted)",
                       }}
                       data-pgl-path={`paragraphs.${i}`}
                       data-pgl-edit="text"
@@ -263,7 +269,7 @@ export function PlumbflowAbout({ content, tokens }: Props) {
                         fontWeight: 400,
                         letterSpacing: "0px",
                         lineHeight: "1.4em",
-                        color: "var(--pgl-text-muted, #4B5554)",
+                        color: "var(--pgl-text-muted)",
                       }}
                       data-pgl-path={`paragraphs.${midpoint + i}`}
                       data-pgl-edit="text"

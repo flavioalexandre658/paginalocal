@@ -124,8 +124,8 @@ export function PlumbflowGallery({ content, tokens }: Props) {
   if (!parsed.success) return null;
   const c = parsed.data;
 
-  const accent = tokens.palette.accent || "#FF5E15";
-  const primary = tokens.palette.primary || "#142F45";
+  const accent = tokens.palette.accent;
+  const primary = tokens.palette.primary;
 
   const images = c.images || [];
   // Bento: [0] = tall (col 1, row-span 2), [1-2] = top right, [3-4] = bottom right

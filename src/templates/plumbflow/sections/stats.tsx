@@ -78,7 +78,7 @@ export function PlumbflowStats({ content, tokens }: Props) {
   if (!parsed.success) return null;
   const c = parsed.data;
 
-  const primary = tokens.palette.primary || "#142F45";
+  const primary = tokens.palette.primary;
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -148,7 +148,7 @@ export function PlumbflowStats({ content, tokens }: Props) {
                     fontWeight: 400,
                     letterSpacing: "0px",
                     lineHeight: "1.4em",
-                    color: "var(--pgl-text-muted, #4B5554)",
+                    color: "var(--pgl-text-muted)",
                     textAlign: "center",
                   }}
                   data-pgl-path={`items.${idx}.label`}

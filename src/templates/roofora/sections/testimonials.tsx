@@ -34,7 +34,11 @@ function StarIcon({ color }: { color: string }) {
 
 export function RooforaTestimonials({ content, tokens }: Props) {
   const parsed = TestimonialsContentSchema.safeParse(content);
-  if (!parsed.success) return null;
+  if (!parsed.success) {
+    console.error("[RooforaTestimonials] Schema validation FAILED:", JSON.stringify(parsed.error.issues, null, 2));
+    console.error("[RooforaTestimonials] Content received:", JSON.stringify(content).substring(0, 500));
+    return null;
+  }
   const c = parsed.data;
 
   const accent = tokens.palette.accent || "#CDF660";
@@ -176,7 +180,7 @@ export function RooforaTestimonials({ content, tokens }: Props) {
               <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
                 <path
                   d="M10 1.5l2.47 5.01 5.53.8-4 3.9.94 5.49L10 14.26l-4.94 2.44.94-5.49-4-3.9 5.53-.8L10 1.5z"
-                  fill="#0E1201"
+                  fill={surface}
                 />
               </svg>
               <span
@@ -184,7 +188,7 @@ export function RooforaTestimonials({ content, tokens }: Props) {
                   fontFamily: "var(--pgl-font-body), system-ui, sans-serif",
                   fontSize: 13,
                   fontWeight: 700,
-                  color: "#0E1201",
+                  color: surface,
                   letterSpacing: "-0.01em",
                 }}
               >

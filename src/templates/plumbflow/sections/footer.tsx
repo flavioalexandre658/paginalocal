@@ -46,8 +46,8 @@ function YoutubeIcon() {
 }
 
 export function PlumbflowFooter({ content, tokens, navigation }: Props) {
-  const primary = tokens.palette.primary || "#142F45";
-  const accent = tokens.palette.accent || "#FF5E15";
+  const primary = tokens.palette.primary;
+  const accent = tokens.palette.accent;
 
   const copyrightText = typeof content.copyrightText === "string" ? content.copyrightText : "";
   const storeName = typeof content.storeName === "string" ? content.storeName : "";

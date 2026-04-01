@@ -205,14 +205,14 @@ export function RooforaHowWorks({ content, tokens }: Props) {
                       fontSize: 16,
                       fontWeight: 600,
                       letterSpacing: "-0.01em",
-                      color: "#0E1201",
+                      color: surface,
                       whiteSpace: "nowrap",
                     }}
                   >
                     Fale Conosco
                   </span>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-                    <path d="M3 8h10M9 4l4 4-4 4" stroke="#0E1201" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M3 8h10M9 4l4 4-4 4" stroke={surface} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </a>
 

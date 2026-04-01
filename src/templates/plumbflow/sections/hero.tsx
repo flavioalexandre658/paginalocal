@@ -15,8 +15,8 @@ export function PlumbflowHero({ content, tokens }: Props) {
   if (!parsed.success) return null;
   const c = parsed.data;
 
-  const accent = tokens.palette.accent || "#FF5E15";
-  const primary = tokens.palette.primary || "#142F45";
+  const accent = tokens.palette.accent;
+  const primary = tokens.palette.primary;
 
   return (
     <section
@@ -356,7 +356,7 @@ export function PlumbflowHero({ content, tokens }: Props) {
                     width: 28,
                     height: 28,
                     borderRadius: "50%",
-                    backgroundColor: tokens.palette.secondary || "#35AAF3",
+                    backgroundColor: tokens.palette.secondary,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",

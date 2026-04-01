@@ -27,8 +27,8 @@ export function PlumbflowCta({ content, tokens }: Props) {
   if (!parsed.success) return null;
   const c = parsed.data;
 
-  const accent = tokens.palette.accent || "#FF5E15";
-  const primary = tokens.palette.primary || "#142F45";
+  const accent = tokens.palette.accent;
+  const primary = tokens.palette.primary;
 
   const { submit, isSubmitting, submitted } = useSubmitFormLead();
 
@@ -55,12 +55,12 @@ export function PlumbflowCta({ content, tokens }: Props) {
     width: "100%",
     height: 51,
     padding: "12px 24px",
-    backgroundColor: "var(--pgl-surface, #F1F2FA)",
-    border: "1px solid rgba(20,47,69,0.1)",
+    backgroundColor: "var(--pgl-surface)",
+    border: "1px solid var(--pgl-border, rgba(20,47,69,0.1))",
     borderRadius: 56,
     fontFamily: "var(--pgl-font-body), system-ui, sans-serif",
     fontSize: 16, fontWeight: 400,
-    color: "var(--pgl-text, #2C282B)",
+    color: "var(--pgl-text)",
     outline: "none",
   };
 
@@ -113,7 +113,7 @@ export function PlumbflowCta({ content, tokens }: Props) {
       </div>
 
       {/* ═══ Content area — overlaps the banner ═══ */}
-      <div style={{ backgroundColor: "var(--pgl-surface, #F1F2FA)" }}>
+      <div style={{ backgroundColor: "var(--pgl-surface)" }}>
         <div
           className="flex flex-col px-5 md:px-[30px]"
           style={{
@@ -159,7 +159,7 @@ export function PlumbflowCta({ content, tokens }: Props) {
                 </span>
                 <span style={{
                   fontFamily: "var(--pgl-font-body), system-ui, sans-serif",
-                  fontSize: 16, fontWeight: 400, color: "var(--pgl-text-muted, #4B5554)",
+                  fontSize: 16, fontWeight: 400, color: "var(--pgl-text-muted)",
                   textAlign: "center",
                 }}>
                   Entraremos em contato em breve.

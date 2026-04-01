@@ -51,11 +51,23 @@ function SpeedIcon({ color = "#CDF660" }: { color?: string }) {
 const highlightIcons = [TrustIcon, SkillIcon, SpeedIcon];
 
 export function RooforaAbout({ content, tokens }: Props) {
+  // Normalize paragraphs: AI sometimes sends [{text:"..."}, ...] instead of ["..."]
+  if (Array.isArray(content.paragraphs)) {
+    content.paragraphs = (content.paragraphs as unknown[]).map((p) =>
+      typeof p === "string" ? p : typeof p === "object" && p !== null && "text" in p ? String((p as Record<string, unknown>).text) : String(p)
+    );
+  }
+
   const parsed = AboutContentSchema.safeParse(content);
-  if (!parsed.success) return null;
+  if (!parsed.success) {
+    console.error("[RooforaAbout] Schema validation FAILED:", JSON.stringify(parsed.error.issues, null, 2));
+    console.error("[RooforaAbout] Content received:", JSON.stringify(content).substring(0, 500));
+    return null;
+  }
   const c = parsed.data;
 
   const accent = tokens.palette.accent || "#CDF660";
+  const primary = tokens.palette.primary || "#0E1201";
 
   return (
     <section
@@ -67,14 +79,14 @@ export function RooforaAbout({ content, tokens }: Props) {
         style={{ maxWidth: 1296, margin: "0 auto", gap: 64, alignItems: "center" }}
       >
         {/* ── Left — Image with rounded corners ── */}
-        <ScrollReveal delay={0} className="w-full md:flex-1 md:max-w-[560px]">
+        <div className="w-full md:flex-1 md:max-w-[560px]" style={{ flexShrink: 0 }}>
+        <ScrollReveal delay={0}>
           <div
             style={{
               aspectRatio: "0.9",
               borderRadius: 20,
               overflow: "hidden",
               position: "relative",
-              flexShrink: 0,
             }}
             data-pgl-path="image"
             data-pgl-edit="image"
@@ -97,21 +109,22 @@ export function RooforaAbout({ content, tokens }: Props) {
                 style={{
                   width: "100%",
                   height: "100%",
-                  background: `linear-gradient(135deg, #0E120122, ${accent}11, #0E120111)`,
+                  background: `linear-gradient(135deg, ${primary}22, ${accent}11, ${primary}11)`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
                 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" opacity="0.3">
-                  <rect x="8" y="8" width="48" height="48" rx="8" stroke="#0E1201" strokeWidth="2" />
-                  <circle cx="24" cy="24" r="6" stroke="#0E1201" strokeWidth="2" />
-                  <path d="M8 44l16-12 12 8 20-16" stroke="#0E1201" strokeWidth="2" strokeLinecap="round" />
+                  <rect x="8" y="8" width="48" height="48" rx="8" stroke={primary} strokeWidth="2" />
+                  <circle cx="24" cy="24" r="6" stroke={primary} strokeWidth="2" />
+                  <path d="M8 44l16-12 12 8 20-16" stroke={primary} strokeWidth="2" strokeLinecap="round" />
                 </svg>
               </div>
             )}
           </div>
         </ScrollReveal>
+        </div>
 
         {/* ── Right — Content ── */}
         <div
@@ -162,7 +175,7 @@ export function RooforaAbout({ content, tokens }: Props) {
                 fontWeight: 600,
                 letterSpacing: "-0.03em",
                 lineHeight: "1.15em",
-                color: "var(--pgl-text, #000)",
+                color: "var(--pgl-text)",
                 margin: 0,
               }}
               data-pgl-path="title"
@@ -182,7 +195,7 @@ export function RooforaAbout({ content, tokens }: Props) {
                   fontWeight: 400,
                   letterSpacing: "0em",
                   lineHeight: "1.7em",
-                  color: "rgba(0,0,0,0.6)",
+                  color: "var(--pgl-text-muted, rgba(0,0,0,0.6))",
                   margin: 0,
                   marginTop: 20,
                   maxWidth: 520,
@@ -217,7 +230,7 @@ export function RooforaAbout({ content, tokens }: Props) {
                           width: 48,
                           height: 48,
                           borderRadius: 12,
-                          backgroundColor: "#0E1201",
+                          backgroundColor: primary,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
@@ -234,7 +247,7 @@ export function RooforaAbout({ content, tokens }: Props) {
                             fontWeight: 600,
                             letterSpacing: "-0.01em",
                             lineHeight: "1.4em",
-                            color: "var(--pgl-text, #000)",
+                            color: "var(--pgl-text)",
                           }}
                           data-pgl-path={`highlights.${idx}.label`}
                           data-pgl-edit="text"
@@ -248,7 +261,7 @@ export function RooforaAbout({ content, tokens }: Props) {
                               fontSize: 14,
                               fontWeight: 400,
                               lineHeight: "1.5em",
-                              color: "rgba(0,0,0,0.5)",
+                              color: "var(--pgl-text-muted, rgba(0,0,0,0.5))",
                             }}
                             data-pgl-path={`highlights.${idx}.value`}
                             data-pgl-edit="text"
@@ -268,7 +281,6 @@ export function RooforaAbout({ content, tokens }: Props) {
           <ScrollReveal delay={650}>
             <a
               href="#contato"
-              data-pgl-path="paragraphs.1"
               data-pgl-edit="button"
               style={{
                 display: "inline-flex",
@@ -297,14 +309,14 @@ export function RooforaAbout({ content, tokens }: Props) {
                   fontSize: 16,
                   fontWeight: 600,
                   letterSpacing: "-0.01em",
-                  color: "#0E1201",
+                  color: primary,
                   whiteSpace: "nowrap",
                 }}
               >
-                {c.paragraphs[1] || "Saiba Mais"}
+                {c.ctaText || "Saiba mais"}
               </span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="#0E1201" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M3 8h10M9 4l4 4-4 4" stroke={primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </a>
           </ScrollReveal>

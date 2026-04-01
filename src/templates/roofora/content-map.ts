@@ -27,6 +27,12 @@ export const ROOFORA_CONTENT_MAP: SectionContentMap[] = [
       { key: "tagline", type: "string", maxLength: 40, description: "Frase curta de reforco exibida abaixo dos CTAs ou nos badges" },
     ],
     imageQueryHint: "roofing construction solar panels",
+    imageSpec: {
+      aspectRatio: "16:9",
+      style: "cinematic professional photo, dramatic lighting",
+      subject: "dramatic roofing installation scene, workers on rooftop at sunset",
+      avoid: ["stock photo feel", "clipart", "text overlays", "watermarks", "blurry"],
+    },
     contentGuidance:
       "Hero de impacto em fundo escuro. Titulo grande em branco com palavra-chave em accent lime (*destaque*). Dois CTAs: primario pill lime e secundario outline branco. Badge flutuante e feature badges abaixo do hero com icones e metricas.",
     exampleOutput: {
@@ -66,8 +72,15 @@ export const ROOFORA_CONTENT_MAP: SectionContentMap[] = [
           { key: "value", type: "string", maxLength: 200, description: "Descricao curta do diferencial" },
         ],
       },
+      { key: "ctaText", type: "string", maxLength: 25, description: "Texto do botao CTA (ex: 'Conheca nossa equipe', 'Saiba mais')" },
     ],
     imageQueryHint: "construction workers building site",
+    imageSpec: {
+      aspectRatio: "4:3",
+      style: "documentary editorial photo, natural lighting",
+      subject: "construction team reviewing blueprints at a building site",
+      avoid: ["posed group photo", "generic office", "stock feel"],
+    },
     contentGuidance:
       "Secao sobre a empresa com layout split: imagem profissional a esquerda e texto a direita. Tag uppercase em lime, titulo bold com accent, paragrafos descritivos e feature list com icones lime e fundo de card escuro.",
     exampleOutput: {
@@ -106,6 +119,13 @@ export const ROOFORA_CONTENT_MAP: SectionContentMap[] = [
       },
     ],
     imageQueryHint: "roofing repair solar installation",
+    imageSpec: {
+      aspectRatio: "4:3",
+      style: "clean service documentation photo",
+      subject: "specific roofing service in action, professional quality",
+      avoid: ["stock photo", "generic", "blurry", "low quality"],
+      count: 6,
+    },
     contentGuidance:
       "Grid de cards escuros com icone lime no topo, titulo bold em branco, descricao em cinza claro e link accent na base. Fundo da secao escuro. Cards com borda sutil e hover com elevacao.",
   },
@@ -157,6 +177,13 @@ export const ROOFORA_CONTENT_MAP: SectionContentMap[] = [
       },
     ],
     imageQueryHint: "roofing project completed house",
+    imageSpec: {
+      aspectRatio: "4:3",
+      style: "editorial project documentation photo",
+      subject: "completed roofing or construction project, impressive result",
+      avoid: ["messy", "unfinished", "stock photo", "clipart"],
+      count: 6,
+    },
     contentGuidance:
       "Grid de imagens de projetos realizados. Cada imagem com overlay escuro no hover mostrando legenda. Cantos arredondados, fundo escuro da secao. Labels com tag lime para categoria do projeto.",
   },
@@ -204,6 +231,13 @@ export const ROOFORA_CONTENT_MAP: SectionContentMap[] = [
       },
     ],
     imageQueryHint: "happy homeowner portrait",
+    imageSpec: {
+      aspectRatio: "1:1",
+      style: "professional headshot portrait, studio lighting",
+      subject: "homeowner headshot portrait, friendly and satisfied, clean neutral background",
+      avoid: ["full body", "group photo", "sunglasses", "heavy filters", "cartoon"],
+      count: 6,
+    },
     contentGuidance:
       "Carrossel de depoimentos sobre fundo escuro. Cards com 5 estrelas amarelas/lime, texto entre aspas, avatar, nome em bold e profissao. Cards com borda sutil e fundo surface escuro.",
     exampleOutput: {
