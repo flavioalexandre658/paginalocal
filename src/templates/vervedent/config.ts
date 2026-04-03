@@ -1,0 +1,55 @@
+import type { TemplateConfig } from "../types";
+
+export const VERVEDENT_CONFIG: TemplateConfig = {
+  id: "vervedent",
+  name: "Verve",
+  description: "Design clean healthcare com teal/cyan accent. Inter Display font, cards arredondados, glassmorphism nav, pattern decorativo. Ideal para clinicas, dentistas e saude.",
+  thumbnail: "/templates/vervedent/thumbnail.png",
+  bestFor: [
+    "dentista", "odontologia", "dental",
+    "clinica", "clinica-medica", "clinic",
+    "saude", "healthcare", "health",
+    "estetica", "aesthetics", "beauty",
+    "dermatologia", "dermatology",
+    "fisioterapia", "physiotherapy",
+    "psicologia", "psychology",
+    "nutricionista", "nutritionist",
+    "oftalmologia", "ophthalmology",
+    "pediatria", "pediatrics",
+    "ortopedia", "orthopedics",
+    "cardiologia", "cardiology",
+    "laboratorio", "laboratory",
+    "farmacia", "pharmacy",
+    "veterinaria", "veterinary",
+    "hospital", "medical-center",
+    "bem-estar", "wellness", "spa",
+  ],
+
+  forceStyle: "elegant" as const,
+  forceRadius: "lg" as const,
+  recommendedHeadingFont: "inter",
+  recommendedBodyFont: "inter",
+
+  defaultSections: [
+    { blockType: "header", variant: 1, name: "Header Glass", description: "Nav glassmorphism com blur, logo, links e CTA pill teal" },
+    { blockType: "hero", variant: 1, name: "Hero Split", description: "Hero com titulo, subtitulo, CTA, imagem arredondada e stats" },
+    { blockType: "about", variant: 1, name: "About Clinic", description: "Imagem + texto descritivo + endereco" },
+    { blockType: "services", variant: 1, name: "Team Grid", description: "Grid de membros da equipe com hover effect" },
+    { blockType: "services", variant: 2, name: "Services Grid", description: "Grid de cards de servicos com icones" },
+    { blockType: "contact", variant: 1, name: "Appointment Form", description: "Formulario de agendamento + horarios" },
+    { blockType: "testimonials", variant: 1, name: "Testimonials Carousel", description: "Carousel de depoimentos com foto e quote" },
+    { blockType: "cta", variant: 1, name: "Newsletter CTA", description: "Subscribe newsletter com input + botao" },
+    { blockType: "footer", variant: 1, name: "Footer Clean", description: "Logo + social + links + copyright" },
+  ],
+
+  availableVariants: {
+    header: [1],
+    hero: [1],
+    about: [1],
+    services: [1, 2],
+    contact: [1],
+    testimonials: [1],
+    cta: [1],
+    footer: [1],
+  },
+};

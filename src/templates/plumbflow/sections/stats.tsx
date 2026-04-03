@@ -74,18 +74,12 @@ function AnimatedCounter({
 }
 
 export function PlumbflowStats({ content, tokens }: Props) {
-  const parsed = StatsContentSchema.safeParse(content);
-  if (!parsed.success) return null;
-  const c = parsed.data;
-
-  const primary = tokens.palette.primary;
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -95,10 +89,15 @@ export function PlumbflowStats({ content, tokens }: Props) {
       },
       { threshold: 0.3 }
     );
-
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  const parsed = StatsContentSchema.safeParse(content);
+  if (!parsed.success) return null;
+  const c = parsed.data;
+
+  const primary = tokens.palette.primary;
 
   return (
     <section

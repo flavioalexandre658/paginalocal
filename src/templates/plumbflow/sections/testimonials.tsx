@@ -41,18 +41,10 @@ function renderAccentText(text: string, accentColor: string) {
 }
 
 export function PlumbflowTestimonials({ content, tokens }: Props) {
-  const parsed = TestimonialsContentSchema.safeParse(content);
-  if (!parsed.success) return null;
-  const c = parsed.data;
-
-  const accent = tokens.palette.accent;
-  const primary = tokens.palette.primary;
-
   const [currentPage, setCurrentPage] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Detect mobile
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
@@ -60,15 +52,10 @@ export function PlumbflowTestimonials({ content, tokens }: Props) {
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  const parsed = TestimonialsContentSchema.safeParse(content);
+  const items = parsed.success ? parsed.data.items : [];
   const itemsPerPage = isMobile ? 1 : 2;
-  const totalPages = Math.ceil(c.items.length / itemsPerPage);
-
-  // Clamp currentPage when itemsPerPage changes
-  useEffect(() => {
-    if (currentPage >= totalPages) {
-      setCurrentPage(Math.max(0, totalPages - 1));
-    }
-  }, [totalPages, currentPage]);
+  const totalPages = Math.max(1, Math.ceil(items.length / itemsPerPage));
 
   const goToPage = useCallback(
     (page: number) => {
@@ -82,7 +69,12 @@ export function PlumbflowTestimonials({ content, tokens }: Props) {
     [currentPage],
   );
 
-  // Auto-advance every 5 seconds
+  useEffect(() => {
+    if (currentPage >= totalPages) {
+      setCurrentPage(Math.max(0, totalPages - 1));
+    }
+  }, [totalPages, currentPage]);
+
   useEffect(() => {
     if (totalPages <= 1) return;
     const interval = setInterval(() => {
@@ -90,6 +82,12 @@ export function PlumbflowTestimonials({ content, tokens }: Props) {
     }, 5000);
     return () => clearInterval(interval);
   }, [currentPage, totalPages, goToPage]);
+
+  if (!parsed.success) return null;
+  const c = parsed.data;
+
+  const accent = tokens.palette.accent;
+  const primary = tokens.palette.primary;
 
   const visibleItems = c.items.slice(
     currentPage * itemsPerPage,

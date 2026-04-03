@@ -37,6 +37,8 @@ export function PlumbflowAbout({ content, tokens }: Props) {
     );
   }
 
+  const [activeTab, setActiveTab] = useState(0);
+
   const parsed = AboutContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
@@ -53,7 +55,6 @@ export function PlumbflowAbout({ content, tokens }: Props) {
 
   const bulletPoints = c.paragraphs;
 
-  const [activeTab, setActiveTab] = useState(0);
 
   // Active tab description
   const activeDescription = hasTabs

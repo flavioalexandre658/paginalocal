@@ -1,0 +1,47 @@
+import type { TemplateConfig } from "@/templates/types";
+
+export const CLEANLY_CONFIG: TemplateConfig = {
+  id: "cleanly",
+  name: "Cleanly",
+  description:
+    "Design vibrante para serviços de limpeza e manutenção. Accent amarelo, Inter font, hero dark, cards de serviço, steps numerados, FAQ accordion.",
+  thumbnail: "/templates/cleanly/thumbnail.png",
+  bestFor: [
+    "limpeza", "cleaning", "faxina", "diarista", "lavanderia",
+    "higienizacao", "dedetizacao", "manutencao", "reparos",
+    "jardinagem", "paisagismo", "piscina", "ar-condicionado",
+    "eletricista", "encanador", "pintor", "mudanca",
+    "servicos-domesticos", "servicos-gerais", "zeladoria",
+    "portaria", "condominio", "facilities",
+  ],
+  forceStyle: "bold",
+  forceRadius: "lg",
+  recommendedHeadingFont: "inter",
+  recommendedBodyFont: "inter",
+  defaultSections: [
+    { blockType: "header", variant: 1, name: "Dark Nav", description: "Nav escura com top info bar + logo + links + CTA yellow pill" },
+    { blockType: "hero", variant: 1, name: "Dark Hero", description: "Hero escuro com avatar group + rating + H1 + CTA yellow + imagem" },
+    { blockType: "stats", variant: 1, name: "Brand Bar", description: "Logo marquee de parceiros/marcas" },
+    { blockType: "services", variant: 1, name: "Service Cards", description: "Grid 3x de cards de servico com imagem + titulo + descricao" },
+    { blockType: "about", variant: 1, name: "Why Choose Us", description: "Split: imagem left + features right com checks" },
+    { blockType: "services", variant: 2, name: "How It Works", description: "3 steps numerados horizontais com linhas conectoras" },
+    { blockType: "stats", variant: 2, name: "Impact Stats", description: "Grid de stats com numeros grandes" },
+    { blockType: "services", variant: 3, name: "Benefits", description: "Accordion de beneficios com icones" },
+    { blockType: "testimonials", variant: 1, name: "Testimonial Carousel", description: "Carousel de depoimentos com stars + avatar" },
+    { blockType: "faq", variant: 1, name: "FAQ Accordion", description: "Accordion de perguntas com chevron" },
+    { blockType: "cta", variant: 1, name: "CTA Dark", description: "Secao CTA com bg escuro e botao yellow" },
+    { blockType: "footer", variant: 1, name: "Dark Footer", description: "Footer escuro com logo + 3 link columns + copyright" },
+  ],
+  availableVariants: {
+    header: [1],
+    hero: [1],
+    stats: [1, 2],
+    services: [1, 2, 3],
+    about: [1],
+    testimonials: [1],
+    faq: [1],
+    cta: [1],
+    footer: [1],
+    "whatsapp-float": [1],
+  },
+};

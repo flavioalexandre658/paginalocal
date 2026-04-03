@@ -22,13 +22,14 @@ function renderAccentText(text: string, accentColor: string) {
 }
 
 export function RooforaFaq({ content, tokens }: Props) {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
   const parsed = FaqContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
 
   const accent = tokens.palette.accent || "#CDF660";
   const primary = tokens.palette.primary || "#0E1201";
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggle = (i: number) => {
     setOpenIndex((prev) => (prev === i ? null : i));

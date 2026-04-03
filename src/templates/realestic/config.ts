@@ -1,0 +1,47 @@
+import type { TemplateConfig } from "@/templates/types";
+
+export const REALESTIC_CONFIG: TemplateConfig = {
+  id: "realestic",
+  name: "Realestic",
+  description:
+    "Design moderno imobiliário. Cantos arredondados, accent azul vibrante, Satoshi font, cards com imagens grandes, sections limpas com dot-tag.",
+  thumbnail: "/templates/realestic/thumbnail.png",
+  bestFor: [
+    "imobiliaria", "imoveis", "corretor", "construtora", "incorporadora",
+    "aluguel", "venda-imoveis", "casa", "apartamento", "loteamento",
+    "condominio", "empreendimento", "real-estate", "property",
+    "arquitetura", "engenharia", "reforma", "decoracao", "interiores",
+    "mobiliario", "moveis", "hotel", "pousada", "airbnb", "hospedagem",
+  ],
+  forceStyle: "elegant",
+  forceRadius: "lg",
+  recommendedHeadingFont: "satoshi",
+  recommendedBodyFont: "satoshi",
+  defaultSections: [
+    { blockType: "header", variant: 1, name: "Flat Nav", description: "Nav plana com logo + links + CTA pill accent" },
+    { blockType: "hero", variant: 1, name: "Hero Centered", description: "Tag pill + H1 centralizado + cover image grande radius 38px" },
+    { blockType: "services", variant: 1, name: "Vision Cards", description: "2-col: heading left + 3 icon cards horizontais right" },
+    { blockType: "gallery", variant: 1, name: "Property Grid", description: "Grid 3x de property cards com imagem, badge, location, details" },
+    { blockType: "services", variant: 2, name: "Feature Grid", description: "Grid 3x de features com icon light + titulo + descricao em card bg" },
+    { blockType: "testimonials", variant: 1, name: "Quote Split", description: "2-col: imagem portrait left + citacao + assinatura right" },
+    { blockType: "faq", variant: 1, name: "Accordion Split", description: "2-col: accordion left com line indicator + imagem right" },
+    { blockType: "about", variant: 1, name: "Why Us Overlay", description: "Imagem full-width com card checklist overlay" },
+    { blockType: "testimonials", variant: 2, name: "Carousel Cards", description: "Carousel horizontal com avatar + quote em card accent-light" },
+    { blockType: "stats", variant: 1, name: "Blog Grid", description: "Grid 3x de blog cards com imagem + category badge + titulo" },
+    { blockType: "cta", variant: 1, name: "CTA Accent Card", description: "Card grande bg accent com titulo + subtitulo + botao white" },
+    { blockType: "footer", variant: 1, name: "Grid Footer", description: "2-col: heading + social left, 3 link columns right + bottom bar" },
+  ],
+  availableVariants: {
+    header: [1],
+    hero: [1],
+    services: [1, 2],
+    gallery: [1],
+    testimonials: [1, 2],
+    faq: [1],
+    about: [1],
+    stats: [1],
+    cta: [1],
+    footer: [1],
+    "whatsapp-float": [1],
+  },
+};

@@ -189,8 +189,8 @@ export const GalleryContentSchema = z.object({
   images: z
     .array(
       z.object({
-        url: z.string(),
-        alt: z.string(),
+        url: z.string().optional().default(""),
+        alt: z.string().optional().default(""),
         caption: z.string().optional(),
       })
     )

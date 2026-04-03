@@ -22,37 +22,33 @@ function renderAccentText(text: string, accentColor: string) {
 }
 
 export function PlumbflowProcess({ content, tokens }: Props) {
-  const parsed = ServicesContentSchema.safeParse(content);
-  if (!parsed.success) return null;
-  const c = parsed.data;
-
-  const accent = tokens.palette.accent;
-  const primary = tokens.palette.primary;
-
   const sectionRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
-
     const handleScroll = () => {
       const rect = el.getBoundingClientRect();
       const windowH = window.innerHeight;
       const sectionTop = rect.top;
       const sectionH = rect.height;
-
-      // Progress: 0 when section enters viewport, 1 when section bottom reaches viewport center
       const start = windowH * 0.8;
       const end = -sectionH + windowH * 0.5;
       const raw = (start - sectionTop) / (start - end);
       setProgress(Math.max(0, Math.min(1, raw)));
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const parsed = ServicesContentSchema.safeParse(content);
+  if (!parsed.success) return null;
+  const c = parsed.data;
+
+  const accent = tokens.palette.accent;
+  const primary = tokens.palette.primary;
 
   const totalSteps = c.items.length;
 

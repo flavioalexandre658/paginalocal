@@ -12,10 +12,10 @@ interface Props {
 }
 
 export function GroviaFeatures({ content, tokens }: Props) {
+  const [activeIdx, setActiveIdx] = useState(0);
   const parsed = ServicesContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
-  const [activeIdx, setActiveIdx] = useState(0);
   const activeItem = c.items[activeIdx] || c.items[0];
 
   return (

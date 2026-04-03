@@ -1,0 +1,55 @@
+import type { TemplateConfig } from "../types";
+
+export const BELLEZZA_CONFIG: TemplateConfig = {
+  id: "bellezza",
+  name: "Bloom",
+  description: "Design elegante para cosmeticos e beleza. Playfair Display + Poppins, rose gold accent, cards arredondados, catalogo de produtos. Ideal para e-commerce de beleza e skincare.",
+  thumbnail: "/templates/bellezza/thumbnail.png",
+  bestFor: [
+    "cosmeticos", "cosmetics", "beauty",
+    "beleza", "skincare", "skin-care",
+    "perfumaria", "perfume", "fragrance",
+    "maquiagem", "makeup",
+    "cabelo", "hair", "cabeleireiro",
+    "salao-de-beleza", "beauty-salon",
+    "spa", "wellness", "bem-estar",
+    "estetica", "aesthetics",
+    "joias", "jewelry", "bijuteria",
+    "moda", "fashion", "clothing",
+    "acessorios", "accessories",
+    "loja", "store", "e-commerce", "ecommerce",
+    "boutique", "gift-shop",
+    "flores", "floricultura",
+    "velas", "candles", "aromaterapia",
+  ],
+
+  forceStyle: "elegant" as const,
+  forceRadius: "lg" as const,
+  recommendedHeadingFont: "playfair-display",
+  recommendedBodyFont: "poppins",
+
+  defaultSections: [
+    { blockType: "header", variant: 1, name: "Header Elegant", description: "Nav com logo, links, icones cart/search" },
+    { blockType: "hero", variant: 1, name: "Hero Beauty", description: "Hero com titulo grande, subtitulo, CTA e imagem arredondada" },
+    { blockType: "about", variant: 1, name: "Product Showcase", description: "Banner de destaque com imagem + stats" },
+    { blockType: "catalog", variant: 1, name: "Categories", description: "Cards de categorias com imagem arredondada" },
+    { blockType: "featured-products", variant: 1, name: "Bestsellers", description: "Grid de produtos destaque com preco" },
+    { blockType: "services", variant: 1, name: "Benefits", description: "Grid de beneficios com icones" },
+    { blockType: "featured-products", variant: 2, name: "Product List", description: "Grid de todos os produtos" },
+    { blockType: "gallery", variant: 1, name: "Blog Articles", description: "Cards de artigos do blog" },
+    { blockType: "cta", variant: 1, name: "Instagram Feed", description: "Grid de fotos Instagram + CTA follow" },
+    { blockType: "footer", variant: 1, name: "Footer Elegant", description: "Newsletter + links + social + copyright" },
+  ],
+
+  availableVariants: {
+    header: [1],
+    hero: [1],
+    about: [1],
+    catalog: [1],
+    "featured-products": [1, 2],
+    services: [1],
+    gallery: [1],
+    cta: [1],
+    footer: [1],
+  },
+};

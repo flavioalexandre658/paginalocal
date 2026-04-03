@@ -81,12 +81,6 @@ function AnimatedCounter({
 }
 
 export function RooforaStats({ content, tokens }: Props) {
-  const parsed = StatsContentSchema.safeParse(content);
-  if (!parsed.success) return null;
-  const c = parsed.data;
-
-  const accent = tokens.palette.accent || "#CDF660";
-  const surface = tokens.palette.primary || "#0E1201";
   const sectionRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -107,6 +101,13 @@ export function RooforaStats({ content, tokens }: Props) {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  const parsed = StatsContentSchema.safeParse(content);
+  if (!parsed.success) return null;
+  const c = parsed.data;
+
+  const accent = tokens.palette.accent || "#CDF660";
+  const surface = tokens.palette.primary || "#0E1201";
 
   return (
     <section

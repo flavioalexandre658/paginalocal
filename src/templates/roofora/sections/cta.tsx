@@ -23,15 +23,15 @@ function renderAccentText(text: string, accentColor: string) {
 }
 
 export function RooforaCta({ content, tokens }: Props) {
+  const { submit, isSubmitting, submitted } = useSubmitFormLead();
+  const [email, setEmail] = useState("");
+
   const parsed = CtaContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
 
   const accent = tokens.palette.accent || "#CDF660";
   const dark = tokens.palette.primary || "#0E1201";
-
-  const { submit, isSubmitting, submitted } = useSubmitFormLead();
-  const [email, setEmail] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

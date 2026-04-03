@@ -69,6 +69,12 @@ export const BLOCK_IMAGE_FIELDS: Record<string, BlockImageField[]> = {
       imageType: "gallery",
       description: "Fotos da galeria do negocio",
     },
+    {
+      path: "items",
+      type: "array-items",
+      imageType: "gallery",
+      description: "Fotos dos itens/imoveis da galeria",
+    },
   ],
   team: [
     {
@@ -92,6 +98,14 @@ export const BLOCK_IMAGE_FIELDS: Record<string, BlockImageField[]> = {
       type: "array-items",
       imageType: "gallery",
       description: "Foto de cada produto em destaque",
+    },
+  ],
+  faq: [
+    {
+      path: "backgroundImage",
+      type: "single",
+      imageType: "gallery",
+      description: "Imagem lateral da secao FAQ",
     },
   ],
   stats: [

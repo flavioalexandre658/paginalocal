@@ -12,10 +12,10 @@ interface Props {
 }
 
 export function GroivaPricing({ content, tokens }: Props) {
+  const [activeIdx, setActiveIdx] = useState(0);
   const parsed = PricingContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
-  const [activeIdx, setActiveIdx] = useState(0);
   const activePlan = c.plans[activeIdx] || c.plans[0];
 
   return (

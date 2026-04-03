@@ -12,10 +12,11 @@ interface Props {
 }
 
 export function GroviaProcess({ content, tokens }: Props) {
+  const [activeIdx, setActiveIdx] = useState(0);
+
   const parsed = ServicesContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
-  const [activeIdx, setActiveIdx] = useState(0);
 
   return (
     <section id="services" style={{ backgroundColor: "var(--pgl-background)" }}>

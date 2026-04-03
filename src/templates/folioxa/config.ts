@@ -1,0 +1,57 @@
+import type { TemplateConfig } from "../types";
+
+export const FOLIOXA_CONFIG: TemplateConfig = {
+  id: "folioxa",
+  name: "Folio",
+  description: "Portfolio criativo com dark/orange accent. Outfit font, cards arredondados, pricing, FAQ accordion. Ideal para freelancers, agencias e criativos.",
+  thumbnail: "/templates/folioxa/thumbnail.png",
+  bestFor: [
+    "portfolio", "freelancer", "designer",
+    "agencia", "agencia-digital", "agency",
+    "criativo", "creative",
+    "desenvolvedor", "developer", "programador",
+    "fotografo", "photographer", "fotografia",
+    "videomaker", "filmmaker",
+    "ilustrador", "illustrator",
+    "marketing-digital", "social-media",
+    "branding", "identidade-visual",
+    "web-design", "ui-ux",
+    "consultoria-digital", "digital-consulting",
+    "startup", "saas",
+  ],
+
+  forceStyle: "bold" as const,
+  forceRadius: "lg" as const,
+  recommendedHeadingFont: "outfit",
+  recommendedBodyFont: "outfit",
+
+  defaultSections: [
+    { blockType: "header", variant: 1, name: "Header Dark", description: "Nav escuro sticky com logo, links e CTA pill orange" },
+    { blockType: "hero", variant: 1, name: "Hero Profile", description: "Hero com nome, titulo, bio, foto e tech stack" },
+    { blockType: "gallery", variant: 1, name: "Projects Grid", description: "Grid de projetos com imagem, tags e ano" },
+    { blockType: "about", variant: 1, name: "About Split", description: "Foto + bio + skills em split layout" },
+    { blockType: "services", variant: 1, name: "Process Steps", description: "3 passos: Design, Build, Launch" },
+    { blockType: "services", variant: 2, name: "Services Cards", description: "Cards de servicos com icones e CTA" },
+    { blockType: "stats", variant: 1, name: "Awards", description: "Awards e reconhecimentos com badges" },
+    { blockType: "services", variant: 3, name: "How It Works", description: "3 passos detalhados com imagens" },
+    { blockType: "pricing", variant: 1, name: "Pricing Plans", description: "2-3 planos com features e CTA" },
+    { blockType: "testimonials", variant: 1, name: "Testimonials", description: "Cards de depoimento com rating stars" },
+    { blockType: "faq", variant: 1, name: "FAQ Accordion", description: "Perguntas frequentes com accordion" },
+    { blockType: "cta", variant: 1, name: "CTA Dark", description: "Call to action sobre fundo escuro" },
+    { blockType: "footer", variant: 1, name: "Footer Minimal", description: "Footer minimalista com creditos" },
+  ],
+
+  availableVariants: {
+    header: [1],
+    hero: [1],
+    gallery: [1],
+    about: [1],
+    services: [1, 2, 3],
+    stats: [1],
+    pricing: [1],
+    testimonials: [1],
+    faq: [1],
+    cta: [1],
+    footer: [1],
+  },
+};

@@ -23,18 +23,17 @@ function renderAccentText(text: string, accentColor: string) {
 }
 
 export function PlumbflowCta({ content, tokens }: Props) {
+  const { submit, isSubmitting, submitted } = useSubmitFormLead();
+  const [formData, setFormData] = useState({
+    name: "", email: "", phone: "", message: "",
+  });
+
   const parsed = CtaContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
 
   const accent = tokens.palette.accent;
   const primary = tokens.palette.primary;
-
-  const { submit, isSubmitting, submitted } = useSubmitFormLead();
-
-  const [formData, setFormData] = useState({
-    name: "", email: "", phone: "", message: "",
-  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

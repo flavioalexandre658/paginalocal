@@ -33,17 +33,6 @@ function StarIcon({ color }: { color: string }) {
 }
 
 export function RooforaTestimonials({ content, tokens }: Props) {
-  const parsed = TestimonialsContentSchema.safeParse(content);
-  if (!parsed.success) {
-    console.error("[RooforaTestimonials] Schema validation FAILED:", JSON.stringify(parsed.error.issues, null, 2));
-    console.error("[RooforaTestimonials] Content received:", JSON.stringify(content).substring(0, 500));
-    return null;
-  }
-  const c = parsed.data;
-
-  const accent = tokens.palette.accent || "#CDF660";
-  const surface = tokens.palette.primary || "#0E1201";
-
   const [currentPage, setCurrentPage] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -55,14 +44,11 @@ export function RooforaTestimonials({ content, tokens }: Props) {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  const itemsPerPage = isMobile ? 1 : 2;
-  const totalPages = Math.ceil(c.items.length / itemsPerPage);
+  const parsed = TestimonialsContentSchema.safeParse(content);
 
-  useEffect(() => {
-    if (currentPage >= totalPages) {
-      setCurrentPage(Math.max(0, totalPages - 1));
-    }
-  }, [totalPages, currentPage]);
+  const items = parsed.success ? parsed.data.items : [];
+  const itemsPerPage = isMobile ? 1 : 2;
+  const totalPages = Math.max(1, Math.ceil(items.length / itemsPerPage));
 
   const goToPage = useCallback(
     (page: number) => {
@@ -76,6 +62,12 @@ export function RooforaTestimonials({ content, tokens }: Props) {
     [currentPage],
   );
 
+  useEffect(() => {
+    if (currentPage >= totalPages) {
+      setCurrentPage(Math.max(0, totalPages - 1));
+    }
+  }, [totalPages, currentPage]);
+
   // Auto-advance every 5s
   useEffect(() => {
     if (totalPages <= 1) return;
@@ -84,6 +76,12 @@ export function RooforaTestimonials({ content, tokens }: Props) {
     }, 5000);
     return () => clearInterval(interval);
   }, [currentPage, totalPages, goToPage]);
+
+  if (!parsed.success) return null;
+  const c = parsed.data;
+
+  const accent = tokens.palette.accent || "#CDF660";
+  const surface = tokens.palette.primary || "#0E1201";
 
   const visibleItems = c.items.slice(
     currentPage * itemsPerPage,

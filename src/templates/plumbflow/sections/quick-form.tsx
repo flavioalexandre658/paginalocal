@@ -22,15 +22,16 @@ function renderAccentText(text: string, accentColor: string) {
 }
 
 export function PlumbflowQuickForm({ content, tokens }: Props) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const { submit, isSubmitting, submitted } = useSubmitFormLead();
+
   const parsed = ContactContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
 
   const accent = tokens.palette.accent;
-  const { submit, isSubmitting, submitted } = useSubmitFormLead();
 
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

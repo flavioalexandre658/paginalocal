@@ -30,13 +30,14 @@ function renderAccentText(text: string, accentColor: string) {
 }
 
 export function PlumbflowServices({ content, tokens }: Props) {
+  const [activeIdx, setActiveIdx] = useState(0);
+
   const parsed = ServicesContentSchema.safeParse(content);
   if (!parsed.success) return null;
   const c = parsed.data;
 
   const accent = tokens.palette.accent;
   const primary = tokens.palette.primary;
-  const [activeIdx, setActiveIdx] = useState(0);
   const activeItem = c.items[activeIdx];
 
   return (

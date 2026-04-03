@@ -57,6 +57,7 @@ export const BLOCK_EDIT_MAP: Record<BlockType, EditableField[]> = {
   services: [
     { path: "title", mode: "text", label: "Título" },
     { path: "subtitle", mode: "text", label: "Subtítulo" },
+    { path: "ctaText", mode: "button", label: "Botão CTA", linkPath: "ctaLink" },
     { path: "items.*.name", mode: "text", label: "Nome do serviço" },
     { path: "items.*.description", mode: "text", label: "Descrição" },
     { path: "items.*.price", mode: "text", label: "Preço" },
@@ -89,6 +90,12 @@ export const BLOCK_EDIT_MAP: Record<BlockType, EditableField[]> = {
     { path: "subtitle", mode: "text", label: "Subtítulo" },
     { path: "images.*.url", mode: "image", label: "Imagem" },
     { path: "images.*.caption", mode: "text", label: "Legenda" },
+    { path: "items.*.name", mode: "text", label: "Nome" },
+    { path: "items.*.description", mode: "text", label: "Descrição" },
+    { path: "items.*.image", mode: "image", label: "Imagem do item" },
+    { path: "items.*.badge", mode: "text", label: "Badge" },
+    { path: "items.*.details", mode: "text", label: "Detalhes" },
+    { path: "ctaText", mode: "button", label: "Botão CTA", linkPath: "ctaLink" },
   ],
 
   faq: [
