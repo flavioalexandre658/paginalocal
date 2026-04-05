@@ -929,6 +929,110 @@ Quando `ScrollReveal` envolve um elemento que participa de flex layout (flex-1, 
 ### ❌ Esquecer de registrar no content-maps.ts
 Criar o `content-map.ts` do template mas nao adicionar o import + entry no `src/templates/content-maps.ts`. Sem isso, o pipeline nao encontra o mapa e usa o switch/case legado.
 
+### ❌ React Hooks apos safeParse / early return
+**REGRA CRITICA**: React Hooks (`useState`, `useRef`, `useEffect`, `useCallback`, `useSubmitFormLead`) NUNCA podem ser chamados apos um `return null` condicional. O ESLint `react-hooks/rules-of-hooks` rejeita isso e o build FALHA.
+
+```tsx
+// ❌ ERRADO — hooks apos early return = build falha
+export function MySection({ content, tokens }: Props) {
+  const parsed = Schema.safeParse(content);
+  if (!parsed.success) return null;  // ← early return
+  const c = parsed.data;
+
+  const [active, setActive] = useState(0);     // ← ERRO: hook condicional
+  const ref = useRef(null);                      // ← ERRO: hook condicional
+  useEffect(() => { ... }, []);                  // ← ERRO: hook condicional
+}
+
+// ✅ CORRETO — TODOS os hooks ANTES do safeParse/return
+export function MySection({ content, tokens }: Props) {
+  const [active, setActive] = useState(0);       // ← hooks primeiro
+  const ref = useRef(null);
+  useEffect(() => { ... }, []);
+
+  const parsed = Schema.safeParse(content);      // ← safeParse depois
+  if (!parsed.success) return null;              // ← early return depois
+  const c = parsed.data;
+  // ... resto do componente
+}
+```
+
+**Quando o hook depende de dados do schema** (ex: `useCallback` que usa `c.items.length`), extrair os dados ANTES do return:
+```tsx
+export function MySection({ content, tokens }: Props) {
+  const [page, setPage] = useState(0);
+
+  const parsed = Schema.safeParse(content);
+  const items = parsed.success ? parsed.data.items : [];  // ← extrair antes
+  const total = Math.max(1, items.length);
+
+  const goNext = useCallback(() => {                       // ← hook usa `total`
+    setPage((p) => (p + 1) % total);
+  }, [total]);
+
+  if (!parsed.success) return null;                        // ← return DEPOIS dos hooks
+  const c = parsed.data;
+}
+```
+
+### ❌ Inline `display` sobrescrevendo Tailwind `hidden`/`md:hidden`
+Inline `style={{ display: "flex" }}` tem prioridade maior que classes Tailwind. Se um elemento usa `md:hidden` para esconder no desktop, o `display: flex` inline SOBRESCREVE o `display: none` do Tailwind e o elemento aparece SEMPRE.
+
+```tsx
+// ❌ ERRADO — display inline sobrescreve md:hidden
+<div className="md:hidden" style={{ display: "flex", flexDirection: "column" }}>
+  // Aparece no desktop E mobile!
+</div>
+
+// ✅ CORRETO — usar classes Tailwind para display
+<div className="md:hidden flex flex-col" style={{ gap: 20 }}>
+  // Aparece so no mobile
+</div>
+```
+
+Regra: NUNCA colocar `display` no `style={{}}` de elementos que usam `hidden`, `md:hidden`, `hidden md:flex`, etc. Usar Tailwind para controlar display.
+
+### ❌ Marquee de parceiros renderizando IMAGENS como principal
+Secoes de "Parceiros"/"Reconhecido por" devem renderizar **TEXTO como elemento principal** (nome da marca/parceiro), com imagem OPCIONAL como icone pequeno ao lado. A IA gera imagens via pipeline que nao fazem sentido para logos de parceiros (fotos aleatorias).
+
+```tsx
+// ❌ ERRADO — imagem priorizada, texto so como fallback
+{item.image ? (
+  <img src={item.image} /> // ← renderiza foto sem sentido
+) : (
+  <span>{item.value}</span> // ← texto so aparece sem imagem
+)}
+
+// ✅ CORRETO — texto SEMPRE visivel, imagem como icone opcional ao lado
+<div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+  {item.image && (
+    <div style={{ width: 28, height: 28 }} data-pgl-edit="image">
+      <img src={item.image} />
+    </div>
+  )}
+  <span data-pgl-edit="text">{item.value}</span>  {/* ← sempre visivel */}
+</div>
+```
+
+No content-map, instruir a IA a gerar NOMES em texto, nao imagens:
+```typescript
+{ key: "value", description: "Nome da marca ou parceiro (ex: 'OAB/SP', 'Google Partner'). NAO gerar imagem." }
+```
+
+### ❌ StatsContentSchema.max(4) quebrando componentes
+O `StatsContentSchema` do Zod tem `.max(4)` que rejeita arrays com mais de 4 items. Secoes de parceiros/impacts frequentemente precisam de 5-6 items. O `safeParse` falha silenciosamente e o componente retorna `null` (desaparece).
+
+**Solucao**: Para secoes que podem ter mais de 4 items, fazer parse MANUAL ao inves de usar `StatsContentSchema`:
+```tsx
+// ❌ ERRADO — schema rejeita 5+ items silenciosamente
+const parsed = StatsContentSchema.safeParse(content);
+if (!parsed.success) return null; // ← desaparece se items > 4
+
+// ✅ CORRETO — parse manual sem limite
+const rawItems = (content.items as { value: string; label: string }[]) || [];
+if (rawItems.length === 0) return null;
+```
+
 ---
 
 ## Arquivos Envolvidos

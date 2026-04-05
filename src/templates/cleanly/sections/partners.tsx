@@ -8,7 +8,7 @@ interface Props {
   isDark?: boolean;
 }
 
-export function CleanlyPartners({ content, tokens }: Props) {
+export function CleanlyPartners({ content }: Props) {
   const rawItems =
     (content.items as { value: string; label: string; image?: string }[]) || [];
   if (rawItems.length === 0) return null;
@@ -18,7 +18,6 @@ export function CleanlyPartners({ content, tokens }: Props) {
     items: rawItems,
   };
 
-  // Triple items for seamless infinite scroll
   const allItems = [...c.items, ...c.items, ...c.items];
 
   return (
@@ -29,13 +28,7 @@ export function CleanlyPartners({ content, tokens }: Props) {
         overflow: "hidden",
       }}
     >
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: "0 auto",
-        }}
-      >
-        {/* Title */}
+      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         {c.title && (
           <p
             style={{
@@ -43,7 +36,7 @@ export function CleanlyPartners({ content, tokens }: Props) {
               fontSize: 14,
               fontWeight: 500,
               lineHeight: 1.5,
-              color: "var(--pgl-muted)",
+              color: "var(--pgl-text-muted)",
               letterSpacing: "0.04em",
               textTransform: "uppercase",
               textAlign: "center",
@@ -56,16 +49,13 @@ export function CleanlyPartners({ content, tokens }: Props) {
           </p>
         )}
 
-        {/* Marquee with fade edges */}
         <div
           style={{
             width: "100%",
             overflow: "hidden",
             borderRadius: 12,
-            maskImage:
-              "linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)",
+            maskImage: "linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)",
+            WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)",
           }}
         >
           <div className="cleanly-marquee-track">
@@ -80,49 +70,43 @@ export function CleanlyPartners({ content, tokens }: Props) {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    gap: 10,
                     height: 44,
-                    minWidth: 140,
+                    minWidth: 80,
+                    opacity: 0.55,
+                    transition: "opacity 0.3s ease",
                   }}
-                  {...(isOriginal
-                    ? {
-                        "data-pgl-path": `items.${idx}.image`,
-                        "data-pgl-edit": "image" as const,
-                      }
-                    : { "aria-hidden": true as const })}
+                  {...(!isOriginal ? { "aria-hidden": true as const } : {})}
                 >
-                  {item.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.image}
-                      alt={item.value || item.label || ""}
-                      style={{
-                        display: "block",
-                        height: 32,
-                        width: "auto",
-                        maxWidth: 160,
-                        objectFit: "contain",
-                        filter: "grayscale(100%)",
-                        opacity: 0.45,
-                        transition: "filter 0.35s ease, opacity 0.35s ease",
-                      }}
-                    />
-                  ) : (
-                    <span
-                      style={{
-                        fontFamily:
-                          "var(--pgl-font-heading), Inter, system-ui, sans-serif",
-                        fontSize: 17,
-                        fontWeight: 600,
-                        letterSpacing: "-0.01em",
-                        color: "var(--pgl-text)",
-                        opacity: 0.4,
-                        whiteSpace: "nowrap",
-                        transition: "opacity 0.35s ease",
-                      }}
+                  {/* Optional icon — small, beside text */}
+                  {item.image && (
+                    <div
+                      style={{ width: 28, height: 28, borderRadius: 6, overflow: "hidden", flexShrink: 0 }}
+                      {...(isOriginal ? { "data-pgl-path": `items.${idx}.image`, "data-pgl-edit": "image" as const } : {})}
                     >
-                      {item.value}
-                    </span>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.image}
+                        alt={item.value}
+                        style={{ width: "100%", height: "100%", objectFit: "contain", filter: "grayscale(100%)" }}
+                      />
+                    </div>
                   )}
+
+                  {/* Text — always shown */}
+                  <span
+                    style={{
+                      fontFamily: "var(--pgl-font-heading), Inter, system-ui, sans-serif",
+                      fontSize: 17,
+                      fontWeight: 600,
+                      letterSpacing: "-0.01em",
+                      color: "var(--pgl-text)",
+                      whiteSpace: "nowrap",
+                    }}
+                    {...(isOriginal ? { "data-pgl-path": `items.${idx}.value`, "data-pgl-edit": "text" as const } : {})}
+                  >
+                    {item.value}
+                  </span>
                 </div>
               );
             })}
@@ -130,10 +114,7 @@ export function CleanlyPartners({ content, tokens }: Props) {
         </div>
       </div>
 
-      {/* Keyframes + track styles */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
+      <style dangerouslySetInnerHTML={{ __html: `
         .cleanly-marquee-track {
           display: flex;
           align-items: center;
@@ -141,20 +122,12 @@ export function CleanlyPartners({ content, tokens }: Props) {
           width: max-content;
           animation: cleanly-scroll 35s linear infinite;
         }
-        .cleanly-partner-item:hover img {
-          filter: grayscale(0%) !important;
-          opacity: 1 !important;
-        }
-        .cleanly-partner-item:hover span {
-          opacity: 1 !important;
-        }
+        .cleanly-partner-item:hover { opacity: 1 !important; }
         @keyframes cleanly-scroll {
           0% { transform: translateX(0); }
           100% { transform: translateX(calc(-100% / 3)); }
         }
-      `,
-        }}
-      />
+      `}} />
     </section>
   );
 }

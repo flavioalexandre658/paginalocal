@@ -40,13 +40,13 @@ export const STRATEX_CONTENT_MAP: SectionContentMap[] = [
     blockType: "stats",
     variant: 1,
     fields: [
-      { key: "title", type: "string", maxLength: 40, description: "Titulo da barra de parceiros (ex: 'Parceiros:')" },
+      { key: "title", type: "string", maxLength: 40, description: "Titulo da barra (ex: 'Reconhecido por:', 'Parceiros:')" },
       { key: "items", type: "array", count: { min: 4, max: 6 }, children: [
-        { key: "value", type: "string", maxLength: 30, description: "Nome do parceiro" },
-        { key: "label", type: "string", maxLength: 20, description: "Tipo (ex: 'parceiro')" },
-      ], description: "Logos de parceiros em marquee" },
+        { key: "value", type: "string", maxLength: 30, description: "Nome da marca, certificacao ou parceiro (ex: 'OAB/SP', 'Google Partner', 'ISO 9001'). NAO gerar imagem — o texto e o elemento principal." },
+        { key: "label", type: "string", maxLength: 20, description: "Tipo (ex: 'parceiro', 'certificacao')" },
+      ], description: "Nomes de parceiros/certificacoes em marquee horizontal de TEXTO. O usuario pode adicionar icone opcionalmente no editor." },
     ],
-    contentGuidance: "Barra horizontal de logos de parceiros com scroll infinito e grayscale.",
+    contentGuidance: "Barra horizontal de nomes de parceiros/certificacoes em scroll infinito. Renderiza como TEXTO (nao imagens). O usuario pode opcionalmente adicionar icone ao lado de cada nome no editor.",
   },
 
   // ── 4. Comparison Grid (Why Us) ──

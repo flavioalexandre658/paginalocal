@@ -17,7 +17,7 @@ export function StratexPartners({ content, tokens }: Props) {
     items: rawItems,
   };
 
-  // Triple the items for seamless loop
+  // Triple items for seamless marquee loop
   const allItems = [...c.items, ...c.items, ...c.items];
 
   return (
@@ -49,7 +49,7 @@ export function StratexPartners({ content, tokens }: Props) {
         </p>
       )}
 
-      {/* Marquee container with fade edges */}
+      {/* Marquee with fade edges */}
       <div
         style={{
           width: "100%",
@@ -59,37 +59,50 @@ export function StratexPartners({ content, tokens }: Props) {
         }}
       >
         <div className="stratex-marquee-track">
-          {allItems.map((item, idx) => (
-            <div
-              key={idx}
-              style={{
-                flexShrink: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: 40,
-                minWidth: 120,
-                opacity: 0.6,
-              }}
-              {...(idx < c.items.length
-                ? { "data-pgl-path": `items.${idx}.image`, "data-pgl-edit": "image" as const }
-                : { "aria-hidden": true as const })}
-            >
-              {item.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={item.image}
-                  alt={item.value}
-                  style={{
-                    display: "block",
-                    height: 30,
-                    width: "auto",
-                    maxWidth: 160,
-                    objectFit: "contain",
-                    filter: "grayscale(100%)",
-                  }}
-                />
-              ) : (
+          {allItems.map((item, idx) => {
+            const isOriginal = idx < c.items.length;
+            return (
+              <div
+                key={idx}
+                style={{
+                  flexShrink: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 10,
+                  height: 40,
+                  minWidth: 80,
+                  opacity: 0.7,
+                }}
+                {...(!isOriginal ? { "aria-hidden": true as const } : {})}
+              >
+                {/* Optional icon/image — small, beside text */}
+                {item.image && (
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 6,
+                      overflow: "hidden",
+                      flexShrink: 0,
+                    }}
+                    {...(isOriginal ? { "data-pgl-path": `items.${idx}.image`, "data-pgl-edit": "image" as const } : {})}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.image}
+                      alt={item.value}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                        filter: "grayscale(100%)",
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Text — always shown, this is the PRIMARY content */}
                 <span
                   style={{
                     fontFamily: "var(--pgl-font-heading), Georgia, serif",
@@ -99,16 +112,16 @@ export function StratexPartners({ content, tokens }: Props) {
                     color: "var(--pgl-text)",
                     whiteSpace: "nowrap",
                   }}
+                  {...(isOriginal ? { "data-pgl-path": `items.${idx}.value`, "data-pgl-edit": "text" as const } : {})}
                 >
                   {item.value}
                 </span>
-              )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Keyframes + track styles */}
       <style dangerouslySetInnerHTML={{ __html: `
         .stratex-marquee-track {
           display: flex;

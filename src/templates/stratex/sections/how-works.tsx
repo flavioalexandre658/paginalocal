@@ -1,7 +1,6 @@
 "use client";
 
 import type { DesignTokens } from "@/types/ai-generation";
-import { ServicesContentSchema } from "@/types/ai-generation";
 import { ScrollReveal } from "./scroll-reveal";
 
 interface Props {
@@ -21,10 +20,19 @@ function renderAccentText(text: string, accentColor: string) {
 }
 
 export function StratexHowWorks({ content, tokens }: Props) {
-  const parsed = ServicesContentSchema.safeParse(content);
-  if (!parsed.success) return null;
-  const c = parsed.data;
+  // Tolerant parse: accept items with name/description OR title/text OR question/answer
+  const title = (content.title as string) || "";
+  const subtitle = (content.subtitle as string) || "";
+  const rawItems = (content.items as Record<string, unknown>[]) || [];
+  const items = rawItems.map((item) => ({
+    name: (item.name as string) || (item.title as string) || (item.question as string) || "",
+    description: (item.description as string) || (item.text as string) || (item.answer as string) || "",
+    image: (item.image as string) || "",
+  })).filter((item) => item.name);
 
+  if (items.length === 0) return null;
+
+  const c = { title, subtitle, items };
   const accent = tokens.palette.accent;
   const ctaText = (content.ctaText as string) || "";
   const ctaLink = (content.ctaLink as string) || "#contato";

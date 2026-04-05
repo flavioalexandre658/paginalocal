@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import type { DesignTokens } from "@/types/ai-generation";
-import { FaqContentSchema } from "@/types/ai-generation";
 import { ScrollReveal } from "./scroll-reveal";
 
 interface Props {
@@ -24,10 +23,18 @@ function renderAccentText(text: string, accentColor: string) {
 export function StratexFaq({ content, tokens }: Props) {
   const [activeIndex, setActiveIndex] = useState<number | null>(0);
 
-  const parsed = FaqContentSchema.safeParse(content);
-  if (!parsed.success) return null;
-  const c = parsed.data;
+  // Tolerant parse: accept question/answer OR name/description
+  const title = (content.title as string) || "";
+  const subtitle = (content.subtitle as string) || "";
+  const rawItems = (content.items as Record<string, unknown>[]) || [];
+  const items = rawItems.map((item) => ({
+    question: (item.question as string) || (item.name as string) || "",
+    answer: (item.answer as string) || (item.description as string) || "",
+  })).filter((item) => item.question);
 
+  if (items.length === 0) return null;
+
+  const c = { title, subtitle, items };
   const accent = tokens.palette.accent;
 
   return (

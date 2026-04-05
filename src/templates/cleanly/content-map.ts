@@ -21,12 +21,12 @@ export const CLEANLY_CONTENT_MAP: SectionContentMap[] = [
   },
 
   { blockType: "stats", variant: 1, fields: [
-    { key: "title", type: "string", maxLength: 30, description: "Titulo (ex: 'Parceiros:')" },
+    { key: "title", type: "string", maxLength: 30, description: "Titulo (ex: 'Reconhecido por:', 'Parceiros:')" },
     { key: "items", type: "array", count: { min: 4, max: 6 }, children: [
-      { key: "value", type: "string", maxLength: 30, description: "Nome do parceiro" },
-      { key: "label", type: "string", maxLength: 20, description: "Tipo" },
-    ], description: "Logos de parceiros em marquee" },
-  ], contentGuidance: "Barra de logos com scroll infinito e grayscale." },
+      { key: "value", type: "string", maxLength: 30, description: "Nome da marca ou parceiro (ex: 'Google', 'ISO 9001'). NAO gerar imagem — texto e o elemento principal." },
+      { key: "label", type: "string", maxLength: 20, description: "Tipo (ex: 'parceiro')" },
+    ], description: "Nomes de parceiros em marquee horizontal de TEXTO." },
+  ], contentGuidance: "Barra horizontal de nomes de parceiros em scroll infinito. Renderiza TEXTO (nao imagens). Usuario pode adicionar icone no editor." },
 
   { blockType: "services", variant: 1, fields: [
     { key: "title", type: "string", maxLength: 60, description: "Titulo com *accent*" },

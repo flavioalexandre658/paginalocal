@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { DesignTokens } from "@/types/ai-generation";
-import { ServicesContentSchema } from "@/types/ai-generation";
+// ServicesContentSchema removed — using tolerant manual parse
 import { ScrollReveal } from "./scroll-reveal";
 
 interface Props {
@@ -24,10 +24,16 @@ function renderAccentText(text: string, accentColor: string) {
 export function StratexServices({ content, tokens }: Props) {
   const [active, setActive] = useState(0);
 
-  const parsed = ServicesContentSchema.safeParse(content);
-  if (!parsed.success) return null;
-  const c = parsed.data;
+  // Tolerant parse
+  const rawItems = (content.items as Record<string, unknown>[]) || [];
+  const items = rawItems.map((item) => ({
+    name: (item.name as string) || (item.title as string) || "",
+    description: (item.description as string) || (item.text as string) || "",
+    image: (item.image as string) || "",
+  })).filter((i) => i.name);
+  if (items.length === 0) return null;
 
+  const c = { title: (content.title as string) || "", subtitle: (content.subtitle as string) || "", items };
   const accent = tokens.palette.accent;
   const total = c.items.length;
 
