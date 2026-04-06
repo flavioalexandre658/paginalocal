@@ -40,14 +40,21 @@ export async function generateAndPersistBlueprint(
   model: GenerationModel = "sonnet"
 ): Promise<SiteBlueprint> {
   const tracker = createTracker();
+  const startTotal = Date.now();
+
+  console.log(`[generateSiteV2] START storeId=${ctx.storeId} category="${ctx.category}" name="${ctx.name}" model=${model}`);
 
   const template = await getBestTemplate(ctx.category);
   const fontRecs = getFontRecommendations(ctx.category);
   trackTemplate(tracker, template.id, template.name, template.defaultSections.length);
+  console.log(`[generateSiteV2] Template: ${template.id} (${template.name}) | ${template.defaultSections.length} sections`);
 
   const contentPrompt = buildContentPrompt(ctx, template, fontRecs);
+  console.log(`[generateSiteV2] Content prompt built, length: ${contentPrompt.length} chars`);
+
   const { content: aiContent, usage: contentUsage } = await generateContentWithClaude(contentPrompt, model);
   trackContent(tracker, contentUsage);
+  console.log(`[generateSiteV2] AI content generated | sections: ${(aiContent as any).sections?.length || 0} | tokens: ${contentUsage.inputTokens}in/${contentUsage.outputTokens}out | ${contentUsage.durationMs}ms`);
 
   const design = aiContent.design || {};
   const headingFont =
@@ -76,13 +83,26 @@ export async function generateAndPersistBlueprint(
       }
     });
   }
-  const imageResult = await generateAndFillImages({
-    blueprint,
-    businessContext: ctx,
-    storeId: ctx.storeId,
-    contentMap,
-    imageQueries,
-  });
+  const sectionCount = blueprint.pages?.[0]?.sections?.length ?? 0;
+  console.log(`[generateSiteV2] Starting image generation for ${sectionCount} sections...`);
+  const imageStartMs = Date.now();
+
+  let imageResult;
+  try {
+    imageResult = await generateAndFillImages({
+      blueprint,
+      businessContext: ctx,
+      storeId: ctx.storeId,
+      contentMap,
+      imageQueries,
+    });
+    console.log(`[generateSiteV2] Images: total=${imageResult.totalImages} banana=${imageResult.bananaSuccessCount} unsplash=${imageResult.unsplashFallbackCount} failed=${imageResult.failedCount} | ${imageResult.durationMs}ms | $${imageResult.costUsd?.toFixed(4) || '0'}`);
+  } catch (imgErr) {
+    console.error(`[generateSiteV2] Image generation FAILED after ${Date.now() - imageStartMs}ms:`, imgErr);
+    // Continue without images — the site still works, just without AI images
+    imageResult = { totalImages: 0, bananaSuccessCount: 0, unsplashFallbackCount: 0, failedCount: 0, durationMs: Date.now() - imageStartMs, costUsd: 0 };
+  }
+
   trackImages(tracker, {
     totalCount: imageResult.totalImages,
     successCount: imageResult.bananaSuccessCount,
@@ -92,6 +112,7 @@ export async function generateAndPersistBlueprint(
     costUsd: imageResult.costUsd,
   });
 
+  console.log(`[generateSiteV2] Persisting blueprint to DB for storeId=${ctx.storeId}...`);
   await db
     .update(store)
     .set({
@@ -102,6 +123,9 @@ export async function generateAndPersistBlueprint(
     .where(and(eq(store.id, ctx.storeId), eq(store.userId, userId)));
 
   await persistMetrics(tracker, ctx.storeId);
+
+  const totalMs = Date.now() - startTotal;
+  console.log(`[generateSiteV2] COMPLETE storeId=${ctx.storeId} template=${template.id} | totalTime=${totalMs}ms (${(totalMs / 1000).toFixed(1)}s) | sections=${sectionCount} | images: ${imageResult.bananaSuccessCount}ai+${imageResult.unsplashFallbackCount}unsplash/${imageResult.totalImages}total`);
 
   return blueprint;
 }

@@ -20,7 +20,6 @@ import {
   IconTypography,
   IconExternalLink,
   IconChevronRight,
-  IconWorld,
   IconX,
 } from "@tabler/icons-react";
 import { SiteSettingsModal } from "./site-settings-modal";
@@ -300,7 +299,6 @@ const MOBILE_OPTIONS = [
   { id: "colors", label: "Cores", icon: IconBrush },
   { id: "fonts", label: "Fontes", icon: IconTypography },
   { id: "theme", label: "Tema", icon: IconPalette },
-  { id: "discoverability", label: "Descoberta", icon: IconWorld },
   { id: "settings", label: "Configuracoes", icon: IconSettings },
 ] as const;
 
@@ -317,7 +315,6 @@ function MobileOptionsSheet({
       case "colors": onOpenColors(); break;
       case "fonts": onOpenFonts(); break;
       case "theme": onOpenThemes(); break;
-      case "discoverability": onOpenSettings(); break;
       case "settings": onOpenSettings(); break;
     }
   }

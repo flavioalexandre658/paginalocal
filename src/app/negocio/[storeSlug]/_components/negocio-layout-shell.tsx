@@ -7,6 +7,7 @@ import { PglButton } from "@/components/ui/pgl-button";
 import { EditorSidebar } from "@/app/editor/[storeSlug]/_components/editor-sidebar";
 import { SiteSettingsModal } from "@/app/editor/[storeSlug]/_components/site-settings-modal";
 import { UpgradeModal } from "@/components/shared/upgrade-modal";
+import { UserSettingsModal } from "@/components/shared/user-settings-modal";
 
 interface Props {
   children: ReactNode;
@@ -22,6 +23,7 @@ export function NegocioLayoutShell({ children, storeId, storeName, storeSlug, us
   const isEditorRoute = pathname.includes(`/negocio/${storeSlug}/site`);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [userSettingsOpen, setUserSettingsOpen] = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   if (isEditorRoute) {
@@ -61,7 +63,7 @@ export function NegocioLayoutShell({ children, storeId, storeName, storeSlug, us
             storeName={storeName}
             storeSlug={storeSlug}
             userStores={userStores}
-            onOpenSettings={() => setSettingsOpen(true)}
+            onOpenSettings={() => setUserSettingsOpen(true)}
             onOpenUpgrade={() => setUpgradeOpen(true)}
           />
         </div>
@@ -77,7 +79,7 @@ export function NegocioLayoutShell({ children, storeId, storeName, storeSlug, us
         storeName={storeName}
         storeSlug={storeSlug}
         userStores={userStores}
-        onOpenSettings={() => { setMobileMenuOpen(false); setSettingsOpen(true); }}
+        onOpenSettings={() => { setMobileMenuOpen(false); setUserSettingsOpen(true); }}
         onOpenUpgrade={() => { setMobileMenuOpen(false); setUpgradeOpen(true); }}
       />
 
@@ -89,6 +91,14 @@ export function NegocioLayoutShell({ children, storeId, storeName, storeSlug, us
         storeName={storeName}
         onOpenUpgrade={() => setUpgradeOpen(true)}
         onPublishChange={() => router.refresh()}
+      />
+
+      <UserSettingsModal
+        open={userSettingsOpen}
+        onClose={() => setUserSettingsOpen(false)}
+        storeId={storeId}
+        storeSlug={storeSlug}
+        onOpenUpgrade={() => setUpgradeOpen(true)}
       />
 
       <UpgradeModal

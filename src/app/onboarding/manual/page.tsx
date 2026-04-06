@@ -257,11 +257,15 @@ export default function ManualOnboardingPage() {
     if (result?.data) {
       try {
         await generateSiteV2({ storeId: result.data.store.id })
+        // Only redirect after successful generation
+        router.push(`/negocio/${result.data.slug}/site`)
       } catch (err) {
         console.error('[Onboarding] Blueprint generation failed:', err)
         toast.error('Erro ao gerar o site. Tente novamente pelo editor.')
+        // Still redirect — the site exists, just without AI content yet
+        // User can regenerate from the editor
+        router.push(`/negocio/${result.data.slug}/site`)
       }
-      router.push(`/negocio/${result.data.slug}/site`)
     } else {
       toast.error('Erro inesperado ao criar site')
       setStep('summary')

@@ -6,6 +6,7 @@ import { store } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import type { SiteBlueprint } from "@/types/ai-generation";
 import { EditorShell } from "@/app/editor/[storeSlug]/_components/editor-shell";
+import { SiteGeneratingScreen } from "./_components/site-generating-screen";
 
 interface Props {
   params: Promise<{ storeSlug: string }>;
@@ -32,8 +33,14 @@ export default async function SiteEditorPage({ params }: Props) {
 
   if (!storeData) redirect("/painel");
 
+  // If blueprint not yet generated, show generating screen that polls for completion
   if (!storeData.siteBlueprintV2) {
-    redirect(`/negocio/${storeSlug}`);
+    return (
+      <SiteGeneratingScreen
+        storeSlug={storeSlug}
+        storeName={storeData.name}
+      />
+    );
   }
 
   const userStores = await db
