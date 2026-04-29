@@ -8,6 +8,7 @@ import type { ImagePromptRequest } from "./banana-prompt-builder";
 import { fetchUnsplashForSlots } from "./unsplash-fallback";
 import { optimizeHeroImage, optimizeGalleryImage } from "./image-optimizer";
 import { uploadToS3 } from "./s3";
+import { IMAGE_PENDING_TOKEN } from "./image-pending-token";
 import { db } from "@/db";
 import { imageGenerationLog } from "@/db/schema";
 
@@ -19,7 +20,20 @@ export interface AiImagePipelineOptions {
   imageQueries?: Record<string, string | string[]>;
   /** If provided, only sections at these indices will have their slots considered. */
   sectionIndicesFilter?: number[];
+  /**
+   * Called incrementally each time a slot finishes (S3 upload completed).
+   * Lets the caller persist the URL into the blueprint progressively, so
+   * the section can show a real image as soon as it's ready, without
+   * waiting for the whole batch.
+   */
+  onSlotComplete?: (slot: {
+    sectionOrder: number;
+    fieldType: "single" | "array-items" | "array-images";
+    fieldPath: string;
+    url: string;
+  }) => Promise<void> | void;
 }
+
 
 export interface AiImagePipelineResult {
   totalImages: number;
@@ -50,7 +64,22 @@ export async function generateAndFillImages(
   options: AiImagePipelineOptions
 ): Promise<AiImagePipelineResult> {
   const startTime = Date.now();
-  const { blueprint, businessContext: ctx, storeId, contentMap, imageQueries, sectionIndicesFilter } = options;
+  const { blueprint, businessContext: ctx, storeId, contentMap, imageQueries, sectionIndicesFilter, onSlotComplete } = options;
+
+  async function notifySlotComplete(slot: ImageSlot, url: string): Promise<void> {
+    if (!onSlotComplete) return;
+    try {
+      const sectionOrder = blueprint.pages?.[0]?.sections?.[slot.sectionIndex]?.order ?? slot.sectionIndex;
+      await onSlotComplete({
+        sectionOrder,
+        fieldType: slot.fieldType,
+        fieldPath: slot.fieldPath,
+        url,
+      });
+    } catch (err) {
+      console.error("[ai-image-pipeline] onSlotComplete callback failed:", err);
+    }
+  }
 
   const homepage = blueprint.pages?.find((p) => p.isHomepage) ?? blueprint.pages?.[0];
   if (!homepage?.sections) {
@@ -131,6 +160,7 @@ export async function generateAndFillImages(
             const { url } = await uploadToS3(optimized.buffer, s3Key);
             urlMap[result.id] = url;
             bananaSuccessCount++;
+            if (slot) await notifySlotComplete(slot, url);
           } catch (err) {
             console.error(
               `[ai-image-pipeline] optimize/upload failed for slot=${result.id}:`,
@@ -177,6 +207,7 @@ export async function generateAndFillImages(
         if (url) {
           urlMap[slotId(slot)] = url;
           unsplashFallbackCount++;
+          await notifySlotComplete(slot, url);
         } else {
           failedCount++;
         }
@@ -252,7 +283,7 @@ function collectImageSlots(
 
       if (field.type === "single") {
         const existing = content[field.path] as string | undefined;
-        if (!existing) {
+        if (!existing || existing === IMAGE_PENDING_TOKEN) {
           slots.push({
             sectionIndex: i,
             blockType: section.blockType,
@@ -265,7 +296,7 @@ function collectImageSlots(
         const items = content[field.path] as Record<string, unknown>[] | undefined;
         if (items) {
           items.forEach((item, idx) => {
-            if (!item.image) {
+            if (!item.image || item.image === IMAGE_PENDING_TOKEN) {
               slots.push({
                 sectionIndex: i,
                 blockType: section.blockType,
@@ -281,7 +312,7 @@ function collectImageSlots(
         const images = content[field.path] as Record<string, unknown>[] | undefined;
         if (images) {
           images.forEach((img, idx) => {
-            if (!img.url) {
+            if (!img.url || img.url === IMAGE_PENDING_TOKEN) {
               slots.push({
                 sectionIndex: i,
                 blockType: section.blockType,

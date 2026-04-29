@@ -7,10 +7,23 @@ import type {
   CostTrackingImageEntry,
 } from "@/db/schema/stores.schema";
 
+// Custos por 1.000 tokens (USD).  Atualizados com os preços oficiais
+// publicados pelos provedores (verificados em 2026-04-29).
+//
+// Gemini 3.1 Flash Image (preview) — preços reais publicados pelo Google AI:
+//   Input (texto/imagem):  $0.50 / 1M tokens   = $0.0005 / 1K
+//   Output (texto):        $3    / 1M tokens   = $0.003  / 1K
+//   Output (imagem):       $60   / 1M tokens   = $0.06   / 1K
+//
+// Para imagens geradas, o custo NÃO é calculado por essa tabela — é
+// computado por imagem em `estimateGeminiImageCostUsd` (banana-nano.ts),
+// usando os tiers oficiais por tamanho ($0.045 / $0.067 / $0.101 / $0.151).
+// O `output` aqui (0.06) cobre o caso teórico de billing por tokens de
+// imagem; na prática usamos o valor já vindo no `result.costUsd`.
 const COST_PER_1K_TOKENS: Record<string, { input: number; output: number }> = {
   "claude-sonnet-4-6": { input: 0.003, output: 0.015 },
   "claude-opus-4-6": { input: 0.015, output: 0.075 },
-  "gemini-3.1-flash-image-preview": { input: 0.0, output: 0.003 },
+  "gemini-3.1-flash-image-preview": { input: 0.0005, output: 0.06 },
   "gemini-3.1-pro-preview": { input: 0.00125, output: 0.005 },
   "gpt-4o-mini": { input: 0.00015, output: 0.0006 },
 };

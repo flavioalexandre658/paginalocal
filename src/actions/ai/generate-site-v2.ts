@@ -2,6 +2,7 @@
 
 import { authActionClient } from "@/lib/safe-action";
 import { anthropic } from "@/lib/anthropic";
+import { after } from "next/server";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { store } from "@/db/schema";
@@ -18,7 +19,9 @@ import { fetchAndSaveUnsplashImages } from "@/lib/unsplash-fallback";
 import { getImageFields, blockNeedsImages } from "@/config/block-image-fields";
 import { getContentMapForTemplate } from "@/templates/content-maps";
 import { buildSectionPrompt } from "@/templates/content-map-utils";
+import type { SectionContentMap } from "@/templates/types";
 import { generateAndFillImages } from "@/lib/ai-image-pipeline";
+import { IMAGE_PENDING_TOKEN } from "@/lib/image-pending-token";
 import {
   createTracker,
   trackContent,
@@ -1032,7 +1035,7 @@ export async function runPhase1({
     phase1Indices: plan.phase1,
   });
 
-  // Generate hero image (subset filter)
+  // Build image queries (used later by the async image job)
   const imageQueries = (aiContent.imageQueries as Record<string, string | string[]> | undefined) || {};
   const contentMap = getContentMapForTemplate(template.id);
   if (contentMap) {
@@ -1044,20 +1047,8 @@ export async function runPhase1({
     });
   }
 
-  console.log(`[runPhase1] Generating images for phase1 sections...`);
-  try {
-    const imgResult = await generateAndFillImages({
-      blueprint,
-      businessContext: ctx,
-      storeId: ctx.storeId,
-      contentMap,
-      imageQueries,
-      sectionIndicesFilter: plan.phase1,
-    });
-    await appendImageUsageToStore(ctx.storeId, 1, imgResult);
-  } catch (err) {
-    console.error(`[runPhase1] image generation failed (non-fatal):`, err);
-  }
+  // Mark phase 1 image slots as pending so editor shows skeletons.
+  markImageSlotsAsGenerating(blueprint, template, plan.phase1, contentMap);
 
   const initialStatus: GenerationStatus = {
     phase: 1,
@@ -1079,6 +1070,36 @@ export async function runPhase1({
     .where(and(eq(store.id, ctx.storeId), eq(store.userId, userId)));
 
   await revalidateStorePages(ctx.storeId);
+
+  // Phase 1 hero image is generated asynchronously — editor opens with skeleton
+  // for the hero image and gets it filled in as soon as Banana + S3 finish.
+  console.log(`[runPhase1] phase1 text saved — hero image dispatched async`);
+  after(async () => {
+    try {
+      const updatedBlueprint = await loadBlueprint(ctx.storeId, userId);
+      if (!updatedBlueprint) return;
+
+      const imgResult = await generateAndFillImages({
+        blueprint: updatedBlueprint,
+        businessContext: ctx,
+        storeId: ctx.storeId,
+        contentMap,
+        imageQueries,
+        sectionIndicesFilter: plan.phase1,
+        onSlotComplete: async (slotInfo) => {
+          await applySingleSlotUrl(ctx.storeId, userId, slotInfo);
+        },
+      });
+      await appendImageUsageToStore(ctx.storeId, 1, imgResult);
+      console.log(
+        `[runPhase1] images complete: ${imgResult.bananaSuccessCount}/${imgResult.totalImages}`
+      );
+    } catch (err) {
+      console.error(`[runPhase1] image generation failed (non-fatal):`, err);
+    } finally {
+      await clearPendingImageTokens(ctx.storeId, userId, plan.phase1);
+    }
+  });
 
   const designContext: PhaseDesignContext = {
     palette: blueprint.designTokens.palette as Record<string, string>,
@@ -1152,7 +1173,11 @@ export async function runFollowUpPhase({
     return;
   }
 
-  // Merge AI sections into blueprint at the right positions
+  // Step 1: Merge AI sections into blueprint and mark image slots as pending.
+  //   Section is now READY for the editor (text appears immediately) — image
+  //   placeholders show skeletons in their slots until the image pipeline fills
+  //   them in (asynchronously below).
+  const contentMap = getContentMapForTemplate(template.id);
   await mergeSectionsIntoBlueprint({
     storeId: ctx.storeId,
     userId,
@@ -1161,49 +1186,12 @@ export async function runFollowUpPhase({
     template,
     ctx,
     phase,
+    contentMap,
   });
 
-  // Generate images for these sections only
-  try {
-    const updatedBlueprint = await loadBlueprint(ctx.storeId, userId);
-    if (updatedBlueprint) {
-      const imageQueries =
-        (aiContent.imageQueries as Record<string, string | string[]> | undefined) ||
-        {};
-      const contentMap = getContentMapForTemplate(template.id);
-      if (contentMap) {
-        sectionIndices.forEach((i) => {
-          const s = template.defaultSections[i];
-          const hint = contentMap[i]?.imageQueryHint;
-          if (hint && blockNeedsImages(s.blockType) && !imageQueries[s.blockType]) {
-            imageQueries[s.blockType] = `${ctx.category} ${hint}`;
-          }
-        });
-      }
-
-      const imgResult = await generateAndFillImages({
-        blueprint: updatedBlueprint,
-        businessContext: ctx,
-        storeId: ctx.storeId,
-        contentMap,
-        imageQueries,
-        sectionIndicesFilter: sectionIndices,
-      });
-      await appendImageUsageToStore(ctx.storeId, phase, imgResult);
-
-      // Persist the blueprint with images applied (mutation happened in-place)
-      await db
-        .update(store)
-        .set({ siteBlueprintV2: updatedBlueprint })
-        .where(and(eq(store.id, ctx.storeId), eq(store.userId, userId)));
-
-      await revalidateStorePages(ctx.storeId);
-    }
-  } catch (err) {
-    console.error(`[runPhase${phase}] image generation failed (non-fatal):`, err);
-  }
-
-  // Update status counter
+  // Step 2: bump status counter NOW so the editor sees the section as ready.
+  //   The fact that images are still loading is encoded in IMAGE_PENDING_TOKEN
+  //   inside the section content; the status itself doesn't wait for images.
   await bumpGenerationStatus({
     storeId: ctx.storeId,
     userId,
@@ -1213,7 +1201,163 @@ export async function runFollowUpPhase({
     done: phase === 3,
   });
 
-  console.log(`[runPhase${phase}] complete in ${Date.now() - startMs}ms`);
+  console.log(
+    `[runPhase${phase}] text ready in ${Date.now() - startMs}ms — images dispatched async`
+  );
+
+  // Step 3: dispatch image generation as a fire-and-forget background job.
+  //   It runs independently of the section "done" state — text is already
+  //   visible to users; images progressively replace the skeleton tokens.
+  const imageQueries =
+    (aiContent.imageQueries as Record<string, string | string[]> | undefined) ||
+    {};
+  if (contentMap) {
+    sectionIndices.forEach((i) => {
+      const s = template.defaultSections[i];
+      const hint = contentMap[i]?.imageQueryHint;
+      if (hint && blockNeedsImages(s.blockType) && !imageQueries[s.blockType]) {
+        imageQueries[s.blockType] = `${ctx.category} ${hint}`;
+      }
+    });
+  }
+
+  after(async () => {
+    try {
+      const updatedBlueprint = await loadBlueprint(ctx.storeId, userId);
+      if (!updatedBlueprint) return;
+
+      const imgResult = await generateAndFillImages({
+        blueprint: updatedBlueprint,
+        businessContext: ctx,
+        storeId: ctx.storeId,
+        contentMap,
+        imageQueries,
+        sectionIndicesFilter: sectionIndices,
+        onSlotComplete: async (slotInfo) => {
+          // Persist incrementally — each slot replaces its IMAGE_PENDING_TOKEN
+          // with the real S3 URL right after upload completes.
+          await applySingleSlotUrl(ctx.storeId, userId, slotInfo);
+        },
+      });
+      await appendImageUsageToStore(ctx.storeId, phase, imgResult);
+      console.log(
+        `[runPhase${phase}] images complete: ${imgResult.bananaSuccessCount}/${imgResult.totalImages} (${imgResult.unsplashFallbackCount} fallback, ${imgResult.failedCount} failed)`
+      );
+    } catch (err) {
+      console.error(`[runPhase${phase}] image generation failed (non-fatal):`, err);
+    } finally {
+      // Limpa quaisquer tokens pendentes que sobraram (slots que falharam no
+      // upload + fallback): se não tem URL real, remove o IMAGE_PENDING_TOKEN
+      // para o renderer mostrar o estado vazio nativo (fallback do componente).
+      await clearPendingImageTokens(ctx.storeId, userId, sectionIndices);
+    }
+  });
+}
+
+/**
+ * Limpa tokens IMAGE_PENDING_TOKEN remanescentes nas seções informadas.
+ * Caso uma imagem não tenha sido gerada (banana falhou + unsplash fallback
+ * falhou), o slot fica com `__pgl_pending_image__` indefinidamente — esta
+ * função o remove ao final, deixando o slot vazio para o componente cair no
+ * fallback nativo (svg estilizado).
+ */
+async function clearPendingImageTokens(
+  storeId: string,
+  userId: string,
+  sectionIndices: number[]
+): Promise<void> {
+  const blueprint = await loadBlueprint(storeId, userId);
+  if (!blueprint) return;
+
+  const homepage =
+    blueprint.pages?.find((p) => p.isHomepage) ?? blueprint.pages?.[0];
+  if (!homepage?.sections) return;
+
+  const filterSet = new Set(sectionIndices);
+  let mutated = false;
+
+  for (const section of homepage.sections) {
+    if (!filterSet.has(section.order)) continue;
+    const content = section.content as Record<string, unknown>;
+    for (const [k, v] of Object.entries(content)) {
+      if (typeof v === "string" && v === IMAGE_PENDING_TOKEN) {
+        content[k] = "";
+        mutated = true;
+      }
+      if (Array.isArray(v)) {
+        for (const it of v as Record<string, unknown>[]) {
+          if (it && typeof it === "object") {
+            if (typeof it.image === "string" && it.image === IMAGE_PENDING_TOKEN) {
+              it.image = "";
+              mutated = true;
+            }
+            if (typeof it.url === "string" && it.url === IMAGE_PENDING_TOKEN) {
+              it.url = "";
+              mutated = true;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (mutated) {
+    await db
+      .update(store)
+      .set({ siteBlueprintV2: blueprint })
+      .where(and(eq(store.id, storeId), eq(store.userId, userId)));
+    await revalidateStorePages(storeId);
+  }
+}
+
+/**
+ * Aplica uma URL real (recém-uploadada para S3) a um único slot do blueprint.
+ * Substitui o IMAGE_PENDING_TOKEN pela URL definitiva e dispara revalidação
+ * da página pública. Chamado pelo pipeline conforme cada slot termina.
+ */
+async function applySingleSlotUrl(
+  storeId: string,
+  userId: string,
+  slot: {
+    sectionOrder: number;
+    fieldType: "single" | "array-items" | "array-images";
+    fieldPath: string;
+    url: string;
+  }
+): Promise<void> {
+  const blueprint = await loadBlueprint(storeId, userId);
+  if (!blueprint) return;
+
+  const homepage =
+    blueprint.pages?.find((p) => p.isHomepage) ?? blueprint.pages?.[0];
+  if (!homepage?.sections) return;
+
+  const target = homepage.sections.find((s) => s.order === slot.sectionOrder);
+  if (!target) return;
+  const content = target.content as Record<string, unknown>;
+
+  if (slot.fieldType === "single") {
+    content[slot.fieldPath] = slot.url;
+  } else if (slot.fieldType === "array-items") {
+    const parts = slot.fieldPath.split(".");
+    const arrayKey = parts[0];
+    const idx = parseInt(parts[1]);
+    const items = content[arrayKey] as Record<string, unknown>[] | undefined;
+    if (items?.[idx]) items[idx].image = slot.url;
+  } else if (slot.fieldType === "array-images") {
+    const parts = slot.fieldPath.split(".");
+    const arrayKey = parts[0];
+    const idx = parseInt(parts[1]);
+    const images = content[arrayKey] as Record<string, unknown>[] | undefined;
+    if (images?.[idx]) images[idx].url = slot.url;
+  }
+
+  await db
+    .update(store)
+    .set({ siteBlueprintV2: blueprint })
+    .where(and(eq(store.id, storeId), eq(store.userId, userId)));
+
+  await revalidateStorePages(storeId);
 }
 
 async function loadBlueprint(
@@ -1239,6 +1383,7 @@ async function mergeSectionsIntoBlueprint({
   template,
   ctx,
   phase,
+  contentMap,
 }: {
   storeId: string;
   userId: string;
@@ -1247,6 +1392,7 @@ async function mergeSectionsIntoBlueprint({
   template: Template;
   ctx: BusinessContext;
   phase: 2 | 3;
+  contentMap?: SectionContentMap[];
 }): Promise<void> {
   const blueprint = await loadBlueprint(storeId, userId);
   if (!blueprint) return;
@@ -1329,12 +1475,74 @@ async function mergeSectionsIntoBlueprint({
     }
   }
 
+  // Mark slots with IMAGE_PENDING_TOKEN so the renderer shows a skeleton
+  // for each image while the async pipeline is generating it.
+  markImageSlotsAsGenerating(blueprint, template, sectionIndices, contentMap);
+
   await db
     .update(store)
     .set({ siteBlueprintV2: blueprint })
     .where(and(eq(store.id, storeId), eq(store.userId, userId)));
 
   await revalidateStorePages(storeId);
+}
+
+/**
+ * Marca slots de imagem como pendentes (`__imageGenerating: true`) para que
+ * o renderer mostre um skeleton no lugar da imagem enquanto o pipeline AI
+ * está processando — sem bloquear a exibição do texto da seção.
+ *
+ * Aplica para slots:
+ *  - "single": content[field.path] vira `"__pending__"` + flag por seção
+ *  - "array-items": cada item.image vira `"__pending__"`
+ *  - "array-images": cada image.url vira `"__pending__"`
+ *
+ * Sections com `iconOnly` no contentMap são puladas (sem imagens).
+ */
+function markImageSlotsAsGenerating(
+  blueprint: SiteBlueprint,
+  template: Template,
+  sectionIndices: number[],
+  contentMap: SectionContentMap[] | undefined
+): void {
+  const homepage =
+    blueprint.pages?.find((p) => p.isHomepage) ?? blueprint.pages?.[0];
+  if (!homepage?.sections) return;
+
+  const filterSet = new Set(sectionIndices);
+
+  for (const section of homepage.sections) {
+    if (!filterSet.has(section.order)) continue;
+    if (!blockNeedsImages(section.blockType)) continue;
+
+    const mapEntry = contentMap?.[section.order];
+    if (mapEntry?.iconOnly) continue;
+
+    const fields = getImageFields(section.blockType);
+    const content = section.content as Record<string, unknown>;
+
+    for (const field of fields) {
+      if (field.type === "single") {
+        if (!content[field.path]) {
+          content[field.path] = IMAGE_PENDING_TOKEN;
+        }
+      } else if (field.type === "array-items") {
+        const items = content[field.path] as Record<string, unknown>[] | undefined;
+        if (Array.isArray(items)) {
+          items.forEach((item) => {
+            if (!item.image) item.image = IMAGE_PENDING_TOKEN;
+          });
+        }
+      } else if (field.type === "array-images") {
+        const images = content[field.path] as Record<string, unknown>[] | undefined;
+        if (Array.isArray(images)) {
+          images.forEach((img) => {
+            if (!img.url) img.url = IMAGE_PENDING_TOKEN;
+          });
+        }
+      }
+    }
+  }
 }
 
 /**

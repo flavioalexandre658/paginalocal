@@ -37,6 +37,26 @@ export function isBananaEnabled(): boolean {
   return IMAGE_GEN_ENABLED && !!GEMINI_API_KEY;
 }
 
+/**
+ * Custo por imagem do Gemini 3.1 Flash Image (preview), conforme a tabela
+ * oficial do Google AI:
+ *   - Equivalente $0.045 por imagem ~0.5K tokens (≤ ~0.7MP)
+ *   - Equivalente $0.067 por imagem ~1K tokens (≤ ~1.5MP)
+ *   - Equivalente $0.101 por imagem ~2K tokens (≤ ~4MP)
+ *   - Equivalente $0.151 por imagem ~4K tokens (> 4MP)
+ *
+ * Mapeamos pelo total de pixels (width × height) da request.
+ *
+ * Atualizado: 2026-04-29 com os preços oficiais publicados pelo Google AI.
+ */
+export function estimateGeminiImageCostUsd(width: number, height: number): number {
+  const megapixels = (width * height) / 1_000_000;
+  if (megapixels <= 0.7) return 0.045;
+  if (megapixels <= 1.5) return 0.067;
+  if (megapixels <= 4) return 0.101;
+  return 0.151;
+}
+
 async function generateSingleImage(
   ai: GoogleGenAI,
   request: BananaImageRequest
@@ -158,11 +178,22 @@ export async function bananaBatchGenerate(
     }
 
     const successCount = results.filter((r) => r.status === "success").length;
-    console.log(`[Gemini Batch] Complete: ${successCount}/${requests.length} succeeded`);
+    // Custo real por imagem com base no width × height de cada request bem-sucedida.
+    let costUsd = 0;
+    const reqMap = new Map(requests.map((r) => [r.id, r]));
+    for (const r of results) {
+      if (r.status !== "success") continue;
+      const req = reqMap.get(r.id);
+      if (!req) continue;
+      costUsd += estimateGeminiImageCostUsd(req.width, req.height);
+    }
+    console.log(
+      `[Gemini Batch] Complete: ${successCount}/${requests.length} succeeded | costUsd=$${costUsd.toFixed(4)}`
+    );
 
     return {
       results,
-      costUsd: successCount * 0.003,
+      costUsd,
       durationMs: Date.now() - startTime,
     };
   } catch (err) {
