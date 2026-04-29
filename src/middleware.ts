@@ -32,6 +32,34 @@ const STORE_REWRITABLE_PATHS = [
   '/favicon.ico',
 ]
 
+const SOCIAL_CRAWLER_UA_TOKENS = [
+  'facebookexternalhit',
+  'facebot',
+  'whatsapp',
+  'twitterbot',
+  'linkedinbot',
+  'slackbot',
+  'telegrambot',
+  'discordbot',
+  'pinterestbot',
+  'applebot',
+  'iframely',
+  'embedly',
+  'skypeuripreview',
+  'redditbot',
+  'tumblr',
+  'googlebot',
+  'bingbot',
+  'duckduckbot',
+  'yandexbot',
+]
+
+function isSocialOrSearchBot(ua: string): boolean {
+  if (!ua) return false
+  const lower = ua.toLowerCase()
+  return SOCIAL_CRAWLER_UA_TOKENS.some((t) => lower.includes(t))
+}
+
 interface DomainCacheEntry {
   slug: string | null
   timestamp: number
@@ -147,6 +175,26 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const host = request.headers.get('host') || ''
   const cleanHost = host.toLowerCase().replace(/^www\./, '').split(':')[0]
+  const userAgent = request.headers.get('user-agent') || ''
+  const isBot = isSocialOrSearchBot(userAgent)
+
+  // Crawlers sociais/de busca em /robots.txt — atalho universal:
+  // sempre responde permissivo (overrides cache e qualquer dynamic robots).
+  // Garante que Facebook/WhatsApp não recebam 403 de bot protection.
+  if (pathname === '/robots.txt' && isBot) {
+    const isMain = MAIN_DOMAINS.some((d) => cleanHost === d)
+    const body = isMain
+      ? `User-agent: *\nAllow: /\nSitemap: https://decolou.com/sitemap.xml\n`
+      : `User-agent: *\nAllow: /\n`
+    return new NextResponse(body, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': 'public, max-age=300',
+        'X-Robots-Tag': 'all',
+      },
+    })
+  }
 
   // Skip static assets early
   if (
@@ -204,6 +252,9 @@ export async function middleware(request: NextRequest) {
     response.headers.set('x-store-slug', storeSlug)
     if (isCustomDomain) {
       response.headers.set('x-custom-domain', cleanHost)
+    }
+    if (isBot) {
+      response.headers.set('X-Robots-Tag', 'all')
     }
     return response
   }
