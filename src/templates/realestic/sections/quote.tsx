@@ -155,23 +155,48 @@ export function RealesticQuote({ content, tokens }: Props) {
 
                 {/* Signature squiggle + author */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {/* Decorative handwriting-style SVG */}
-                  <svg
-                    width="152"
-                    height="88"
-                    viewBox="0 0 152 88"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
+                  {/* Editable signature: usuário pode subir uma foto da
+                      assinatura. Fallback é o SVG decorativo. */}
+                  <div
+                    data-pgl-path="items.0.signatureUrl"
+                    data-pgl-edit="image"
+                    style={{
+                      width: 152,
+                      height: 88,
+                      display: "inline-flex",
+                      alignItems: "center",
+                    }}
                   >
-                    <path
-                      d="M8 72C12 52 18 28 28 20C38 12 40 30 36 44C32 58 28 64 24 66C20 68 22 58 30 46C38 34 50 24 56 32C62 40 56 56 52 64C48 72 50 68 56 58C62 48 72 32 80 28C88 24 84 40 80 52C76 64 78 66 84 56C90 46 98 30 106 26C114 22 112 38 108 50C104 62 108 60 116 48C120 40 126 32 132 30C138 28 140 38 136 48C132 58 128 62 130 58C132 54 138 44 146 40"
-                      stroke={accent}
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                    {item.signatureUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.signatureUrl}
+                        alt="Assinatura"
+                        style={{
+                          maxWidth: "100%",
+                          maxHeight: "100%",
+                          objectFit: "contain",
+                        }}
+                      />
+                    ) : (
+                      <svg
+                        width="152"
+                        height="88"
+                        viewBox="0 0 152 88"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M8 72C12 52 18 28 28 20C38 12 40 30 36 44C32 58 28 64 24 66C20 68 22 58 30 46C38 34 50 24 56 32C62 40 56 56 52 64C48 72 50 68 56 58C62 48 72 32 80 28C88 24 84 40 80 52C76 64 78 66 84 56C90 46 98 30 106 26C114 22 112 38 108 50C104 62 108 60 116 48C120 40 126 32 132 30C138 28 140 38 136 48C132 58 128 62 130 58C132 54 138 44 146 40"
+                          stroke={accent}
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </div>
 
                   {/* Author name */}
                   {item.author && (
