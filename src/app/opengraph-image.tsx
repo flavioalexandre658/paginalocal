@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og"
 
 export const runtime = "nodejs"
-export const alt = "Decolou — Crie seu site profissional com IA em 30 segundos"
+export const alt = "Decolou — A solução completa de IA para construção de negócios"
 export const contentType = "image/png"
 export const size = { width: 1200, height: 630 }
 
@@ -59,28 +59,28 @@ export default async function OGImage() {
               }}
             >
               <span style={{ fontSize: "14px", fontWeight: 600, color: "#6366f1", fontFamily: "Inter" }}>
-                ✦ Inteligencia Artificial
+                ✦ IA all-in-one para negócios
               </span>
             </div>
 
             {/* Heading */}
             <span
               style={{
-                fontSize: "52px",
+                fontSize: "48px",
                 fontWeight: 500,
                 lineHeight: 1.05,
                 letterSpacing: "-0.02em",
                 color: "rgba(0,0,0,0.8)",
-                maxWidth: "480px",
+                maxWidth: "500px",
                 fontFamily: "Playfair Display",
               }}
             >
-              Crie seu site profissional em 30 segundos
+              A solução completa de IA para construção de negócios
             </span>
 
             {/* Subtitle */}
-            <span style={{ fontSize: "17px", color: "rgba(0,0,0,0.45)", maxWidth: "400px", lineHeight: 1.5, fontFamily: "Inter" }}>
-              Design, textos e SEO gerados por IA. Sem codigo, sem designer.
+            <span style={{ fontSize: "17px", color: "rgba(0,0,0,0.45)", maxWidth: "440px", lineHeight: 1.5, fontFamily: "Inter" }}>
+              Lance um site, conquiste clientes e expanda seus negócios mais rápido com IA. Online em 30 segundos.
             </span>
           </div>
 

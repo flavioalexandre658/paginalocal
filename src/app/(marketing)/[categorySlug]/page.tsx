@@ -9,6 +9,7 @@ import { getCategoryBySlug } from '@/actions/categories/get-category-by-slug.act
 import { getStoresByCategory, getCategoryStats } from '@/actions/categories/get-stores-by-category.action'
 import { getCategoryCities } from '@/actions/categories/get-category-cities.action'
 import { CategoryPageClient } from './category-page-client'
+import { buildPlatformMetadata } from '@/lib/platform-seo'
 
 async function getUserHasSubscription(userId: string): Promise<boolean> {
   const [userSubscription] = await db
@@ -39,32 +40,29 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   if (!category || category.slug === 'outro') {
     return {
       title: 'Categoria não encontrada',
+      robots: { index: false, follow: false },
     }
   }
 
-  const title = category.seoTitle || `${category.name} - Encontre os Melhores | Decolou`
-  const description = category.seoDescription || `Encontre os melhores ${category.name.toLowerCase()} da sua região. Veja avaliações, endereços e entre em contato pelo WhatsApp.`
+  const title =
+    category.seoTitle ||
+    `${category.name} com IA — Sites profissionais em 30 segundos | Decolou`
+  const description =
+    category.seoDescription ||
+    `Construa um site profissional de ${category.name.toLowerCase()} em 30 segundos com IA. Lance, conquiste clientes e expanda seu negócio com a Decolou — a solução completa de IA para construção de negócios.`
 
-  return {
+  return buildPlatformMetadata({
+    path: `/${categorySlug}`,
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      type: 'website',
-      locale: 'pt_BR',
-      siteName: 'Decolou',
-      url: `https://decolou.com/${categorySlug}`,
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-    },
-    alternates: {
-      canonical: `https://decolou.com/${categorySlug}`,
-    },
-  }
+    keywords: [
+      `${category.name} com IA`,
+      `criar site de ${category.name.toLowerCase()}`,
+      `${category.name.toLowerCase()} construtor de sites`,
+      `IA para ${category.name.toLowerCase()}`,
+      `site profissional ${category.name.toLowerCase()}`,
+    ],
+  })
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {

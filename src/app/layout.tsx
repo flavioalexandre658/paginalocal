@@ -7,46 +7,32 @@ import { Toaster } from 'react-hot-toast'
 import { QueryProvider } from '@/components/providers/query-provider'
 import { CookieConsent } from '@/components/shared/cookie-consent'
 import { GoogleTagManager, GoogleTagManagerNoScript } from '@/components/shared/google-tag-manager'
+import {
+  buildPlatformMetadata,
+  PLATFORM,
+  PLATFORM_DEFAULT_DESCRIPTION,
+} from '@/lib/platform-seo'
+
+const baseMetadata = buildPlatformMetadata({
+  title: `${PLATFORM.name} — Construtor de sites e negócios com IA`,
+  description: PLATFORM_DEFAULT_DESCRIPTION,
+  keywords: [
+    'construtor de sites com IA',
+    'criar site com IA em 30 segundos',
+    'plataforma all-in-one de IA para negócios',
+    'site profissional sem código',
+    'lançar negócio online com IA',
+    'expandir negócio com IA',
+    'IA para empreendedores',
+    'site com SEO nativo',
+  ],
+})
 
 export const metadata: Metadata = {
-  other: {
-    'X-DNS-Prefetch-Control': 'on',
-  },
+  ...baseMetadata,
   title: {
-    default: 'Site para Negócio Local | Apareça no Topo do Google | Decolou',
-    template: '%s | Decolou',
-  },
-  description: 'Tenha um site profissional para seu negócio local com SEO nativo para aparecer no topo do Google. Nós fazemos tudo por você. Receba clientes pelo WhatsApp em até 24 horas.',
-  alternates: {
-    canonical: 'https://decolou.com',
-  },
-  openGraph: {
-    title: 'Crie seu site profissional com IA em 30 segundos | Decolou',
-    description: 'Design, textos e SEO gerados por inteligencia artificial. Sem codigo, sem designer. Comece gratis.',
-    url: 'https://decolou.com',
-    siteName: 'Decolou',
-    locale: 'pt_BR',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Crie seu site profissional com IA em 30 segundos | Decolou',
-    description: 'Design, textos e SEO gerados por inteligencia artificial. Sem codigo, sem designer.',
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
-  icons: {
-    icon: '/assets/images/icon/favicon.ico',
-    shortcut: '/assets/images/icon/favicon.ico',
+    default: `${PLATFORM.name} — Construtor de sites e negócios com IA`,
+    template: `%s | ${PLATFORM.name}`,
   },
 }
 
@@ -54,7 +40,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#3b82f6',
+  themeColor: '#0f172a',
 }
 
 const inter = Inter({

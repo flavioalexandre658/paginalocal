@@ -3,11 +3,15 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { IconLock } from '@tabler/icons-react'
 import { LegalPageLayout, LegalSection, LegalHighlight } from '../_components/legal-page-layout'
+import { buildPlatformMetadata } from '@/lib/platform-seo'
 
-export const metadata: Metadata = {
-  title: 'Política de Privacidade',
-  description: 'Entenda como o Decolou coleta, usa e protege seus dados pessoais.',
-}
+export const metadata: Metadata = buildPlatformMetadata({
+  path: '/politica-de-privacidade',
+  title: 'Política de Privacidade | Decolou',
+  description:
+    'Entenda como a Decolou — plataforma all-in-one de IA para construção de negócios — coleta, usa e protege seus dados pessoais com transparência.',
+  keywords: ['política privacidade Decolou', 'privacidade plataforma IA'],
+})
 
 export default async function PoliticaDePrivacidadePage() {
   const session = await auth.api.getSession({ headers: await headers() })

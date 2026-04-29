@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Logo } from "@/components/shared/logo";
 import { cn } from "@/lib/utils";
 
 const MAIN_DOMAIN = process.env.NEXT_PUBLIC_MAIN_DOMAIN || "decolou.com";
@@ -72,28 +73,11 @@ UnpublishedSiteCover.displayName = "UnpublishedSiteCover";
 
 function UnpublishedCoverBrand({ className }: { className?: string }) {
   return (
-    <div className={cn("flex items-center gap-2", className)}>
-      <div
-        className="flex h-7 w-7 items-center justify-center rounded-[8px]"
-        style={{ backgroundColor: "rgba(0,0,0,0.04)" }}
-      >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="rgba(0,0,0,0.55)"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M4 14l4-4 4 4 4-4 4 4" />
-          <path d="M4 20l4-4 4 4 4-4 4 4" />
-        </svg>
-      </div>
-      <span className="text-[13px] font-medium text-black/55">decolou</span>
-    </div>
+    <Logo
+      size="sm"
+      href={`https://${MAIN_DOMAIN}`}
+      className={cn("opacity-90", className)}
+    />
   );
 }
 
@@ -287,18 +271,18 @@ function UnpublishedCoverSignupNudge({
   return (
     <div
       className={cn(
-        "mt-12 flex flex-col items-center gap-1 text-center",
+        "mt-12 flex flex-col items-center gap-1.5 text-center",
         className
       )}
     >
       <p className="text-[12px] font-medium text-black/40">
-        Quer um site assim para o seu negócio?
+        A solução completa de IA para construção de negócios
       </p>
       <a
         href={signupUrl}
         className="text-[13px] font-medium text-black/80 underline-offset-4 transition-colors hover:underline"
       >
-        Criar com a Decolou
+        Crie seu site em 30 segundos com a Decolou
       </a>
     </div>
   );

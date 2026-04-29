@@ -3,11 +3,15 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { IconShieldLock } from '@tabler/icons-react'
 import { LegalPageLayout, LegalSection, LegalHighlight } from '../_components/legal-page-layout'
+import { buildPlatformMetadata } from '@/lib/platform-seo'
 
-export const metadata: Metadata = {
-  title: 'LGPD - Lei Geral de Proteção de Dados',
-  description: 'Saiba como o Decolou está em conformidade com a LGPD e protege seus dados pessoais.',
-}
+export const metadata: Metadata = buildPlatformMetadata({
+  path: '/lgpd',
+  title: 'LGPD — Lei Geral de Proteção de Dados | Decolou',
+  description:
+    'A Decolou — plataforma all-in-one de IA para construção de negócios — está em total conformidade com a LGPD. Veja como protegemos os dados de quem constrói negócios com IA.',
+  keywords: ['LGPD Decolou', 'proteção de dados', 'privacidade plataforma IA'],
+})
 
 export default async function LGPDPage() {
   const session = await auth.api.getSession({ headers: await headers() })

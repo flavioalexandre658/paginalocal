@@ -5,20 +5,21 @@ import { plan, subscription } from '@/db/schema'
 import { eq, asc, and, or } from 'drizzle-orm'
 import { auth } from '@/lib/auth'
 import { PricingPageClient } from './_components/pricing-page-client'
+import { buildPlatformMetadata } from '@/lib/platform-seo'
 
-export const metadata: Metadata = {
-  title: 'Planos e Precos | Decolou',
-  description: 'Escolha o plano ideal para ter o site do seu negocio no topo do Google. SEO nativo, dominio proprio, WhatsApp integrado. A partir de R$ 59,90/mes.',
-  openGraph: {
-    title: 'Planos e Precos | Decolou',
-    description: 'Site profissional com IA para seu negocio. A partir de R$ 59,90/mes.',
-    type: 'website',
-    url: 'https://decolou.com/planos',
-  },
-  alternates: {
-    canonical: 'https://decolou.com/planos',
-  },
-}
+export const metadata: Metadata = buildPlatformMetadata({
+  path: '/planos',
+  title: 'Planos da Decolou — Construtor de sites com IA',
+  description:
+    'Escolha o plano ideal para construir, lançar e expandir seu negócio com IA. Sites profissionais em 30 segundos, SEO nativo e domínio próprio.',
+  keywords: [
+    'planos Decolou',
+    'preços construtor de sites com IA',
+    'plano gratuito IA',
+    'assinatura plataforma de IA negócios',
+    'preço criar site com IA',
+  ],
+})
 
 async function getPlans() {
   return db

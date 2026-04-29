@@ -169,12 +169,13 @@ export function buildStoreMetadata(
   );
 
   const heroImage = extractHeroImage(input.siteBlueprintV2);
-  const ogImage =
-    page.imageUrl ||
-    heroImage ||
-    input.coverUrl ||
-    input.logoUrl ||
-    `${baseUrl}/opengraph-image`;
+  // Imagem REAL (S3/coverUrl/logoUrl/heroImage) — quando existe, especificamos
+  // explicitamente `images:` no OG.  Quando NÃO existe, deixamos `images`
+  // indefinido para que o Next.js detecte automaticamente o
+  // `opengraph-image.tsx` co-localizado e gere a URL com hash correta —
+  // crawlers sociais conseguem fetchar sem 404.
+  const explicitImage =
+    page.imageUrl || heroImage || input.coverUrl || input.logoUrl;
 
   const favicon = input.faviconUrl || input.logoUrl || FAVICON_FALLBACK;
 
@@ -226,14 +227,18 @@ export function buildStoreMetadata(
       siteName: input.name,
       title,
       description: ogDescription,
-      images: [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: `${input.name} — ${input.category} em ${input.city}, ${input.state}`,
-        },
-      ],
+      ...(explicitImage
+        ? {
+            images: [
+              {
+                url: explicitImage,
+                width: 1200,
+                height: 630,
+                alt: `${input.name} — ${input.category} em ${input.city}, ${input.state}`,
+              },
+            ],
+          }
+        : {}),
     },
 
     twitter: {
@@ -242,12 +247,16 @@ export function buildStoreMetadata(
       creator: "@decolou",
       title,
       description: ogDescription,
-      images: [
-        {
-          url: ogImage,
-          alt: `${input.name} — ${input.category} em ${input.city}, ${input.state}`,
-        },
-      ],
+      ...(explicitImage
+        ? {
+            images: [
+              {
+                url: explicitImage,
+                alt: `${input.name} — ${input.category} em ${input.city}, ${input.state}`,
+              },
+            ],
+          }
+        : {}),
     },
 
     verification: {

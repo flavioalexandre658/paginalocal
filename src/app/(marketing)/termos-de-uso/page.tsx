@@ -3,11 +3,15 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { IconFileText } from '@tabler/icons-react'
 import { LegalPageLayout, LegalSection, LegalHighlight } from '../_components/legal-page-layout'
+import { buildPlatformMetadata } from '@/lib/platform-seo'
 
-export const metadata: Metadata = {
-  title: 'Termos de Uso',
-  description: 'Termos e condições de uso da plataforma Decolou. Leia antes de utilizar nossos serviços.',
-}
+export const metadata: Metadata = buildPlatformMetadata({
+  path: '/termos-de-uso',
+  title: 'Termos de Uso | Decolou',
+  description:
+    'Condições de uso da Decolou — plataforma all-in-one de IA para construção de negócios. Leia antes de criar seu site com IA.',
+  keywords: ['termos de uso Decolou', 'condições plataforma IA'],
+})
 
 export default async function TermosDeUsoPage() {
   const session = await auth.api.getSession({ headers: await headers() })

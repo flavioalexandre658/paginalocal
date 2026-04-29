@@ -7,6 +7,22 @@ interface RobotsParams {
   params: Promise<{ slug: string }>
 }
 
+const SOCIAL_CRAWLERS = [
+  'facebookexternalhit',
+  'Facebot',
+  'WhatsApp',
+  'Twitterbot',
+  'LinkedInBot',
+  'Slackbot',
+  'Slackbot-LinkExpanding',
+  'TelegramBot',
+  'Discordbot',
+  'Pinterestbot',
+  'Applebot',
+  'Iframely',
+  'Embedly',
+]
+
 export default async function robots({ params }: RobotsParams): Promise<MetadataRoute.Robots> {
   const { slug } = await params
 
@@ -16,7 +32,7 @@ export default async function robots({ params }: RobotsParams): Promise<Metadata
     .where(eq(store.slug, slug))
     .limit(1)
 
-  if (!storeResult[0] || !storeResult[0].isActive) {
+  if (!storeResult[0]) {
     return {
       rules: {
         userAgent: '*',
@@ -29,12 +45,33 @@ export default async function robots({ params }: RobotsParams): Promise<Metadata
     ? `https://${storeResult[0].customDomain}`
     : `https://${slug}.decolou.com`
 
+  if (!storeResult[0].isActive) {
+    return {
+      rules: [
+        {
+          userAgent: SOCIAL_CRAWLERS,
+          allow: '/',
+        },
+        {
+          userAgent: '*',
+          disallow: '/',
+        },
+      ],
+    }
+  }
+
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: ['/admin/', '/api/'],
-    },
+    rules: [
+      {
+        userAgent: SOCIAL_CRAWLERS,
+        allow: '/',
+      },
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/admin/', '/api/'],
+      },
+    ],
     sitemap: `${baseUrl}/sitemap.xml`,
   }
 }
