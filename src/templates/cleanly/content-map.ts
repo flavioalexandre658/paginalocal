@@ -72,14 +72,15 @@ export const CLEANLY_CONTENT_MAP: SectionContentMap[] = [
     ], description: "Stats com numeros grandes" },
   ], contentGuidance: "Grid de stats com numeros grandes e labels." },
 
-  { blockType: "services", variant: 3, fields: [
+  { blockType: "services", variant: 3, iconOnly: true, fields: [
     { key: "title", type: "string", maxLength: 60, description: "Titulo com *accent*" },
     { key: "subtitle", type: "string", maxLength: 30, description: "Tag" },
     { key: "items", type: "array", count: { min: 3, max: 5 }, children: [
       { key: "name", type: "string", maxLength: 40, description: "Titulo do beneficio" },
       { key: "description", type: "string", maxLength: 150, description: "Descricao do beneficio" },
-    ], description: "Accordion de beneficios" },
-  ], contentGuidance: "Accordion de beneficios com icones e expand/collapse." },
+      { key: "icon", type: "string", maxLength: 40, description: "Token Lucide adequado (ex: 'lucide:Sparkles', 'lucide:Shield', 'lucide:Clock'). NUNCA gerar imagem." },
+    ], description: "Accordion de beneficios com ÍCONE Lucide" },
+  ], contentGuidance: "Accordion de beneficios com ÍCONE LUCIDE accent + expand/collapse. NÃO gerar imagem — usar token em `icon`." },
 
   { blockType: "testimonials", variant: 1, fields: [
     { key: "title", type: "string", maxLength: 60, description: "Titulo com *accent*" },

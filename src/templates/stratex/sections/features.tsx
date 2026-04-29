@@ -3,6 +3,7 @@
 import type { DesignTokens } from "@/types/ai-generation";
 import { ServicesContentSchema } from "@/types/ai-generation";
 import { ScrollReveal } from "./scroll-reveal";
+import { IconRenderer } from "@/components/ui/icon-renderer";
 
 interface Props {
   content: Record<string, unknown>;
@@ -117,38 +118,16 @@ export function StratexFeatures({ content, tokens }: Props) {
                     position: "relative",
                     overflow: "hidden",
                   }}
-                  data-pgl-path={`items.${idx}.image`}
-                  data-pgl-edit="image"
+                  data-pgl-path={`items.${idx}.icon`}
+                  data-pgl-edit="icon"
                 >
-                  {item.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      style={{
-                        width: 22,
-                        height: 22,
-                        objectFit: "contain",
-                        filter: "brightness(0) invert(1)",
-                      }}
-                    />
-                  ) : (
-                    /* Fallback SVG icon */
-                    <svg
-                      width="22"
-                      height="22"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#fff"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                      <path d="M2 17l10 5 10-5" />
-                      <path d="M2 12l10 5 10-5" />
-                    </svg>
-                  )}
+                  <IconRenderer
+                    icon={item.icon}
+                    size={22}
+                    color="#fff"
+                    strokeWidth={2}
+                    ariaLabel={item.name}
+                  />
                 </div>
 
                 {/* Text wrapper — centered */}

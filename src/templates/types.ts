@@ -94,6 +94,12 @@ export interface SectionContentMap {
   exampleOutput?: Record<string, unknown>;
   imageSpec?: ImageSpec;
   imageSpecs?: Record<string, ImageSpec>;
+  /**
+   * Quando true, esta seção usa ÍCONES (renderizados via IconRenderer) em vez
+   * de imagens. O pipeline de geração de imagens pula a seção e a IA é
+   * instruída a preencher `items[].icon` com tokens (ex: "lucide:Star").
+   */
+  iconOnly?: boolean;
 }
 
 /**

@@ -46,6 +46,7 @@ export const REALESTIC_CONTENT_MAP: SectionContentMap[] = [
   {
     blockType: "services",
     variant: 1,
+    iconOnly: true,
     fields: [
       { key: "title", type: "string", maxLength: 60, description: "Titulo da secao. Use *asteriscos* para accent." },
       { key: "subtitle", type: "string", maxLength: 30, description: "Tag da secao (ex: 'Nossa Missao', 'Diferenciais')" },
@@ -58,21 +59,22 @@ export const REALESTIC_CONTENT_MAP: SectionContentMap[] = [
         children: [
           { key: "name", type: "string", maxLength: 40, description: "Titulo do card" },
           { key: "description", type: "string", maxLength: 120, description: "Descricao do card" },
+          { key: "icon", type: "string", maxLength: 40, description: "Token de ícone Lucide (ex: 'lucide:Home', 'lucide:Shield'). NUNCA gere imagem aqui." },
         ],
-        description: "Exatamente 3 cards com icone accent + titulo + descricao, exibidos em coluna a direita.",
+        description: "Exatamente 3 cards com ÍCONE Lucide accent + titulo + descricao. NÃO usar imagem.",
       },
     ],
     contentGuidance:
-      "Layout 2 colunas: esquerda tem tag com dot accent + H2 + botao escuro. Direita tem 3 cards horizontais (icone quadrado accent + titulo + descricao). Cada card representa um valor ou diferencial do negocio.",
+      "Layout 2 colunas: esquerda tem tag com dot accent + H2 + botao escuro. Direita tem 3 cards horizontais (ÍCONE LUCIDE quadrado accent + titulo + descricao). Cada card representa um valor ou diferencial do negocio. Use token Lucide em `icon` (ex: 'lucide:Home', 'lucide:Star'). NÃO gerar imagem.",
     exampleOutput: {
       title: "Os valores que guiam tudo o que *fazemos*",
       subtitle: "Nossa Missao",
       ctaText: "Saiba mais",
       ctaLink: "#sobre",
       items: [
-        { name: "Imovel dos Sonhos", description: "Descubra seu espaco ideal com nossas opcoes de imoveis selecionados." },
-        { name: "Investimento Seguro", description: "Analise profissional para garantir o melhor retorno no seu investimento." },
-        { name: "Suporte Completo", description: "Acompanhamento em todas as etapas, da busca ate a assinatura." },
+        { name: "Imovel dos Sonhos", description: "Descubra seu espaco ideal com nossas opcoes de imoveis selecionados.", icon: "lucide:Home" },
+        { name: "Investimento Seguro", description: "Analise profissional para garantir o melhor retorno no seu investimento.", icon: "lucide:Shield" },
+        { name: "Suporte Completo", description: "Acompanhamento em todas as etapas, da busca ate a assinatura.", icon: "lucide:LifeBuoy" },
       ],
     },
   },
@@ -125,6 +127,7 @@ export const REALESTIC_CONTENT_MAP: SectionContentMap[] = [
   {
     blockType: "services",
     variant: 2,
+    iconOnly: true,
     fields: [
       { key: "title", type: "string", maxLength: 60, description: "Titulo centralizado. Use *asteriscos* para accent." },
       { key: "subtitle", type: "string", maxLength: 30, description: "Tag da secao" },
@@ -135,22 +138,23 @@ export const REALESTIC_CONTENT_MAP: SectionContentMap[] = [
         children: [
           { key: "name", type: "string", maxLength: 40, description: "Titulo da feature" },
           { key: "description", type: "string", maxLength: 120, description: "Descricao da feature" },
+          { key: "icon", type: "string", maxLength: 40, description: "Token de ícone no formato 'lucide:Nome' (ex: 'lucide:Star', 'lucide:Shield', 'lucide:Award'). Escolha 1 ícone Lucide adequado ao tema do item. NUNCA gere imagem aqui." },
         ],
-        description: "3 a 6 features em grid 3 colunas, cada uma com icone em bg light + titulo + descricao.",
+        description: "3 a 6 features em grid 3 colunas. Cada item TEM ícone Lucide (campo `icon`), NUNCA imagem.",
       },
     ],
     contentGuidance:
-      "Secao dentro de um card arredondado (bg surface, radius 34px). Header centralizado com tag + H2. Grid 3x2 de features, cada uma com icone em fundo accent-light + titulo + descricao. Foco em beneficios e vantagens do servico.",
+      "Secao dentro de um card arredondado (bg surface, radius 34px). Header centralizado com tag + H2. Grid 3x2 de features, cada uma com ÍCONE LUCIDE em fundo accent-light + titulo + descricao. NÃO gerar imagem — usar token Lucide em `icon` (ex: 'lucide:Award', 'lucide:Shield').",
     exampleOutput: {
       title: "Descubra as vantagens e *beneficios* exclusivos",
       subtitle: "Diferenciais",
       items: [
-        { name: "Orientacao Especializada", description: "Insights profissionais para decisoes imobiliarias com confianca." },
-        { name: "Busca Personalizada", description: "Encontramos imoveis que combinam com suas necessidades unicas." },
-        { name: "Negociacao Eficiente", description: "Expertise em negociacao para garantir o melhor valor." },
-        { name: "Documentacao Completa", description: "Assessoria juridica e documental em todas as etapas." },
-        { name: "Pos-Venda", description: "Suporte continuo mesmo apos a conclusao do negocio." },
-        { name: "Avaliacao Precisa", description: "Laudos e avaliacoes baseados em dados de mercado atualizados." },
+        { name: "Orientacao Especializada", description: "Insights profissionais para decisoes imobiliarias com confianca.", icon: "lucide:Compass" },
+        { name: "Busca Personalizada", description: "Encontramos imoveis que combinam com suas necessidades unicas.", icon: "lucide:Search" },
+        { name: "Negociacao Eficiente", description: "Expertise em negociacao para garantir o melhor valor.", icon: "lucide:HandshakeIcon" },
+        { name: "Documentacao Completa", description: "Assessoria juridica e documental em todas as etapas.", icon: "lucide:FileText" },
+        { name: "Pos-Venda", description: "Suporte continuo mesmo apos a conclusao do negocio.", icon: "lucide:LifeBuoy" },
+        { name: "Avaliacao Precisa", description: "Laudos e avaliacoes baseados em dados de mercado atualizados.", icon: "lucide:Ruler" },
       ],
     },
   },

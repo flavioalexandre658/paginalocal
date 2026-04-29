@@ -28,6 +28,7 @@ const EDITOR_CSS = `
 .editor-preview [data-pgl-hover][data-pgl-edit="text"] { cursor: text; }
 .editor-preview [data-pgl-hover][data-pgl-edit="button"],
 .editor-preview [data-pgl-hover][data-pgl-edit="image"],
+.editor-preview [data-pgl-hover][data-pgl-edit="icon"],
 .editor-preview [data-pgl-hover][data-pgl-edit="nav"],
 .editor-preview [data-pgl-hover][data-pgl-edit="footer"],
 .editor-preview [data-pgl-hover][data-pgl-edit="pricing"] {

@@ -3,6 +3,7 @@
 import type { DesignTokens } from "@/types/ai-generation";
 import { ServicesContentSchema } from "@/types/ai-generation";
 import { ScrollReveal } from "./scroll-reveal";
+import { IconRenderer } from "@/components/ui/icon-renderer";
 
 interface Props {
   content: Record<string, unknown>;
@@ -133,7 +134,8 @@ export function RealesticFeatures({ content, tokens }: Props) {
                   paddingBottom: 18,
                 }}
               >
-                {/* Icon container — accent-light bg */}
+                {/* Icon container — accent-light bg.  Uses IconRenderer
+                    (lucide / react-icons), NOT a generated image. */}
                 <div
                   style={{
                     backgroundColor: iconBg,
@@ -144,36 +146,16 @@ export function RealesticFeatures({ content, tokens }: Props) {
                     alignItems: "center",
                     justifyContent: "center",
                   }}
-                  data-pgl-path={`items.${idx}.image`}
-                  data-pgl-edit="image"
+                  data-pgl-path={`items.${idx}.icon`}
+                  data-pgl-edit="icon"
                 >
-                  {item.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      style={{
-                        width: 30,
-                        height: 30,
-                        objectFit: "contain",
-                      }}
-                    />
-                  ) : (
-                    <svg
-                      width="30"
-                      height="30"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke={accent}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                      <path d="M2 17l10 5 10-5" />
-                      <path d="M2 12l10 5 10-5" />
-                    </svg>
-                  )}
+                  <IconRenderer
+                    icon={item.icon}
+                    size={30}
+                    color={accent}
+                    strokeWidth={2}
+                    ariaLabel={item.name}
+                  />
                 </div>
 
                 {/* Content */}

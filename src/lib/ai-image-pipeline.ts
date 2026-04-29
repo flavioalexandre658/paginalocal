@@ -243,6 +243,8 @@ function collectImageSlots(
     const fields = getImageFields(section.blockType);
     // Use section.order to look up content map (which is keyed by template index)
     const mapEntry = contentMap?.[section.order];
+    // Sections marked iconOnly use icon tokens (lucide / fa) — no image gen
+    if (mapEntry?.iconOnly) continue;
     const baseSpec = mapEntry?.imageSpec || DEFAULT_IMAGE_SPEC;
 
     for (const field of fields) {

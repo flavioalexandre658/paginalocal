@@ -146,6 +146,7 @@ export const VERVEDENT_CONTENT_MAP: SectionContentMap[] = [
   {
     blockType: "services",
     variant: 2,
+    iconOnly: true,
     fields: [
       { key: "title", type: "string", maxLength: 60, description: "Titulo da secao — use *destaque* para accent teal" },
       { key: "subtitle", type: "string", maxLength: 30, description: "Tag uppercase acima do titulo" },
@@ -153,15 +154,16 @@ export const VERVEDENT_CONTENT_MAP: SectionContentMap[] = [
         key: "items",
         type: "array",
         count: { min: 4, max: 6 },
-        description: "Servicos oferecidos com nome e descricao",
+        description: "Servicos com ÍCONE Lucide, nome e descricao. NUNCA imagem.",
         children: [
           { key: "name", type: "string", maxLength: 30, description: "Nome do servico odontologico" },
           { key: "description", type: "string", maxLength: 200, description: "Descricao do servico em 2-3 linhas" },
+          { key: "icon", type: "string", maxLength: 40, description: "Token Lucide do tema saúde/odonto (ex: 'lucide:Smile', 'lucide:Sparkles', 'lucide:HeartPulse'). Use também 'fa:FaTooth' para dente. NÃO gerar imagem." },
         ],
       },
     ],
     contentGuidance:
-      "Grid de cards de servicos com icone teal no topo, titulo bold, descricao em texto muted. Cards com fundo surface, cantos arredondados lg e hover com borda teal sutil. Tag uppercase teal acima do titulo centralizado.",
+      "Grid de cards de servicos com ÍCONE LUCIDE teal no topo, titulo bold, descricao muted. Use token em `icon` (ex: 'lucide:Smile', 'fa:FaTooth'). NÃO gerar imagem.",
   },
 
   // ─── [5] contact v1 (Appointment) ─────────────────────────────────

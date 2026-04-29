@@ -30,6 +30,10 @@ export function buildSectionPrompt(
 
   let prompt = `${header}\n${fields}\n${guidance}`;
 
+  if (map.iconOnly) {
+    prompt += `\n    REGRA DE ÍCONE: cada item TEM o campo "icon" preenchido com um token Lucide (formato "lucide:Nome", ex: "lucide:Star", "lucide:Shield", "lucide:Award", "lucide:Heart", "lucide:Home", "lucide:Truck", "lucide:Wrench"). NUNCA gere o campo "image" para esta seção. Use também tokens "fa:Nome" para react-icons/fa quando precisar (ex: "fa:FaTooth", "fa:FaCow"). Escolha ícones semanticamente conectados ao texto do item.`;
+  }
+
   if (map.exampleOutput) {
     prompt += `\n    Exemplo: ${JSON.stringify(map.exampleOutput)}`;
   }

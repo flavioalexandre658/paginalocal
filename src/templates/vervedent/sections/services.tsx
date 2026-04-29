@@ -3,6 +3,7 @@
 import type { DesignTokens } from "@/types/ai-generation";
 import { ServicesContentSchema } from "@/types/ai-generation";
 import { ScrollReveal } from "./scroll-reveal";
+import { IconRenderer } from "@/components/ui/icon-renderer";
 
 interface Props {
   content: Record<string, unknown>;
@@ -187,21 +188,19 @@ export function VerveServices({ content, tokens }: Props) {
                     flexShrink: 0,
                   }}
                 >
-                  {item.image ? (
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      data-pgl-path={`items.${idx}.image`}
-                      data-pgl-edit="image"
-                      style={{
-                        width: 32,
-                        height: 32,
-                        objectFit: "contain",
-                      }}
-                    />
-                  ) : (
-                    <ServiceIcon index={idx} color={secondary} />
-                  )}
+                  <div data-pgl-path={`items.${idx}.icon`} data-pgl-edit="icon">
+                    {item.icon ? (
+                      <IconRenderer
+                        icon={item.icon}
+                        size={32}
+                        color={secondary}
+                        strokeWidth={2}
+                        ariaLabel={item.name}
+                      />
+                    ) : (
+                      <ServiceIcon index={idx} color={secondary} />
+                    )}
+                  </div>
                 </div>
 
                 {/* Title */}

@@ -181,6 +181,7 @@ export const BELLEZZA_CONTENT_MAP: SectionContentMap[] = [
   {
     blockType: "services",
     variant: 1,
+    iconOnly: true,
     fields: [
       { key: "title", type: "string", maxLength: 60, description: "Titulo da secao — use *destaque* para accent rose gold" },
       { key: "subtitle", type: "string", maxLength: 120, description: "Subtitulo descritivo sobre os beneficios da marca" },
@@ -188,15 +189,16 @@ export const BELLEZZA_CONTENT_MAP: SectionContentMap[] = [
         key: "items",
         type: "array",
         count: { min: 3, max: 4 },
-        description: "Beneficios ou diferenciais com nome e descricao",
+        description: "Beneficios com ÍCONE Lucide, nome e descricao. NÃO usar imagem.",
         children: [
           { key: "name", type: "string", maxLength: 30, description: "Nome do beneficio (ex: 100% Vegano)" },
           { key: "description", type: "string", maxLength: 200, description: "Descricao do beneficio em 2-3 linhas" },
+          { key: "icon", type: "string", maxLength: 40, description: "Token Lucide adequado ao tema beleza/bem-estar (ex: 'lucide:Leaf', 'lucide:Sparkles', 'lucide:HeartHandshake'). NUNCA gerar imagem." },
         ],
       },
     ],
     contentGuidance:
-      "Grid de cards de beneficios com icone rose gold no topo, titulo bold, descricao em texto muted. Cards com fundo surface, cantos arredondados lg. Titulo centralizado com accent e subtitulo. Ideal para diferenciais como vegano, cruelty-free, ingredientes naturais.",
+      "Grid de cards de beneficios com ÍCONE LUCIDE rose gold no topo, titulo bold, descricao em texto muted. Use token Lucide em `icon` (ex: 'lucide:Leaf' para vegano, 'lucide:Sparkles' para premium). NÃO gerar imagem.",
   },
 
   // ─── [6] featured-products v2 (Product List) ─────────────────────

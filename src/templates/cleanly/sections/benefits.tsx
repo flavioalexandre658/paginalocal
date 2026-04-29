@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { DesignTokens } from "@/types/ai-generation";
 import { ServicesContentSchema } from "@/types/ai-generation";
 import { ScrollReveal } from "./scroll-reveal";
+import { IconRenderer } from "@/components/ui/icon-renderer";
 
 interface Props {
   content: Record<string, unknown>;
@@ -99,7 +100,7 @@ function AccordionItem({
   onToggle,
   accent,
 }: {
-  item: { name: string; description: string; image?: string };
+  item: { name: string; description: string; image?: string; icon?: string };
   idx: number;
   isOpen: boolean;
   onToggle: () => void;
@@ -144,25 +145,22 @@ function AccordionItem({
             transition: "background-color 0.3s ease",
           }}
         >
-          {item.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={item.image}
-              alt={item.name}
-              data-pgl-path={`items.${idx}.image`}
-              data-pgl-edit="image"
-              style={{
-                width: 24,
-                height: 24,
-                objectFit: "contain",
-              }}
-            />
-          ) : (
-            <BenefitIcon
-              index={idx}
-              color={isOpen ? "#fff" : accent}
-            />
-          )}
+          <div data-pgl-path={`items.${idx}.icon`} data-pgl-edit="icon">
+            {item.icon ? (
+              <IconRenderer
+                icon={item.icon}
+                size={24}
+                color={isOpen ? "#fff" : accent}
+                strokeWidth={2}
+                ariaLabel={item.name}
+              />
+            ) : (
+              <BenefitIcon
+                index={idx}
+                color={isOpen ? "#fff" : accent}
+              />
+            )}
+          </div>
         </div>
 
         {/* Title */}

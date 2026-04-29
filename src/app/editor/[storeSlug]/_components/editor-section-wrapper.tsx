@@ -13,6 +13,7 @@ import { setFieldByPath } from "../_lib/text-field-mapper";
 import { getFieldEditMode, resolveCompanionPath } from "../_lib/block-edit-map";
 import { ButtonEditPopup } from "./popups/button-edit-popup";
 import { ImageEditPopup } from "./popups/image-edit-popup";
+import { IconEditPopup } from "./popups/icon-edit-popup";
 import { NavEditPopup } from "./popups/nav-edit-popup";
 import { FooterEditPopup } from "./popups/footer-edit-popup";
 import { PricingEditPopup } from "./popups/pricing-edit-popup";
@@ -27,7 +28,7 @@ interface Props {
   openDrawerOnClick?: boolean;
 }
 
-type PopupType = "button" | "image" | "nav" | "footer" | "pricing";
+type PopupType = "button" | "image" | "icon" | "nav" | "footer" | "pricing";
 
 interface PopupState {
   type: PopupType;
@@ -191,6 +192,8 @@ export function EditorSectionWrapper({ section, style, className, children, prev
       setPopup({ type: "button", rect, path, fieldPrefix: prefix, textField: leafKey, linkField, typeField });
     } else if (mode === "image") {
       setPopup({ type: "image", rect, path, fieldPrefix: "", textField: "", linkField: "" });
+    } else if (mode === "icon") {
+      setPopup({ type: "icon", rect, path, fieldPrefix: "", textField: "", linkField: "" });
     } else if (mode === "nav") {
       setPopup({ type: "nav", rect, path, fieldPrefix: "", textField: "", linkField: "" });
     } else if (mode === "footer") {
@@ -369,7 +372,7 @@ export function EditorSectionWrapper({ section, style, className, children, prev
             }}
           >
             <IconPencil className="size-3.5" />
-            {hoverRect.mode === "nav" ? "Editar navegacao" : hoverRect.mode === "footer" ? "Editar rodape" : hoverRect.mode === "pricing" ? "Editar planos" : "Editar"}
+            {hoverRect.mode === "nav" ? "Editar navegacao" : hoverRect.mode === "footer" ? "Editar rodape" : hoverRect.mode === "pricing" ? "Editar planos" : hoverRect.mode === "icon" ? "Editar ícone" : "Editar"}
           </PglButton>
         </div>,
         env.getPortalTarget()
@@ -394,6 +397,16 @@ export function EditorSectionWrapper({ section, style, className, children, prev
           fieldPath={popup.path}
           storeId={storeId}
           currentUrl={typeof getNestedValue(content, popup.path) === "string" ? getNestedValue(content, popup.path) as string : undefined}
+          onClose={closePopup}
+        />
+      )}
+
+      {popup?.type === "icon" && (
+        <IconEditPopup
+          sectionId={section.id}
+          content={content}
+          fieldPath={popup.path}
+          currentToken={typeof getNestedValue(content, popup.path) === "string" ? getNestedValue(content, popup.path) as string : undefined}
           onClose={closePopup}
         />
       )}

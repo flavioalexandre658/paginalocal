@@ -126,6 +126,7 @@ export const STRATEX_CONTENT_MAP: SectionContentMap[] = [
   {
     blockType: "services",
     variant: 1,
+    iconOnly: true,
     fields: [
       { key: "title", type: "string", maxLength: 60, description: "Titulo centralizado com *accent*" },
       { key: "subtitle", type: "string", maxLength: 30, description: "Tag (ex: 'Diferenciais')" },
@@ -136,21 +137,22 @@ export const STRATEX_CONTENT_MAP: SectionContentMap[] = [
         children: [
           { key: "name", type: "string", maxLength: 40, description: "Titulo da feature" },
           { key: "description", type: "string", maxLength: 100, description: "Descricao curta centralizada" },
+          { key: "icon", type: "string", maxLength: 40, description: "Token Lucide (ex: 'lucide:Award'). NUNCA imagem." },
         ],
-        description: "3 a 6 features em grid 3 colunas com icone accent square + titulo + descricao",
+        description: "3 a 6 features em grid 3 colunas com ÍCONE Lucide accent square + titulo + descricao",
       },
     ],
-    contentGuidance: "Grid 3x2 de features. Cada card: icone accent quadrado (radius 16px, shadow inset) + titulo centralizado + descricao muted centralizada. Foco em beneficios do servico.",
+    contentGuidance: "Grid 3x2 de features. Cada card: ÍCONE Lucide accent quadrado (radius 16px, shadow inset) + titulo centralizado + descricao muted centralizada. Foco em beneficios. Use token Lucide em `icon` (ex: 'lucide:Award', 'lucide:Target'). NÃO gerar imagem.",
     exampleOutput: {
       title: "Beneficios que nos diferenciam das outras *empresas*",
       subtitle: "Diferenciais",
       items: [
-        { name: "Consultorias Ilimitadas", description: "Agende quantas sessoes estrategicas forem necessarias para o seu negocio." },
-        { name: "Solucoes Personalizadas", description: "Estrategias sob medida para seus objetivos unicos." },
-        { name: "Insights Especializados", description: "Expertise do setor para decisoes fundamentadas." },
-        { name: "Estrategias com Dados", description: "Decisoes seguras baseadas em pesquisa e analise." },
-        { name: "Suporte Continuo", description: "Orientacao constante e recomendacoes atualizadas." },
-        { name: "Execucao Impecavel", description: "Do planejamento a implementacao, garantimos processos fluidos." },
+        { name: "Consultorias Ilimitadas", description: "Agende quantas sessoes estrategicas forem necessarias para o seu negocio.", icon: "lucide:CalendarCheck" },
+        { name: "Solucoes Personalizadas", description: "Estrategias sob medida para seus objetivos unicos.", icon: "lucide:Target" },
+        { name: "Insights Especializados", description: "Expertise do setor para decisoes fundamentadas.", icon: "lucide:Lightbulb" },
+        { name: "Estrategias com Dados", description: "Decisoes seguras baseadas em pesquisa e analise.", icon: "lucide:BarChart3" },
+        { name: "Suporte Continuo", description: "Orientacao constante e recomendacoes atualizadas.", icon: "lucide:LifeBuoy" },
+        { name: "Execucao Impecavel", description: "Do planejamento a implementacao, garantimos processos fluidos.", icon: "lucide:CheckCircle" },
       ],
     },
   },
