@@ -21,6 +21,7 @@ import {
   isLightColor,
 } from '@/lib/color-contrast'
 import { getStoreHomeUrl } from '@/lib/utils'
+import { buildStoreMetadata } from '@/lib/site-metadata'
 import { getSectionConfig, getStoreSections } from '@/lib/store-sections'
 import { ProductCard } from '@/components/site/product-card'
 import { TestimonialsSection } from '../_components/testimonials-section'
@@ -117,64 +118,65 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await getCatalogoData(slug)
 
   if (!data) {
-    return { title: 'Página não encontrada' }
+    return { title: 'Página não encontrada', robots: { index: false, follow: false } }
   }
 
   const { store: storeData, collections } = data
   const sections = getStoreSections(storeData)
   const productsConfig = getSectionConfig(sections, 'PRODUCTS')
 
-  // Build rich description including collection names
-  const collectionNames = collections.map(c => c.name).slice(0, 5)
+  const collectionNames = collections.map((c) => c.name).slice(0, 5)
   const collectionFragment = collectionNames.length > 0
     ? ` Navegue por ${collectionNames.join(', ')}${collections.length > 5 ? ' e mais' : ''}.`
     : ''
 
-  const title = productsConfig?.seoTitle as string | undefined
-    || `Catálogo de Produtos | ${storeData.name} em ${storeData.city}`
-  const description = productsConfig?.seoDescription as string | undefined
-    || `Confira o catálogo completo de produtos ${getStoreGrammar(storeData.termGender, storeData.termNumber).da} ${storeData.name}, ${storeData.category.toLowerCase()} em ${storeData.city}, ${storeData.state}.${collectionFragment} Produtos de qualidade com atendimento personalizado.`
+  const _g = getStoreGrammar(storeData.termGender, storeData.termNumber)
+  const title =
+    (productsConfig?.seoTitle as string | undefined) ||
+    `Catálogo | ${storeData.name} — ${storeData.category} em ${storeData.city}`
+  const description =
+    (productsConfig?.seoDescription as string | undefined) ||
+    `Catálogo completo de produtos ${_g.da} ${storeData.name}, ${storeData.category.toLowerCase()} em ${storeData.city}, ${storeData.state}.${collectionFragment}`
 
-  const baseUrl = storeData.customDomain
-    ? `https://${storeData.customDomain}`
-    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'}`
-
-  const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
-
-  return {
-    title: { absolute: title },
-    description,
-    icons: { icon: faviconUrl, apple: faviconUrl },
-    robots: {
-      index: storeData.isActive,
-      follow: storeData.isActive,
-      googleBot: { index: storeData.isActive, follow: storeData.isActive, 'max-image-preview': 'large' as const },
+  return buildStoreMetadata(
+    {
+      name: storeData.name,
+      slug: storeData.slug,
+      category: storeData.category,
+      city: storeData.city,
+      state: storeData.state,
+      description: storeData.description,
+      seoTitle: storeData.seoTitle,
+      seoDescription: storeData.seoDescription,
+      customDomain: storeData.customDomain,
+      faviconUrl: storeData.faviconUrl,
+      logoUrl: storeData.logoUrl,
+      coverUrl: storeData.coverUrl,
+      primaryColor: storeData.primaryColor,
+      whatsapp: storeData.whatsapp,
+      phone: storeData.phone,
+      instagramUrl: storeData.instagramUrl,
+      facebookUrl: storeData.facebookUrl,
+      googleBusinessUrl: storeData.googleBusinessUrl,
+      website: storeData.website,
+      address: storeData.address,
+      latitude: storeData.latitude,
+      longitude: storeData.longitude,
+      neighborhoods: storeData.neighborhoods as string[] | null,
+      siteBlueprintV2: storeData.siteBlueprintV2 as never,
     },
-    alternates: { canonical: `${baseUrl}/catalogo` },
-    openGraph: {
-      type: 'website',
-      locale: 'pt_BR',
-      url: `${baseUrl}/catalogo`,
-      siteName: storeData.name,
+    {
+      pathname: '/catalogo',
       title,
       description,
-      images: storeData.coverUrl ? [{ url: storeData.coverUrl, width: 1200, height: 630, alt: `Catálogo de produtos - ${storeData.name} em ${storeData.city}` }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: storeData.coverUrl ? [storeData.coverUrl] : [],
-    },
-    other: {
-      'geo.region': `BR-${storeData.state}`,
-      'geo.placename': storeData.city,
-      ...(storeData.latitude && storeData.longitude && {
-        'geo.position': `${storeData.latitude};${storeData.longitude}`,
-        'ICBM': `${storeData.latitude}, ${storeData.longitude}`,
-      }),
-    },
-  }
+      noindex: !storeData.isActive,
+      keywords: [
+        `catálogo ${storeData.name}`,
+        `produtos ${storeData.category} ${storeData.city}`,
+        ...collectionNames.map((n) => `${n} ${storeData.city}`),
+      ],
+    }
+  )
 }
 
 export default async function CatalogoPage({ params }: PageProps) {

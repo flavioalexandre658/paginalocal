@@ -6,6 +6,7 @@ import { store, storePage, service } from '@/db/schema'
 import { eq, and, asc } from 'drizzle-orm'
 import { IconBrandWhatsapp, IconPhone, IconMapPin } from '@tabler/icons-react'
 import { buildStoreUrl } from '@/lib/google-indexing'
+import { buildStoreMetadata } from '@/lib/site-metadata'
 import { getWhatsAppUrl } from '@/lib/utils'
 import { HeroSection } from '../_components/hero-section'
 import { SiteFooter } from '../_components/site-footer'
@@ -86,69 +87,53 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await getContactPageData(slug)
 
   if (!data) {
-    return { title: 'Página não encontrada' }
+    return { title: 'Página não encontrada', robots: { index: false, follow: false } }
   }
 
   const { store: storeData, page } = data
-
   const _g0 = getStoreGrammar(storeData.termGender, storeData.termNumber)
-  const title = page.seoTitle || `Contato | ${storeData.name}`
-  const description = page.seoDescription || `Entre em contato com ${_g0.art} ${storeData.name} - ${storeData.category} em ${storeData.city}, ${storeData.state}. WhatsApp, telefone e endereço. Atendimento profissional.`
-  const pageUrl = buildStoreUrl(storeData.slug, storeData.customDomain) + '/contato'
-  const ogImage = storeData.coverUrl || storeData.logoUrl
-  const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
 
-  return {
-    title: { absolute: title },
-    description,
-    icons: {
-      icon: faviconUrl,
-      apple: faviconUrl,
+  return buildStoreMetadata(
+    {
+      name: storeData.name,
+      slug: storeData.slug,
+      category: storeData.category,
+      city: storeData.city,
+      state: storeData.state,
+      description: storeData.description,
+      seoTitle: storeData.seoTitle,
+      seoDescription: storeData.seoDescription,
+      customDomain: storeData.customDomain,
+      faviconUrl: storeData.faviconUrl,
+      logoUrl: storeData.logoUrl,
+      coverUrl: storeData.coverUrl,
+      primaryColor: storeData.primaryColor,
+      whatsapp: storeData.whatsapp,
+      phone: storeData.phone,
+      instagramUrl: storeData.instagramUrl,
+      facebookUrl: storeData.facebookUrl,
+      googleBusinessUrl: storeData.googleBusinessUrl,
+      website: storeData.website,
+      address: storeData.address,
+      latitude: storeData.latitude,
+      longitude: storeData.longitude,
+      neighborhoods: storeData.neighborhoods as string[] | null,
+      siteBlueprintV2: storeData.siteBlueprintV2 as never,
     },
-    authors: [{ name: storeData.name }],
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
-    alternates: {
-      canonical: pageUrl,
-    },
-    openGraph: {
-      type: 'website',
-      locale: 'pt_BR',
-      url: pageUrl,
-      siteName: storeData.name,
-      title,
-      description,
-      images: ogImage ? [{
-        url: ogImage,
-        width: 1200,
-        height: 630,
-        alt: `${storeData.name} - ${storeData.category} em ${storeData.city}`,
-      }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: ogImage ? [ogImage] : [],
-    },
-    other: {
-      'geo.region': `BR-${storeData.state}`,
-      'geo.placename': storeData.city,
-      ...(storeData.latitude && storeData.longitude && {
-        'geo.position': `${storeData.latitude};${storeData.longitude}`,
-        'ICBM': `${storeData.latitude}, ${storeData.longitude}`,
-      }),
-    },
-  }
+    {
+      pathname: '/contato',
+      title: page.seoTitle || `Contato | ${storeData.name} — ${storeData.category} em ${storeData.city}`,
+      description:
+        page.seoDescription ||
+        `Fale com ${_g0.art} ${storeData.name}: WhatsApp, telefone e endereço em ${storeData.city}, ${storeData.state}. Atendimento rápido.`,
+      keywords: [
+        `contato ${storeData.name}`,
+        `${storeData.category} ${storeData.city} contato`,
+        `${storeData.category} ${storeData.city} WhatsApp`,
+        `${storeData.category} ${storeData.city} telefone`,
+      ],
+    }
+  )
 }
 
 export default async function ContatoPage({ params }: PageProps) {

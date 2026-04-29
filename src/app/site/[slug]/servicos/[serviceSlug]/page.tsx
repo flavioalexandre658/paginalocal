@@ -7,6 +7,7 @@ import { ServiceDetailContent } from './_components/service-detail-content'
 import { SiteFooter } from '../../_components/site-footer'
 import { FloatingContact } from '../../_components/floating-contact'
 import { getStoreGrammar } from '@/lib/store-terms'
+import { buildStoreMetadata } from '@/lib/site-metadata'
 
 interface PageProps {
   params: Promise<{ slug: string; serviceSlug: string }>
@@ -79,76 +80,62 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await getServiceData(slug, serviceSlug)
 
   if (!data) {
-    return { title: 'Serviço não encontrado' }
+    return { title: 'Serviço não encontrado', robots: { index: false, follow: false } }
   }
 
   const { store: storeData, service: serviceData } = data
+  const _g = getStoreGrammar(storeData.termGender, storeData.termNumber)
 
-  const title = serviceData.seoTitle
-    || `${serviceData.name} em ${storeData.city} | ${storeData.name}`
-  const description = serviceData.seoDescription
-    || serviceData.description
-    || `${serviceData.name} ${getStoreGrammar(storeData.termGender, storeData.termNumber).na} ${storeData.name}, ${storeData.category.toLowerCase()} em ${storeData.city}, ${storeData.state}. Entre em contato pelo WhatsApp!`
+  const title =
+    serviceData.seoTitle ||
+    `${serviceData.name} em ${storeData.city} | ${storeData.name}`
+  const description =
+    serviceData.seoDescription ||
+    serviceData.description ||
+    `${serviceData.name} ${_g.na} ${storeData.name}, ${storeData.category.toLowerCase()} em ${storeData.city}, ${storeData.state}. Atendimento rápido pelo WhatsApp.`
 
-  const baseUrl = storeData.customDomain
-    ? `https://${storeData.customDomain}`
-    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'}`
+  const ogImage = serviceData.heroImageUrl || serviceData.imageUrl || undefined
 
-  const pageUrl = `${baseUrl}/servicos/${serviceSlug}`
-  const ogImage = serviceData.heroImageUrl || serviceData.imageUrl || storeData.coverUrl || storeData.logoUrl
-  const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
-
-  return {
-    title: { absolute: title },
-    description,
-    icons: {
-      icon: faviconUrl,
-      apple: faviconUrl,
+  return buildStoreMetadata(
+    {
+      name: storeData.name,
+      slug: storeData.slug,
+      category: storeData.category,
+      city: storeData.city,
+      state: storeData.state,
+      description: storeData.description,
+      seoTitle: storeData.seoTitle,
+      seoDescription: storeData.seoDescription,
+      customDomain: storeData.customDomain,
+      faviconUrl: storeData.faviconUrl,
+      logoUrl: storeData.logoUrl,
+      coverUrl: storeData.coverUrl,
+      primaryColor: storeData.primaryColor,
+      whatsapp: storeData.whatsapp,
+      phone: storeData.phone,
+      instagramUrl: storeData.instagramUrl,
+      facebookUrl: storeData.facebookUrl,
+      googleBusinessUrl: storeData.googleBusinessUrl,
+      website: storeData.website,
+      address: storeData.address,
+      latitude: storeData.latitude,
+      longitude: storeData.longitude,
+      neighborhoods: storeData.neighborhoods as string[] | null,
+      siteBlueprintV2: storeData.siteBlueprintV2 as never,
     },
-    authors: [{ name: storeData.name }],
-    robots: {
-      index: storeData.isActive,
-      follow: storeData.isActive,
-      googleBot: {
-        index: storeData.isActive,
-        follow: storeData.isActive,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
-    alternates: {
-      canonical: pageUrl,
-    },
-    openGraph: {
-      type: 'website',
-      locale: 'pt_BR',
-      url: pageUrl,
-      siteName: storeData.name,
+    {
+      pathname: `/servicos/${serviceSlug}`,
       title,
       description,
-      images: ogImage ? [{
-        url: ogImage,
-        width: 1200,
-        height: 630,
-        alt: `${serviceData.name} - ${storeData.name}`,
-      }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: ogImage ? [ogImage] : [],
-    },
-    other: {
-      'geo.region': `BR-${storeData.state}`,
-      'geo.placename': storeData.city,
-      ...(storeData.latitude && storeData.longitude && {
-        'geo.position': `${storeData.latitude};${storeData.longitude}`,
-        'ICBM': `${storeData.latitude}, ${storeData.longitude}`,
-      }),
-    },
-  }
+      imageUrl: ogImage,
+      noindex: !storeData.isActive,
+      keywords: [
+        serviceData.name,
+        `${serviceData.name} ${storeData.city}`,
+        `${serviceData.name} ${storeData.category} ${storeData.city}`,
+      ],
+    }
+  )
 }
 
 export default async function ServicePage({ params }: PageProps) {

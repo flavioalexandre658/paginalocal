@@ -13,6 +13,7 @@ import { generateFAQJsonLd } from '@/lib/faq-json-ld'
 import type { SiteBlueprint } from '@/types/ai-generation'
 import { SiteV2Renderer } from './_components/site-v2-renderer'
 import { UnpublishedSiteCover } from './_components/unpublished-site-cover'
+import { buildStoreMetadata, buildWebPageJsonLd, buildSameAsArray } from '@/lib/site-metadata'
 
 const PageviewTracker = dynamic(() => import('./_components/pageview-tracker').then(m => m.PageviewTracker))
 const DraftInterceptor = dynamic(() => import('./_components/draft-interceptor').then(m => m.DraftInterceptor))
@@ -107,83 +108,38 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await getStoreData(slug)
 
   if (!data) {
-    return { title: 'Página não encontrada' }
+    return { title: 'Página não encontrada', robots: { index: false, follow: false } }
   }
 
   const { store: storeData } = data
 
-  const title = storeData.seoTitle || `${storeData.category} em ${storeData.city} | ${storeData.name}`
-  const description = storeData.seoDescription || storeData.description || `${storeData.name} - ${storeData.category} em ${storeData.city}, ${storeData.state}. Entre em contato pelo WhatsApp!`
-
-  const baseUrl = storeData.customDomain
-    ? `https://${storeData.customDomain}`
-    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'}`
-
-  const ogImage = storeData.coverUrl || storeData.logoUrl
-
-  const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
-
-  return {
-    title: {
-      absolute: title,
-    },
-    description,
-    icons: {
-      icon: faviconUrl,
-      apple: faviconUrl,
-    },
-    authors: [{ name: storeData.name }],
-    creator: storeData.name,
-    publisher: storeData.name,
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
-    alternates: {
-      canonical: baseUrl,
-    },
-    openGraph: {
-      type: 'website',
-      locale: 'pt_BR',
-      url: baseUrl,
-      siteName: storeData.name,
-      title,
-      description,
-      images: ogImage ? [
-        {
-          url: ogImage,
-          width: 1200,
-          height: 630,
-          alt: `${storeData.name} - ${storeData.category} em ${storeData.city}`,
-        },
-      ] : [],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: ogImage ? [ogImage] : [],
-    },
-    verification: {
-      google: process.env.GOOGLE_SITE_VERIFICATION,
-    },
+  return buildStoreMetadata({
+    name: storeData.name,
+    slug: storeData.slug,
     category: storeData.category,
-    other: {
-      'geo.region': `BR-${storeData.state}`,
-      'geo.placename': storeData.city,
-      ...(storeData.latitude && storeData.longitude && {
-        'geo.position': `${storeData.latitude};${storeData.longitude}`,
-        'ICBM': `${storeData.latitude}, ${storeData.longitude}`,
-      }),
-    },
-  }
+    city: storeData.city,
+    state: storeData.state,
+    description: storeData.description,
+    seoTitle: storeData.seoTitle,
+    seoDescription: storeData.seoDescription,
+    customDomain: storeData.customDomain,
+    faviconUrl: storeData.faviconUrl,
+    logoUrl: storeData.logoUrl,
+    coverUrl: storeData.coverUrl,
+    primaryColor: storeData.primaryColor,
+    whatsapp: storeData.whatsapp,
+    phone: storeData.phone,
+    instagramUrl: storeData.instagramUrl,
+    facebookUrl: storeData.facebookUrl,
+    googleBusinessUrl: storeData.googleBusinessUrl,
+    website: storeData.website,
+    address: storeData.address,
+    latitude: storeData.latitude,
+    longitude: storeData.longitude,
+    neighborhoods: (storeData.neighborhoods as string[] | null) ?? null,
+    services: data.services.map((s) => s.name),
+    siteBlueprintV2: storeData.siteBlueprintV2 as SiteBlueprint | null,
+  })
 }
 
 export default async function StorePage({ params }: PageProps) {
@@ -239,6 +195,18 @@ export default async function StorePage({ params }: PageProps) {
       createdAt: t.createdAt,
     }))
 
+  const sameAs = buildSameAsArray({
+    name: storeData.name,
+    slug: storeData.slug,
+    category: storeData.category,
+    city: storeData.city,
+    state: storeData.state,
+    instagramUrl: storeData.instagramUrl,
+    facebookUrl: storeData.facebookUrl,
+    googleBusinessUrl: storeData.googleBusinessUrl,
+    website: storeData.website,
+  })
+
   const localBusinessJsonLd = generateLocalBusinessJsonLd({
     name: storeData.name,
     slug: storeData.slug,
@@ -258,6 +226,20 @@ export default async function StorePage({ params }: PageProps) {
     reviewCount: storeData.googleReviewsCount || undefined,
     reviews: reviewsForSchema,
     neighborhoods: neighborhoods.length > 0 ? neighborhoods : undefined,
+    email: storeData.email || undefined,
+    sameAs: sameAs.length > 0 ? sameAs : undefined,
+    knowsAbout: services.slice(0, 8).map((s) => s.name),
+  })
+
+  const webPageJsonLd = buildWebPageJsonLd({
+    name: storeData.name,
+    description:
+      storeData.seoDescription ||
+      `${storeData.name} — ${storeData.category} em ${storeData.city}, ${storeData.state}`,
+    url: baseUrl,
+    imageUrl: storeData.coverUrl || storeData.logoUrl || undefined,
+    businessId: `${baseUrl}/#business`,
+    breadcrumbId: `${baseUrl}/#breadcrumb`,
   })
 
   const breadcrumbJsonLd = generateBreadcrumbJsonLd({
@@ -379,6 +361,10 @@ export default async function StorePage({ params }: PageProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceAreaJsonLd) }}
         />
       )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageJsonLd) }}
+      />
 
       <PageviewTracker storeId={storeData.id} />
 

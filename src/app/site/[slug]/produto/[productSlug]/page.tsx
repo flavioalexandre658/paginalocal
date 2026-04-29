@@ -14,6 +14,7 @@ import { FloatingContact } from '../../_components/floating-contact'
 import type { ProductImage } from '@/db/schema'
 import { getStoreGrammar } from '@/lib/store-terms'
 import { getCollectionPageUrl } from '@/lib/utils'
+import { buildStoreMetadata } from '@/lib/site-metadata'
 
 interface PageProps {
   params: Promise<{ slug: string; productSlug: string }>
@@ -124,59 +125,80 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await getProductData(slug, productSlug)
 
   if (!data) {
-    return { title: 'Produto não encontrado' }
+    return { title: 'Produto não encontrado', robots: { index: false, follow: false } }
   }
 
   const { store: storeData, product } = data
   const images = product.images as ProductImage[] | null
   const firstImage = images && images.length > 0 ? images[0] : null
 
-  const title = product.seoTitle || `${product.name} em ${storeData.city} | ${storeData.name}`
-
   const priceFormatted = `R$ ${(product.priceInCents / 100).toFixed(2).replace('.', ',')}`
-  const description = product.seoDescription
-    || `${product.name} em ${storeData.city} — ${storeData.name}. ${priceFormatted}. ${storeData.category} em ${storeData.state}. Peça pelo WhatsApp!`
+  const title =
+    product.seoTitle ||
+    `${product.name} em ${storeData.city} | ${storeData.name}`
+  const description =
+    product.seoDescription ||
+    `${product.name} em ${storeData.city} — ${storeData.name}. ${priceFormatted}. ${storeData.category} em ${storeData.state}. Peça pelo WhatsApp.`
 
-  const baseUrl = storeData.customDomain
-    ? `https://${storeData.customDomain}`
-    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'}`
+  const ogImage = firstImage?.url || undefined
 
-  const pageUrl = `${baseUrl}/produto/${productSlug}`
-  const ogImage = firstImage?.url || storeData.coverUrl || storeData.logoUrl
-  const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
+  const meta = buildStoreMetadata(
+    {
+      name: storeData.name,
+      slug: storeData.slug,
+      category: storeData.category,
+      city: storeData.city,
+      state: storeData.state,
+      description: storeData.description,
+      seoTitle: storeData.seoTitle,
+      seoDescription: storeData.seoDescription,
+      customDomain: storeData.customDomain,
+      faviconUrl: storeData.faviconUrl,
+      logoUrl: storeData.logoUrl,
+      coverUrl: storeData.coverUrl,
+      primaryColor: storeData.primaryColor,
+      whatsapp: storeData.whatsapp,
+      phone: storeData.phone,
+      instagramUrl: storeData.instagramUrl,
+      facebookUrl: storeData.facebookUrl,
+      googleBusinessUrl: storeData.googleBusinessUrl,
+      website: storeData.website,
+      address: storeData.address,
+      latitude: storeData.latitude,
+      longitude: storeData.longitude,
+      neighborhoods: storeData.neighborhoods as string[] | null,
+      siteBlueprintV2: storeData.siteBlueprintV2 as never,
+    },
+    {
+      pathname: `/produto/${productSlug}`,
+      title,
+      description,
+      imageUrl: ogImage,
+      noindex: !storeData.isActive,
+      keywords: [
+        product.name,
+        `${product.name} ${storeData.city}`,
+        `${product.name} ${storeData.category}`,
+        `comprar ${product.name} ${storeData.city}`,
+      ],
+    }
+  )
 
+  // Override OG type to 'product' (better social previews for ecommerce)
   return {
-    title: { absolute: title },
-    description,
-    icons: { icon: faviconUrl, apple: faviconUrl },
-    robots: {
-      index: storeData.isActive,
-      follow: storeData.isActive,
-      googleBot: { index: storeData.isActive, follow: storeData.isActive, 'max-image-preview': 'large' as const },
-    },
-    alternates: { canonical: pageUrl },
-    openGraph: {
-      type: 'website',
-      locale: 'pt_BR',
-      url: pageUrl,
-      siteName: storeData.name,
-      title,
-      description,
-      images: ogImage ? [{ url: ogImage, width: 1200, height: 630, alt: `${product.name} - ${storeData.name} em ${storeData.city}` }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: ogImage ? [ogImage] : [],
-    },
+    ...meta,
+    openGraph: meta.openGraph
+      ? {
+          ...meta.openGraph,
+          type: 'website',
+        }
+      : meta.openGraph,
     other: {
-      'geo.region': `BR-${storeData.state}`,
-      'geo.placename': storeData.city,
-      ...(storeData.latitude && storeData.longitude && {
-        'geo.position': `${storeData.latitude};${storeData.longitude}`,
-        'ICBM': `${storeData.latitude}, ${storeData.longitude}`,
-      }),
+      ...(meta.other as Record<string, string>),
+      'product:price:amount': (product.priceInCents / 100).toFixed(2),
+      'product:price:currency': 'BRL',
+      'og:price:amount': (product.priceInCents / 100).toFixed(2),
+      'og:price:currency': 'BRL',
     },
   }
 }

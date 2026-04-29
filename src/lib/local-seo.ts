@@ -30,6 +30,10 @@ interface LocalBusinessData {
   reviews?: Review[]
   priceRange?: string
   neighborhoods?: string[]
+  email?: string
+  sameAs?: string[]
+  founders?: string[]
+  knowsAbout?: string[]
 }
 
 const DAY_OF_WEEK_URLS: Record<string, string> = {
@@ -47,6 +51,85 @@ const DAY_OF_WEEK_URLS: Record<string, string> = {
   friday: 'https://schema.org/Friday',
   saturday: 'https://schema.org/Saturday',
   sunday: 'https://schema.org/Sunday',
+}
+
+/**
+ * Mapeia categoria do PGL para o tipo mais específico de schema.org.
+ * Cai em "LocalBusiness" se não houver match.
+ */
+function mapCategoryToSchema(category: string): string {
+  const c = category.toLowerCase()
+  const map: Record<string, string> = {
+    barbearia: 'BarberShop',
+    salao: 'BeautySalon',
+    'salão': 'BeautySalon',
+    estetica: 'BeautySalon',
+    spa: 'DaySpa',
+    restaurante: 'Restaurant',
+    pizzaria: 'Restaurant',
+    lanchonete: 'FastFoodRestaurant',
+    cafeteria: 'CafeOrCoffeeShop',
+    padaria: 'Bakery',
+    confeitaria: 'Bakery',
+    hamburgueria: 'Restaurant',
+    bar: 'BarOrPub',
+    'pet-shop': 'PetStore',
+    'pet shop': 'PetStore',
+    veterinaria: 'VeterinaryCare',
+    'veterinária': 'VeterinaryCare',
+    clinica: 'MedicalClinic',
+    'clínica': 'MedicalClinic',
+    dentista: 'Dentist',
+    odontologia: 'Dentist',
+    consultorio: 'MedicalClinic',
+    farmacia: 'Pharmacy',
+    'farmácia': 'Pharmacy',
+    academia: 'ExerciseGym',
+    yoga: 'ExerciseGym',
+    fisioterapia: 'Physician',
+    psicologia: 'Physician',
+    advocacia: 'Attorney',
+    advogado: 'Attorney',
+    contabilidade: 'AccountingService',
+    consultoria: 'ProfessionalService',
+    arquitetura: 'ProfessionalService',
+    engenharia: 'ProfessionalService',
+    imobiliaria: 'RealEstateAgent',
+    'imobiliária': 'RealEstateAgent',
+    corretor: 'RealEstateAgent',
+    construtora: 'GeneralContractor',
+    reforma: 'HomeAndConstructionBusiness',
+    pintura: 'HomeAndConstructionBusiness',
+    encanamento: 'Plumber',
+    eletricista: 'Electrician',
+    'lava-jato': 'AutoWash',
+    'lava jato': 'AutoWash',
+    'lava-car': 'AutoWash',
+    estacionamento: 'AutomotiveBusiness',
+    oficina: 'AutoRepair',
+    mecanica: 'AutoRepair',
+    'mecânica': 'AutoRepair',
+    borracharia: 'AutoRepair',
+    autocenter: 'AutomotiveBusiness',
+    'auto-center': 'AutomotiveBusiness',
+    revendedora: 'AutoDealer',
+    floricultura: 'Florist',
+    fotografo: 'ProfessionalService',
+    'fotógrafo': 'ProfessionalService',
+    fotografia: 'ProfessionalService',
+    hotel: 'Hotel',
+    pousada: 'LodgingBusiness',
+    escola: 'EducationalOrganization',
+    educacao: 'EducationalOrganization',
+    'educação': 'EducationalOrganization',
+    supermercado: 'GroceryStore',
+    loja: 'Store',
+  }
+
+  for (const [key, type] of Object.entries(map)) {
+    if (c.includes(key)) return type
+  }
+  return 'LocalBusiness'
 }
 
 function parseHours(hoursString: string): { opens: string; closes: string } | null {
@@ -134,7 +217,29 @@ export function generateLocalBusinessJsonLd(data: LocalBusinessData) {
   }
 
   if (data.imageUrl && !data.imageUrl.includes('maps.googleapis.com')) {
-    schema.image = data.imageUrl
+    schema.image = {
+      '@type': 'ImageObject',
+      url: data.imageUrl,
+      width: 1200,
+      height: 630,
+    }
+  }
+
+  if (data.email) {
+    schema.email = data.email
+  }
+
+  if (data.sameAs && data.sameAs.length > 0) {
+    schema.sameAs = data.sameAs
+  }
+
+  if (data.knowsAbout && data.knowsAbout.length > 0) {
+    schema.knowsAbout = data.knowsAbout
+  }
+
+  if (data.category) {
+    schema['@type'] = 'LocalBusiness'
+    schema.additionalType = `https://schema.org/${mapCategoryToSchema(data.category)}`
   }
 
   if (data.rating && data.reviewCount && data.reviewCount > 0) {

@@ -20,6 +20,7 @@ import {
   isLightColor,
 } from '@/lib/color-contrast'
 import { getStoreHomeUrl } from '@/lib/utils'
+import { buildStoreMetadata } from '@/lib/site-metadata'
 import { getSectionConfig, getStoreSections } from '@/lib/store-sections'
 import { cn } from '@/lib/utils'
 import { TestimonialsSection } from '../_components/testimonials-section'
@@ -91,59 +92,60 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await getPlanosData(slug)
 
   if (!data) {
-    return { title: 'Página não encontrada' }
+    return { title: 'Página não encontrada', robots: { index: false, follow: false } }
   }
 
   const { store: storeData } = data
   const sections = getStoreSections(storeData)
   const pricingConfig = getSectionConfig(sections, 'PRICING_PLANS')
+  const _g = getStoreGrammar(storeData.termGender, storeData.termNumber)
 
-  const title = pricingConfig?.seoTitle as string | undefined
-    || `Planos e Preços — ${storeData.category} em ${storeData.city} | ${storeData.name}`
-  const description = pricingConfig?.seoDescription as string | undefined
-    || `Conheça os planos de ${storeData.category.toLowerCase()} ${getStoreGrammar(storeData.termGender, storeData.termNumber).da} ${storeData.name} em ${storeData.city}, ${storeData.state}. Escolha o plano ideal e entre em contato pelo WhatsApp.`
+  const title =
+    (pricingConfig?.seoTitle as string | undefined) ||
+    `Planos e Preços | ${storeData.name} — ${storeData.category} em ${storeData.city}`
+  const description =
+    (pricingConfig?.seoDescription as string | undefined) ||
+    `Conheça os planos de ${storeData.category.toLowerCase()} ${_g.da} ${storeData.name} em ${storeData.city}, ${storeData.state}. Escolha o plano ideal e fale pelo WhatsApp.`
 
-  const baseUrl = storeData.customDomain
-    ? `https://${storeData.customDomain}`
-    : `https://${storeData.slug}.${process.env.NEXT_PUBLIC_MAIN_DOMAIN || 'decolou.com'}`
-
-  const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
-  const ogImage = storeData.coverUrl || storeData.logoUrl
-
-  return {
-    title: { absolute: title },
-    description,
-    icons: { icon: faviconUrl, apple: faviconUrl },
-    robots: {
-      index: storeData.isActive,
-      follow: storeData.isActive,
-      googleBot: { index: storeData.isActive, follow: storeData.isActive, 'max-image-preview': 'large' as const },
+  return buildStoreMetadata(
+    {
+      name: storeData.name,
+      slug: storeData.slug,
+      category: storeData.category,
+      city: storeData.city,
+      state: storeData.state,
+      description: storeData.description,
+      seoTitle: storeData.seoTitle,
+      seoDescription: storeData.seoDescription,
+      customDomain: storeData.customDomain,
+      faviconUrl: storeData.faviconUrl,
+      logoUrl: storeData.logoUrl,
+      coverUrl: storeData.coverUrl,
+      primaryColor: storeData.primaryColor,
+      whatsapp: storeData.whatsapp,
+      phone: storeData.phone,
+      instagramUrl: storeData.instagramUrl,
+      facebookUrl: storeData.facebookUrl,
+      googleBusinessUrl: storeData.googleBusinessUrl,
+      website: storeData.website,
+      address: storeData.address,
+      latitude: storeData.latitude,
+      longitude: storeData.longitude,
+      neighborhoods: storeData.neighborhoods as string[] | null,
+      siteBlueprintV2: storeData.siteBlueprintV2 as never,
     },
-    alternates: { canonical: `${baseUrl}/planos` },
-    openGraph: {
-      type: 'website',
-      locale: 'pt_BR',
-      url: `${baseUrl}/planos`,
-      siteName: storeData.name,
+    {
+      pathname: '/planos',
       title,
       description,
-      images: ogImage ? [{ url: ogImage, width: 1200, height: 630, alt: `Planos e Preços — ${storeData.name} em ${storeData.city}` }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image' as const,
-      title,
-      description,
-      images: ogImage ? [ogImage] : [],
-    },
-    other: {
-      'geo.region': `BR-${storeData.state}`,
-      'geo.placename': storeData.city,
-      ...(storeData.latitude && storeData.longitude && {
-        'geo.position': `${storeData.latitude};${storeData.longitude}`,
-        'ICBM': `${storeData.latitude}, ${storeData.longitude}`,
-      }),
-    },
-  }
+      noindex: !storeData.isActive,
+      keywords: [
+        `planos ${storeData.name}`,
+        `preços ${storeData.category} ${storeData.city}`,
+        `${storeData.category} ${storeData.city} planos`,
+      ],
+    }
+  )
 }
 
 export default async function PlanosPage({ params }: PageProps) {

@@ -5,6 +5,7 @@ import { db } from '@/db'
 import { store, storePage, service } from '@/db/schema'
 import { eq, and, asc } from 'drizzle-orm'
 import { buildStoreUrl } from '@/lib/google-indexing'
+import { buildStoreMetadata } from '@/lib/site-metadata'
 import { HeroSection } from '../_components/hero-section'
 import { SiteFooter } from '../_components/site-footer'
 import { getStoreGrammar } from '@/lib/store-terms'
@@ -73,69 +74,53 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const data = await getAboutPageData(slug)
 
   if (!data) {
-    return { title: 'Página não encontrada' }
+    return { title: 'Página não encontrada', robots: { index: false, follow: false } }
   }
 
-  const { store: storeData, page } = data
-
-  const title = page.seoTitle || `Sobre | ${storeData.name}`
+  const { store: storeData, page, services } = data
   const _g0 = getStoreGrammar(storeData.termGender, storeData.termNumber)
-  const description = page.seoDescription || `Conheça ${_g0.art} ${storeData.name} - ${storeData.category} em ${storeData.city}, ${storeData.state}. Nossa história, serviços e compromisso com a qualidade. Visite-nos!`
-  const pageUrl = buildStoreUrl(storeData.slug, storeData.customDomain) + '/sobre-nos'
-  const ogImage = storeData.coverUrl || storeData.logoUrl
-  const faviconUrl = storeData.faviconUrl || storeData.logoUrl || '/assets/images/icon/favicon.ico'
 
-  return {
-    title: { absolute: title },
-    description,
-    icons: {
-      icon: faviconUrl,
-      apple: faviconUrl,
+  return buildStoreMetadata(
+    {
+      name: storeData.name,
+      slug: storeData.slug,
+      category: storeData.category,
+      city: storeData.city,
+      state: storeData.state,
+      description: storeData.description,
+      seoTitle: storeData.seoTitle,
+      seoDescription: storeData.seoDescription,
+      customDomain: storeData.customDomain,
+      faviconUrl: storeData.faviconUrl,
+      logoUrl: storeData.logoUrl,
+      coverUrl: storeData.coverUrl,
+      primaryColor: storeData.primaryColor,
+      whatsapp: storeData.whatsapp,
+      phone: storeData.phone,
+      instagramUrl: storeData.instagramUrl,
+      facebookUrl: storeData.facebookUrl,
+      googleBusinessUrl: storeData.googleBusinessUrl,
+      website: storeData.website,
+      address: storeData.address,
+      latitude: storeData.latitude,
+      longitude: storeData.longitude,
+      neighborhoods: storeData.neighborhoods as string[] | null,
+      services: services.map((s) => s.name),
+      siteBlueprintV2: storeData.siteBlueprintV2 as never,
     },
-    authors: [{ name: storeData.name }],
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
-    alternates: {
-      canonical: pageUrl,
-    },
-    openGraph: {
-      type: 'website',
-      locale: 'pt_BR',
-      url: pageUrl,
-      siteName: storeData.name,
-      title,
-      description,
-      images: ogImage ? [{
-        url: ogImage,
-        width: 1200,
-        height: 630,
-        alt: `${storeData.name} - ${storeData.category} em ${storeData.city}`,
-      }] : [],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: ogImage ? [ogImage] : [],
-    },
-    other: {
-      'geo.region': `BR-${storeData.state}`,
-      'geo.placename': storeData.city,
-      ...(storeData.latitude && storeData.longitude && {
-        'geo.position': `${storeData.latitude};${storeData.longitude}`,
-        'ICBM': `${storeData.latitude}, ${storeData.longitude}`,
-      }),
-    },
-  }
+    {
+      pathname: '/sobre-nos',
+      title: page.seoTitle || `Sobre ${_g0.art} ${storeData.name} | ${storeData.category} em ${storeData.city}`,
+      description:
+        page.seoDescription ||
+        `Conheça ${_g0.art} ${storeData.name} — ${storeData.category} em ${storeData.city}, ${storeData.state}. História, equipe e compromisso com qualidade.`,
+      keywords: [
+        `sobre ${storeData.name}`,
+        `história ${storeData.name}`,
+        `${storeData.category} ${storeData.city} sobre`,
+      ],
+    }
+  )
 }
 
 export default async function SobreNosPage({ params }: PageProps) {
