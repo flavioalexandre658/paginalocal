@@ -41,6 +41,7 @@ export type EditorAction =
   | { type: "MARK_SAVED" }
   | { type: "SET_BLUEPRINT"; blueprint: SiteBlueprint }
   | { type: "MERGE_GENERATED_SECTIONS"; blueprint: SiteBlueprint }
+  | { type: "MERGE_IMAGE_URLS"; blueprint: SiteBlueprint }
   | { type: "BUMP_RENDER_EPOCH" }
   | { type: "SET_VIEWPORT"; mode: ViewportMode }
   | { type: "UPDATE_DESIGN_TOKENS"; tokens: Partial<DesignTokens> }

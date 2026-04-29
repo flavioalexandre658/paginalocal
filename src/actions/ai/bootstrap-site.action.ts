@@ -4,7 +4,7 @@ import { authActionClient } from "@/lib/safe-action";
 import { z } from "zod";
 import { after } from "next/server";
 import type { BusinessContext } from "@/types/ai-generation";
-import { runPhase1, runFollowUpPhase } from "./generate-site-v2";
+import { runPhase1, runFollowUpPhase, generatePhase1Images } from "./generate-site-v2";
 import { planPhases } from "@/lib/site-generation/phases";
 import { loadBusinessContext } from "@/lib/site-generation/load-business-context";
 import { finalizeMetrics } from "@/lib/generation-tracker";
@@ -67,9 +67,22 @@ async function runBackgroundPhases({
   userId: string;
   phase1Result: Awaited<ReturnType<typeof runPhase1>>;
 }) {
-  const { template, fontRecs, designContext, totalSections } = phase1Result;
+  const { template, fontRecs, designContext, totalSections, phase1ImageQueries } = phase1Result;
   const plan = planPhases(totalSections);
 
+  // Phase 1 hero image — primeiro, para o usuário ver o hero pronto rápido.
+  try {
+    await generatePhase1Images({
+      ctx,
+      userId,
+      template,
+      imageQueries: phase1ImageQueries,
+    });
+  } catch (err) {
+    console.error("[bootstrapSiteV2] phase 1 images failed:", err);
+  }
+
+  // Phase 2: text + images sequenciais (cada fase aguarda suas imagens)
   try {
     await runFollowUpPhase({
       ctx,
@@ -85,6 +98,7 @@ async function runBackgroundPhases({
     console.error("[bootstrapSiteV2] phase 2 failed:", err);
   }
 
+  // Phase 3
   try {
     await runFollowUpPhase({
       ctx,

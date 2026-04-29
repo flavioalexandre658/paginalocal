@@ -12,6 +12,7 @@ import { getStoreSections, getActiveSections } from '@/lib/store-sections'
 import { generateFAQJsonLd } from '@/lib/faq-json-ld'
 import type { SiteBlueprint } from '@/types/ai-generation'
 import { SiteV2Renderer } from './_components/site-v2-renderer'
+import { UnpublishedSiteCover } from './_components/unpublished-site-cover'
 
 const PageviewTracker = dynamic(() => import('./_components/pageview-tracker').then(m => m.PageviewTracker))
 const DraftInterceptor = dynamic(() => import('./_components/draft-interceptor').then(m => m.DraftInterceptor))
@@ -202,6 +203,20 @@ export default async function StorePage({ params }: PageProps) {
 
   const session = await auth.api.getSession({ headers: requestHeaders })
   const isOwner = session?.user?.id === storeData.userId
+  const isAdmin = (session?.user as { role?: string } | undefined)?.role === 'admin'
+
+  // Site não publicado + visitante público → tela "Em construção".
+  // Dono e admin enxergam o site normalmente para preview.
+  if (!storeData.isActive && !isOwner && !isAdmin) {
+    return (
+      <UnpublishedSiteCover
+        storeName={storeData.name}
+        category={storeData.category}
+        city={storeData.city}
+        primaryColor={storeData.primaryColor || undefined}
+      />
+    )
+  }
 
   const faq = (storeData.faq as FAQItem[] | null) || []
   const neighborhoods = (storeData.neighborhoods as string[] | null) || []

@@ -162,6 +162,70 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       return { ...state, blueprint };
     }
 
+    case "MERGE_IMAGE_URLS": {
+      // Atualiza APENAS slots de imagem que estão com IMAGE_PENDING_TOKEN
+      // localmente, substituindo pela URL real vinda do servidor. Não toca
+      // em campos de texto editados pelo usuário.
+      const PENDING = "data:image/svg+xml;charset=utf-8,";
+      const isPending = (v: unknown): boolean =>
+        typeof v === "string" && v.startsWith(PENDING);
+
+      const incoming = action.blueprint;
+      const blueprint = cloneBlueprint(state.blueprint);
+      let replacedCount = 0;
+
+      for (const page of blueprint.pages) {
+        const incomingPage =
+          incoming.pages.find((p) => p.id === page.id) ??
+          incoming.pages.find((p) => p.isHomepage) ??
+          incoming.pages[0];
+        if (!incomingPage) continue;
+
+        for (const sec of page.sections) {
+          const incomingSec =
+            incomingPage.sections.find((s) => s.id === sec.id) ??
+            incomingPage.sections.find((s) => s.order === sec.order);
+          if (!incomingSec) continue;
+
+          const localContent = sec.content as Record<string, unknown>;
+          const remoteContent = incomingSec.content as Record<string, unknown>;
+
+          for (const [key, localVal] of Object.entries(localContent)) {
+            const remoteVal = remoteContent[key];
+
+            // Single string slot (backgroundImage, image, signatureUrl, etc.)
+            if (isPending(localVal) && typeof remoteVal === "string" && remoteVal && !isPending(remoteVal)) {
+              localContent[key] = remoteVal;
+              replacedCount++;
+              continue;
+            }
+
+            // Array of items with .image / .url
+            if (Array.isArray(localVal) && Array.isArray(remoteVal)) {
+              const localArr = localVal as Record<string, unknown>[];
+              const remoteArr = remoteVal as Record<string, unknown>[];
+              for (let i = 0; i < localArr.length; i++) {
+                const li = localArr[i];
+                const ri = remoteArr[i];
+                if (!li || !ri || typeof li !== "object" || typeof ri !== "object") continue;
+                if (isPending(li.image) && typeof ri.image === "string" && ri.image && !isPending(ri.image)) {
+                  li.image = ri.image;
+                  replacedCount++;
+                }
+                if (isPending(li.url) && typeof ri.url === "string" && ri.url && !isPending(ri.url)) {
+                  li.url = ri.url;
+                  replacedCount++;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (replacedCount === 0) return state;
+      return { ...state, blueprint };
+    }
+
     case "SET_VIEWPORT":
       return { ...state, viewportMode: action.mode };
 

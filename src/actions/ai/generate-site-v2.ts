@@ -996,6 +996,7 @@ export async function runPhase1({
   fontRecs: FontRecs;
   designContext: PhaseDesignContext;
   totalSections: number;
+  phase1ImageQueries: Record<string, string | string[]>;
 }> {
   const startTotal = Date.now();
   console.log(`[runPhase1] START storeId=${ctx.storeId} category="${ctx.category}" name="${ctx.name}"`);
@@ -1071,35 +1072,10 @@ export async function runPhase1({
 
   await revalidateStorePages(ctx.storeId);
 
-  // Phase 1 hero image is generated asynchronously — editor opens with skeleton
-  // for the hero image and gets it filled in as soon as Banana + S3 finish.
-  console.log(`[runPhase1] phase1 text saved — hero image dispatched async`);
-  after(async () => {
-    try {
-      const updatedBlueprint = await loadBlueprint(ctx.storeId, userId);
-      if (!updatedBlueprint) return;
-
-      const imgResult = await generateAndFillImages({
-        blueprint: updatedBlueprint,
-        businessContext: ctx,
-        storeId: ctx.storeId,
-        contentMap,
-        imageQueries,
-        sectionIndicesFilter: plan.phase1,
-        onSlotComplete: async (slotInfo) => {
-          await applySingleSlotUrl(ctx.storeId, userId, slotInfo);
-        },
-      });
-      await appendImageUsageToStore(ctx.storeId, 1, imgResult);
-      console.log(
-        `[runPhase1] images complete: ${imgResult.bananaSuccessCount}/${imgResult.totalImages}`
-      );
-    } catch (err) {
-      console.error(`[runPhase1] image generation failed (non-fatal):`, err);
-    } finally {
-      await clearPendingImageTokens(ctx.storeId, userId, plan.phase1);
-    }
-  });
+  // Phase 1 hero image generation NÃO é disparada aqui — fica para o
+  // `after()` central do bootstrap (junto com phases 2/3) para garantir
+  // que o `finalizeMetrics` rode após TODAS as imagens serem registradas.
+  console.log(`[runPhase1] phase1 text saved (hero image will be generated async)`);
 
   const designContext: PhaseDesignContext = {
     palette: blueprint.designTokens.palette as Record<string, string>,
@@ -1111,7 +1087,59 @@ export async function runPhase1({
   };
 
   console.log(`[runPhase1] complete in ${Date.now() - startTotal}ms`);
-  return { blueprint, template, fontRecs, designContext, totalSections };
+  return {
+    blueprint,
+    template,
+    fontRecs,
+    designContext,
+    totalSections,
+    phase1ImageQueries: imageQueries,
+  };
+}
+
+/**
+ * Gera as imagens da phase 1 (hero) — chamado pelo bootstrap dentro do
+ * `after()` central, depois das phases 2/3. Mantém todas as imagens awaited
+ * antes do finalizeMetrics.
+ */
+export async function generatePhase1Images({
+  ctx,
+  userId,
+  template,
+  imageQueries,
+}: {
+  ctx: BusinessContext;
+  userId: string;
+  template: Template;
+  imageQueries: Record<string, string | string[]>;
+}): Promise<void> {
+  const phase1Indices = planPhases(template.defaultSections.length).phase1;
+  const contentMap = getContentMapForTemplate(template.id);
+
+  try {
+    const updatedBlueprint = await loadBlueprint(ctx.storeId, userId);
+    if (!updatedBlueprint) return;
+
+    const imgResult = await generateAndFillImages({
+      blueprint: updatedBlueprint,
+      businessContext: ctx,
+      storeId: ctx.storeId,
+      contentMap,
+      imageQueries,
+      sectionIndicesFilter: phase1Indices,
+      onSlotComplete: async (slotInfo) => {
+        await applySingleSlotUrl(ctx.storeId, userId, slotInfo);
+      },
+    });
+    await appendImageUsageToStore(ctx.storeId, 1, imgResult);
+    console.log(
+      `[generatePhase1Images] complete: ${imgResult.bananaSuccessCount}/${imgResult.totalImages}`
+    );
+  } catch (err) {
+    console.error(`[generatePhase1Images] failed (non-fatal):`, err);
+  } finally {
+    await clearPendingImageTokens(ctx.storeId, userId, phase1Indices);
+  }
 }
 
 /**
@@ -1205,9 +1233,12 @@ export async function runFollowUpPhase({
     `[runPhase${phase}] text ready in ${Date.now() - startMs}ms — images dispatched async`
   );
 
-  // Step 3: dispatch image generation as a fire-and-forget background job.
-  //   It runs independently of the section "done" state — text is already
-  //   visible to users; images progressively replace the skeleton tokens.
+  // Step 3: gera imagens da fase em background.  Esperamos (await) aqui
+  //   porque este runFollowUpPhase já está rodando dentro do `after()` do
+  //   bootstrap — o aguardo não bloqueia a HTTP response.  Awaitar garante
+  //   que `finalizeMetrics` (chamado no `finally` do bootstrap) só rode
+  //   DEPOIS que `appendImageUsageToStore` registrou tudo, evitando perder
+  //   métricas de imagens das fases 2 e 3.
   const imageQueries =
     (aiContent.imageQueries as Record<string, string | string[]> | undefined) ||
     {};
@@ -1221,11 +1252,9 @@ export async function runFollowUpPhase({
     });
   }
 
-  after(async () => {
-    try {
-      const updatedBlueprint = await loadBlueprint(ctx.storeId, userId);
-      if (!updatedBlueprint) return;
-
+  try {
+    const updatedBlueprint = await loadBlueprint(ctx.storeId, userId);
+    if (updatedBlueprint) {
       const imgResult = await generateAndFillImages({
         blueprint: updatedBlueprint,
         businessContext: ctx,
@@ -1234,8 +1263,9 @@ export async function runFollowUpPhase({
         imageQueries,
         sectionIndicesFilter: sectionIndices,
         onSlotComplete: async (slotInfo) => {
-          // Persist incrementally — each slot replaces its IMAGE_PENDING_TOKEN
-          // with the real S3 URL right after upload completes.
+          // Cada slot termina → grava URL real no blueprint + revalida cache.
+          // Editor pega via polling (que continua rodando enquanto houver
+          // IMAGE_PENDING_TOKEN no blueprint, mesmo após `done: true`).
           await applySingleSlotUrl(ctx.storeId, userId, slotInfo);
         },
       });
@@ -1243,15 +1273,12 @@ export async function runFollowUpPhase({
       console.log(
         `[runPhase${phase}] images complete: ${imgResult.bananaSuccessCount}/${imgResult.totalImages} (${imgResult.unsplashFallbackCount} fallback, ${imgResult.failedCount} failed)`
       );
-    } catch (err) {
-      console.error(`[runPhase${phase}] image generation failed (non-fatal):`, err);
-    } finally {
-      // Limpa quaisquer tokens pendentes que sobraram (slots que falharam no
-      // upload + fallback): se não tem URL real, remove o IMAGE_PENDING_TOKEN
-      // para o renderer mostrar o estado vazio nativo (fallback do componente).
-      await clearPendingImageTokens(ctx.storeId, userId, sectionIndices);
     }
-  });
+  } catch (err) {
+    console.error(`[runPhase${phase}] image generation failed (non-fatal):`, err);
+  } finally {
+    await clearPendingImageTokens(ctx.storeId, userId, sectionIndices);
+  }
 }
 
 /**
