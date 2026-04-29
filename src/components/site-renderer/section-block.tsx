@@ -8,6 +8,7 @@ import type {
 } from "@/types/ai-generation";
 import { BLOCK_REGISTRY } from "./blocks/registry";
 import { TEMPLATE_REGISTRY } from "@/templates/registry";
+import { SectionGeneratingSkeleton } from "./section-generating-skeleton";
 
 interface BlockProps {
   content: Record<string, unknown>;
@@ -22,6 +23,12 @@ interface SectionBlockProps {
   isDark?: boolean;
   navigation?: { label: string; href: string; isExternal?: boolean }[];
   templateId?: string;
+  /**
+   * Incrementado quando a geração progressiva conclui — força remount do
+   * componente carregado (e portanto das tags <img>) para que cada imagem
+   * busque sua URL final do S3.
+   */
+  renderEpoch?: number;
 }
 
 interface ErrorBoundaryState {
@@ -74,9 +81,12 @@ export function SectionBlock({
   isDark,
   navigation,
   templateId,
+  renderEpoch = 0,
 }: SectionBlockProps) {
   const [LoadedComponent, setLoadedComponent] =
     useState<ComponentType<BlockProps> | null>(null);
+
+  const isGenerating = (block.content as Record<string, unknown> | undefined)?.__generating === true;
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -114,6 +124,10 @@ export function SectionBlock({
     };
   }, [block.blockType, block.variant, templateId]);
 
+  if (isGenerating) {
+    return <SectionGeneratingSkeleton blockType={block.blockType} />;
+  }
+
   if (!LoadedComponent) {
     return null;
   }
@@ -121,6 +135,7 @@ export function SectionBlock({
   return (
     <SectionErrorBoundary blockType={block.blockType}>
       <LoadedComponent
+        key={`${block.id}-${renderEpoch}`}
         content={block.content}
         tokens={designTokens}
         isDark={isDark}

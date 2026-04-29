@@ -33,6 +33,7 @@ interface Props {
   navigation?: { label: string; href: string; isExternal?: boolean }[];
   previewMode?: boolean;
   templateId?: string;
+  renderEpoch?: number;
 }
 
 function findDarkIndex(sections: SectionBlockType[]): number {
@@ -51,7 +52,7 @@ function findDarkIndex(sections: SectionBlockType[]): number {
   return best;
 }
 
-export function EditorPageRenderer({ page, designTokens, navigation, previewMode, templateId }: Props) {
+export function EditorPageRenderer({ page, designTokens, navigation, previewMode, templateId, renderEpoch = 0 }: Props) {
   // Editor shows ALL sections (including hidden), sorted by order
   const sortedSections = [...page.sections].sort((a, b) => a.order - b.order);
 
@@ -97,6 +98,7 @@ export function EditorPageRenderer({ page, designTokens, navigation, previewMode
                   designTokens={designTokens}
                   navigation={section.blockType === "header" || section.blockType === "footer" ? navigation : undefined}
                   templateId={templateId}
+                  renderEpoch={renderEpoch}
                 />
               </EditorSectionWrapper>
             );
@@ -163,6 +165,7 @@ export function EditorPageRenderer({ page, designTokens, navigation, previewMode
                   isDark={isDark}
                   navigation={isHeader || section.blockType === "footer" ? navigation : undefined}
                   templateId={templateId}
+                  renderEpoch={renderEpoch}
                 />
               </div>
             </EditorSectionWrapper>

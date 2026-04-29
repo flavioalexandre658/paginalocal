@@ -2,6 +2,7 @@
 
 import { authActionClient } from "@/lib/safe-action";
 import { anthropic } from "@/lib/anthropic";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { store } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
@@ -10,6 +11,7 @@ import {
   type BusinessContext,
   type SiteBlueprint,
 } from "@/types/ai-generation";
+import type { GenerationStatus } from "@/db/schema/stores.schema";
 import { getBestTemplate } from "@/config/template-catalog";
 import { getFontRecommendations } from "@/config/niche-font-recommendations";
 import { fetchAndSaveUnsplashImages } from "@/lib/unsplash-fallback";
@@ -17,8 +19,18 @@ import { getImageFields, blockNeedsImages } from "@/config/block-image-fields";
 import { getContentMapForTemplate } from "@/templates/content-maps";
 import { buildSectionPrompt } from "@/templates/content-map-utils";
 import { generateAndFillImages } from "@/lib/ai-image-pipeline";
-import { createTracker, trackContent, trackImages, trackTemplate, persistMetrics } from "@/lib/generation-tracker";
+import {
+  createTracker,
+  trackContent,
+  trackImages,
+  trackTemplate,
+  persistMetrics,
+  initCostTracking,
+  appendContentUsageToStore,
+  appendImageUsageToStore,
+} from "@/lib/generation-tracker";
 import type { ContentUsage } from "@/lib/generation-tracker";
+import { GENERATING_PLACEHOLDER, planPhases } from "@/lib/site-generation/phases";
 
 export type GenerationModel = "sonnet" | "opus" | "gemini";
 
@@ -331,7 +343,7 @@ interface ContentGenerationResult {
   usage: ContentUsage;
 }
 
-async function generateContentWithClaude(
+export async function generateContentWithClaude(
   prompt: string,
   model: GenerationModel = "sonnet"
 ): Promise<ContentGenerationResult> {
@@ -716,6 +728,731 @@ function generateNicheColor(
 // ════════════════════════════════════════════════════════════════
 // PREENCHER IMAGENS — Com queries contextuais da IA
 // ════════════════════════════════════════════════════════════════
+
+// ════════════════════════════════════════════════════════════════
+// PROGRESSIVE PHASED GENERATION
+// ════════════════════════════════════════════════════════════════
+
+type Template = Awaited<ReturnType<typeof getBestTemplate>>;
+type FontRecs = ReturnType<typeof getFontRecommendations>;
+
+interface PhaseDesignContext {
+  palette: Record<string, string>;
+  headingFont: string;
+  bodyFont: string;
+  highlightStyle?: string;
+  brandVoice?: string;
+  tone?: string;
+}
+
+/**
+ * Build a prompt that asks Claude for ONLY the specified section indices.
+ * For phase 1 (no designContext) — the prompt also contains design instructions
+ * and full output schema (design + sections + globalContent + seo + jsonLd + imageQueries).
+ * For phases 2/3 (with designContext) — the prompt is much shorter and just asks
+ * for the listed sections, instructing Claude to honor the existing design.
+ */
+function buildPhasePrompt(
+  ctx: BusinessContext,
+  template: Template,
+  fontRecs: FontRecs | undefined,
+  sectionIndices: number[],
+  designContext?: PhaseDesignContext
+): string {
+  const toneDesc: Record<string, string> = {
+    formal: "corporativo e confiável — vocabulário técnico, frases assertivas, zero informalidade",
+    premium: "luxuoso e exclusivo — palavras sensoriais, ritmo lento, elegância contida",
+    casual: "descontraído e próximo — linguagem do dia a dia, leve e acessível",
+    friendly: "acolhedor e empático — tom de conversa com alguém que você confia",
+  };
+
+  const contentMap = getContentMapForTemplate(template.id);
+
+  const sectionInstructions = sectionIndices
+    .map((i) => {
+      const s = template.defaultSections[i];
+      if (!s) return "";
+      const mapEntry = contentMap?.[i];
+      if (mapEntry) return buildSectionPrompt(mapEntry, i);
+
+      const idx = `[${i}] ${s.blockType.toUpperCase()}`;
+      switch (s.blockType) {
+        case "header":
+          return `${idx}: {storeName: "${ctx.name}", ctaText (verbo+resultado), ctaLink}`;
+        case "hero":
+          return `${idx}: {headline (max 8 palavras, *destaque*), subheadline (benefício, 2 linhas), badgeText ("✦ ..."), ctaText (verbo+resultado, max 4 palavras), ctaLink, secondaryCtaText, secondaryCtaLink, brands: [{name: "Nome da Marca"}] (4-6 nomes de marcas/clientes fictícios ou reais)}`;
+        case "services":
+          return `${idx}: {title (*destaque*), subtitle, items[3-6]: {name, description (benefício > feature, 2-3 linhas)}}`;
+        case "pricing":
+          return `${idx}: {title (*destaque*), subtitle, plans[2-3]: {name, price, description, features[4-6], ctaText, highlighted: bool}}`;
+        case "faq":
+          return `${idx}: {title (*destaque*), subtitle, items[5-6]: {question, answer}}`;
+        case "footer":
+          return `${idx}: {copyrightText: "© ${new Date().getFullYear()} ${ctx.name}. Todos os direitos reservados.", storeName: "${ctx.name}", tagline, navLinks: [{label, href}]}`;
+        default:
+          return `${idx}: gere conteúdo adequado`;
+      }
+    })
+    .filter(Boolean)
+    .join("\n\n");
+
+  const briefing = `## BRIEFING
+
+Nome: ${ctx.name}
+Categoria: ${ctx.category}
+Local: ${ctx.city}, ${ctx.state}
+Tom: ${toneDesc[ctx.tone || "friendly"]}
+${ctx.description ? `Sobre: ${ctx.description}` : ""}
+${ctx.services.length > 0 ? `Serviços: ${ctx.services.join(", ")}` : ""}
+${ctx.differentials.length > 0 ? `Diferenciais: ${ctx.differentials.join(", ")}` : ""}
+${ctx.whatsapp ? `WhatsApp: ${ctx.whatsapp}` : ""}
+${ctx.phone ? `Tel: ${ctx.phone}` : ""}`;
+
+  // ── Phases 2/3: prompt enxuto, design já decidido ──
+  if (designContext) {
+    return `${briefing}
+
+## DESIGN JÁ DEFINIDO (NÃO mude — apenas honre)
+
+Paleta atual: ${JSON.stringify(designContext.palette)}
+Heading: ${designContext.headingFont} | Body: ${designContext.bodyFont}
+${designContext.brandVoice ? `Voz da marca: ${designContext.brandVoice}` : ""}
+
+## SEÇÕES PARA GERAR (apenas estas, na ordem)
+
+REGRA CRÍTICA: Gere EXATAMENTE ${sectionIndices.length} objeto(s) no array "sections", correspondendo aos índices ${sectionIndices.join(", ")} do template.
+
+${sectionInstructions}
+
+## JSON ESPERADO
+
+{
+  "sections": [ /* ${sectionIndices.length} objeto(s), na ordem dos índices acima */ ],
+  "imageQueries": {
+    /* Map opcional blockType → query em inglês — cena emocional do nicho. Ex: "services": "modern barbershop interior" */
+  }
+}`;
+  }
+
+  // ── Phase 1: full design + sections ──
+  const headingFonts =
+    fontRecs?.heading.join(", ") ||
+    "playfair-display, dm-serif-display, space-grotesk, sora, oswald, raleway, clash-display";
+  const bodyFonts =
+    fontRecs?.body.join(", ") ||
+    "dm-sans, outfit, plus-jakarta-sans, source-sans-3, inter, nunito";
+
+  const colorMoods = [
+    "quente e terroso — marrons, terracota, dourado envelhecido",
+    "frio e sofisticado — azul-petróleo, grafite, prata",
+    "vibrante e energético — laranja profundo, verde-limão escuro, coral",
+    "minimalista e neutro — carvão, areia, cobre sutil",
+    "luxuoso e escuro — preto fosco, burgundy, bronze",
+    "natural e orgânico — verde-musgo, terra, mel",
+    "tech e futurista — índigo escuro, ciano, roxo elétrico",
+    "acolhedor e convidativo — vinho, caramelo, creme rosado",
+    "ousado e marcante — vermelho-escuro, preto, amarelo mostarda",
+    "clean e confiável — navy, branco-gelo, verde-água",
+  ];
+  const randomMood = colorMoods[Math.floor(Math.random() * colorMoods.length)];
+  const randomSeed = Math.random().toString(36).substring(2, 8);
+
+  return `${briefing}
+
+## DESIGN
+
+Seed criativo: ${randomSeed}
+Direção cromática para ESTA geração: ${randomMood}
+(Use essa direção como ponto de partida. NUNCA repita a mesma paleta de gerações anteriores.)
+
+Heading fonts: ${headingFonts}
+Body fonts: ${bodyFonts}
+${ctx.primaryColor ? `O cliente SUGERE a cor ${ctx.primaryColor} — use como inspiração, mas crie algo ÚNICO.` : "Escolha a paleta do zero."}
+
+Pense: qual é a PERSONALIDADE VISUAL de uma ${ctx.category} em ${ctx.city}?
+Que emoção o visitante deve sentir ao abrir o site?
+
+## SEÇÕES PARA GERAR AGORA (apenas estas, na ordem dos índices)
+
+REGRA CRÍTICA: Gere EXATAMENTE ${sectionIndices.length} objeto(s) no array "sections", correspondendo aos índices ${sectionIndices.join(", ")} do template.
+
+${sectionInstructions}
+
+## JSON ESPERADO
+
+{
+  "design": {
+    "headingFont": "da-lista",
+    "bodyFont": "da-lista",
+    "highlightStyle": "inherit | script",
+    "palette": {
+      "primary": "#hex (escura, rica, com personalidade)",
+      "secondary": "#hex (complementar, mesma família)",
+      "accent": "#hex (vibrante, contrasta com primary)",
+      "background": "#hex (off-white com temperatura, NUNCA #ffffff)",
+      "surface": "#hex (3-8% diferente do background)",
+      "text": "#hex (quase-preto com undertone)",
+      "textMuted": "#hex (40-50% mais claro que text)"
+    }
+  },
+  "sections": [ /* ${sectionIndices.length} objeto(s), na ordem dos índices acima */ ],
+  "globalContent": {
+    "brandVoice": "tom em 1 frase",
+    "tagline": "slogan curto e memorável",
+    "ctaDefaultText": "CTA padrão",
+    "ctaDefaultType": "whatsapp"
+  },
+  "seo": {
+    "title": "Keyword + Nome | Cidade (max 60 chars)",
+    "metaDescription": "Frase persuasiva com CTA (max 155 chars)",
+    "ogTitle": "Título social",
+    "ogDescription": "Descrição social (max 200 chars)",
+    "keywords": ["5 termos reais de busca"]
+  },
+  "jsonLd": {
+    "type": "${ctx.fullAddress ? "LocalBusiness" : "Organization"}",
+    "description": "2-3 frases para schema.org",
+    "priceRange": "$$",
+    "areaServed": "${ctx.city}, ${ctx.state}",
+    "knowsAbout": ["competência1", "competência2", "competência3"]
+  },
+  "imageQueries": {
+    "hero": "query em inglês — cena emocional que representa o negócio"
+  }
+}`;
+}
+
+/**
+ * Build the full blueprint right after phase 1 — phase 1 sections have AI content,
+ * remaining sections are placeholders { __generating: true } so renderer shows skeleton.
+ */
+function assembleBlueprintWithPlaceholders({
+  ctx,
+  template,
+  headingFont,
+  bodyFont,
+  aiContent,
+  phase1Indices,
+}: {
+  ctx: BusinessContext;
+  template: Template;
+  headingFont: string;
+  bodyFont: string;
+  aiContent: AIContent;
+  phase1Indices: number[];
+}): SiteBlueprint {
+  // Use the shared assembleBlueprint to compute design tokens, palette, jsonLd etc.
+  // We feed it ONLY the AI sections we have, then post-process to inject placeholders
+  // for sections not in phase1.
+  const phase1Set = new Set(phase1Indices);
+
+  // Map AI sections (which are in order of phase1Indices) into a sparse array
+  // matching template.defaultSections positions.
+  const sparseSections: Record<string, unknown>[] = template.defaultSections.map(
+    (_, i) => {
+      if (phase1Set.has(i)) {
+        const localIdx = phase1Indices.indexOf(i);
+        return aiContent.sections[localIdx] || { ...GENERATING_PLACEHOLDER };
+      }
+      return { ...GENERATING_PLACEHOLDER };
+    }
+  );
+
+  const aiContentForAssembly: AIContent = {
+    ...aiContent,
+    sections: sparseSections,
+  };
+
+  const blueprint = assembleBlueprint({
+    ctx,
+    template,
+    headingFont,
+    bodyFont,
+    aiContent: aiContentForAssembly,
+  });
+
+  return blueprint;
+}
+
+/**
+ * Phase 1 — runs synchronously inside the request that creates the site.
+ * Generates: design tokens + first N sections (header + hero) + hero image.
+ * Persists the blueprint with the rest as placeholders { __generating: true }.
+ */
+export async function runPhase1({
+  ctx,
+  userId,
+  model = "sonnet",
+}: {
+  ctx: BusinessContext;
+  userId: string;
+  model?: GenerationModel;
+}): Promise<{
+  blueprint: SiteBlueprint;
+  template: Template;
+  fontRecs: FontRecs;
+  designContext: PhaseDesignContext;
+  totalSections: number;
+}> {
+  const startTotal = Date.now();
+  console.log(`[runPhase1] START storeId=${ctx.storeId} category="${ctx.category}" name="${ctx.name}"`);
+
+  const template = await getBestTemplate(ctx.category);
+  const fontRecs = getFontRecommendations(ctx.category);
+  const totalSections = template.defaultSections.length;
+  const plan = planPhases(totalSections);
+
+  console.log(`[runPhase1] Template: ${template.id} | sections=${totalSections} | phase1=${plan.phase1} phase2=${plan.phase2} phase3=${plan.phase3}`);
+
+  await initCostTracking(ctx.storeId, {
+    templateId: template.id,
+    templateName: template.name,
+    sectionsCount: totalSections,
+  });
+
+  const prompt = buildPhasePrompt(ctx, template, fontRecs, plan.phase1);
+  const { content: aiContent, usage: contentUsage } = await generateContentWithClaude(prompt, model);
+  await appendContentUsageToStore(ctx.storeId, 1, contentUsage);
+  console.log(`[runPhase1] phase1 content generated | sections=${aiContent.sections?.length || 0}`);
+
+  const design = aiContent.design || {};
+  const headingFont =
+    (design.headingFont as string) ||
+    template.recommendedHeadingFont ||
+    "dm-serif-display";
+  const bodyFont =
+    (design.bodyFont as string) || template.recommendedBodyFont || "dm-sans";
+
+  const blueprint = assembleBlueprintWithPlaceholders({
+    ctx,
+    template,
+    headingFont,
+    bodyFont,
+    aiContent,
+    phase1Indices: plan.phase1,
+  });
+
+  // Generate hero image (subset filter)
+  const imageQueries = (aiContent.imageQueries as Record<string, string | string[]> | undefined) || {};
+  const contentMap = getContentMapForTemplate(template.id);
+  if (contentMap) {
+    template.defaultSections.forEach((s, i) => {
+      const hint = contentMap[i]?.imageQueryHint;
+      if (hint && blockNeedsImages(s.blockType) && !imageQueries[s.blockType]) {
+        imageQueries[s.blockType] = `${ctx.category} ${hint}`;
+      }
+    });
+  }
+
+  console.log(`[runPhase1] Generating images for phase1 sections...`);
+  try {
+    const imgResult = await generateAndFillImages({
+      blueprint,
+      businessContext: ctx,
+      storeId: ctx.storeId,
+      contentMap,
+      imageQueries,
+      sectionIndicesFilter: plan.phase1,
+    });
+    await appendImageUsageToStore(ctx.storeId, 1, imgResult);
+  } catch (err) {
+    console.error(`[runPhase1] image generation failed (non-fatal):`, err);
+  }
+
+  const initialStatus: GenerationStatus = {
+    phase: 1,
+    sectionsReady: plan.phase1.length,
+    totalSections,
+    totalPhases: 3,
+    done: false,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await db
+    .update(store)
+    .set({
+      siteBlueprintV2: blueprint,
+      siteBlueprintV2GeneratedAt: new Date(),
+      useV2Renderer: true,
+      generationStatus: initialStatus,
+    })
+    .where(and(eq(store.id, ctx.storeId), eq(store.userId, userId)));
+
+  await revalidateStorePages(ctx.storeId);
+
+  const designContext: PhaseDesignContext = {
+    palette: blueprint.designTokens.palette as Record<string, string>,
+    headingFont: blueprint.designTokens.headingFont,
+    bodyFont: blueprint.designTokens.bodyFont,
+    highlightStyle: blueprint.designTokens.highlightStyle,
+    brandVoice: blueprint.globalContent?.brandVoice,
+    tone: ctx.tone,
+  };
+
+  console.log(`[runPhase1] complete in ${Date.now() - startTotal}ms`);
+  return { blueprint, template, fontRecs, designContext, totalSections };
+}
+
+/**
+ * Run a follow-up phase (2 or 3): generate AI content for the given section indices
+ * and merge into the persisted blueprint. Generates images for those sections only.
+ */
+export async function runFollowUpPhase({
+  ctx,
+  userId,
+  template,
+  fontRecs,
+  designContext,
+  phase,
+  sectionIndices,
+  totalSections,
+  model = "sonnet",
+}: {
+  ctx: BusinessContext;
+  userId: string;
+  template: Template;
+  fontRecs: FontRecs;
+  designContext: PhaseDesignContext;
+  phase: 2 | 3;
+  sectionIndices: number[];
+  totalSections: number;
+  model?: GenerationModel;
+}): Promise<void> {
+  const startMs = Date.now();
+  console.log(`[runPhase${phase}] START indices=${sectionIndices.join(",")}`);
+
+  if (sectionIndices.length === 0) {
+    // Nothing to do — mark done if this is phase 3
+    if (phase === 3) {
+      await markGenerationDone(ctx.storeId, userId, totalSections);
+    }
+    return;
+  }
+
+  const prompt = buildPhasePrompt(
+    ctx,
+    template,
+    fontRecs,
+    sectionIndices,
+    designContext
+  );
+
+  let aiContent: AIContent;
+  try {
+    const result = await generateContentWithClaude(prompt, model);
+    aiContent = result.content;
+    await appendContentUsageToStore(ctx.storeId, phase, result.usage);
+  } catch (err) {
+    console.error(`[runPhase${phase}] content generation failed:`, err);
+    await markGenerationError(
+      ctx.storeId,
+      userId,
+      `Phase ${phase} content failed`
+    );
+    return;
+  }
+
+  // Merge AI sections into blueprint at the right positions
+  await mergeSectionsIntoBlueprint({
+    storeId: ctx.storeId,
+    userId,
+    aiSections: aiContent.sections,
+    sectionIndices,
+    template,
+    ctx,
+    phase,
+  });
+
+  // Generate images for these sections only
+  try {
+    const updatedBlueprint = await loadBlueprint(ctx.storeId, userId);
+    if (updatedBlueprint) {
+      const imageQueries =
+        (aiContent.imageQueries as Record<string, string | string[]> | undefined) ||
+        {};
+      const contentMap = getContentMapForTemplate(template.id);
+      if (contentMap) {
+        sectionIndices.forEach((i) => {
+          const s = template.defaultSections[i];
+          const hint = contentMap[i]?.imageQueryHint;
+          if (hint && blockNeedsImages(s.blockType) && !imageQueries[s.blockType]) {
+            imageQueries[s.blockType] = `${ctx.category} ${hint}`;
+          }
+        });
+      }
+
+      const imgResult = await generateAndFillImages({
+        blueprint: updatedBlueprint,
+        businessContext: ctx,
+        storeId: ctx.storeId,
+        contentMap,
+        imageQueries,
+        sectionIndicesFilter: sectionIndices,
+      });
+      await appendImageUsageToStore(ctx.storeId, phase, imgResult);
+
+      // Persist the blueprint with images applied (mutation happened in-place)
+      await db
+        .update(store)
+        .set({ siteBlueprintV2: updatedBlueprint })
+        .where(and(eq(store.id, ctx.storeId), eq(store.userId, userId)));
+
+      await revalidateStorePages(ctx.storeId);
+    }
+  } catch (err) {
+    console.error(`[runPhase${phase}] image generation failed (non-fatal):`, err);
+  }
+
+  // Update status counter
+  await bumpGenerationStatus({
+    storeId: ctx.storeId,
+    userId,
+    phase,
+    addReady: sectionIndices.length,
+    totalSections,
+    done: phase === 3,
+  });
+
+  console.log(`[runPhase${phase}] complete in ${Date.now() - startMs}ms`);
+}
+
+async function loadBlueprint(
+  storeId: string,
+  userId: string
+): Promise<SiteBlueprint | null> {
+  const row = await db.query.store.findFirst({
+    where: (s, { and, eq }) => and(eq(s.id, storeId), eq(s.userId, userId)),
+    columns: { siteBlueprintV2: true },
+  });
+  return (row?.siteBlueprintV2 as SiteBlueprint | undefined) ?? null;
+}
+
+/**
+ * Merge AI-generated section content into the persisted blueprint.
+ * Replaces the placeholder { __generating: true } at each index.
+ */
+async function mergeSectionsIntoBlueprint({
+  storeId,
+  userId,
+  aiSections,
+  sectionIndices,
+  template,
+  ctx,
+  phase,
+}: {
+  storeId: string;
+  userId: string;
+  aiSections: Record<string, unknown>[];
+  sectionIndices: number[];
+  template: Template;
+  ctx: BusinessContext;
+  phase: 2 | 3;
+}): Promise<void> {
+  const blueprint = await loadBlueprint(storeId, userId);
+  if (!blueprint) return;
+
+  const homepage =
+    blueprint.pages?.find((p) => p.isHomepage) ?? blueprint.pages?.[0];
+  if (!homepage?.sections) return;
+
+  const whatsappLink = ctx.whatsapp
+    ? `https://wa.me/${ctx.whatsapp.replace(/\D/g, "")}`
+    : "#contact";
+
+  for (let localIdx = 0; localIdx < sectionIndices.length; localIdx++) {
+    const targetIdx = sectionIndices[localIdx];
+    let aiSection = aiSections[localIdx] || {};
+
+    // Same normalization rules as assembleBlueprint
+    if (
+      (aiSection as Record<string, unknown>).data &&
+      typeof (aiSection as Record<string, unknown>).data === "object"
+    ) {
+      aiSection = {
+        ...((aiSection as Record<string, unknown>).data as Record<string, unknown>),
+      };
+    }
+    if (
+      (aiSection as Record<string, unknown>).content &&
+      typeof (aiSection as Record<string, unknown>).content === "object" &&
+      !(aiSection as Record<string, unknown>).title &&
+      !(aiSection as Record<string, unknown>).headline &&
+      !(aiSection as Record<string, unknown>).storeName
+    ) {
+      aiSection = {
+        ...((aiSection as Record<string, unknown>).content as Record<string, unknown>),
+      };
+    }
+
+    const sec = aiSection as Record<string, unknown>;
+    if (Array.isArray(sec.paragraphs)) {
+      sec.paragraphs = (sec.paragraphs as unknown[]).map((p) =>
+        typeof p === "string"
+          ? p
+          : typeof p === "object" && p !== null && "text" in (p as Record<string, unknown>)
+            ? String((p as Record<string, unknown>).text)
+            : String(p)
+      );
+    }
+    if (Array.isArray(sec.items)) {
+      (sec.items as Record<string, unknown>[]).forEach((item) => {
+        if (typeof item.rating === "string") {
+          item.rating = parseInt(item.rating as string, 10) || 5;
+        }
+      });
+    }
+
+    const tplSection = template.defaultSections[targetIdx];
+    if (typeof sec.ctaLink === "string" && sec.ctaLink === "") {
+      sec.ctaLink = whatsappLink;
+    }
+    if (
+      !sec.ctaLink &&
+      tplSection &&
+      (tplSection.blockType === "hero" || tplSection.blockType === "header")
+    ) {
+      sec.ctaLink = whatsappLink;
+    }
+    if (tplSection?.blockType === "header") {
+      sec.storeName = sec.storeName || ctx.name;
+      sec.logoUrl = sec.logoUrl || "";
+    }
+
+    // Find the section in the persisted blueprint at that order index
+    const target = homepage.sections.find((s) => s.order === targetIdx);
+    if (target) {
+      target.content = sec;
+    } else {
+      console.warn(
+        `[mergeSections] phase${phase} no section found at order=${targetIdx}`
+      );
+    }
+  }
+
+  await db
+    .update(store)
+    .set({ siteBlueprintV2: blueprint })
+    .where(and(eq(store.id, storeId), eq(store.userId, userId)));
+
+  await revalidateStorePages(storeId);
+}
+
+/**
+ * Invalida o cache da página pública do site (`/site/[slug]`) que usa
+ * `unstable_cache` com a tag `store-data`.  Chamada após cada merge de fase
+ * 2/3 e ao final, garantindo que visitantes vejam imediatamente as novas
+ * seções em vez do blueprint cacheado.
+ */
+async function revalidateStorePages(storeId: string): Promise<void> {
+  try {
+    revalidateTag("store-data");
+    const row = await db.query.store.findFirst({
+      where: (s, { eq }) => eq(s.id, storeId),
+      columns: { slug: true, customDomain: true },
+    });
+    if (row?.slug) {
+      revalidatePath(`/site/${row.slug}`);
+    }
+  } catch (err) {
+    console.warn("[revalidateStorePages] failed:", err);
+  }
+}
+
+async function bumpGenerationStatus({
+  storeId,
+  userId,
+  phase,
+  addReady,
+  totalSections,
+  done,
+}: {
+  storeId: string;
+  userId: string;
+  phase: 2 | 3;
+  addReady: number;
+  totalSections: number;
+  done: boolean;
+}): Promise<void> {
+  const row = await db.query.store.findFirst({
+    where: (s, { and, eq }) => and(eq(s.id, storeId), eq(s.userId, userId)),
+    columns: { generationStatus: true },
+  });
+  const prev = (row?.generationStatus as GenerationStatus | null) || {
+    phase: 1,
+    sectionsReady: 0,
+    totalSections,
+    totalPhases: 3,
+    done: false,
+    updatedAt: new Date().toISOString(),
+  };
+
+  const next: GenerationStatus = {
+    phase,
+    sectionsReady: Math.min(prev.sectionsReady + addReady, totalSections),
+    totalSections,
+    totalPhases: 3,
+    done,
+    updatedAt: new Date().toISOString(),
+  };
+
+  await db
+    .update(store)
+    .set({ generationStatus: next })
+    .where(and(eq(store.id, storeId), eq(store.userId, userId)));
+
+  if (done) {
+    await revalidateStorePages(storeId);
+  }
+}
+
+async function markGenerationDone(
+  storeId: string,
+  userId: string,
+  totalSections: number
+): Promise<void> {
+  const next: GenerationStatus = {
+    phase: 3,
+    sectionsReady: totalSections,
+    totalSections,
+    totalPhases: 3,
+    done: true,
+    updatedAt: new Date().toISOString(),
+  };
+  await db
+    .update(store)
+    .set({ generationStatus: next })
+    .where(and(eq(store.id, storeId), eq(store.userId, userId)));
+
+  await revalidateStorePages(storeId);
+}
+
+async function markGenerationError(
+  storeId: string,
+  userId: string,
+  message: string
+): Promise<void> {
+  const row = await db.query.store.findFirst({
+    where: (s, { and, eq }) => and(eq(s.id, storeId), eq(s.userId, userId)),
+    columns: { generationStatus: true },
+  });
+  const prev = (row?.generationStatus as GenerationStatus | null) || {
+    phase: 1,
+    sectionsReady: 0,
+    totalSections: 0,
+    totalPhases: 3,
+    done: false,
+    updatedAt: new Date().toISOString(),
+  };
+  const next: GenerationStatus = {
+    ...prev,
+    error: message,
+    updatedAt: new Date().toISOString(),
+  };
+  await db
+    .update(store)
+    .set({ generationStatus: next })
+    .where(and(eq(store.id, storeId), eq(store.userId, userId)));
+}
 
 async function fillImages(
   blueprint: SiteBlueprint,

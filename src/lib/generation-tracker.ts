@@ -1,5 +1,11 @@
 import { db } from "@/db";
-import { siteGenerationLog } from "@/db/schema";
+import { siteGenerationLog, store } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import type {
+  CostTrackingState,
+  CostTrackingContentEntry,
+  CostTrackingImageEntry,
+} from "@/db/schema/stores.schema";
 
 const COST_PER_1K_TOKENS: Record<string, { input: number; output: number }> = {
   "claude-sonnet-4-6": { input: 0.003, output: 0.015 },
@@ -137,5 +143,222 @@ export async function persistMetrics(tracker: GenerationTracker, storeId: string
     );
   } catch (err) {
     console.error("[GenerationTracker] Failed to persist:", err);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// INCREMENTAL TRACKING — para a geração progressiva (3 fases)
+// ════════════════════════════════════════════════════════════════
+// Cada fase pode rodar em uma invocação serverless diferente, então o
+// estado parcial vive em store.generation_cost_tracking (jsonb). Quando
+// done=true a função finalizeMetrics consolida em site_generation_log.
+
+async function readTracking(storeId: string): Promise<CostTrackingState | null> {
+  const row = await db.query.store.findFirst({
+    where: (s, { eq }) => eq(s.id, storeId),
+    columns: { generationCostTracking: true },
+  });
+  return (row?.generationCostTracking as CostTrackingState | null) ?? null;
+}
+
+async function writeTracking(
+  storeId: string,
+  next: CostTrackingState
+): Promise<void> {
+  await db
+    .update(store)
+    .set({ generationCostTracking: next })
+    .where(eq(store.id, storeId));
+}
+
+export async function initCostTracking(
+  storeId: string,
+  init: { templateId?: string; templateName?: string; sectionsCount?: number }
+): Promise<void> {
+  const next: CostTrackingState = {
+    startedAt: new Date().toISOString(),
+    templateId: init.templateId,
+    templateName: init.templateName,
+    sectionsCount: init.sectionsCount,
+    content: [],
+    images: [],
+  };
+  await writeTracking(storeId, next);
+}
+
+export async function appendContentUsageToStore(
+  storeId: string,
+  phase: 1 | 2 | 3,
+  usage: ContentUsage
+): Promise<void> {
+  const current =
+    (await readTracking(storeId)) ?? {
+      startedAt: new Date().toISOString(),
+      content: [],
+      images: [],
+    };
+  const entry: CostTrackingContentEntry = {
+    phase,
+    model: usage.model,
+    inputTokens: usage.inputTokens,
+    outputTokens: usage.outputTokens,
+    stopReason: usage.stopReason,
+    durationMs: usage.durationMs,
+  };
+  current.content = [...current.content, entry];
+  await writeTracking(storeId, current);
+}
+
+export async function appendImageUsageToStore(
+  storeId: string,
+  phase: 1 | 2 | 3,
+  result: {
+    totalImages: number;
+    bananaSuccessCount: number;
+    unsplashFallbackCount: number;
+    failedCount: number;
+    costUsd: number;
+    durationMs: number;
+  }
+): Promise<void> {
+  const current =
+    (await readTracking(storeId)) ?? {
+      startedAt: new Date().toISOString(),
+      content: [],
+      images: [],
+    };
+  const entry: CostTrackingImageEntry = {
+    phase,
+    totalCount: result.totalImages,
+    successCount: result.bananaSuccessCount,
+    fallbackCount: result.unsplashFallbackCount,
+    failedCount: result.failedCount,
+    costUsd: result.costUsd,
+    durationMs: result.durationMs,
+  };
+  current.images = [...current.images, entry];
+  await writeTracking(storeId, current);
+}
+
+export async function appendClassificationToStore(
+  storeId: string,
+  usage: ClassificationUsage
+): Promise<void> {
+  const current =
+    (await readTracking(storeId)) ?? {
+      startedAt: new Date().toISOString(),
+      content: [],
+      images: [],
+    };
+  current.classification = {
+    model: usage.model,
+    tokens: usage.tokens,
+    durationMs: usage.durationMs,
+  };
+  await writeTracking(storeId, current);
+}
+
+/**
+ * Soma o jsonb parcial e grava uma linha em site_generation_log.
+ * Limpa o jsonb na store (deixa null) para indicar que o tracking
+ * desta geração foi consolidado.
+ */
+export async function finalizeMetrics(storeId: string): Promise<void> {
+  const tracking = await readTracking(storeId);
+  if (!tracking) {
+    console.warn(`[GenerationTracker] finalizeMetrics: no tracking for store=${storeId}`);
+    return;
+  }
+
+  const totalDurationMs = Date.now() - new Date(tracking.startedAt).getTime();
+
+  // Some todos os contents — mesmo se vieram modelos diferentes, somamos
+  // tokens por modelo e calculamos custo proporcional.
+  let contentInputTokens = 0;
+  let contentOutputTokens = 0;
+  let contentDurationMs = 0;
+  let contentCostUsd = 0;
+  let primaryContentModel: string | null = null;
+  let lastStopReason: string | null = null;
+  for (const c of tracking.content) {
+    contentInputTokens += c.inputTokens;
+    contentOutputTokens += c.outputTokens;
+    contentDurationMs += c.durationMs;
+    contentCostUsd += estimateCost(c.model, c.inputTokens, c.outputTokens);
+    primaryContentModel = c.model;
+    lastStopReason = c.stopReason;
+  }
+
+  let imageTotal = 0;
+  let imageSuccess = 0;
+  let imageFallback = 0;
+  let imageFailed = 0;
+  let imageDurationMs = 0;
+  let imageCostUsd = 0;
+  for (const i of tracking.images) {
+    imageTotal += i.totalCount;
+    imageSuccess += i.successCount;
+    imageFallback += i.fallbackCount;
+    imageFailed += i.failedCount;
+    imageDurationMs += i.durationMs;
+    imageCostUsd += i.costUsd;
+  }
+
+  const classificationCostUsd = tracking.classification
+    ? estimateCost(tracking.classification.model, tracking.classification.tokens, 0)
+    : 0;
+
+  const totalCostUsd = contentCostUsd + imageCostUsd + classificationCostUsd;
+
+  try {
+    await db.insert(siteGenerationLog).values({
+      storeId,
+      totalDurationMs,
+      contentDurationMs: contentDurationMs || null,
+      imageDurationMs: imageDurationMs || null,
+      classificationDurationMs: tracking.classification?.durationMs ?? null,
+
+      contentModel: primaryContentModel,
+      contentInputTokens: contentInputTokens || null,
+      contentOutputTokens: contentOutputTokens || null,
+      contentStopReason: lastStopReason,
+
+      imageModel: tracking.images.length > 0 ? "gemini-3.1-flash-image-preview" : null,
+      imageTotalCount: imageTotal || null,
+      imageSuccessCount: imageSuccess || null,
+      imageFallbackCount: imageFallback || null,
+
+      classificationModel: tracking.classification?.model ?? null,
+      classificationTokens: tracking.classification?.tokens ?? null,
+
+      contentCostUsd,
+      imageCostUsd,
+      classificationCostUsd,
+      totalCostUsd,
+
+      templateId: tracking.templateId ?? null,
+      templateName: tracking.templateName ?? null,
+      sectionsCount: tracking.sectionsCount ?? null,
+
+      metadata: {
+        contentByPhase: tracking.content,
+        imagesByPhase: tracking.images,
+        imagesFailed: imageFailed,
+      },
+    });
+
+    await db
+      .update(store)
+      .set({ generationCostTracking: null })
+      .where(eq(store.id, storeId));
+
+    console.log(
+      `[GenerationTracker] Finalized store=${storeId}: ${totalDurationMs}ms total | ` +
+      `Content: ${contentInputTokens}+${contentOutputTokens} tokens ($${contentCostUsd.toFixed(4)}) | ` +
+      `Images: ${imageSuccess}/${imageTotal} ($${imageCostUsd.toFixed(4)}) | ` +
+      `Total: $${totalCostUsd.toFixed(4)}`
+    );
+  } catch (err) {
+    console.error("[GenerationTracker] finalizeMetrics failed:", err);
   }
 }

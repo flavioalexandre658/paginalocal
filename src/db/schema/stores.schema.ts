@@ -139,4 +139,54 @@ export const store = pgTable('store', {
   siteBlueprintV2: jsonb('site_blueprint_v2'),
   siteBlueprintV2GeneratedAt: timestamp('site_blueprint_v2_generated_at'),
   useV2Renderer: boolean('use_v2_renderer').default(false).notNull(),
+
+  // Status de geração progressiva (3 fases)
+  generationStatus: jsonb('generation_status').$type<GenerationStatus>(),
+
+  // Tracker de custo acumulado entre as 3 fases. Quando done=true,
+  // é consolidado em site_generation_log e este campo é zerado.
+  generationCostTracking: jsonb('generation_cost_tracking').$type<CostTrackingState | null>(),
 })
+
+export interface GenerationStatus {
+  phase: 1 | 2 | 3
+  sectionsReady: number
+  totalSections: number
+  totalPhases: 3
+  done: boolean
+  error?: string
+  updatedAt: string
+}
+
+export interface CostTrackingContentEntry {
+  phase: 1 | 2 | 3
+  model: string
+  inputTokens: number
+  outputTokens: number
+  stopReason: string
+  durationMs: number
+}
+
+export interface CostTrackingImageEntry {
+  phase: 1 | 2 | 3
+  totalCount: number
+  successCount: number
+  fallbackCount: number
+  failedCount: number
+  costUsd: number
+  durationMs: number
+}
+
+export interface CostTrackingState {
+  startedAt: string
+  templateId?: string
+  templateName?: string
+  sectionsCount?: number
+  content: CostTrackingContentEntry[]
+  images: CostTrackingImageEntry[]
+  classification?: {
+    model: string
+    tokens: number
+    durationMs: number
+  }
+}

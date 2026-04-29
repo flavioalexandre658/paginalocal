@@ -111,6 +111,57 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
     case "SET_BLUEPRINT":
       return { ...state, blueprint: action.blueprint, isDirty: false };
 
+    case "MERGE_GENERATED_SECTIONS": {
+      // Replace ONLY sections whose local content is { __generating: true }
+      // with the corresponding section from the incoming server blueprint.
+      // Preserves any user edits made to already-generated sections.
+      const incoming = action.blueprint;
+      const blueprint = cloneBlueprint(state.blueprint);
+      let replacedCount = 0;
+
+      for (const page of blueprint.pages) {
+        const incomingPage =
+          incoming.pages.find((p) => p.id === page.id) ??
+          incoming.pages.find((p) => p.isHomepage) ??
+          incoming.pages[0];
+        if (!incomingPage) continue;
+
+        page.sections = page.sections.map((sec) => {
+          const isPlaceholder =
+            (sec.content as Record<string, unknown> | undefined)
+              ?.__generating === true;
+          if (!isPlaceholder) return sec;
+
+          const incomingSec =
+            incomingPage.sections.find((s) => s.id === sec.id) ??
+            incomingPage.sections.find((s) => s.order === sec.order);
+          if (!incomingSec) return sec;
+
+          const stillGenerating =
+            (incomingSec.content as Record<string, unknown> | undefined)
+              ?.__generating === true;
+          if (stillGenerating) return sec;
+
+          replacedCount++;
+          return { ...sec, content: incomingSec.content, variant: incomingSec.variant };
+        });
+      }
+
+      // Also refresh design tokens if user hasn't customized — phase 1 may have
+      // produced placeholders for fonts/palette while phases ran. Always honor
+      // server tokens unless we already had non-default ones (we cloned from
+      // initial — accept server design wholesale only when local is dirty=false).
+      if (!state.isDirty) {
+        blueprint.designTokens = incoming.designTokens;
+        blueprint.globalContent = incoming.globalContent;
+        blueprint.navigation = incoming.navigation;
+        blueprint.jsonLd = incoming.jsonLd;
+      }
+
+      if (replacedCount === 0) return state;
+      return { ...state, blueprint };
+    }
+
     case "SET_VIEWPORT":
       return { ...state, viewportMode: action.mode };
 
@@ -156,6 +207,9 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
 
     case "SET_INLINE_EDITING":
       return { ...state, isInlineEditing: action.value };
+
+    case "BUMP_RENDER_EPOCH":
+      return { ...state, renderEpoch: state.renderEpoch + 1 };
 
     case "UNDO": {
       if (state.undoStack.length === 0) return state;

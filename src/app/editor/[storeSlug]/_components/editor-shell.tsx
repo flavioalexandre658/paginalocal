@@ -8,6 +8,7 @@ import { EditorSidebar } from "./editor-sidebar";
 import { EditorPreview } from "./editor-preview";
 import { SectionEditDrawer } from "./section-edit-drawer";
 import { UnsavedChangesGuard } from "./unsaved-changes-guard";
+import { GenerationPollingBridge } from "./generation-polling-bridge";
 import { ThemesPage } from "./editor-topbar-panels/themes-page";
 import { UpgradeModal } from "@/components/shared/upgrade-modal";
 import { UserSettingsModal } from "@/components/shared/user-settings-modal";
@@ -35,6 +36,7 @@ export function EditorShell({ initialBlueprint, storeId, storeSlug, storeName, u
   return (
     <EditorProvider initialBlueprint={initialBlueprint} storeId={storeId}>
       <UnsavedChangesGuard />
+      <GenerationPollingBridge storeSlug={storeSlug} />
       <div
         className="flex overflow-hidden bg-sidebar"
         style={{ fontFamily: "system-ui, -apple-system, sans-serif", height: "100dvh" }}

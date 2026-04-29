@@ -32,6 +32,7 @@ export function EditorProvider({ children, initialBlueprint, storeId }: EditorPr
     undoStack: [],
     redoStack: [],
     isInlineEditing: false,
+    renderEpoch: 0,
   };
 
   const [state, dispatch] = useReducer(editorReducer, initialState);

@@ -685,3 +685,141 @@ O editor usa `bg-sidebar` que ja resolve light/dark via CSS variables. Nao dupli
 "transition-colors" // ✅ performatico
 "transition-[background,color] duration-150" // ✅ explicito
 ```
+
+---
+
+## Convitede project conventions (hybrid palette)
+
+Quando aplicado ao projeto **Convitede** (`frontend-next/convitede`), o design system Linear/HIG é adaptado a uma **paleta híbrida** que mantém a identidade da marca. Ler esta seção antes de trabalhar em landing pages, públicas ou catálogo do Convitede.
+
+### Decisão híbrida (released + black/opacity)
+
+A regra "monocromático com opacidade" do Linear NÃO é aplicada por completo. Decisão tomada com o usuário em 2026-04-07:
+
+- **`released-*`** (roxo `#6f42c1`) = cor de marca, **mantida** para CTAs primários, ícones de destaque, badges, links importantes, focus rings.
+- **`black/opacity`** = substitui TODOS os `gray-*` / `slate-*` / `zinc-*` em texto secundário, bordas, backgrounds sutis.
+- **NÃO usar** `bg-sidebar` (CSS var do Linear original) — usar `bg-white` ou `bg-black/[0.02]`.
+- **NÃO usar** as cores semânticas amber/emerald do PGL — Convitede tem suas próprias paletas em `tailwind.config.ts` (`success`, `warning`, `danger`, `info`, `waiting`, `primary`, `secondary`).
+
+### Tabela de tokens híbridos finais
+
+| Token Tailwind | Uso no Convitede |
+|---|---|
+| `text-black/85` | Headings, textos primários (h1, h2, h3) |
+| `text-black/60` | Texto secundário, descrições, labels |
+| `text-black/55` | Texto terciário (footer, captions) |
+| `text-black/40` | Texto desabilitado, placeholders |
+| `bg-white` | Fundo de cards, modais, sections "white" |
+| `bg-black/[0.02]` | Fundo de section "subtle", cards minimais |
+| `bg-black/[0.04]` | Skeletons, hover sutis, fundos pill |
+| `bg-released-50` | Section "branded", badges de marca |
+| `bg-released-100`/`text-released-700` | Pills, ícones de feature, eyebrows |
+| `bg-released-600` | CTA primário, ícones de destaque, fundo final-cta |
+| `border-black/[0.06]` | Bordas de cards/dropdowns/divisores |
+| `border-black/[0.08]` | Bordas de cards (mais visíveis) |
+| `border-black/10` | Bordas de inputs |
+| `ring-1 ring-black/[0.06]` | Cards minimais com ring em vez de border |
+| `ring-1 ring-released-100` | Eyebrows e badges de marca |
+| `ring-released-200` | Focus ring em CTAs |
+| `shadow-released-600/10` | Sombra colorida em hero |
+| `shadow-xl shadow-released-600/5` | Cards de feature destacados |
+| `hover:bg-black/[0.03]` | Hover backgrounds |
+| `hover:border-black/20` | Hover em borders de cards |
+
+### Caminhos canônicos do Convitede
+
+Quando criar/modificar componentes, usar **estas pastas** (NUNCA criar wrappers genéricos novos):
+
+| Pasta | Uso |
+|---|---|
+| `src/components/ui/` | Wrappers shadcn (Button, Card, Badge, Dialog, etc) — JÁ EXISTEM, reusar |
+| `src/components/ui/skeletons/` | Skeletons espelho dos componentes finais |
+| `src/components/landing/` | Compound components específicos da landing page |
+| `src/components/headers/` | Header e nav |
+| `src/components/router/` | CustomLink (wrapper de Next/Link com NProgress) |
+| `messages/{pt,en,es}.json` | i18n via next-intl (sempre adicionar nas 3 línguas) |
+
+### Wrappers compound prontos para reusar (não duplicar)
+
+```tsx
+// Button compound:
+import { Button, ButtonLeft, ButtonContent, ButtonRight } from "@/components/ui/button";
+<Button asChild size="lg" color="released">
+  <CustomLink href="/foo">
+    <ButtonLeft><IconEdit size={18} /></ButtonLeft>
+    <ButtonContent>Editar</ButtonContent>
+  </CustomLink>
+</Button>
+
+// Card compound:
+import { Card, CardImage, CardHeader, CardBody, CardFooter } from "@/components/ui/card";
+
+// Outros: Badge, Avatar, Container, Skeleton, Dialog, Drawer, Input, Tooltip, Tabs
+```
+
+Variantes do Button suportadas: `filled` | `light` | `outline` | `subtle` | `unstyled` | `white` | `gradient`. Cores: `released` | `gray` | `red`/`danger` | `orange`/`warning` | `blue`/`primary` | `green`/`success` | `info`. Sempre usar `color="released"` para CTAs principais.
+
+### Padrão de Compound Components no Convitede
+
+Cada componente novo segue rigorosamente o `pgl-compound-components`:
+
+1. Um arquivo por componente em `src/components/landing/<nome>.tsx`
+2. Pai com `React.forwardRef` + `cva` variants
+3. Subcomponentes-slot definidos **fora** do render do pai (NUNCA inline)
+4. Estilos via `cva` ou `cn(...)`, **sem ternários inline** complexos
+5. Named exports no final do arquivo
+6. `asChild` via `@radix-ui/react-slot` quando precisa renderizar como `<Link>` etc.
+
+Exemplo do contexto compartilhado entre slots (PricingCard featured): usar `React.createContext` em vez de prop drilling.
+
+### Padrão de skeleton (pgl-skeleton-loading no Convitede)
+
+- Cor base: `bg-black/[0.04]` (NUNCA `bg-gray-100` — quebra a paleta híbrida)
+- Border radius espelha o componente final (`rounded-2xl`, `rounded-xl`, `rounded-full`)
+- Skeletons da landing ficam em `src/components/ui/skeletons/skeleton-landing.tsx`
+- Spinner SOMENTE em ações de botão (já vem no `Button loading`)
+- Skeleton SEMPRE espelha a geometria do componente final, nunca um placeholder genérico
+
+### Tipografia adaptada ao Convitede
+
+- **Hero H1**: `text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-black/85 leading-[1.05]`
+- **Section title (h2)**: `text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-black/85`
+- **Feature block title (h2)**: `text-3xl md:text-4xl font-semibold tracking-tight text-black/85`
+- **Card title (h3)**: `text-lg font-semibold text-black/85`
+- **Eyebrow/badge**: `text-xs font-semibold tracking-wide uppercase`
+- **Body**: `text-base md:text-lg text-black/60 leading-relaxed`
+- **Sem fontes custom no body** — `font-sans` herdado (Inter já está no `(main)/layout.tsx`)
+
+### Espaçamento padrão de seções na landing
+
+- Section padding: `py-24 md:py-32 px-4` (variant `lg` do `LandingSection`)
+- Section padding compacto: `py-16 md:py-24 px-4` (variant `md`)
+- Container max: `max-w-7xl mx-auto`
+- Gaps em grids: `gap-5 md:gap-6` (cards) ou `gap-12 lg:gap-20` (feature blocks)
+
+### O que NÃO usar (quebra de padrão histórica)
+
+❌ **CSS modules antigos** em `src/components/statics/main-page/*.module.css` — referenciam `var(--mantine-color-released-filled)`, `light-dark()`, `var(--mantine-spacing-md)` que não existem fora do MantineProvider e quebram visualmente.
+
+❌ **`AliceCarousel`** em landing/marketing — penaliza LCP. Usar grid estático ou CSS scroll-snap se precisar de horizontal scroll.
+
+❌ **`MantineProvider`** no `(main)` — foi removido na Fase 7 da migração. O `mantine-vars-shim.css` é apenas fallback temporário.
+
+❌ **`Container size="full"` com px-[150px]`** — quebra responsividade. Usar `max-w-7xl mx-auto px-4`.
+
+❌ **`Group`/`Stack`/`SimpleGrid`** importados do `@/components/ui/*` em código novo — eles existem só para retrocompatibilidade. Usar Tailwind flex/grid direto.
+
+❌ **Cores `c="orange"`, `c="white"`, `c="dimmed"`** estilo Mantine — usar classes Tailwind (`text-black/60`, etc).
+
+### i18n no Convitede
+
+- Sempre adicionar chaves em `messages/pt.json`, `messages/en.json`, `messages/es.json` (3 arquivos).
+- Server components: `import { getTranslations } from "next-intl/server"` e `await getTranslations({ locale, namespace: "..." })`.
+- Client components: `import { useTranslations, useLocale } from "next-intl"`.
+- Para dados estruturados em JSON (arrays de itens): usar `t.raw("key")` e tipar manualmente.
+
+### Routing localizado
+
+- Toda navegação usa `getRoute(locale, "key")` ou `buildCategoryUrl(locale, slug)` de `@/lib/route-map`.
+- NUNCA hardcodar `/catalogo`, `/sobre-nos`, etc — sempre passar pela `route-map`.
+- Para Links com client-side feedback (NProgress), usar `CustomLink` de `@/components/router/custom-link`.

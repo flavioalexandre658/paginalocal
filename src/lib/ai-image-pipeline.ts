@@ -5,7 +5,7 @@ import { isBananaEnabled, bananaBatchGenerate } from "./banana-nano";
 import type { BananaImageRequest } from "./banana-nano";
 import { buildImagePrompts } from "./banana-prompt-builder";
 import type { ImagePromptRequest } from "./banana-prompt-builder";
-import { fetchAndSaveUnsplashImages } from "./unsplash-fallback";
+import { fetchUnsplashForSlots } from "./unsplash-fallback";
 import { optimizeHeroImage, optimizeGalleryImage } from "./image-optimizer";
 import { uploadToS3 } from "./s3";
 import { db } from "@/db";
@@ -17,6 +17,8 @@ export interface AiImagePipelineOptions {
   storeId: string;
   contentMap: SectionContentMap[] | undefined;
   imageQueries?: Record<string, string | string[]>;
+  /** If provided, only sections at these indices will have their slots considered. */
+  sectionIndicesFilter?: number[];
 }
 
 export interface AiImagePipelineResult {
@@ -48,7 +50,7 @@ export async function generateAndFillImages(
   options: AiImagePipelineOptions
 ): Promise<AiImagePipelineResult> {
   const startTime = Date.now();
-  const { blueprint, businessContext: ctx, storeId, contentMap, imageQueries } = options;
+  const { blueprint, businessContext: ctx, storeId, contentMap, imageQueries, sectionIndicesFilter } = options;
 
   const homepage = blueprint.pages?.find((p) => p.isHomepage) ?? blueprint.pages?.[0];
   if (!homepage?.sections) {
@@ -56,12 +58,12 @@ export async function generateAndFillImages(
   }
 
   // Debug: log all sections in blueprint
-  console.log(`[ImagePipeline] Blueprint sections: ${homepage.sections.length}`);
+  console.log(`[ImagePipeline] Blueprint sections: ${homepage.sections.length} | filter=${sectionIndicesFilter ? sectionIndicesFilter.join(",") : "all"}`);
   homepage.sections.forEach((s, i) => {
     console.log(`[ImagePipeline]   [${i}] ${s.blockType} v${s.variant} — needsImages: ${blockNeedsImages(s.blockType)}`);
   });
 
-  const slots = collectImageSlots(homepage.sections, contentMap);
+  const slots = collectImageSlots(homepage.sections, contentMap, sectionIndicesFilter);
   console.log(`[ImagePipeline] Image slots collected: ${slots.length}`);
   slots.forEach((s) => {
     console.log(`[ImagePipeline]   slot: ${slotId(s)} (${s.imageSpec.aspectRatio})`);
@@ -113,8 +115,11 @@ export async function generateAndFillImages(
       const batchResult = await bananaBatchGenerate(bananaRequests, { timeoutMs: 120000 });
       costUsd = batchResult.costUsd;
 
+      let bananaResultSuccess = 0;
+      let bananaResultFailed = 0;
       for (const result of batchResult.results) {
         if (result.status === "success" && result.imageData) {
+          bananaResultSuccess++;
           try {
             const slot = slots.find((s) => slotId(s) === result.id);
             const isHero = slot?.imageSpec.aspectRatio === "16:9";
@@ -126,35 +131,61 @@ export async function generateAndFillImages(
             const { url } = await uploadToS3(optimized.buffer, s3Key);
             urlMap[result.id] = url;
             bananaSuccessCount++;
-          } catch {
-            // Optimize/upload failed — will fallback
+          } catch (err) {
+            console.error(
+              `[ai-image-pipeline] optimize/upload failed for slot=${result.id}:`,
+              err instanceof Error ? err.message : err
+            );
           }
+        } else {
+          bananaResultFailed++;
         }
       }
+      console.log(
+        `[ai-image-pipeline] banana: ${bananaSuccessCount}/${slots.length} optimized+uploaded | banana-api success=${bananaResultSuccess} failed=${bananaResultFailed}`
+      );
     } catch (err) {
       console.error("[ai-image-pipeline] Banana batch failed:", err);
     }
   }
 
-  // Fallback: Unsplash for any slots without URLs
+  // Fallback: Unsplash for any slots without URLs (contextual + diversified per-slot)
   const failedSlots = slots.filter((s) => !urlMap[slotId(s)]);
   if (failedSlots.length > 0) {
+    console.log(
+      `[ai-image-pipeline] Unsplash fallback for ${failedSlots.length} slot(s)`
+    );
     try {
-      const query = imageQueries?.hero as string || ctx.category;
-      const unsplash = await fetchAndSaveUnsplashImages(storeId, query, Math.min(failedSlots.length + 2, 10));
+      const slotInputs = failedSlots.map((s) => ({
+        id: slotId(s),
+        blockType: s.blockType,
+        fieldPath: s.fieldPath,
+        aspectRatio: s.imageSpec.aspectRatio,
+        imageHint: getOverrideSubject(s, imageQueries) ?? s.imageSpec.subject,
+      }));
 
-      const allUnsplashUrls = [unsplash.hero, ...unsplash.gallery].filter(Boolean) as string[];
-      let unsplashIdx = 0;
+      const fallbackUrls = await fetchUnsplashForSlots({
+        storeId,
+        slots: slotInputs,
+        category: ctx.category,
+        businessName: ctx.name,
+        services: ctx.services,
+      });
 
       for (const slot of failedSlots) {
-        if (unsplashIdx < allUnsplashUrls.length) {
-          urlMap[slotId(slot)] = allUnsplashUrls[unsplashIdx++];
+        const url = fallbackUrls[slotId(slot)];
+        if (url) {
+          urlMap[slotId(slot)] = url;
           unsplashFallbackCount++;
         } else {
           failedCount++;
         }
       }
-    } catch {
+    } catch (err) {
+      console.error(
+        "[ai-image-pipeline] unsplash fallback failed:",
+        err instanceof Error ? err.message : err
+      );
       failedCount += failedSlots.length;
     }
   }
@@ -191,16 +222,27 @@ export async function generateAndFillImages(
 
 function collectImageSlots(
   sections: SiteBlueprint["pages"][0]["sections"],
-  contentMap: SectionContentMap[] | undefined
+  contentMap: SectionContentMap[] | undefined,
+  sectionIndicesFilter?: number[]
 ): ImageSlot[] {
   const slots: ImageSlot[] = [];
+  const filterSet = sectionIndicesFilter
+    ? new Set(sectionIndicesFilter)
+    : null;
 
   for (let i = 0; i < sections.length; i++) {
     const section = sections[i];
+    // Skip placeholder sections — content not generated yet
+    const content = section.content as Record<string, unknown> | undefined;
+    if (content?.__generating) continue;
+    // Apply filter if provided. Filter is matched against `order` (template index),
+    // not array position — use section.order to be robust.
+    if (filterSet && !filterSet.has(section.order)) continue;
     if (!blockNeedsImages(section.blockType)) continue;
 
     const fields = getImageFields(section.blockType);
-    const mapEntry = contentMap?.[i];
+    // Use section.order to look up content map (which is keyed by template index)
+    const mapEntry = contentMap?.[section.order];
     const baseSpec = mapEntry?.imageSpec || DEFAULT_IMAGE_SPEC;
 
     for (const field of fields) {

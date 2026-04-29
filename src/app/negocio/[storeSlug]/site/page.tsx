@@ -33,7 +33,10 @@ export default async function SiteEditorPage({ params }: Props) {
 
   if (!storeData) redirect("/painel");
 
-  // If blueprint not yet generated, show generating screen that polls for completion
+  // After bootstrapSiteV2, the blueprint always exists with at least header+hero
+  // generated and remaining sections as { __generating: true } placeholders.
+  // The editor renders skeletons for those and polling fills them in.
+  // The fallback below only triggers for legacy stores created before bootstrap.
   if (!storeData.siteBlueprintV2) {
     return (
       <SiteGeneratingScreen

@@ -10,6 +10,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
+// Server Action `bootstrapSiteV2` é invocada deste segmento e precisa de
+// até ~5min para a phase 1 + após-response (phases 2/3 via after()).
+// `maxDuration` não pode ser exportado do arquivo "use server", então fica
+// aqui no Route Segment Config — Server Actions herdam o limite do segmento
+// que as invoca.
+export const maxDuration = 300
+
 interface LayoutProps {
   children: ReactNode
 }

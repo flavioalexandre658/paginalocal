@@ -17,7 +17,7 @@ import {
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import { createStoreManualAction } from '@/actions/stores/create-store-manual.action'
-import { generateSiteAfterOnboarding } from '@/actions/ai/generate-site-after-onboarding'
+import { bootstrapSiteV2 } from '@/actions/ai/bootstrap-site.action'
 import {
   searchLocationAction,
   getLocationDetailsAction,
@@ -102,7 +102,7 @@ export default function ManualOnboardingPage() {
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const { executeAsync: createStore, isExecuting } = useAction(createStoreManualAction)
-  const { executeAsync: generateSiteV2 } = useAction(generateSiteAfterOnboarding)
+  const { executeAsync: bootstrapSite } = useAction(bootstrapSiteV2)
   const { executeAsync: searchLocation } = useAction(searchLocationAction)
   const { executeAsync: getLocationDetails } = useAction(getLocationDetailsAction)
   const { handleActionError } = usePlanLimitRedirect()
@@ -256,14 +256,14 @@ export default function ManualOnboardingPage() {
 
     if (result?.data) {
       try {
-        await generateSiteV2({ storeId: result.data.store.id })
-        // Only redirect after successful generation
+        // Phase 1 only — phases 2/3 run as fire-and-forget on the server.
+        // Editor opens with hero ready and skeletons for the remaining sections,
+        // which get filled in progressively via polling.
+        await bootstrapSite({ storeId: result.data.store.id })
         router.push(`/negocio/${result.data.slug}/site`)
       } catch (err) {
-        console.error('[Onboarding] Blueprint generation failed:', err)
-        toast.error('Erro ao gerar o site. Tente novamente pelo editor.')
-        // Still redirect — the site exists, just without AI content yet
-        // User can regenerate from the editor
+        console.error('[Onboarding] Bootstrap failed:', err)
+        toast.error('Erro ao iniciar geração do site. Tente novamente pelo editor.')
         router.push(`/negocio/${result.data.slug}/site`)
       }
     } else {
