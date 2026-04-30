@@ -178,19 +178,32 @@ export async function middleware(request: NextRequest) {
   const userAgent = request.headers.get('user-agent') || ''
   const isBot = isSocialOrSearchBot(userAgent)
 
-  // Crawlers sociais/de busca em /robots.txt — atalho universal:
-  // sempre responde permissivo (overrides cache e qualquer dynamic robots).
-  // Garante que Facebook/WhatsApp não recebam 403 de bot protection.
-  if (pathname === '/robots.txt' && isBot) {
+  // /robots.txt — atalho UNIVERSAL (todo request).  Por que aqui?
+  //   1. O `robots.ts` dinâmico do Next exige query no DB → lenta + pode dar
+  //      404/500 → Cloudflare cacheia o erro e bloqueia bots subsequentes.
+  //   2. Bot Fight Mode / WAF do Cloudflare gosta de retornar 403 em paths
+  //      dinâmicos quando o user-agent é "bot".  Servir 200 estático aqui
+  //      esquiva da maioria dessas heurísticas.
+  //   3. O conteúdo do robots em todos os sites é igual: allow de tudo
+  //      exceto /admin e /api.  Não precisa de cache no Vercel.
+  if (pathname === '/robots.txt') {
     const isMain = MAIN_DOMAINS.some((d) => cleanHost === d)
-    const body = isMain
-      ? `User-agent: *\nAllow: /\nSitemap: https://decolou.com/sitemap.xml\n`
-      : `User-agent: *\nAllow: /\n`
+    const sitemap = isMain
+      ? `https://${NEW_DOMAIN}/sitemap.xml`
+      : `https://${cleanHost}/sitemap.xml`
+    const disallowed = isMain
+      ? ['/painel/', '/admin/', '/api/', '/onboarding/', '/entrar/', '/cadastro/', '/recuperar-senha/', '/redefinir-senha/']
+      : ['/admin/', '/api/']
+    const body =
+      `User-agent: *\n` +
+      `Allow: /\n` +
+      disallowed.map((p) => `Disallow: ${p}`).join('\n') +
+      `\nSitemap: ${sitemap}\n`
     return new NextResponse(body, {
       status: 200,
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'public, max-age=300',
+        'Cache-Control': 'public, max-age=3600, s-maxage=3600',
         'X-Robots-Tag': 'all',
       },
     })
