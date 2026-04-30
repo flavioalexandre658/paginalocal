@@ -119,7 +119,9 @@ export async function generateAndFillImages(
   const primary = getPrimaryImageSource();
   const fallbackOn = isFallbackEnabled();
   const fallback: ImageSource = primary === "unsplash" ? "gemini" : "unsplash";
-  console.log(`[ImagePipeline] config: ${describeImageSourceConfig()}`);
+  console.log(
+    `[ImagePipeline] config: ${describeImageSourceConfig()} | total slots=${slots.length}`
+  );
 
   async function runSource(
     source: ImageSource,
@@ -127,11 +129,14 @@ export async function generateAndFillImages(
   ): Promise<void> {
     if (pendingSlots.length === 0) return;
     if (!isImageSourceEnabled(source)) {
-      console.log(
-        `[ImagePipeline] ${source} disabled (missing key or flag) — skipping for ${pendingSlots.length} slot(s)`
+      console.warn(
+        `[ImagePipeline] ⚠ ${source} desabilitada (sem API key ou IMAGE_GEN_ENABLED=false) — pulando ${pendingSlots.length} slot(s)`
       );
       return;
     }
+    console.log(
+      `[ImagePipeline] → executando ${source} para ${pendingSlots.length} slot(s)`
+    );
     if (source === "gemini") {
       const result = await runGeminiBatch(
         pendingSlots,
@@ -155,6 +160,10 @@ export async function generateAndFillImages(
       );
       unsplashFallbackCount += result.success;
     }
+    const got = pendingSlots.filter((s) => urlMap[slotId(s)]).length;
+    console.log(
+      `[ImagePipeline] ← ${source}: ${got}/${pendingSlots.length} preenchidos`
+    );
   }
 
   await runSource(primary, slots);
@@ -163,9 +172,11 @@ export async function generateAndFillImages(
     const stillPending = slots.filter((s) => !urlMap[slotId(s)]);
     if (stillPending.length > 0) {
       console.log(
-        `[ImagePipeline] ${stillPending.length} slot(s) sem URL após ${primary} — fallback ${fallback}`
+        `[ImagePipeline] ${stillPending.length} slot(s) sem URL após ${primary} — tentando fallback ${fallback}`
       );
       await runSource(fallback, stillPending);
+    } else {
+      console.log(`[ImagePipeline] todos slots preenchidos por ${primary} ✓`);
     }
   }
 

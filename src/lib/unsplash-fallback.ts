@@ -60,37 +60,67 @@ function getNicheQuery(category: string): string {
   return queries[Math.floor(Math.random() * queries.length)];
 }
 
+// Quando recebemos 429 na invocação atual, paramos de bater no Unsplash
+// e deixamos o fallback (Gemini) cobrir o resto. Este flag vive enquanto
+// a função serverless está quente.
+let unsplashRateLimited = false;
+
+interface SearchResult {
+  photos: UnsplashPhoto[];
+  rateLimited: boolean;
+  remaining?: number;
+}
+
 async function searchUnsplash(
   query: string,
-  count: number = 1,
+  count: number = 8,
   page: number = 1
-): Promise<UnsplashPhoto[]> {
+): Promise<SearchResult> {
   if (!UNSPLASH_ACCESS_KEY) {
-    console.warn("[Unsplash] No access key configured");
-    return [];
+    return { photos: [], rateLimited: false };
+  }
+  if (unsplashRateLimited) {
+    return { photos: [], rateLimited: true };
   }
 
   const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(
     query
   )}&per_page=${count}&page=${page}&orientation=landscape&content_filter=high`;
 
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,
-    },
-  });
+  try {
+    const response = await fetch(url, {
+      headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` },
+    });
 
-  if (!response.ok) {
-    console.error(
-      "[Unsplash] API error:",
-      response.status,
-      await response.text()
+    const remaining = Number(
+      response.headers.get("x-ratelimit-remaining") ?? "-1"
     );
-    return [];
-  }
 
-  const data = (await response.json()) as { results: UnsplashPhoto[] };
-  return data.results || [];
+    if (response.status === 429) {
+      unsplashRateLimited = true;
+      console.error(
+        `[Unsplash] 429 rate limit atingido (query="${query}"); pulando próximas requisições nesta invocação`
+      );
+      return { photos: [], rateLimited: true, remaining: 0 };
+    }
+
+    if (!response.ok) {
+      const body = await response.text();
+      console.error(
+        `[Unsplash] API error ${response.status} (query="${query}"): ${body.slice(0, 200)}`
+      );
+      return { photos: [], rateLimited: false, remaining };
+    }
+
+    const data = (await response.json()) as { results: UnsplashPhoto[] };
+    return { photos: data.results || [], rateLimited: false, remaining };
+  } catch (err) {
+    console.error(
+      `[Unsplash] Fetch error (query="${query}"):`,
+      err instanceof Error ? err.message : err
+    );
+    return { photos: [], rateLimited: false };
+  }
 }
 
 async function downloadImage(url: string): Promise<Buffer> {
@@ -181,62 +211,109 @@ export interface UnsplashSlotsContext {
  * within Unsplash, dedupe across slots, download → optimize → upload to S3.
  * Returns a map { slotId → s3Url } only for slots that succeeded.
  */
+async function processSingleSlot(
+  slot: UnsplashSlotInput,
+  index: number,
+  ctx: UnsplashSlotsContext,
+  usedPhotoIds: Set<string>
+): Promise<{ slotId: string; url: string | null; rateLimited: boolean }> {
+  const { storeId, category, businessName, services } = ctx;
+  const query = buildContextualQuery({
+    category,
+    businessName,
+    services,
+    imageHint: slot.imageHint,
+    blockType: slot.blockType,
+    fieldPath: slot.fieldPath,
+  });
+
+  const page = (index % 3) + 1;
+  const search = await searchUnsplash(query, 8, page);
+
+  if (search.rateLimited) {
+    return { slotId: slot.id, url: null, rateLimited: true };
+  }
+
+  const chosen = search.photos.find((p) => !usedPhotoIds.has(p.id));
+  if (!chosen) {
+    console.warn(
+      `[Unsplash] slot=${slot.id} sem foto (query="${query}", page=${page}, results=${search.photos.length})`
+    );
+    return { slotId: slot.id, url: null, rateLimited: false };
+  }
+  usedPhotoIds.add(chosen.id);
+
+  const isHero = slot.aspectRatio === "16:9";
+  const imageUrl = isHero
+    ? `${chosen.urls.raw}&w=1600&h=900&fit=crop&q=80`
+    : `${chosen.urls.raw}&w=800&h=600&fit=crop&q=80`;
+
+  try {
+    const buffer = await downloadImage(imageUrl);
+    const optimized = isHero
+      ? await optimizeHeroImage(buffer)
+      : await optimizeGalleryImage(buffer);
+
+    const filename = `unsplash-${slot.blockType}-${index}`;
+    const s3Key = generateS3Key(storeId, filename);
+    const { url } = await uploadToS3(optimized.buffer, s3Key);
+    return { slotId: slot.id, url, rateLimited: false };
+  } catch (err) {
+    console.error(
+      `[Unsplash] slot=${slot.id} optimize/upload falhou:`,
+      err instanceof Error ? err.message : err
+    );
+    return { slotId: slot.id, url: null, rateLimited: false };
+  }
+}
+
+const UNSPLASH_CONCURRENCY = 3;
+
 export async function fetchUnsplashForSlots(
   ctx: UnsplashSlotsContext
 ): Promise<Record<string, string>> {
-  const { storeId, slots, category, businessName, services } = ctx;
+  const start = Date.now();
+  const { slots } = ctx;
+
+  if (!UNSPLASH_ACCESS_KEY) {
+    console.warn(
+      "[Unsplash] UNSPLASH_ACCESS_KEY ausente — pulando geração de imagens via Unsplash"
+    );
+    return {};
+  }
+
+  console.log(
+    `[Unsplash] iniciando ${slots.length} slot(s) com concorrência=${UNSPLASH_CONCURRENCY}`
+  );
+
   const result: Record<string, string> = {};
   const usedPhotoIds = new Set<string>();
+  let succeeded = 0;
+  let failed = 0;
 
-  for (let i = 0; i < slots.length; i++) {
-    const slot = slots[i];
-    const query = buildContextualQuery({
-      category,
-      businessName,
-      services,
-      imageHint: slot.imageHint,
-      blockType: slot.blockType,
-      fieldPath: slot.fieldPath,
-    });
-
-    // Random page 1..5 for diversity. Use slot index for deterministic offset.
-    const page = ((i + Math.floor(Math.random() * 5)) % 5) + 1;
-
-    try {
-      const photos = await searchUnsplash(query, 8, page);
-      const fresh = photos.find((p) => !usedPhotoIds.has(p.id));
-      if (!fresh) {
-        console.warn(
-          `[Unsplash] no fresh photo for slot=${slot.id} (query="${query}", page=${page})`
-        );
-        continue;
-      }
-      usedPhotoIds.add(fresh.id);
-
-      const isHero = slot.aspectRatio === "16:9";
-      const imageUrl = isHero
-        ? `${fresh.urls.raw}&w=1600&h=900&fit=crop&q=80`
-        : `${fresh.urls.raw}&w=800&h=600&fit=crop&q=80`;
-
-      const buffer = await downloadImage(imageUrl);
-      const optimized = isHero
-        ? await optimizeHeroImage(buffer)
-        : await optimizeGalleryImage(buffer);
-
-      const filename = `unsplash-${slot.blockType}-${i}`;
-      const s3Key = generateS3Key(storeId, filename);
-      const { url } = await uploadToS3(optimized.buffer, s3Key);
-      result[slot.id] = url;
-    } catch (err) {
-      console.error(
-        `[Unsplash] slot ${slot.id} failed (query="${query}"):`,
-        err instanceof Error ? err.message : err
+  for (let i = 0; i < slots.length; i += UNSPLASH_CONCURRENCY) {
+    if (unsplashRateLimited) {
+      console.warn(
+        `[Unsplash] abortando: rate limit atingido. ${i}/${slots.length} processados`
       );
+      break;
+    }
+    const chunk = slots.slice(i, i + UNSPLASH_CONCURRENCY);
+    const chunkResults = await Promise.all(
+      chunk.map((s, j) => processSingleSlot(s, i + j, ctx, usedPhotoIds))
+    );
+    for (const r of chunkResults) {
+      if (r.url) {
+        result[r.slotId] = r.url;
+        succeeded++;
+      } else {
+        failed++;
+      }
     }
   }
 
   console.log(
-    `[Unsplash] slot-based: ${Object.keys(result).length}/${slots.length} succeeded`
+    `[Unsplash] concluído ${succeeded}/${slots.length} slots (${failed} falhas, rateLimited=${unsplashRateLimited}) em ${Date.now() - start}ms`
   );
   return result;
 }
@@ -251,9 +328,9 @@ export async function fetchAndSaveUnsplashImages(
   const query = getNicheQuery(category);
   console.log(`[Unsplash] Searching for "${query}" (category: ${category}, count: ${count})`);
 
-  const photos = await searchUnsplash(query, count);
+  const search = await searchUnsplash(query, count);
 
-  if (photos.length === 0) {
+  if (search.photos.length === 0) {
     console.warn("[Unsplash] No photos found");
     return { hero: null, gallery: [] };
   }
@@ -261,8 +338,8 @@ export async function fetchAndSaveUnsplashImages(
   let heroUrl: string | null = null;
   const galleryUrls: string[] = [];
 
-  for (let i = 0; i < photos.length; i++) {
-    const photo = photos[i];
+  for (let i = 0; i < search.photos.length; i++) {
+    const photo = search.photos[i];
     const isHero = i === 0;
     const role = isHero ? "hero" : "gallery";
 
