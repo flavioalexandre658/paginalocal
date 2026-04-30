@@ -9,6 +9,13 @@ import { fetchUnsplashForSlots } from "./unsplash-fallback";
 import { optimizeHeroImage, optimizeGalleryImage } from "./image-optimizer";
 import { uploadToS3 } from "./s3";
 import { IMAGE_PENDING_TOKEN } from "./image-pending-token";
+import {
+  getPrimaryImageSource,
+  isFallbackEnabled,
+  isImageSourceEnabled,
+  describeImageSourceConfig,
+  type ImageSource,
+} from "./image-source-config";
 import { db } from "@/db";
 import { imageGenerationLog } from "@/db/schema";
 
@@ -109,117 +116,60 @@ export async function generateAndFillImages(
   let failedCount = 0;
   let costUsd = 0;
 
-  console.log(`[ImagePipeline] Gemini image gen enabled: ${isBananaEnabled()}`);
-  if (isBananaEnabled()) {
-    const promptCtx = {
-      businessName: ctx.name,
-      category: ctx.category,
-      city: ctx.city,
-      templateStyle: blueprint.designTokens?.style || "modern",
-      palette: {
-        primary: blueprint.designTokens?.palette?.primary || "#000",
-        accent: blueprint.designTokens?.palette?.accent || "#0066ff",
-      },
-    };
+  const primary = getPrimaryImageSource();
+  const fallbackOn = isFallbackEnabled();
+  const fallback: ImageSource = primary === "unsplash" ? "gemini" : "unsplash";
+  console.log(`[ImagePipeline] config: ${describeImageSourceConfig()}`);
 
-    const promptRequests: ImagePromptRequest[] = slots.map((slot) => ({
-      id: slotId(slot),
-      sectionIndex: slot.sectionIndex,
-      blockType: slot.blockType,
-      fieldPath: slot.fieldPath,
-      imageSpec: slot.imageSpec,
-      overrideSubject: getOverrideSubject(slot, imageQueries),
-    }));
-
-    const prompts = buildImagePrompts(promptCtx, promptRequests);
-
-    const bananaRequests: BananaImageRequest[] = prompts.map((p) => ({
-      id: p.id,
-      prompt: p.prompt,
-      width: p.width,
-      height: p.height,
-    }));
-
-    try {
-      const batchResult = await bananaBatchGenerate(bananaRequests, { timeoutMs: 120000 });
-      costUsd = batchResult.costUsd;
-
-      let bananaResultSuccess = 0;
-      let bananaResultFailed = 0;
-      for (const result of batchResult.results) {
-        if (result.status === "success" && result.imageData) {
-          bananaResultSuccess++;
-          try {
-            const slot = slots.find((s) => slotId(s) === result.id);
-            const isHero = slot?.imageSpec.aspectRatio === "16:9";
-            const optimized = isHero
-              ? await optimizeHeroImage(result.imageData)
-              : await optimizeGalleryImage(result.imageData);
-
-            const s3Key = `stores/${storeId}/${Date.now()}-gemini-${result.id}.webp`;
-            const { url } = await uploadToS3(optimized.buffer, s3Key);
-            urlMap[result.id] = url;
-            bananaSuccessCount++;
-            if (slot) await notifySlotComplete(slot, url);
-          } catch (err) {
-            console.error(
-              `[ai-image-pipeline] optimize/upload failed for slot=${result.id}:`,
-              err instanceof Error ? err.message : err
-            );
-          }
-        } else {
-          bananaResultFailed++;
-        }
-      }
+  async function runSource(
+    source: ImageSource,
+    pendingSlots: ImageSlot[]
+  ): Promise<void> {
+    if (pendingSlots.length === 0) return;
+    if (!isImageSourceEnabled(source)) {
       console.log(
-        `[ai-image-pipeline] banana: ${bananaSuccessCount}/${slots.length} optimized+uploaded | banana-api success=${bananaResultSuccess} failed=${bananaResultFailed}`
+        `[ImagePipeline] ${source} disabled (missing key or flag) — skipping for ${pendingSlots.length} slot(s)`
       );
-    } catch (err) {
-      console.error("[ai-image-pipeline] Banana batch failed:", err);
+      return;
     }
-  }
-
-  // Fallback: Unsplash for any slots without URLs (contextual + diversified per-slot)
-  const failedSlots = slots.filter((s) => !urlMap[slotId(s)]);
-  if (failedSlots.length > 0) {
-    console.log(
-      `[ai-image-pipeline] Unsplash fallback for ${failedSlots.length} slot(s)`
-    );
-    try {
-      const slotInputs = failedSlots.map((s) => ({
-        id: slotId(s),
-        blockType: s.blockType,
-        fieldPath: s.fieldPath,
-        aspectRatio: s.imageSpec.aspectRatio,
-        imageHint: getOverrideSubject(s, imageQueries) ?? s.imageSpec.subject,
-      }));
-
-      const fallbackUrls = await fetchUnsplashForSlots({
+    if (source === "gemini") {
+      const result = await runGeminiBatch(
+        pendingSlots,
+        blueprint,
+        ctx,
         storeId,
-        slots: slotInputs,
-        category: ctx.category,
-        businessName: ctx.name,
-        services: ctx.services,
-      });
-
-      for (const slot of failedSlots) {
-        const url = fallbackUrls[slotId(slot)];
-        if (url) {
-          urlMap[slotId(slot)] = url;
-          unsplashFallbackCount++;
-          await notifySlotComplete(slot, url);
-        } else {
-          failedCount++;
-        }
-      }
-    } catch (err) {
-      console.error(
-        "[ai-image-pipeline] unsplash fallback failed:",
-        err instanceof Error ? err.message : err
+        imageQueries,
+        urlMap,
+        notifySlotComplete
       );
-      failedCount += failedSlots.length;
+      bananaSuccessCount += result.success;
+      costUsd += result.costUsd;
+    } else {
+      const result = await runUnsplashBatch(
+        pendingSlots,
+        ctx,
+        storeId,
+        imageQueries,
+        urlMap,
+        notifySlotComplete
+      );
+      unsplashFallbackCount += result.success;
     }
   }
+
+  await runSource(primary, slots);
+
+  if (fallbackOn) {
+    const stillPending = slots.filter((s) => !urlMap[slotId(s)]);
+    if (stillPending.length > 0) {
+      console.log(
+        `[ImagePipeline] ${stillPending.length} slot(s) sem URL após ${primary} — fallback ${fallback}`
+      );
+      await runSource(fallback, stillPending);
+    }
+  }
+
+  failedCount = slots.filter((s) => !urlMap[slotId(s)]).length;
 
   fillBlueprintWithUrls(homepage.sections, slots, urlMap);
 
@@ -376,5 +326,138 @@ function getOverrideSubject(
     return query[slot.arrayIndex % query.length];
   }
   return undefined;
+}
+
+interface SourceRunResult {
+  success: number;
+  costUsd: number;
+}
+
+async function runGeminiBatch(
+  pendingSlots: ImageSlot[],
+  blueprint: SiteBlueprint,
+  ctx: BusinessContext,
+  storeId: string,
+  imageQueries: Record<string, string | string[]> | undefined,
+  urlMap: Record<string, string>,
+  notifySlotComplete: (slot: ImageSlot, url: string) => Promise<void>
+): Promise<SourceRunResult> {
+  if (!isBananaEnabled()) {
+    console.log(`[ImagePipeline] Gemini não está habilitado (sem GEMINI_API_KEY)`);
+    return { success: 0, costUsd: 0 };
+  }
+
+  const promptCtx = {
+    businessName: ctx.name,
+    category: ctx.category,
+    city: ctx.city,
+    templateStyle: blueprint.designTokens?.style || "modern",
+    palette: {
+      primary: blueprint.designTokens?.palette?.primary || "#000",
+      accent: blueprint.designTokens?.palette?.accent || "#0066ff",
+    },
+  };
+
+  const promptRequests: ImagePromptRequest[] = pendingSlots.map((slot) => ({
+    id: slotId(slot),
+    sectionIndex: slot.sectionIndex,
+    blockType: slot.blockType,
+    fieldPath: slot.fieldPath,
+    imageSpec: slot.imageSpec,
+    overrideSubject: getOverrideSubject(slot, imageQueries),
+  }));
+
+  const prompts = buildImagePrompts(promptCtx, promptRequests);
+
+  const bananaRequests: BananaImageRequest[] = prompts.map((p) => ({
+    id: p.id,
+    prompt: p.prompt,
+    width: p.width,
+    height: p.height,
+  }));
+
+  let success = 0;
+  let costUsd = 0;
+  try {
+    const batchResult = await bananaBatchGenerate(bananaRequests, {
+      timeoutMs: 120000,
+    });
+    costUsd = batchResult.costUsd;
+
+    for (const result of batchResult.results) {
+      if (result.status === "success" && result.imageData) {
+        try {
+          const slot = pendingSlots.find((s) => slotId(s) === result.id);
+          const isHero = slot?.imageSpec.aspectRatio === "16:9";
+          const optimized = isHero
+            ? await optimizeHeroImage(result.imageData)
+            : await optimizeGalleryImage(result.imageData);
+
+          const s3Key = `stores/${storeId}/${Date.now()}-gemini-${result.id}.webp`;
+          const { url } = await uploadToS3(optimized.buffer, s3Key);
+          urlMap[result.id] = url;
+          success++;
+          if (slot) await notifySlotComplete(slot, url);
+        } catch (err) {
+          console.error(
+            `[ai-image-pipeline] gemini optimize/upload failed for slot=${result.id}:`,
+            err instanceof Error ? err.message : err
+          );
+        }
+      }
+    }
+    console.log(
+      `[ai-image-pipeline] gemini: ${success}/${pendingSlots.length} optimized+uploaded | costUsd=$${costUsd.toFixed(4)}`
+    );
+  } catch (err) {
+    console.error("[ai-image-pipeline] Gemini batch failed:", err);
+  }
+  return { success, costUsd };
+}
+
+async function runUnsplashBatch(
+  pendingSlots: ImageSlot[],
+  ctx: BusinessContext,
+  storeId: string,
+  imageQueries: Record<string, string | string[]> | undefined,
+  urlMap: Record<string, string>,
+  notifySlotComplete: (slot: ImageSlot, url: string) => Promise<void>
+): Promise<SourceRunResult> {
+  let success = 0;
+  try {
+    const slotInputs = pendingSlots.map((s) => ({
+      id: slotId(s),
+      blockType: s.blockType,
+      fieldPath: s.fieldPath,
+      aspectRatio: s.imageSpec.aspectRatio,
+      imageHint: getOverrideSubject(s, imageQueries) ?? s.imageSpec.subject,
+    }));
+
+    const fetchedUrls = await fetchUnsplashForSlots({
+      storeId,
+      slots: slotInputs,
+      category: ctx.category,
+      businessName: ctx.name,
+      services: ctx.services,
+    });
+
+    for (const slot of pendingSlots) {
+      const url = fetchedUrls[slotId(slot)];
+      if (url) {
+        urlMap[slotId(slot)] = url;
+        success++;
+        await notifySlotComplete(slot, url);
+      }
+    }
+    console.log(
+      `[ai-image-pipeline] unsplash: ${success}/${pendingSlots.length} fetched+uploaded`
+    );
+  } catch (err) {
+    console.error(
+      "[ai-image-pipeline] unsplash batch failed:",
+      err instanceof Error ? err.message : err
+    );
+  }
+  return { success, costUsd: 0 };
 }
 
