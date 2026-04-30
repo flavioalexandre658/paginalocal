@@ -263,6 +263,8 @@ export async function middleware(request: NextRequest) {
 
     const response = NextResponse.rewrite(new URL(`/site/${storeSlug}${pathname}`, request.url))
     response.headers.set('x-store-slug', storeSlug)
+    response.headers.set('x-mw', 'rewrite-store')
+    response.headers.set('x-mw-bot', isBot ? '1' : '0')
     if (isCustomDomain) {
       response.headers.set('x-custom-domain', cleanHost)
     }
@@ -272,7 +274,11 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
-  return NextResponse.next()
+  const passthrough = NextResponse.next()
+  passthrough.headers.set('x-mw', 'passthrough')
+  passthrough.headers.set('x-mw-host', cleanHost)
+  passthrough.headers.set('x-mw-bot', isBot ? '1' : '0')
+  return passthrough
 }
 
 export const config = {
